@@ -461,6 +461,9 @@ function LicensesAdmin() {
                       <Ban className="h-3 w-3 mr-1" /> iptal
                     </Button>
                   )}
+                  <Button size="sm" variant="outline" className="h-7 font-mono text-[11px] text-destructive border-destructive/40 hover:bg-destructive/10" onClick={() => deleteOne(r.id, r.key_value)}>
+                    <Trash2 className="h-3 w-3 mr-1" /> sil
+                  </Button>
                 </div>
               </div>
             </div>
