@@ -436,7 +436,6 @@ function OrdersAdmin() {
               )}
             </div>
           </div>
-          </div>
           );
         })}
       </div>
