@@ -1,7 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Accordion,
   AccordionContent,
@@ -18,6 +20,9 @@ import {
   Cpu,
   Wifi,
   Star,
+  Search,
+  X,
+  Sparkles,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
