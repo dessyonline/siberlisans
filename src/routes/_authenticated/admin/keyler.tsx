@@ -124,7 +124,8 @@ function KeysAdmin() {
       const r = await importFn({ data: { productId, keys: list } });
       toast.success(`${r.inserted} key eklendi`);
       setRaw("");
-      qc.invalidateQueries({ queryKey: ["license-keys"] });
+      qc.invalidateQueries({ queryKey: ["license-keys-recent"] });
+      qc.invalidateQueries({ queryKey: ["admin-pool"] });
     } catch (e) { toast.error((e as Error).message); }
     finally { setBusy(false); }
   };
