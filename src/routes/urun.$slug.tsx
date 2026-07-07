@@ -82,7 +82,13 @@ function ProductDetail() {
           </div>
         </div>
         <div className="glass-card rounded-lg p-6 h-fit">
-          <div className="font-mono text-xs text-muted-foreground">süre</div>
+          <StockBadge
+            stock={
+              (product.license_keys ?? []).filter((k: { status: string }) => k.status === "available")
+                .length
+            }
+          />
+          <div className="mt-4 font-mono text-xs text-muted-foreground">süre</div>
           <div className="font-mono text-lg">{DUR[product.duration]}</div>
           <div className="mt-4 font-mono text-xs text-muted-foreground">fiyat</div>
           <div className="font-mono text-4xl neon-text">
@@ -90,12 +96,21 @@ function ProductDetail() {
           </div>
           <div className="mt-1 font-mono text-xs text-muted-foreground">KDV dahil · Havale/EFT</div>
           <Button
-            disabled={loading}
+            disabled={
+              loading ||
+              (product.license_keys ?? []).filter((k: { status: string }) => k.status === "available")
+                .length === 0
+            }
             onClick={handleBuy}
             className="mt-6 w-full font-mono neon-glow"
             size="lg"
           >
-            {loading ? "işleniyor…" : "> satın al"}
+            {loading
+              ? "işleniyor…"
+              : (product.license_keys ?? []).filter((k: { status: string }) => k.status === "available")
+                  .length === 0
+              ? "stok tükendi"
+              : "> satın al"}
           </Button>
           <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center">
             kredi kartı KABUL EDİLMEZ · sadece banka transferi
