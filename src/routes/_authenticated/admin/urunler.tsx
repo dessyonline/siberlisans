@@ -40,6 +40,8 @@ type Product = {
   stock_hint: number | null;
   featured: boolean;
   unlimited_stock: boolean;
+  sort_order: number;
+  tier: "standard" | "epic";
 };
 
 function ProductsAdmin() {
@@ -78,6 +80,8 @@ function ProductsAdmin() {
           stock_hint: editing.stock_hint == null ? null : Number(editing.stock_hint),
           featured: editing.featured ?? false,
           unlimited_stock: editing.unlimited_stock ?? false,
+          sort_order: Number(editing.sort_order ?? 0),
+          tier: (editing.tier ?? "standard") as "standard" | "epic",
         },
       });
       toast.success("Kaydedildi");
@@ -173,6 +177,28 @@ function ProductsAdmin() {
                   <span>sınırsız stok ∞</span>
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <Field
+                  label="sıra (yüksek = üstte)"
+                  value={String(editing?.sort_order ?? 0)}
+                  onChange={(v) => setEditing((p) => ({ ...p!, sort_order: Number(v) || 0 }))}
+                  type="number"
+                />
+                <div>
+                  <Label className="font-mono text-xs">seviye</Label>
+                  <select
+                    value={editing?.tier ?? "standard"}
+                    onChange={(e) => setEditing((p) => ({ ...p!, tier: e.target.value as "standard" | "epic" }))}
+                    className="w-full rounded border border-border bg-input px-3 py-2 font-mono text-sm"
+                  >
+                    <option value="standard">standart</option>
+                    <option value="epic">★ destansı (özel tema)</option>
+                  </select>
+                </div>
+              </div>
+              <p className="font-mono text-[10px] text-muted-foreground">
+                "öne çıkan" = ana sayfada Popüler Lisanslar'da gösterilir · "sıra" = büyük olan önce · "destansı" = kartta altın/mor cyber tema
+              </p>
             </div>
             <DialogFooter>
               <Button onClick={save} className="font-mono">kaydet</Button>
@@ -200,7 +226,7 @@ function ProductsAdmin() {
                   </div>
                 </div>
                 <div className="flex gap-1 shrink-0 self-end sm:self-center">
-                  <Button size="sm" variant="outline" onClick={() => setEditing(p)}>
+                  <Button size="sm" variant="outline" onClick={() => setEditing(p as unknown as Product)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <AlertDialog>

@@ -296,3 +296,59 @@ body > a[class*="lovable"],
   opacity: 0 !important;
   pointer-events: none !important;
 }
+
+/* ============ EPIC TIER (destansı) — altın/mor cyber tema ============ */
+@keyframes epic-border {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes epic-shimmer-sweep {
+  0%   { transform: translateX(-120%); opacity: 0; }
+  30%  { opacity: 1; }
+  100% { transform: translateX(120%); opacity: 0; }
+}
+@utility epic-card {
+  position: relative;
+  background:
+    linear-gradient(oklch(0.14 0.02 145 / 0.85), oklch(0.14 0.02 145 / 0.85)) padding-box,
+    linear-gradient(
+      135deg,
+      oklch(0.78 0.16 75) 0%,
+      oklch(0.90 0.18 90) 20%,
+      oklch(0.65 0.20 300) 45%,
+      oklch(0.55 0.22 320) 65%,
+      oklch(0.82 0.20 145) 85%,
+      oklch(0.78 0.16 75) 100%
+    ) border-box;
+  background-size: 100% 100%, 300% 300%;
+  border: 1.5px solid transparent;
+  box-shadow:
+    0 0 0 1px oklch(0.78 0.16 75 / 0.15),
+    0 0 24px oklch(0.78 0.16 75 / 0.25),
+    0 0 60px oklch(0.65 0.20 300 / 0.15);
+  animation: epic-border 8s ease-in-out infinite;
+}
+@utility epic-shimmer {
+  overflow: hidden;
+}
+@utility epic-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    oklch(0.95 0.10 85 / 0.14) 48%,
+    oklch(0.95 0.10 85 / 0.22) 50%,
+    oklch(0.95 0.10 85 / 0.14) 52%,
+    transparent 70%
+  );
+  animation: epic-shimmer-sweep 3.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@utility epic-text-glow {
+  text-shadow:
+    0 0 8px oklch(0.85 0.15 75 / 0.55),
+    0 0 24px oklch(0.78 0.16 75 / 0.35);
+}

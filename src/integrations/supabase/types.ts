@@ -250,7 +250,9 @@ export type Database = {
           name: string
           price_try: number
           slug: string
+          sort_order: number
           stock_hint: number | null
+          tier: string
           unlimited_stock: boolean
           updated_at: string
         }
@@ -269,7 +271,9 @@ export type Database = {
           name: string
           price_try: number
           slug: string
+          sort_order?: number
           stock_hint?: number | null
+          tier?: string
           unlimited_stock?: boolean
           updated_at?: string
         }
@@ -288,7 +292,9 @@ export type Database = {
           name?: string
           price_try?: number
           slug?: string
+          sort_order?: number
           stock_hint?: number | null
+          tier?: string
           unlimited_stock?: boolean
           updated_at?: string
         }

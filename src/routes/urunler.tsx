@@ -192,18 +192,21 @@ type Row = {
   stock_hint: number | null;
   unlimited_stock: boolean | null;
   created_at: string;
+  sort_order?: number | null;
+  tier?: string | null;
   license_keys: { status: string }[] | null;
 };
 
+// Kategori grupları — talep sırasına göre: AI en önce, sonra görsel/office...
 const GROUPS: { key: string; label: string; cats: string[] }[] = [
-  { key: "windows", label: "Windows", cats: ["Windows 10/11", "Windows Server"] },
+  { key: "ai", label: "Yapay Zeka", cats: ["ChatGPT", "Google Gemini", "Lovable", "Claude", "Nano Banana", "Midjourney", "Ideogram"] },
   {
     key: "gorsel",
     label: "Görsel & Tasarım",
     cats: ["Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array", "CorelDRAW", "Autodesk"],
   },
-  { key: "ai", label: "Yapay Zeka", cats: ["ChatGPT", "Google Gemini", "Nano Banana", "Midjourney", "Ideogram"] },
   { key: "office", label: "Microsoft Office", cats: ["Office (Ömürlük)", "Office 365"] },
+  { key: "windows", label: "Windows", cats: ["Windows 10/11", "Windows Server"] },
   { key: "oyun", label: "Oyunlar", cats: ["Steam Oyunları"] },
   { key: "email", label: "E-posta", cats: ["Email Hesapları"] },
 ];
@@ -213,13 +216,14 @@ function groupOf(cat: string | null): string {
   return GROUPS.find((g) => g.cats.includes(c))?.key ?? "diger";
 }
 
+
 function ProductsPage() {
   const { data } = useQuery({
     queryKey: ["products", "all"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, created_at, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, created_at, sort_order, tier, license_keys(status)")
         .eq("active", true)
         .order("price_try");
       if (error) throw error;
@@ -262,6 +266,16 @@ function ProductsPage() {
       .slice(0, 3);
   }, [data]);
 
+  // Kategori sıralama önceliği: GROUPS sırası + AI içi (ChatGPT, Gemini, Lovable, ...)
+  const catPriority = (cat: string): number => {
+    const g = groupOf(cat);
+    const gIdx = GROUPS.findIndex((x) => x.key === g);
+    const baseGroup = gIdx === -1 ? 99 : gIdx;
+    const group = GROUPS[gIdx];
+    const inCat = group ? group.cats.indexOf(cat) : -1;
+    return baseGroup * 100 + (inCat === -1 ? 50 : inCat);
+  };
+
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
     const entries = Array.from(byCategory.entries()).map(([cat, items]) => {
@@ -274,10 +288,22 @@ function ProductsPage() {
             (p.category ?? "").toLowerCase().includes(q),
         );
       }
+      // Kategori içi: destansı önce, sonra sort_order yüksek olan, sonra fiyat
+      list = [...list].sort((a, b) => {
+        const ea = a.tier === "epic" ? 0 : 1;
+        const eb = b.tier === "epic" ? 0 : 1;
+        if (ea !== eb) return ea - eb;
+        const sa = a.sort_order ?? 0;
+        const sb = b.sort_order ?? 0;
+        if (sa !== sb) return sb - sa;
+        return (a.price_try ?? 0) - (b.price_try ?? 0);
+      });
       return [cat, list] as [string, Row[]];
     });
     const filtered = group === "all" ? entries : entries.filter(([cat]) => groupOf(cat) === group);
-    return filtered.filter(([, items]) => items.length > 0);
+    const nonEmpty = filtered.filter(([, items]) => items.length > 0);
+    // Kategoriler arası: GROUPS sırasına göre
+    return nonEmpty.sort(([a], [b]) => catPriority(a) - catPriority(b));
   }, [byCategory, group, search]);
 
   return (
@@ -466,14 +492,16 @@ function ProductCard({ product: p }: { product: Row }) {
     ? "text-warn border-warn/40 bg-warn/10 animate-pulse"
     : "text-primary border-primary/30 bg-primary/10";
   const isNew = (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7;
-  
+  const epic = p.tier === "epic";
+
 
   return (
-    <div className="group relative glass-card rounded-xl overflow-hidden flex flex-col glass-card-hover border border-border/60">
+    <div className={`group relative rounded-xl overflow-hidden flex flex-col glass-card-hover ${epic ? "epic-card border border-transparent" : "glass-card border border-border/60"}`}>
       <div className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none">
         <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-primary/15 blur-[60px]" />
         <div className="absolute -left-20 -bottom-20 h-40 w-40 rounded-full bg-cyan/10 blur-[60px]" />
       </div>
+      {epic && <div className="pointer-events-none absolute inset-0 epic-shimmer" aria-hidden />}
 
       {(() => {
         const cv = catVisual(p.category);
@@ -481,7 +509,11 @@ function ProductCard({ product: p }: { product: Row }) {
         return (
           <div
             className="relative h-40 overflow-hidden border-b border-border/60"
-            style={{ background: `radial-gradient(circle at 30% 30%, ${cv.hue.replace(")", " / 0.18)")}, transparent 65%), oklch(0.13 0.02 145)` }}
+            style={{
+              background: epic
+                ? "radial-gradient(circle at 30% 30%, oklch(0.78 0.16 75 / 0.28), transparent 60%), radial-gradient(circle at 80% 80%, oklch(0.65 0.20 300 / 0.20), transparent 55%), oklch(0.13 0.02 145)"
+                : `radial-gradient(circle at 30% 30%, ${cv.hue.replace(")", " / 0.18)")}, transparent 65%), oklch(0.13 0.02 145)`,
+            }}
           >
             {/* cyber grid backdrop */}
             <div className="pointer-events-none absolute inset-0 cyber-grid opacity-40" aria-hidden />
@@ -529,7 +561,12 @@ function ProductCard({ product: p }: { product: Row }) {
             <KeyRound
               className="absolute right-3 top-3 h-4 w-4 text-primary drop-shadow-[0_0_8px_oklch(0.82_0.20_145/0.7)]"
             />
-            {isNew && (
+            {epic && (
+              <span className="absolute left-3 bottom-3 rounded px-2 py-0.5 font-mono text-[10px] border border-[oklch(0.78_0.16_75)] bg-[oklch(0.78_0.16_75/0.15)] text-[oklch(0.88_0.16_75)] shadow-[0_0_14px_oklch(0.78_0.16_75/0.45)] uppercase tracking-widest">
+                ★ EPIC
+              </span>
+            )}
+            {isNew && !epic && (
               <span className="absolute right-3 bottom-3 rounded px-2 py-0.5 font-mono text-[10px] border border-cyan/50 bg-cyan/20 text-cyan animate-pulse">
                 ✦ YENİ
               </span>
