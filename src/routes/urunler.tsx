@@ -26,6 +26,8 @@ type Row = {
   price_try: number;
   category: string | null;
   image_url: string | null;
+  manual_fulfillment: boolean | null;
+  stock_hint: number | null;
   license_keys: { status: string }[] | null;
 };
 
@@ -34,11 +36,12 @@ const GROUPS: { key: string; label: string; cats: string[] }[] = [
   {
     key: "gorsel",
     label: "Görsel & Tasarım",
-    cats: ["Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array"],
+    cats: ["Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array", "CorelDRAW", "Autodesk"],
   },
-  { key: "ai", label: "Yapay Zeka", cats: ["Google Gemini", "Nano Banana"] },
+  { key: "ai", label: "Yapay Zeka", cats: ["Google Gemini", "Nano Banana", "Midjourney", "Ideogram"] },
   { key: "office", label: "Microsoft Office", cats: ["Office (Ömürlük)", "Office 365"] },
   { key: "oyun", label: "Oyunlar", cats: ["Steam Oyunları"] },
+  { key: "email", label: "E-posta", cats: ["Email Hesapları"] },
 ];
 
 function groupOf(cat: string | null): string {
@@ -52,7 +55,7 @@ function ProductsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, category, image_url, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, license_keys(status)")
         .eq("active", true)
         .order("price_try");
       if (error) throw error;
@@ -128,14 +131,24 @@ function ProductsPage() {
 
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((p) => {
-                  const stock = (p.license_keys ?? []).filter((k) => k.status === "available").length;
-                  const stockLabel = stock === 0 ? "tükendi" : stock < 3 ? `son ${stock}` : "stokta";
-                  const stockCls =
-                    stock === 0
-                      ? "text-destructive border-destructive/40 bg-destructive/10"
-                      : stock < 3
-                      ? "text-warn border-warn/40 bg-warn/10 animate-pulse"
-                      : "text-primary border-primary/30 bg-primary/10";
+                  const manual = !!p.manual_fulfillment;
+                  const liveStock = (p.license_keys ?? []).filter((k) => k.status === "available").length;
+                  const stock = liveStock > 0 ? liveStock : (p.stock_hint ?? 0);
+                  const soldOut = !manual && stock === 0;
+                  const stockLabel = manual
+                    ? "sipariş sonrası"
+                    : soldOut
+                    ? "tükendi"
+                    : stock < 3
+                    ? `son ${stock}`
+                    : `stok: ${stock}`;
+                  const stockCls = manual
+                    ? "text-cyan border-cyan/40 bg-cyan/10"
+                    : soldOut
+                    ? "text-destructive border-destructive/40 bg-destructive/10"
+                    : stock < 3
+                    ? "text-warn border-warn/40 bg-warn/10 animate-pulse"
+                    : "text-primary border-primary/30 bg-primary/10";
                   return (
                     <div key={p.id} className="glass-card rounded-lg overflow-hidden flex flex-col">
                       {p.image_url && (
@@ -148,6 +161,15 @@ function ProductsPage() {
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
                           <KeyRound className="absolute right-3 top-3 h-5 w-5 text-primary" />
+                          <span
+                            className={`absolute left-3 top-3 rounded px-2 py-0.5 font-mono text-[10px] border ${
+                              manual
+                                ? "border-warn/50 bg-warn/15 text-warn"
+                                : "border-primary/40 bg-primary/15 text-primary"
+                            }`}
+                          >
+                            {manual ? "manuel teslimat" : "otomatik teslimat"}
+                          </span>
                         </div>
                       )}
                       <div className="p-5 flex flex-col flex-1">
@@ -155,7 +177,7 @@ function ProductsPage() {
                         {p.description && (
                           <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{p.description}</p>
                         )}
-                        <div className="mt-3 flex items-center gap-2 font-mono text-[10px]">
+                        <div className="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px]">
                           <span className="rounded bg-primary/10 text-primary border border-primary/30 px-2 py-0.5">
                             {DUR[p.duration] ?? p.duration}
                           </span>
@@ -165,9 +187,9 @@ function ProductsPage() {
                           <div className="font-mono text-xl neon-text">
                             ₺{Number(p.price_try).toLocaleString("tr-TR")}
                           </div>
-                          <Button asChild size="sm" className="font-mono" disabled={stock === 0}>
+                          <Button asChild size="sm" className="font-mono" disabled={soldOut}>
                             <Link to="/urun/$slug" params={{ slug: p.slug }}>
-                              {stock === 0 ? "tükendi" : "al →"}
+                              {soldOut ? "tükendi" : "al →"}
                             </Link>
                           </Button>
                         </div>

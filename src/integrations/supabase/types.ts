@@ -181,9 +181,11 @@ export type Database = {
           duration: Database["public"]["Enums"]["duration_type"]
           id: string
           image_url: string | null
+          manual_fulfillment: boolean
           name: string
           price_try: number
           slug: string
+          stock_hint: number | null
           updated_at: string
         }
         Insert: {
@@ -195,9 +197,11 @@ export type Database = {
           duration?: Database["public"]["Enums"]["duration_type"]
           id?: string
           image_url?: string | null
+          manual_fulfillment?: boolean
           name: string
           price_try: number
           slug: string
+          stock_hint?: number | null
           updated_at?: string
         }
         Update: {
@@ -209,9 +213,11 @@ export type Database = {
           duration?: Database["public"]["Enums"]["duration_type"]
           id?: string
           image_url?: string | null
+          manual_fulfillment?: boolean
           name?: string
           price_try?: number
           slug?: string
+          stock_hint?: number | null
           updated_at?: string
         }
         Relationships: []
