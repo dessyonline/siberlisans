@@ -2,9 +2,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-type SupaLike = { rpc: (fn: "has_role", args: { _user_id: string; _role: "admin" | "user" }) => Promise<{ data: boolean | null; error: unknown }> };
-
-async function assertAdmin(supabase: SupaLike, userId: string) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function assertAdmin(supabase: any, userId: string) {
   const { data, error } = await supabase.rpc("has_role", {
     _user_id: userId,
     _role: "admin",
