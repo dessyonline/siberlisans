@@ -14,16 +14,262 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      bank_accounts: {
+        Row: {
+          active: boolean
+          bank_name: string
+          created_at: string
+          holder_name: string
+          iban: string
+          id: string
+        }
+        Insert: {
+          active?: boolean
+          bank_name: string
+          created_at?: string
+          holder_name: string
+          iban: string
+          id?: string
+        }
+        Update: {
+          active?: boolean
+          bank_name?: string
+          created_at?: string
+          holder_name?: string
+          iban?: string
+          id?: string
+        }
+        Relationships: []
+      }
+      license_keys: {
+        Row: {
+          assigned_at: string | null
+          assigned_order_id: string | null
+          created_at: string
+          id: string
+          key_value: string
+          product_id: string
+          status: Database["public"]["Enums"]["key_status"]
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_order_id?: string | null
+          created_at?: string
+          id?: string
+          key_value: string
+          product_id: string
+          status?: Database["public"]["Enums"]["key_status"]
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_order_id?: string | null
+          created_at?: string
+          id?: string
+          key_value?: string
+          product_id?: string
+          status?: Database["public"]["Enums"]["key_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_keys_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_keys: {
+        Row: {
+          delivered_at: string
+          id: string
+          license_key_id: string
+          order_id: string
+        }
+        Insert: {
+          delivered_at?: string
+          id?: string
+          license_key_id: string
+          order_id: string
+        }
+        Update: {
+          delivered_at?: string
+          id?: string
+          license_key_id?: string
+          order_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_keys_license_key_id_fkey"
+            columns: ["license_key_id"]
+            isOneToOne: true
+            referencedRelation: "license_keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_keys_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          admin_note: string | null
+          approved_at: string | null
+          created_at: string
+          id: string
+          price_try: number
+          product_id: string
+          receipt_path: string | null
+          reference_code: string
+          status: Database["public"]["Enums"]["order_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          price_try: number
+          product_id: string
+          receipt_path?: string | null
+          reference_code: string
+          status?: Database["public"]["Enums"]["order_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          price_try?: number
+          product_id?: string
+          receipt_path?: string | null
+          reference_code?: string
+          status?: Database["public"]["Enums"]["order_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      products: {
+        Row: {
+          active: boolean
+          created_at: string
+          description: string | null
+          duration: Database["public"]["Enums"]["duration_type"]
+          id: string
+          name: string
+          price_try: number
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          duration?: Database["public"]["Enums"]["duration_type"]
+          id?: string
+          name: string
+          price_try: number
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          description?: string | null
+          duration?: Database["public"]["Enums"]["duration_type"]
+          id?: string
+          name?: string
+          price_try?: number
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      approve_order: {
+        Args: { _order_id: string }
+        Returns: {
+          license_key: string
+        }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      duration_type: "monthly" | "yearly" | "lifetime"
+      key_status: "available" | "assigned" | "revoked"
+      order_status: "pending" | "reviewing" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +396,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      duration_type: ["monthly", "yearly", "lifetime"],
+      key_status: ["available", "assigned", "revoked"],
+      order_status: ["pending", "reviewing", "approved", "rejected"],
+    },
   },
 } as const
