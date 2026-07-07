@@ -4,8 +4,92 @@ import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, X, Ban, RotateCcw, ShieldCheck, Clock, Cpu, CheckCircle2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Search, X, Ban, RotateCcw, ShieldCheck, Clock, Cpu, CheckCircle2, Sparkles, Download, Copy } from "lucide-react";
 import { toast } from "sonner";
+
+const LOVABLE_PRODUCT_ID = "4f6d86cf-6a89-4940-90af-953cc3d6ab5f";
+
+function genKey(): string {
+  const abc = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const seg = (n: number) =>
+    Array.from({ length: n }, () => abc[Math.floor(Math.random() * abc.length)]).join("");
+  return `LVBL-${seg(4)}-${seg(4)}-${seg(4)}-${seg(4)}`;
+}
+
+function buildUserscript(licenseKey: string): string {
+  return `// ==UserScript==
+// @name         Lovable Sınırsız — Kredisiz
+// @namespace    https://siberlisans.lovable.app
+// @version      1.0.0
+// @description  Lovable için lisanslı istemci
+// @match        https://lovable.dev/*
+// @match        https://*.lovable.dev/*
+// @run-at       document-start
+// @grant        GM_getValue
+// @grant        GM_setValue
+// ==/UserScript==
+
+(function () {
+  "use strict";
+  const API = "https://siberlisans.lovable.app";
+  const LICENSE_KEY = "${licenseKey}";
+
+  function getHWID() {
+    let h = GM_getValue("siber_hwid", null);
+    if (!h) {
+      h = crypto.randomUUID();
+      GM_setValue("siber_hwid", h);
+    }
+    return h;
+  }
+
+  async function post(path, body) {
+    const r = await fetch(API + path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    return r.json();
+  }
+
+  async function activate() {
+    const r = await post("/api/activate", { license_key: LICENSE_KEY, hwid: getHWID() });
+    if (!r.success) throw new Error(r.error || "Etkinleştirme başarısız");
+    return r;
+  }
+
+  async function validate() {
+    const r = await post("/api/validate", { license_key: LICENSE_KEY, hwid: getHWID() });
+    if (!r.valid) throw new Error(r.error || "Lisans geçersiz");
+    return r;
+  }
+
+  async function boot() {
+    try {
+      const last = Number(GM_getValue("siber_last_check", 0));
+      const activated = GM_getValue("siber_activated", false);
+      if (!activated) {
+        const a = await activate();
+        GM_setValue("siber_activated", true);
+        GM_setValue("siber_last_check", Date.now());
+        console.log("[SiberLisans] etkinleştirildi:", a);
+      } else if (Date.now() - last > 6 * 60 * 60 * 1000) {
+        const v = await validate();
+        GM_setValue("siber_last_check", Date.now());
+        console.log("[SiberLisans] doğrulandı:", v);
+      }
+      // TODO: buradan sonrası eklenti işlevleri
+    } catch (e) {
+      alert("Lisans hatası: " + e.message);
+    }
+  }
+
+  boot();
+})();
+`;
+}
+
 
 export const Route = createFileRoute("/_authenticated/admin/lisanslar")({
   component: LicensesAdmin,
