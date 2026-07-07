@@ -37,6 +37,7 @@ const GROUPS: { key: string; label: string; cats: string[] }[] = [
     cats: ["Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array"],
   },
   { key: "ai", label: "Yapay Zeka", cats: ["Google Gemini", "Nano Banana"] },
+  { key: "office", label: "Microsoft Office", cats: ["Office (Ömürlük)", "Office 365"] },
   { key: "oyun", label: "Oyunlar", cats: ["Steam Oyunları"] },
 ];
 
