@@ -42,17 +42,21 @@ function KeysAdmin() {
   const { data: products } = useQuery({
     queryKey: ["products", "for-keys"],
     queryFn: async () => {
-      const { data } = await supabase.from("products").select("id, name").order("name");
+      const { data } = await supabase.from("products").select("id, name, delivery_type").order("name");
       return data;
     },
   });
+
+  const currentProduct = (products ?? []).find((p) => p.id === productId);
+  const currentDT = (currentProduct?.delivery_type ?? "key") as DeliveryType;
+  const hint = DELIVERY_HINTS[currentDT];
 
   const { data: pool } = useQuery({
     queryKey: ["admin-pool"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, active, price_try, license_keys(status)")
+        .select("id, name, slug, active, price_try, delivery_type, license_keys(status)")
         .order("name");
       if (error) throw error;
       return data as PoolRow[];
