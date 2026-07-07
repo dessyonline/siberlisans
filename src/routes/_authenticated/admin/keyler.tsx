@@ -77,20 +77,43 @@ function KeysAdmin() {
     return { avail, assigned, total };
   }, [pool]);
 
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "available" | "assigned" | "revoked">("all");
+
   const { data: keys } = useQuery({
-    queryKey: ["license-keys", productId],
-    enabled: !!productId,
+    queryKey: ["license-keys-recent"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("license_keys")
-        .select("id, key_value, status, created_at")
-        .eq("product_id", productId)
+        .select("id, key_value, status, created_at, product_id, product:products(name, slug)")
         .order("created_at", { ascending: false })
-        .limit(200);
+        .limit(500);
       if (error) throw error;
-      return data;
+      return data as Array<{
+        id: string;
+        key_value: string;
+        status: string;
+        created_at: string;
+        product_id: string;
+        product: { name: string; slug: string } | null;
+      }>;
     },
+    refetchInterval: 15000,
   });
+
+  const filteredKeys = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return (keys ?? []).filter((k) => {
+      if (productId && k.product_id !== productId) return false;
+      if (statusFilter !== "all" && k.status !== statusFilter) return false;
+      if (!q) return true;
+      return (
+        k.key_value.toLowerCase().includes(q) ||
+        (k.product?.name ?? "").toLowerCase().includes(q) ||
+        (k.product?.slug ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [keys, search, statusFilter, productId]);
 
   const doImport = async () => {
     if (!productId) return toast.error("Ürün seçin");
