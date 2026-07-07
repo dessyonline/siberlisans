@@ -59,7 +59,8 @@ function ProductDetail() {
   const liveStock = (product.license_keys ?? []).filter((k: { status: string }) => k.status === "available").length;
   const stock = liveStock > 0 ? liveStock : (product.stock_hint ?? 0);
   const manual = !!product.manual_fulfillment;
-  const soldOut = !manual && stock === 0;
+  const unlimited = !!(product as { unlimited_stock?: boolean }).unlimited_stock;
+  const soldOut = !manual && !unlimited && stock === 0;
   const bullets = (product.description ?? "")
     .split("|")
     .map((s) => s.trim())
