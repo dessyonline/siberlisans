@@ -23,7 +23,6 @@ import {
   ArrowRight,
   Lock,
   Instagram,
-  Send as TelegramIcon,
   Send,
   MessageCircle,
 } from "lucide-react";
