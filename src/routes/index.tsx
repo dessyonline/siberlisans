@@ -288,8 +288,8 @@ function ProductCard({
         <span className="rounded bg-primary/10 text-primary border border-primary/30 px-2 py-0.5">
           {DURATION_LABEL[p.duration] ?? p.duration}
         </span>
-        <span className={`rounded px-2 py-0.5 border ${manual ? "text-cyan border-cyan/40 bg-cyan/10" : soldOut ? "text-destructive border-destructive/40 bg-destructive/10" : "text-primary border-primary/30 bg-primary/10"}`}>
-          {manual ? "sipariş sonrası" : soldOut ? "tükendi" : `stok: ${stock}`}
+        <span className={`rounded px-2 py-0.5 border ${unlimited ? "text-cyan border-cyan/40 bg-cyan/10" : manual ? "text-cyan border-cyan/40 bg-cyan/10" : soldOut ? "text-destructive border-destructive/40 bg-destructive/10" : "text-primary border-primary/30 bg-primary/10"}`}>
+          {unlimited ? "stok: ∞" : manual ? "sipariş sonrası" : soldOut ? "tükendi" : `stok: ${stock}`}
         </span>
       </div>
       <div className="mt-auto pt-5 flex items-end justify-between">
