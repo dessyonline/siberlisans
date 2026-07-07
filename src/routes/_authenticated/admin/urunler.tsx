@@ -57,6 +57,7 @@ function ProductsAdmin() {
 
   const [editing, setEditing] = useState<Partial<Product> | null>(null);
   const upsertFn = useServerFn(upsertProduct);
+  const deleteFn = useServerFn(deleteProduct);
 
   const save = async () => {
     if (!editing) return;
@@ -71,10 +72,22 @@ function ProductsAdmin() {
           delivery_type: (editing.delivery_type ?? "key") as DeliveryType,
           price_try: Number(editing.price_try ?? 0),
           active: editing.active ?? true,
+          category: editing.category ?? null,
+          manual_fulfillment: editing.manual_fulfillment ?? false,
+          stock_hint: editing.stock_hint == null ? null : Number(editing.stock_hint),
+          featured: editing.featured ?? false,
         },
       });
       toast.success("Kaydedildi");
       setEditing(null);
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+    } catch (e) { toast.error((e as Error).message); }
+  };
+
+  const remove = async (id: string) => {
+    try {
+      await deleteFn({ data: { id } });
+      toast.success("Silindi");
       qc.invalidateQueries({ queryKey: ["admin-products"] });
     } catch (e) { toast.error((e as Error).message); }
   };
@@ -85,15 +98,16 @@ function ProductsAdmin() {
         <h1 className="font-mono text-2xl neon-text">Ürünler</h1>
         <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
           <DialogTrigger asChild>
-            <Button onClick={() => setEditing({ active: true, duration: "monthly", delivery_type: "key", price_try: 0 })} className="font-mono">
+            <Button onClick={() => setEditing({ active: true, duration: "monthly", delivery_type: "key", price_try: 0, manual_fulfillment: false, featured: false })} className="font-mono">
               <Plus className="h-4 w-4 mr-1" />yeni ürün
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle className="font-mono">{editing?.id ? "düzenle" : "yeni ürün"}</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <Field label="ad" value={editing?.name ?? ""} onChange={(v) => setEditing((p) => ({ ...p!, name: v }))} />
               <Field label="slug (a-z, 0-9, -)" value={editing?.slug ?? ""} onChange={(v) => setEditing((p) => ({ ...p!, slug: v }))} />
+              <Field label="kategori" value={editing?.category ?? ""} onChange={(v) => setEditing((p) => ({ ...p!, category: v }))} />
               <div>
                 <Label className="font-mono text-xs">açıklama</Label>
                 <Textarea value={editing?.description ?? ""} onChange={(e) => setEditing((p) => ({ ...p!, description: e.target.value }))} className="font-mono" />
@@ -131,9 +145,25 @@ function ProductsAdmin() {
                   {(!editing?.delivery_type || editing?.delivery_type === "key") && "havuza her satıra bir lisans anahtarı ekle"}
                 </p>
               </div>
-              <div className="flex items-center gap-2 font-mono text-sm">
-                <Switch checked={editing?.active ?? true} onCheckedChange={(v) => setEditing((p) => ({ ...p!, active: v }))} />
-                <span>aktif</span>
+              <Field
+                label="stok (manuel giriş — havuz boşsa gösterilir)"
+                value={editing?.stock_hint == null ? "" : String(editing.stock_hint)}
+                onChange={(v) => setEditing((p) => ({ ...p!, stock_hint: v === "" ? null : Number(v) }))}
+                type="number"
+              />
+              <div className="grid grid-cols-3 gap-3 pt-2">
+                <div className="flex items-center gap-2 font-mono text-sm">
+                  <Switch checked={editing?.active ?? true} onCheckedChange={(v) => setEditing((p) => ({ ...p!, active: v }))} />
+                  <span>aktif</span>
+                </div>
+                <div className="flex items-center gap-2 font-mono text-sm">
+                  <Switch checked={editing?.manual_fulfillment ?? false} onCheckedChange={(v) => setEditing((p) => ({ ...p!, manual_fulfillment: v }))} />
+                  <span>manuel</span>
+                </div>
+                <div className="flex items-center gap-2 font-mono text-sm">
+                  <Switch checked={editing?.featured ?? false} onCheckedChange={(v) => setEditing((p) => ({ ...p!, featured: v }))} />
+                  <span>öne çıkan</span>
+                </div>
               </div>
             </div>
             <DialogFooter>
@@ -147,24 +177,54 @@ function ProductsAdmin() {
         {(products ?? []).map((p) => {
           const avail = (p.license_keys ?? []).filter((k: { status: string }) => k.status === "available").length;
           const total = (p.license_keys ?? []).length;
+          const stockShown = avail > 0 ? avail : (p.stock_hint ?? 0);
           return (
-            <div key={p.id} className="glass-card rounded-lg p-4 font-mono text-sm flex items-center justify-between gap-3">
-              <div>
-                <div className="font-semibold">{p.name} <span className="text-xs text-muted-foreground">/{p.slug}</span></div>
-                <div className="text-xs text-muted-foreground">{p.duration} · ₺{Number(p.price_try).toLocaleString("tr-TR")}</div>
+            <div key={p.id} className="glass-card rounded-lg p-4 font-mono text-sm flex items-center justify-between gap-3 flex-wrap">
+              <div className="min-w-0 flex-1">
+                <div className="font-semibold flex items-center gap-2">
+                  {p.featured && <Star className="h-3 w-3 text-warn fill-warn" />}
+                  {p.name} <span className="text-xs text-muted-foreground">/{p.slug}</span>
+                </div>
+                <div className="text-xs text-muted-foreground">{p.category ?? "—"} · {p.duration} · ₺{Number(p.price_try).toLocaleString("tr-TR")}</div>
               </div>
               <div className="text-[10px] rounded border border-primary/30 bg-primary/5 px-2 py-1 text-primary">
                 {DELIVERY_LABELS[(p.delivery_type ?? "key") as DeliveryType]}
               </div>
-              <div className={`text-xs ${avail < 3 ? "text-warn" : "text-cyan"}`}>
-                stok: {avail} / {total}
+              {p.manual_fulfillment && (
+                <div className="text-[10px] rounded border border-warn/40 bg-warn/10 px-2 py-1 text-warn">manuel</div>
+              )}
+              <div className={`text-xs ${stockShown < 3 ? "text-warn" : "text-cyan"}`}>
+                stok: {avail}/{total}{p.stock_hint != null && ` · hint:${p.stock_hint}`}
               </div>
               <div className={`text-xs ${p.active ? "text-primary" : "text-muted-foreground"}`}>
                 {p.active ? "aktif" : "pasif"}
               </div>
-              <Button size="sm" variant="outline" onClick={() => setEditing(p)}>
-                <Pencil className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-1">
+                <Button size="sm" variant="outline" onClick={() => setEditing(p)}>
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="outline" className="text-destructive hover:text-destructive">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="font-mono">Ürünü sil?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        <b>{p.name}</b> ve bağlı tüm key'leri kalıcı olarak silinecek. Bu işlem geri alınamaz.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="font-mono">vazgeç</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => remove(p.id)} className="font-mono bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        sil
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           );
         })}
