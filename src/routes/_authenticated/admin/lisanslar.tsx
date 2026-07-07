@@ -237,6 +237,30 @@ function LicensesAdmin() {
     call(id, "set_duration", n);
   };
 
+  const deleteOne = async (id: string, key: string) => {
+    if (!confirm(`"${key}" anahtarını kalıcı olarak sil? Bu işlem geri alınamaz.`)) return;
+    const { error } = await supabase.from("license_keys").delete().eq("id", id);
+    if (error) {
+      if (error.message.toLowerCase().includes("foreign") || error.code === "23503") {
+        return toast.error("Bu anahtar bir siparişe bağlı. Önce iptal et, silinemiyor.");
+      }
+      return toast.error(error.message);
+    }
+    toast.success("Silindi");
+    qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
+  };
+
+  const purgeUnused = async () => {
+    const unused = (rows ?? []).filter((r) => r.status === "available" && !r.hwid);
+    if (unused.length === 0) return toast.info("Silinecek kullanılmamış anahtar yok");
+    if (!confirm(`${unused.length} kullanılmamış (havuzdaki) anahtarı sil?`)) return;
+    const ids = unused.map((r) => r.id);
+    const { error } = await supabase.from("license_keys").delete().in("id", ids);
+    if (error) return toast.error(error.message);
+    toast.success(`${ids.length} anahtar silindi`);
+    qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between flex-wrap gap-3">
