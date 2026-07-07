@@ -79,7 +79,7 @@ export function DeliveryPayload({
   }
 
   // default: key
-  const isLovable = /^LVBL-/i.test(keyValue);
+  const isLovable = /^(SIBER|LVBL)-/i.test(keyValue);
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2 rounded border border-primary/30 bg-primary/5 px-3 py-2 font-mono text-primary text-sm">
