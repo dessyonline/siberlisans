@@ -155,3 +155,17 @@
     pointer-events: none;
   }
 }
+
+/* Hide the Lovable "Made with" badge in preview/published environments */
+[data-lovable-badge],
+.lovable-badge,
+a[href*="lovable.dev"]:has(> *:is(svg, img)),
+body > div[class*="lovable"],
+body > a[class*="lovable"],
+*[class*="made-with-lovable"],
+*[class*="lovable-badge"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
