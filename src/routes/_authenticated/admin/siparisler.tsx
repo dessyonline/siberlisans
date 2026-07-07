@@ -111,7 +111,7 @@ function OrdersAdmin() {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="font-mono text-xs text-muted-foreground">./admin/orders</div>
-          <h1 className="mt-1 text-3xl font-semibold tracking-tight">Siparişler</h1>
+          <h1 className="mt-1 text-2xl sm:text-3xl font-semibold tracking-tight">Siparişler</h1>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <select

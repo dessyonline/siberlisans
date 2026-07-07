@@ -80,7 +80,7 @@ function UsersAdmin() {
   return (
     <div>
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="font-mono text-2xl neon-text">Kullanıcılar</h1>
+        <h1 className="font-mono text-xl sm:text-2xl neon-text">Kullanıcılar</h1>
         <div className="flex items-center gap-2 font-mono text-xs">
           <span className="rounded border border-primary/30 bg-primary/5 px-2 py-1 text-primary">
             <Shield className="inline h-3 w-3 mr-1" />admin {totals.admins}
