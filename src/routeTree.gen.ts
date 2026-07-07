@@ -18,6 +18,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
 import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
 import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
+import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 
 const UrunlerRoute = UrunlerRouteImport.update({
   id: '/urunler',
@@ -63,6 +64,11 @@ const AuthenticatedHesabimRoute = AuthenticatedHesabimRouteImport.update({
   path: '/hesabim',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -70,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/nasil-calisir': typeof NasilCalisirRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
+  '/admin': typeof AuthenticatedAdminRouteRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/nasil-calisir': typeof NasilCalisirRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
+  '/admin': typeof AuthenticatedAdminRouteRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/nasil-calisir': typeof NasilCalisirRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteRoute
   '/_authenticated/hesabim': typeof AuthenticatedHesabimRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
@@ -104,6 +113,7 @@ export interface FileRouteTypes {
     | '/nasil-calisir'
     | '/sss'
     | '/urunler'
+    | '/admin'
     | '/hesabim'
     | '/odeme/$orderId'
     | '/urun/$slug'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
     | '/nasil-calisir'
     | '/sss'
     | '/urunler'
+    | '/admin'
     | '/hesabim'
     | '/odeme/$orderId'
     | '/urun/$slug'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
     | '/nasil-calisir'
     | '/sss'
     | '/urunler'
+    | '/_authenticated/admin'
     | '/_authenticated/hesabim'
     | '/odeme/$orderId'
     | '/urun/$slug'
@@ -206,14 +218,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHesabimRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRoute
   AuthenticatedHesabimRoute: typeof AuthenticatedHesabimRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRoute,
   AuthenticatedHesabimRoute: AuthenticatedHesabimRoute,
 }
 
