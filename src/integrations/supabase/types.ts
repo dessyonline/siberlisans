@@ -43,8 +43,10 @@ export type Database = {
       }
       license_keys: {
         Row: {
+          activation_token: string | null
           assigned_at: string | null
           assigned_order_id: string | null
+          claimed_at: string | null
           created_at: string
           id: string
           key_value: string
@@ -52,8 +54,10 @@ export type Database = {
           status: Database["public"]["Enums"]["key_status"]
         }
         Insert: {
+          activation_token?: string | null
           assigned_at?: string | null
           assigned_order_id?: string | null
+          claimed_at?: string | null
           created_at?: string
           id?: string
           key_value: string
@@ -61,8 +65,10 @@ export type Database = {
           status?: Database["public"]["Enums"]["key_status"]
         }
         Update: {
+          activation_token?: string | null
           assigned_at?: string | null
           assigned_order_id?: string | null
+          claimed_at?: string | null
           created_at?: string
           id?: string
           key_value?: string
@@ -169,6 +175,7 @@ export type Database = {
         Row: {
           active: boolean
           created_at: string
+          delivery_type: Database["public"]["Enums"]["delivery_type"]
           description: string | null
           duration: Database["public"]["Enums"]["duration_type"]
           id: string
@@ -180,6 +187,7 @@ export type Database = {
         Insert: {
           active?: boolean
           created_at?: string
+          delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           duration?: Database["public"]["Enums"]["duration_type"]
           id?: string
@@ -191,6 +199,7 @@ export type Database = {
         Update: {
           active?: boolean
           created_at?: string
+          delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           duration?: Database["public"]["Enums"]["duration_type"]
           id?: string
@@ -254,6 +263,7 @@ export type Database = {
       approve_order: {
         Args: { _order_id: string }
         Returns: {
+          activation_token: string
           license_key: string
         }[]
       }
@@ -267,6 +277,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      delivery_type: "key" | "account" | "link" | "link_token"
       duration_type: "monthly" | "yearly" | "lifetime"
       key_status: "available" | "assigned" | "revoked"
       order_status: "pending" | "reviewing" | "approved" | "rejected"
@@ -398,6 +409,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      delivery_type: ["key", "account", "link", "link_token"],
       duration_type: ["monthly", "yearly", "lifetime"],
       key_status: ["available", "assigned", "revoked"],
       order_status: ["pending", "reviewing", "approved", "rejected"],
