@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { Button } from "@/components/ui/button";
@@ -13,31 +12,17 @@ export const Route = createFileRoute("/aktivasyon/$token")({
 
 function ActivationPage() {
   const { token } = Route.useParams();
-  const qc = useQueryClient();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["activation", token],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("license_keys")
-        .select("id, key_value, activation_token, claimed_at, product:products(name, delivery_type)")
-        .eq("activation_token", token)
-        .maybeSingle();
+      const { data, error } = await supabase.rpc("claim_license_by_token", { _token: token });
       if (error) throw error;
-      return data;
+      const row = Array.isArray(data) ? data[0] : data;
+      return row ?? null;
     },
   });
 
-  // Mark claimed on first successful load
-  useEffect(() => {
-    if (data && !data.claimed_at) {
-      supabase
-        .from("license_keys")
-        .update({ claimed_at: new Date().toISOString() })
-        .eq("activation_token", token)
-        .then(() => qc.invalidateQueries({ queryKey: ["activation", token] }));
-    }
-  }, [data, token, qc]);
 
   if (isLoading) {
     return <div className="mx-auto max-w-md px-4 py-16 text-center font-mono text-muted-foreground">yükleniyor…</div>;
