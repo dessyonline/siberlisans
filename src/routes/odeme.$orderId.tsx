@@ -155,30 +155,33 @@ function Payment() {
   const stepIndex = STEPS.findIndex((s) => s.key === currentStep);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
+    <div className="mx-auto max-w-6xl px-3 sm:px-4 py-6 sm:py-10">
       {/* Header bar — terminal window */}
-      <div className="glass-card rounded-t-lg border-b-0 px-4 py-2 flex items-center gap-2 font-mono text-xs">
-        <span className="h-2.5 w-2.5 rounded-full bg-destructive/80" />
-        <span className="h-2.5 w-2.5 rounded-full bg-warn/80" />
-        <span className="h-2.5 w-2.5 rounded-full bg-primary/80" />
-        <span className="ml-3 text-muted-foreground">
+      <div className="glass-card rounded-t-lg border-b-0 px-3 py-2 flex items-center gap-2 font-mono text-xs">
+        <span className="h-2.5 w-2.5 rounded-full bg-destructive/80 shrink-0" />
+        <span className="h-2.5 w-2.5 rounded-full bg-warn/80 shrink-0" />
+        <span className="h-2.5 w-2.5 rounded-full bg-primary/80 shrink-0" />
+        <span className="ml-2 text-muted-foreground truncate min-w-0 flex-1">
           siberphp@secure:~/orders/{orderId.slice(0, 8)}
         </span>
-        <span className="ml-auto flex items-center gap-1.5 text-primary">
+        <span className="hidden sm:flex items-center gap-1.5 text-primary shrink-0">
           <Wifi className="h-3 w-3" /> TLS 1.3 · AES-256
+        </span>
+        <span className="sm:hidden flex items-center gap-1 text-primary shrink-0">
+          <Wifi className="h-3 w-3" /> TLS
         </span>
       </div>
 
       {/* Stepper rail */}
-      <div className="glass-card rounded-b-lg rounded-t-none p-5 scan-line">
-        <ol className="grid grid-cols-4 gap-2">
+      <div className="glass-card rounded-b-lg rounded-t-none p-3 sm:p-5 scan-line">
+        <ol className="grid grid-cols-4 gap-1.5 sm:gap-2">
           {STEPS.map((s, i) => {
             const done = i < stepIndex || order.status === "approved";
             const active = i === stepIndex && order.status !== "approved";
             return (
-              <li key={s.key} className="relative">
+              <li key={s.key} className="relative min-w-0">
                 <div
-                  className={`rounded-md border p-3 font-mono transition-all ${
+                  className={`rounded-md border p-2 sm:p-3 font-mono transition-all ${
                     active
                       ? "border-primary/60 bg-primary/5 neon-glow"
                       : done
@@ -186,15 +189,15 @@ function Payment() {
                       : "border-border/40 opacity-60"
                   }`}
                 >
-                  <div className="flex items-center gap-2 text-[10px] tracking-widest text-muted-foreground">
+                  <div className="flex items-center gap-1 sm:gap-2 text-[9px] sm:text-[10px] tracking-widest text-muted-foreground">
                     <span>[{String(i + 1).padStart(2, "0")}/04]</span>
-                    {done && <CheckCircle2 className="h-3 w-3 text-primary" />}
-                    {active && <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />}
+                    {done && <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />}
+                    {active && <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse shrink-0" />}
                   </div>
-                  <div className={`mt-1 text-sm ${active ? "neon-text" : done ? "text-primary" : ""}`}>
+                  <div className={`mt-1 text-[11px] sm:text-sm break-all ${active ? "neon-text" : done ? "text-primary" : ""}`}>
                     ./{s.label}
                   </div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">{s.sub}</div>
+                  <div className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 break-words">{s.sub}</div>
                 </div>
               </li>
             );
