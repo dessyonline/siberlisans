@@ -4,8 +4,92 @@ import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, X, Ban, RotateCcw, ShieldCheck, Clock, Cpu, CheckCircle2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Search, X, Ban, RotateCcw, ShieldCheck, Clock, Cpu, CheckCircle2, Sparkles, Download, Copy } from "lucide-react";
 import { toast } from "sonner";
+
+const LOVABLE_PRODUCT_ID = "4f6d86cf-6a89-4940-90af-953cc3d6ab5f";
+
+function genKey(): string {
+  const abc = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const seg = (n: number) =>
+    Array.from({ length: n }, () => abc[Math.floor(Math.random() * abc.length)]).join("");
+  return `LVBL-${seg(4)}-${seg(4)}-${seg(4)}-${seg(4)}`;
+}
+
+function buildUserscript(licenseKey: string): string {
+  return `// ==UserScript==
+// @name         Lovable Sınırsız — Kredisiz
+// @namespace    https://siberlisans.lovable.app
+// @version      1.0.0
+// @description  Lovable için lisanslı istemci
+// @match        https://lovable.dev/*
+// @match        https://*.lovable.dev/*
+// @run-at       document-start
+// @grant        GM_getValue
+// @grant        GM_setValue
+// ==/UserScript==
+
+(function () {
+  "use strict";
+  const API = "https://siberlisans.lovable.app";
+  const LICENSE_KEY = "${licenseKey}";
+
+  function getHWID() {
+    let h = GM_getValue("siber_hwid", null);
+    if (!h) {
+      h = crypto.randomUUID();
+      GM_setValue("siber_hwid", h);
+    }
+    return h;
+  }
+
+  async function post(path, body) {
+    const r = await fetch(API + path, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    return r.json();
+  }
+
+  async function activate() {
+    const r = await post("/api/activate", { license_key: LICENSE_KEY, hwid: getHWID() });
+    if (!r.success) throw new Error(r.error || "Etkinleştirme başarısız");
+    return r;
+  }
+
+  async function validate() {
+    const r = await post("/api/validate", { license_key: LICENSE_KEY, hwid: getHWID() });
+    if (!r.valid) throw new Error(r.error || "Lisans geçersiz");
+    return r;
+  }
+
+  async function boot() {
+    try {
+      const last = Number(GM_getValue("siber_last_check", 0));
+      const activated = GM_getValue("siber_activated", false);
+      if (!activated) {
+        const a = await activate();
+        GM_setValue("siber_activated", true);
+        GM_setValue("siber_last_check", Date.now());
+        console.log("[SiberLisans] etkinleştirildi:", a);
+      } else if (Date.now() - last > 6 * 60 * 60 * 1000) {
+        const v = await validate();
+        GM_setValue("siber_last_check", Date.now());
+        console.log("[SiberLisans] doğrulandı:", v);
+      }
+      // TODO: buradan sonrası eklenti işlevleri
+    } catch (e) {
+      alert("Lisans hatası: " + e.message);
+    }
+  }
+
+  boot();
+})();
+`;
+}
+
 
 export const Route = createFileRoute("/_authenticated/admin/lisanslar")({
   component: LicensesAdmin,
@@ -42,13 +126,18 @@ function LicensesAdmin() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "revoked" | "expired" | "unactivated">("all");
+  const [qty, setQty] = useState(1);
+  const [days, setDays] = useState(30);
+  const [busy, setBusy] = useState(false);
+  const [lastGenerated, setLastGenerated] = useState<string[]>([]);
 
   const { data: rows } = useQuery({
-    queryKey: ["licenses-manage"],
+    queryKey: ["licenses-manage-lovable"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("license_keys")
         .select("id, key_value, status, hwid, activated_at, expires_at, duration_days, revoked, last_validated_at, product:products(name, slug)")
+        .eq("product_id", LOVABLE_PRODUCT_ID)
         .order("created_at", { ascending: false })
         .limit(500);
       if (error) throw error;
@@ -56,6 +145,40 @@ function LicensesAdmin() {
     },
     refetchInterval: 20000,
   });
+
+  const generate = async () => {
+    if (qty < 1 || qty > 200) return toast.error("Miktar 1-200 arası olmalı");
+    setBusy(true);
+    try {
+      const keys = Array.from({ length: qty }, () => genKey());
+      const rows = keys.map((k) => ({
+        product_id: LOVABLE_PRODUCT_ID,
+        key_value: k,
+        duration_days: days > 0 ? days : null,
+        status: "available" as const,
+      }));
+      const { error } = await supabase.from("license_keys").insert(rows);
+      if (error) throw error;
+      setLastGenerated(keys);
+      toast.success(`${qty} anahtar üretildi`);
+      qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const downloadScript = (key: string) => {
+    const blob = new Blob([buildUserscript(key)], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `siberlisans-lovable-${key.slice(-8)}.user.js`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -82,7 +205,7 @@ function LicensesAdmin() {
     const { error } = await supabase.rpc("admin_set_license", args);
     if (error) return toast.error(error.message);
     toast.success("Güncellendi");
-    qc.invalidateQueries({ queryKey: ["licenses-manage"] });
+    qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
   };
 
   const setDuration = (id: string) => {
@@ -96,10 +219,66 @@ function LicensesAdmin() {
   return (
     <div>
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="font-mono text-xl sm:text-2xl neon-text">Lisans Yönetimi</h1>
+        <h1 className="font-mono text-xl sm:text-2xl neon-text">Lovable Lisans Yönetimi</h1>
         <div className="font-mono text-[11px] text-muted-foreground">
-          HWID kilidi · süre · iptal · sunucu doğrulama
+          HWID kilidi · süre · iptal · userscript
         </div>
+      </div>
+
+      {/* Üretici */}
+      <div className="mt-4 glass-card rounded-lg p-4">
+        <div className="flex items-center gap-2 font-mono text-sm neon-text">
+          <Sparkles className="h-4 w-4" /> anahtar üret
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-[120px,140px,1fr] sm:items-end">
+          <div>
+            <Label className="font-mono text-[11px]">miktar</Label>
+            <Input type="number" min={1} max={200} value={qty}
+              onChange={(e) => setQty(parseInt(e.target.value) || 1)}
+              className="h-8 font-mono text-sm" />
+          </div>
+          <div>
+            <Label className="font-mono text-[11px]">süre (gün, 0=süresiz)</Label>
+            <Input type="number" min={0} value={days}
+              onChange={(e) => setDays(parseInt(e.target.value) || 0)}
+              className="h-8 font-mono text-sm" />
+          </div>
+          <Button disabled={busy} onClick={generate} className="h-8 font-mono">
+            <Sparkles className="h-3.5 w-3.5 mr-1" /> üret
+          </Button>
+        </div>
+
+        {lastGenerated.length > 0 && (
+          <div className="mt-4 rounded border border-primary/30 bg-primary/5 p-3">
+            <div className="font-mono text-[11px] text-muted-foreground mb-2">
+              son üretilenler ({lastGenerated.length}):
+            </div>
+            <div className="space-y-1 max-h-48 overflow-auto">
+              {lastGenerated.map((k) => (
+                <div key={k} className="flex items-center justify-between gap-2 font-mono text-xs">
+                  <code className="break-all">{k}</code>
+                  <div className="flex gap-1 shrink-0">
+                    <Button size="sm" variant="outline" className="h-6 px-2 font-mono text-[10px]"
+                      onClick={() => { navigator.clipboard.writeText(k); toast.success("kopyalandı"); }}>
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-6 px-2 font-mono text-[10px]"
+                      onClick={() => downloadScript(k)}>
+                      <Download className="h-3 w-3 mr-1" /> .user.js
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button size="sm" variant="outline" className="mt-2 h-7 font-mono text-[11px]"
+              onClick={() => {
+                navigator.clipboard.writeText(lastGenerated.join("\n"));
+                toast.success("tümü kopyalandı");
+              }}>
+              <Copy className="h-3 w-3 mr-1" /> tümünü kopyala
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* API bilgi kutusu */}
@@ -110,6 +289,7 @@ function LicensesAdmin() {
           <div><span className="text-cyan">POST</span> https://siberlisans.lovable.app<span className="text-primary">/api/validate</span> — {"{ license_key, hwid }"}</div>
         </div>
       </div>
+
 
       {/* Filtre */}
       <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -203,6 +383,13 @@ function LicensesAdmin() {
                 </div>
 
                 <div className="flex flex-wrap gap-1">
+                  <Button size="sm" variant="outline" className="h-7 font-mono text-[11px]"
+                    onClick={() => { navigator.clipboard.writeText(r.key_value); toast.success("kopyalandı"); }}>
+                    <Copy className="h-3 w-3 mr-1" /> kopyala
+                  </Button>
+                  <Button size="sm" variant="outline" className="h-7 font-mono text-[11px]" onClick={() => downloadScript(r.key_value)}>
+                    <Download className="h-3 w-3 mr-1" /> .user.js
+                  </Button>
                   <Button size="sm" variant="outline" className="h-7 font-mono text-[11px]" onClick={() => setDuration(r.id)}>
                     <Clock className="h-3 w-3 mr-1" /> süre
                   </Button>
