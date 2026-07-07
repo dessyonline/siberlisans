@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   Cpu,
   Wifi,
+  Star,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
