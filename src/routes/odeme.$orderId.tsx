@@ -294,12 +294,12 @@ function TransferBlock({
       <div className="flex items-center justify-between">
         <div>
           <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
-            [02/04] · transfer_channel
+            [02/04] · havale kanalı
           </div>
           <h2 className="mt-1 font-mono text-xl neon-text">Havale / EFT</h2>
         </div>
         <div className="hidden sm:flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-1.5 font-mono text-xs text-primary">
-          <Lock className="h-3.5 w-3.5" /> secure_channel
+          <Lock className="h-3.5 w-3.5" /> güvenli kanal
         </div>
       </div>
 
