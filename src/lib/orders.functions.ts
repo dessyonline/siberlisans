@@ -163,6 +163,8 @@ const productInput = z.object({
   stock_hint: z.number().int().min(0).max(100000).optional().nullable(),
   featured: z.boolean().optional(),
   unlimited_stock: z.boolean().optional(),
+  sort_order: z.number().int().min(-9999).max(9999).optional(),
+  tier: z.enum(["standard", "epic"]).optional(),
 });
 
 export const upsertProduct = createServerFn({ method: "POST" })
