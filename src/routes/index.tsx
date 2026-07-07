@@ -566,7 +566,7 @@ function Index() {
                         <div className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-mono">
                           {p.category ?? "lisans"}
                         </div>
-                        <div className="mt-0.5 font-semibold text-sm leading-tight truncate group-hover:text-neon transition-colors">
+                        <div className="mt-0.5 font-semibold text-sm leading-tight truncate group-hover:neon-text transition-colors">
                           {p.name}
                         </div>
                         <p className="mt-1.5 text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
