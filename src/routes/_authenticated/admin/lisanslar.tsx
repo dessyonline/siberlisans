@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, X, Ban, RotateCcw, ShieldCheck, Clock, Cpu, CheckCircle2, Sparkles, Download, Copy } from "lucide-react";
+import { Search, X, Ban, RotateCcw, ShieldCheck, Clock, Cpu, CheckCircle2, Sparkles, Download, Copy, Trash2, Eraser } from "lucide-react";
 import { toast } from "sonner";
 
 const LOVABLE_PRODUCT_ID = "4f6d86cf-6a89-4940-90af-953cc3d6ab5f";
