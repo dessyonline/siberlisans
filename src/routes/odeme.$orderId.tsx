@@ -659,9 +659,6 @@ function ManualContactBlock({
     }
   };
 
-  const igText = encodeURIComponent(
-    `Merhaba, ${product} siparişim için destek istiyorum. Referans: ${reference}`
-  );
   const igDM = `https://ig.me/m/siber.php`;
   const igProfile = `https://instagram.com/siber.php`;
   const tgDM = `https://t.me/dessyoffical`;
