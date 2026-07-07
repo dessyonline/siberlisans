@@ -43,36 +43,54 @@ export type Database = {
       }
       license_keys: {
         Row: {
+          activated_at: string | null
           activation_token: string | null
           assigned_at: string | null
           assigned_order_id: string | null
           claimed_at: string | null
           created_at: string
+          duration_days: number | null
+          expires_at: string | null
+          hwid: string | null
           id: string
           key_value: string
+          last_validated_at: string | null
           product_id: string
+          revoked: boolean
           status: Database["public"]["Enums"]["key_status"]
         }
         Insert: {
+          activated_at?: string | null
           activation_token?: string | null
           assigned_at?: string | null
           assigned_order_id?: string | null
           claimed_at?: string | null
           created_at?: string
+          duration_days?: number | null
+          expires_at?: string | null
+          hwid?: string | null
           id?: string
           key_value: string
+          last_validated_at?: string | null
           product_id: string
+          revoked?: boolean
           status?: Database["public"]["Enums"]["key_status"]
         }
         Update: {
+          activated_at?: string | null
           activation_token?: string | null
           assigned_at?: string | null
           assigned_order_id?: string | null
           claimed_at?: string | null
           created_at?: string
+          duration_days?: number | null
+          expires_at?: string | null
+          hwid?: string | null
           id?: string
           key_value?: string
+          last_validated_at?: string | null
           product_id?: string
+          revoked?: boolean
           status?: Database["public"]["Enums"]["key_status"]
         }
         Relationships: [
@@ -179,6 +197,7 @@ export type Database = {
           active: boolean
           category: string | null
           created_at: string
+          default_license_days: number | null
           delivery_type: Database["public"]["Enums"]["delivery_type"]
           description: string | null
           duration: Database["public"]["Enums"]["duration_type"]
@@ -197,6 +216,7 @@ export type Database = {
           active?: boolean
           category?: string | null
           created_at?: string
+          default_license_days?: number | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           duration?: Database["public"]["Enums"]["duration_type"]
@@ -215,6 +235,7 @@ export type Database = {
           active?: boolean
           category?: string | null
           created_at?: string
+          default_license_days?: number | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           duration?: Database["public"]["Enums"]["duration_type"]
@@ -281,6 +302,38 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      activate_license: { Args: { _hwid: string; _key: string }; Returns: Json }
+      admin_set_license: {
+        Args: {
+          _action: string
+          _id: string
+          _value_int?: number
+          _value_ts?: string
+        }
+        Returns: {
+          activated_at: string | null
+          activation_token: string | null
+          assigned_at: string | null
+          assigned_order_id: string | null
+          claimed_at: string | null
+          created_at: string
+          duration_days: number | null
+          expires_at: string | null
+          hwid: string | null
+          id: string
+          key_value: string
+          last_validated_at: string | null
+          product_id: string
+          revoked: boolean
+          status: Database["public"]["Enums"]["key_status"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "license_keys"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       approve_order: {
         Args: { _order_id: string }
         Returns: {
@@ -305,6 +358,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      validate_license: { Args: { _hwid: string; _key: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "user"
