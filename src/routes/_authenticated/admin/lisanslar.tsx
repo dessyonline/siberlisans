@@ -117,6 +117,14 @@ function fmt(d: string | null) {
   });
 }
 
+function fmtDuration(mins: number | null): string {
+  if (mins === null || mins === undefined) return "süresiz";
+  if (mins < 60) return `${mins} dk`;
+  if (mins < 1440) return `${Math.round(mins / 60)} sa`;
+  if (mins < 43200) return `${Math.round(mins / 1440)} gün`;
+  return `${Math.round(mins / 43200)} ay`;
+}
+
 function daysLeft(exp: string | null): number | null {
   if (!exp) return null;
   const ms = new Date(exp).getTime() - Date.now();
