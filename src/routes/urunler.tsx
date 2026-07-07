@@ -253,16 +253,33 @@ function ProductsPage() {
   const [group, setGroup] = useState<string>("all");
   const [search, setSearch] = useState("");
 
-  const recent = useMemo(() => {
-    return [...(data ?? [])]
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 8);
-  }, [data]);
+  // Ortak admin sıralaması: destansı → sıra → tarih
+  const adminOrder = (list: Row[]) =>
+    [...list].sort((a, b) => {
+      const ea = a.tier === "epic" ? 0 : 1;
+      const eb = b.tier === "epic" ? 0 : 1;
+      if (ea !== eb) return ea - eb;
+      const sa = a.sort_order ?? 0;
+      const sb = b.sort_order ?? 0;
+      if (sa !== sb) return sb - sa;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+
+  const recent = useMemo(() => adminOrder(data ?? []).slice(0, 8), [data]);
 
   const hot = useMemo(() => {
+    // En çok tercih edilenler: destansı olanlar > sıra > fiyat
     return [...(data ?? [])]
       .filter((p) => !p.manual_fulfillment && !p.unlimited_stock)
-      .sort((a, b) => (b.price_try ?? 0) - (a.price_try ?? 0))
+      .sort((a, b) => {
+        const ea = a.tier === "epic" ? 0 : 1;
+        const eb = b.tier === "epic" ? 0 : 1;
+        if (ea !== eb) return ea - eb;
+        const sa = a.sort_order ?? 0;
+        const sb = b.sort_order ?? 0;
+        if (sa !== sb) return sb - sa;
+        return (b.price_try ?? 0) - (a.price_try ?? 0);
+      })
       .slice(0, 3);
   }, [data]);
 
