@@ -483,7 +483,7 @@ function ReceiptBlock({
       {receiptPath && (
         <div className="mt-3 flex items-center gap-2 font-mono text-xs text-primary">
           <CheckCircle2 className="h-4 w-4" />
-          hash_verified: {receiptPath.split("/").pop()}
+          dosya alındı: {receiptPath.split("/").pop()}
         </div>
       )}
     </section>
