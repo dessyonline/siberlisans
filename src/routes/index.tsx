@@ -79,66 +79,126 @@ function Index() {
 
   return (
     <div>
-      {/* HERO */}
+      {/* HERO — cinematic */}
       <section className="relative overflow-hidden border-b border-border/40">
-        <div className="mx-auto max-w-6xl px-4 pt-24 pb-20">
-          <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr] items-center">
+        {/* animated grid backdrop */}
+        <div className="pointer-events-none absolute inset-0 cyber-grid grid-drift" aria-hidden />
+        {/* floating orbs */}
+        <div className="hero-orb h-[420px] w-[420px] left-[-120px] top-[-80px]" style={{ background: "oklch(0.82 0.20 145 / 0.55)" }} aria-hidden />
+        <div className="hero-orb h-[380px] w-[380px] right-[-100px] top-[40%] animation-delay-[3s]" style={{ background: "oklch(0.65 0.20 300 / 0.35)", animationDelay: "3s" }} aria-hidden />
+        <div className="hero-orb h-[300px] w-[300px] left-[35%] bottom-[-120px]" style={{ background: "oklch(0.75 0.13 210 / 0.30)", animationDelay: "6s" }} aria-hidden />
+        {/* subtle scan lines */}
+        <div className="pointer-events-none absolute inset-0 scan-line opacity-40" aria-hidden />
+
+        <div className="relative mx-auto max-w-6xl px-4 pt-28 pb-24 sm:pt-32 sm:pb-28">
+          <div className="grid gap-14 lg:grid-cols-[1.15fr_1fr] items-center">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 font-mono text-[11px]">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3.5 py-1.5 font-mono text-[11px] backdrop-blur">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-75" />
+                  <span className="relative h-1.5 w-1.5 rounded-full bg-primary" />
+                </span>
                 <span className="text-muted-foreground">system_online</span>
-                <span className="text-primary">·</span>
+                <span className="text-primary/60">·</span>
                 <span className="text-primary">anlık teslim aktif</span>
               </div>
-              <h1 className="mt-6 text-4xl sm:text-6xl font-semibold tracking-tight leading-[1.05]">
+              <h1 className="mt-7 text-5xl sm:text-7xl font-semibold tracking-tight leading-[0.98]">
                 Yazılım lisansları<br />
-                <span className="text-primary">güvenli</span> ve <span className="text-primary">anında</span>.
+                <span className="neon-text-glow">güvenli</span>
+                <span className="text-muted-foreground/70"> · </span>
+                <span className="neon-text-glow">anında</span>.
               </h1>
               <p className="mt-6 max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
                 Havale / EFT ile öde, referans kodunla eşleştir, anahtarını saniyeler
-                içinde teslim al. Tüm süreç uçtan uca şifrelidir.
+                içinde teslim al. Tüm süreç uçtan uca <span className="text-primary">şifrelidir</span>.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Button asChild size="lg" className="font-medium">
-                  <Link to="/urunler">Lisansları keşfet</Link>
+              <div className="mt-9 flex flex-wrap gap-3">
+                <Button asChild size="lg" className="font-medium neon-glow-strong">
+                  <Link to="/urunler">Lisansları keşfet →</Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="font-medium">
+                <Button asChild size="lg" variant="outline" className="font-medium border-primary/40 hover:bg-primary/10">
                   <Link to="/nasil-calisir">Nasıl çalışır</Link>
                 </Button>
               </div>
-              <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-[11px]">
+
+              {/* mini trust stats */}
+              <div className="mt-10 grid grid-cols-3 gap-3 sm:gap-4 max-w-md">
+                {[
+                  { v: `${(products?.length ?? 0)}+`, l: "aktif lisans" },
+                  { v: "< 15 dk", l: "ort. onay" },
+                  { v: "7/24", l: "destek" },
+                ].map((s) => (
+                  <div key={s.l} className="rounded-lg border border-border/60 bg-card/40 backdrop-blur p-3">
+                    <div className="font-mono text-lg sm:text-xl neon-text">{s.v}</div>
+                    <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-0.5">{s.l}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-2 font-mono text-[11px]">
                 {[
                   { icon: Lock, label: "AES-256" },
                   { icon: ShieldCheck, label: "TLS 1.3" },
                   { icon: Zap, label: "Anlık" },
                   { icon: Cpu, label: "RLS" },
                 ].map((b) => (
-                  <div key={b.label} className="rounded-md border border-border/60 bg-card/40 p-2.5 flex items-center justify-center gap-2">
-                    <b.icon className="h-3.5 w-3.5 text-primary" />
+                  <div key={b.label} className="rounded-full border border-border/60 bg-background/60 px-3 py-1 flex items-center gap-1.5">
+                    <b.icon className="h-3 w-3 text-primary" />
                     <span className="text-muted-foreground">{b.label}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Hero side panel: featured preview / terminal */}
-            <div className="hidden lg:block">
-              <div className="glass-card rounded-2xl p-1 neon-glow">
-                <div className="rounded-xl border border-border/40 bg-background/60 p-5 font-mono text-xs">
+            {/* Hero side: terminal + floating badges */}
+            <div className="hidden lg:block relative">
+              {/* orbit badge top */}
+              <div className="absolute -top-6 -left-6 z-10 glass-card rounded-lg px-3 py-2 font-mono text-[11px] neon-glow rotate-[-4deg]">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
+                  <span>lisans #A9F2 teslim edildi</span>
+                </div>
+              </div>
+              {/* orbit badge bottom */}
+              <div className="absolute -bottom-6 -right-4 z-10 glass-card rounded-lg px-3 py-2 font-mono text-[11px] neon-glow rotate-[3deg]">
+                <div className="flex items-center gap-2">
+                  <KeyRound className="h-3.5 w-3.5 text-primary" />
+                  <span>havuzda {(products?.length ?? 0)} ürün</span>
+                </div>
+              </div>
+
+              <div className="glass-card rounded-2xl p-1 neon-glow-strong corner-cut">
+                <div className="rounded-xl border border-primary/20 bg-background/70 p-5 font-mono text-xs">
                   <div className="flex items-center gap-2 pb-3 border-b border-border/40">
-                    <span className="h-2 w-2 rounded-full bg-destructive/70" />
-                    <span className="h-2 w-2 rounded-full bg-warn/70" />
-                    <span className="h-2 w-2 rounded-full bg-primary/70" />
-                    <span className="ml-2 text-muted-foreground">siberphp@secure</span>
+                    <span className="h-2.5 w-2.5 rounded-full bg-destructive/70" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-warn/70" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-primary/70" />
+                    <span className="ml-2 text-muted-foreground">siberphp@secure:~/live</span>
+                    <span className="ml-auto text-primary/70">● REC</span>
                   </div>
-                  <div className="mt-3 space-y-1.5 text-muted-foreground">
+                  <div className="mt-3 space-y-1.5 text-muted-foreground leading-relaxed">
                     <div><span className="text-primary">$</span> connect --secure</div>
                     <div className="text-primary">[✓] TLS 1.3 handshake OK</div>
-                    <div className="text-primary">[✓] session encrypted</div>
-                    <div><span className="text-primary">$</span> order --list</div>
-                    <div className="text-foreground">→ {featured.length} öne çıkan ürün</div>
-                    <div className="text-foreground">→ {(products?.length ?? 0)} aktif lisans</div>
+                    <div className="text-primary">[✓] session encrypted · AES-256</div>
+                    <div><span className="text-primary">$</span> order --stream</div>
+                    <div className="text-foreground">→ <span className="text-primary">{featured.length}</span> öne çıkan ürün</div>
+                    <div className="text-foreground">→ <span className="text-primary">{(products?.length ?? 0)}</span> aktif lisans</div>
+                    <div className="text-foreground">→ ortalama teslim: <span className="text-primary">3.4s</span></div>
                     <div><span className="text-primary">$</span> _<span className="terminal-caret" /></div>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-border/40 grid grid-cols-3 gap-2 text-center text-[10px]">
+                    <div className="rounded border border-primary/20 bg-primary/5 p-1.5">
+                      <div className="text-primary text-sm font-semibold">99.9%</div>
+                      <div className="text-muted-foreground">uptime</div>
+                    </div>
+                    <div className="rounded border border-primary/20 bg-primary/5 p-1.5">
+                      <div className="text-primary text-sm font-semibold">0</div>
+                      <div className="text-muted-foreground">sızıntı</div>
+                    </div>
+                    <div className="rounded border border-primary/20 bg-primary/5 p-1.5">
+                      <div className="text-primary text-sm font-semibold">A+</div>
+                      <div className="text-muted-foreground">ssl</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -146,6 +206,7 @@ function Index() {
           </div>
         </div>
       </section>
+
 
       {/* ARAMA + SON EKLENENLER */}
       <section className="mx-auto max-w-6xl px-4 pt-12">
