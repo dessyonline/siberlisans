@@ -92,6 +92,28 @@ function Index() {
         </div>
       </section>
 
+      {/* FEATURED */}
+      {featured.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 pt-16 pb-4">
+          <div className="mb-8 font-mono flex items-center justify-between">
+            <div>
+              <div className="text-xs text-muted-foreground flex items-center gap-2">
+                <Star className="h-3 w-3 text-warn fill-warn" />$ grep featured
+              </div>
+              <h2 className="mt-2 text-2xl sm:text-3xl neon-text">Öne Çıkanlar</h2>
+            </div>
+            <Button asChild variant="outline" size="sm" className="font-mono">
+              <Link to="/urunler">tümü →</Link>
+            </Button>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.slice(0, 6).map((p) => (
+              <ProductCard key={p.id} p={p} featured />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* PRODUCTS */}
       <section className="mx-auto max-w-6xl px-4 py-16">
         <div className="mb-8 font-mono">
@@ -99,7 +121,7 @@ function Index() {
           <h2 className="mt-2 text-2xl sm:text-3xl neon-text">Aktif Lisanslar</h2>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {(products ?? []).map((p) => (
+          {(products ?? []).slice(0, 9).map((p) => (
             <ProductCard key={p.id} p={p} />
           ))}
           {!products && (
@@ -108,7 +130,15 @@ function Index() {
             </div>
           )}
         </div>
+        {(products?.length ?? 0) > 9 && (
+          <div className="mt-8 flex justify-center">
+            <Button asChild variant="outline" className="font-mono">
+              <Link to="/urunler">tüm lisansları gör →</Link>
+            </Button>
+          </div>
+        )}
       </section>
+
 
       {/* HOW IT WORKS */}
       <section id="nasil-calisir" className="mx-auto max-w-6xl px-4 py-16">
