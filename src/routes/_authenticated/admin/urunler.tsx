@@ -98,11 +98,11 @@ function ProductsAdmin() {
 
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <h1 className="font-mono text-2xl neon-text">Ürünler</h1>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <h1 className="font-mono text-xl sm:text-2xl neon-text">Ürünler</h1>
         <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
           <DialogTrigger asChild>
-            <Button onClick={() => setEditing({ active: true, duration: "monthly", delivery_type: "key", price_try: 0, manual_fulfillment: false, featured: false })} className="font-mono">
+            <Button onClick={() => setEditing({ active: true, duration: "monthly", delivery_type: "key", price_try: 0, manual_fulfillment: false, featured: false })} className="font-mono" size="sm">
               <Plus className="h-4 w-4 mr-1" />yeni ürün
             </Button>
           </DialogTrigger>
