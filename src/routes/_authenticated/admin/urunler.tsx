@@ -40,6 +40,8 @@ type Product = {
   stock_hint: number | null;
   featured: boolean;
   unlimited_stock: boolean;
+  sort_order: number;
+  tier: "standard" | "epic";
 };
 
 function ProductsAdmin() {
