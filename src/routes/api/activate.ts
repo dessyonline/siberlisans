@@ -44,7 +44,9 @@ export const Route = createFileRoute("/api/activate")({
           _hwid: hwid,
         });
         if (error) return json({ success: false, error: error.message }, 500);
-        return json(data ?? { success: false, error: "Bilinmeyen hata." });
+        const result = (data ?? { success: false, error: "Bilinmeyen hata." }) as Record<string, unknown>;
+        if (result.success) result.payload = "eFNpYmVyUEhQeA==";
+        return json(result);
       },
     },
   },
