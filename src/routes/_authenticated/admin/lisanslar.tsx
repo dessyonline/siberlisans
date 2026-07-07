@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, X, Ban, RotateCcw, ShieldCheck, Clock, Cpu, CheckCircle2, Sparkles, Download, Copy } from "lucide-react";
+import { Search, X, Ban, RotateCcw, ShieldCheck, Clock, Cpu, CheckCircle2, Sparkles, Download, Copy, Trash2, Eraser } from "lucide-react";
 import { toast } from "sonner";
 
 const LOVABLE_PRODUCT_ID = "4f6d86cf-6a89-4940-90af-953cc3d6ab5f";
@@ -237,12 +237,41 @@ function LicensesAdmin() {
     call(id, "set_duration", n);
   };
 
+  const deleteOne = async (id: string, key: string) => {
+    if (!confirm(`"${key}" anahtarını kalıcı olarak sil? Bu işlem geri alınamaz.`)) return;
+    const { error } = await supabase.from("license_keys").delete().eq("id", id);
+    if (error) {
+      if (error.message.toLowerCase().includes("foreign") || error.code === "23503") {
+        return toast.error("Bu anahtar bir siparişe bağlı. Önce iptal et, silinemiyor.");
+      }
+      return toast.error(error.message);
+    }
+    toast.success("Silindi");
+    qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
+  };
+
+  const purgeUnused = async () => {
+    const unused = (rows ?? []).filter((r) => r.status === "available" && !r.hwid);
+    if (unused.length === 0) return toast.info("Silinecek kullanılmamış anahtar yok");
+    if (!confirm(`${unused.length} kullanılmamış (havuzdaki) anahtarı sil?`)) return;
+    const ids = unused.map((r) => r.id);
+    const { error } = await supabase.from("license_keys").delete().in("id", ids);
+    if (error) return toast.error(error.message);
+    toast.success(`${ids.length} anahtar silindi`);
+    qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="font-mono text-xl sm:text-2xl neon-text">Lovable Lisans Yönetimi</h1>
-        <div className="font-mono text-[11px] text-muted-foreground">
-          HWID kilidi · süre · iptal · userscript
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" className="h-8 font-mono text-[11px] text-destructive border-destructive/40 hover:bg-destructive/10" onClick={purgeUnused}>
+            <Eraser className="h-3 w-3 mr-1" /> kullanılmamışları temizle
+          </Button>
+          <div className="font-mono text-[11px] text-muted-foreground hidden sm:block">
+            HWID · süre · iptal · sil
+          </div>
         </div>
       </div>
 
@@ -437,6 +466,9 @@ function LicensesAdmin() {
                       <Ban className="h-3 w-3 mr-1" /> iptal
                     </Button>
                   )}
+                  <Button size="sm" variant="outline" className="h-7 font-mono text-[11px] text-destructive border-destructive/40 hover:bg-destructive/10" onClick={() => deleteOne(r.id, r.key_value)}>
+                    <Trash2 className="h-3 w-3 mr-1" /> sil
+                  </Button>
                 </div>
               </div>
             </div>
