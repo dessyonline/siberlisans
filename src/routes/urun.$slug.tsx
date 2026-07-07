@@ -115,7 +115,20 @@ function ProductDetail() {
     }
   };
 
-  if (isLoading) return <div className="p-12 font-mono text-center">yükleniyor…</div>;
+  if (isLoading)
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-10 animate-pulse">
+        <div className="glass-card rounded-xl p-8 space-y-4">
+          <div className="h-4 w-32 rounded bg-muted/40" />
+          <div className="h-56 rounded bg-muted/30" />
+          <div className="h-8 w-2/3 rounded bg-muted/40" />
+          <div className="h-4 w-full rounded bg-muted/30" />
+          <div className="h-4 w-5/6 rounded bg-muted/30" />
+          <div className="h-10 w-40 rounded bg-muted/40" />
+          <div className="h-11 w-full rounded bg-muted/40" />
+        </div>
+      </div>
+    );
   if (!product) return <div className="p-12 font-mono text-center">ürün bulunamadı</div>;
 
   const liveStock = (product.license_keys ?? []).filter((k: { status: string }) => k.status === "available").length;
