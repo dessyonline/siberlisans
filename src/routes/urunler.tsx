@@ -29,6 +29,21 @@ type Row = {
   license_keys: { status: string }[] | null;
 };
 
+const GROUPS: { key: string; label: string; cats: string[] }[] = [
+  { key: "windows", label: "Windows", cats: ["Windows 10/11", "Windows Server"] },
+  {
+    key: "gorsel",
+    label: "Görsel & Tasarım",
+    cats: ["Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array"],
+  },
+  { key: "ai", label: "Yapay Zeka", cats: ["Google Gemini", "Nano Banana"] },
+];
+
+function groupOf(cat: string | null): string {
+  const c = cat ?? "Diğer";
+  return GROUPS.find((g) => g.cats.includes(c))?.key ?? "diger";
+}
+
 function ProductsPage() {
   const { data } = useQuery({
     queryKey: ["products", "all"],
@@ -43,18 +58,32 @@ function ProductsPage() {
     },
   });
 
-  const grouped = useMemo(() => {
+  const byCategory = useMemo(() => {
     const map = new Map<string, Row[]>();
     for (const p of data ?? []) {
       const cat = p.category ?? "Diğer";
       if (!map.has(cat)) map.set(cat, []);
       map.get(cat)!.push(p);
     }
-    return Array.from(map.entries());
+    return map;
   }, [data]);
 
-  const [active, setActive] = useState<string | "all">("all");
-  const visible = active === "all" ? grouped : grouped.filter(([c]) => c === active);
+  const groupCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const [cat, items] of byCategory) {
+      const g = groupOf(cat);
+      counts.set(g, (counts.get(g) ?? 0) + items.length);
+    }
+    return counts;
+  }, [byCategory]);
+
+  const [group, setGroup] = useState<string>("all");
+
+  const visible = useMemo(() => {
+    const entries = Array.from(byCategory.entries());
+    if (group === "all") return entries;
+    return entries.filter(([cat]) => groupOf(cat) === group);
+  }, [byCategory, group]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
