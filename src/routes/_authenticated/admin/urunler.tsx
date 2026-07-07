@@ -155,18 +155,22 @@ function ProductsAdmin() {
                 onChange={(v) => setEditing((p) => ({ ...p!, stock_hint: v === "" ? null : Number(v) }))}
                 type="number"
               />
-              <div className="grid grid-cols-3 gap-3 pt-2">
+              <div className="grid grid-cols-2 gap-3 pt-2">
                 <div className="flex items-center gap-2 font-mono text-sm">
                   <Switch checked={editing?.active ?? true} onCheckedChange={(v) => setEditing((p) => ({ ...p!, active: v }))} />
                   <span>aktif</span>
                 </div>
                 <div className="flex items-center gap-2 font-mono text-sm">
                   <Switch checked={editing?.manual_fulfillment ?? false} onCheckedChange={(v) => setEditing((p) => ({ ...p!, manual_fulfillment: v }))} />
-                  <span>manuel</span>
+                  <span>manuel teslimat</span>
                 </div>
                 <div className="flex items-center gap-2 font-mono text-sm">
                   <Switch checked={editing?.featured ?? false} onCheckedChange={(v) => setEditing((p) => ({ ...p!, featured: v }))} />
                   <span>öne çıkan</span>
+                </div>
+                <div className="flex items-center gap-2 font-mono text-sm">
+                  <Switch checked={editing?.unlimited_stock ?? false} onCheckedChange={(v) => setEditing((p) => ({ ...p!, unlimited_stock: v }))} />
+                  <span>sınırsız stok ∞</span>
                 </div>
               </div>
             </div>
