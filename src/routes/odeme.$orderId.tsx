@@ -790,3 +790,160 @@ function ManualContactBlock({
     </section>
   );
 }
+
+/* ============================ COUNTDOWN ============================ */
+
+function CountdownBanner({ secondsLeft, totalSec }: { secondsLeft: number; totalSec: number }) {
+  const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+  const ss = String(secondsLeft % 60).padStart(2, "0");
+  const pct = Math.max(0, Math.min(100, (secondsLeft / totalSec) * 100));
+  const critical = secondsLeft <= 30;
+  const warn = secondsLeft <= 60;
+  const tone = critical
+    ? "border-destructive/60 bg-destructive/10 text-destructive"
+    : warn
+    ? "border-warn/60 bg-warn/10 text-warn"
+    : "border-primary/40 bg-primary/5 text-primary";
+
+  return (
+    <div className={`glass-card rounded-lg p-4 border ${tone}`}>
+      <div className="flex items-center gap-3">
+        <Hourglass className={`h-5 w-5 ${critical ? "animate-pulse" : ""}`} />
+        <div className="flex-1">
+          <div className="font-mono text-xs tracking-widest uppercase opacity-80">
+            ödeme süresi
+          </div>
+          <div className="font-mono text-2xl neon-text tabular-nums">
+            {mm}:{ss}
+          </div>
+        </div>
+        <div className="text-right font-mono text-[11px] opacity-80 max-w-[180px]">
+          Bu süre içinde dekont yüklenmezse sipariş iptal edilir.
+        </div>
+      </div>
+      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-background/60">
+        <div
+          className={`h-full transition-all ${
+            critical ? "bg-destructive" : warn ? "bg-warn" : "bg-primary"
+          }`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ============================ TIMELINE ============================ */
+
+function OrderTimeline({
+  order,
+}: {
+  order: {
+    status: string;
+    created_at?: string;
+    updated_at?: string;
+    approved_at?: string | null;
+    receipt_path?: string | null;
+  };
+}) {
+  const fmt = (iso?: string | null) =>
+    iso
+      ? new Date(iso).toLocaleString("tr-TR", {
+          day: "2-digit",
+          month: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "—";
+
+  const status = order.status;
+  const hasReceipt = !!order.receipt_path;
+  const isApproved = status === "approved";
+  const isRejected = status === "rejected";
+  const isReviewing = status === "reviewing" || isApproved || isRejected;
+
+  const steps = [
+    {
+      icon: Sparkles,
+      title: "Sipariş oluşturuldu",
+      desc: "Referans kodu üretildi",
+      time: fmt(order.created_at),
+      state: "done" as const,
+    },
+    {
+      icon: FileCheck2,
+      title: "Dekont yüklendi",
+      desc: hasReceipt ? "Ödeme sisteme iletildi" : "Bekleniyor",
+      time: hasReceipt ? fmt(order.updated_at) : "—",
+      state: hasReceipt ? ("done" as const) : ("pending" as const),
+    },
+    {
+      icon: ShieldCheck,
+      title: "Ödeme inceleniyor",
+      desc: isRejected
+        ? "Ödeme reddedildi"
+        : isReviewing
+        ? "Operatör doğruluyor"
+        : "Sırada",
+      time: isReviewing ? fmt(order.updated_at) : "—",
+      state: isRejected
+        ? ("error" as const)
+        : isApproved
+        ? ("done" as const)
+        : isReviewing
+        ? ("active" as const)
+        : ("pending" as const),
+    },
+    {
+      icon: PackageCheck,
+      title: "Teslimat tamamlandı",
+      desc: isApproved ? "Ürün hesabına tanımlandı" : "Onayla birlikte açılır",
+      time: isApproved ? fmt(order.approved_at ?? order.updated_at) : "—",
+      state: isApproved ? ("done" as const) : ("pending" as const),
+    },
+  ];
+
+  return (
+    <section className="glass-card rounded-lg p-6">
+      <div className="flex items-center gap-2">
+        <TimerReset className="h-4 w-4 text-primary" />
+        <h3 className="font-mono text-sm tracking-widest uppercase text-muted-foreground">
+          sipariş durum çizelgesi
+        </h3>
+      </div>
+
+      <ol className="mt-5 relative">
+        <div className="absolute left-[15px] top-2 bottom-2 w-px bg-border/60" />
+        {steps.map((s, i) => {
+          const color =
+            s.state === "done"
+              ? "text-primary border-primary/60 bg-primary/10"
+              : s.state === "active"
+              ? "text-cyan border-cyan/60 bg-cyan/10 animate-pulse"
+              : s.state === "error"
+              ? "text-destructive border-destructive/60 bg-destructive/10"
+              : "text-muted-foreground border-border/60 bg-background/40";
+          return (
+            <li key={i} className="relative flex gap-4 pb-5 last:pb-0">
+              <div
+                className={`relative z-10 h-8 w-8 shrink-0 rounded-full border flex items-center justify-center ${color}`}
+              >
+                <s.icon className="h-4 w-4" />
+              </div>
+              <div className="flex-1 pt-0.5">
+                <div className="flex items-baseline justify-between gap-3">
+                  <div className="font-mono text-sm">{s.title}</div>
+                  <div className="font-mono text-[10px] text-muted-foreground tabular-nums">
+                    {s.time}
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground mt-0.5">{s.desc}</div>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
