@@ -3,8 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { Copy, KeyRound } from "lucide-react";
+import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 
 export const Route = createFileRoute("/_authenticated/hesabim")({
   component: MyAccount,
@@ -26,7 +25,9 @@ function MyAccount() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("id, status, price_try, reference_code, created_at, product:products(name, slug), keys:order_keys(license_key:license_keys(key_value))")
+        .select(
+          "id, status, price_try, reference_code, created_at, product:products(name, slug, delivery_type), keys:order_keys(license_key:license_keys(key_value, activation_token))"
+        )
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
       if (error) throw error;
@@ -48,7 +49,8 @@ function MyAccount() {
         )}
         {(orders ?? []).map((o) => {
           const s = STATUS_LABEL[o.status] ?? STATUS_LABEL.pending;
-          const key = o.keys?.[0]?.license_key?.key_value;
+          const lk = o.keys?.[0]?.license_key;
+          const dt = (o.product?.delivery_type ?? "key") as DeliveryType;
           return (
             <div key={o.id} className="glass-card rounded-lg p-4">
               <div className="flex flex-wrap items-center justify-between gap-3 font-mono text-sm">
@@ -62,13 +64,13 @@ function MyAccount() {
                   <Link to="/odeme/$orderId" params={{ orderId: o.id }}>detay</Link>
                 </Button>
               </div>
-              {key && (
-                <div className="mt-3 flex items-center gap-2 rounded border border-primary/30 bg-primary/5 px-3 py-2 font-mono text-primary text-sm">
-                  <KeyRound className="h-4 w-4" />
-                  <code className="flex-1 break-all">{key}</code>
-                  <button onClick={() => { navigator.clipboard.writeText(key); toast.success("Kopyalandı"); }}>
-                    <Copy className="h-3.5 w-3.5" />
-                  </button>
+              {lk?.key_value && (
+                <div className="mt-3">
+                  <DeliveryPayload
+                    deliveryType={dt}
+                    keyValue={lk.key_value}
+                    activationToken={lk.activation_token}
+                  />
                 </div>
               )}
             </div>
@@ -78,3 +80,4 @@ function MyAccount() {
     </div>
   );
 }
+

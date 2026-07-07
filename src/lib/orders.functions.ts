@@ -66,8 +66,12 @@ export const approveOrder = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Yetkisiz.");
     const { data: result, error } = await supabase.rpc("approve_order", { _order_id: data.orderId });
     if (error) throw new Error(error.message);
-    const licenseKey = Array.isArray(result) && result[0]?.license_key;
-    return { ok: true, licenseKey };
+    const row = Array.isArray(result) ? result[0] : null;
+    return {
+      ok: true,
+      licenseKey: row?.license_key ?? null,
+      activationToken: row?.activation_token ?? null,
+    };
   });
 
 const rejectInput = z.object({ orderId: z.string().uuid(), note: z.string().max(500).optional() });
@@ -116,6 +120,7 @@ const productInput = z.object({
   slug: z.string().min(2).max(120).regex(/^[a-z0-9-]+$/),
   description: z.string().max(1000).optional(),
   duration: z.enum(["monthly", "yearly", "lifetime"]),
+  delivery_type: z.enum(["key", "account", "link", "link_token"]).default("key"),
   price_try: z.number().min(0).max(1000000),
   active: z.boolean(),
 });

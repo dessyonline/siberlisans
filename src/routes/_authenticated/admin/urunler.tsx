@@ -17,12 +17,21 @@ export const Route = createFileRoute("/_authenticated/admin/urunler")({
   component: ProductsAdmin,
 });
 
+type DeliveryType = "key" | "account" | "link" | "link_token";
+const DELIVERY_LABELS: Record<DeliveryType, string> = {
+  key: "text key",
+  account: "mail hesabı (email:şifre)",
+  link: "hazır link",
+  link_token: "aktivasyon linki (token)",
+};
+
 type Product = {
   id: string;
   name: string;
   slug: string;
   description: string | null;
   duration: "monthly" | "yearly" | "lifetime";
+  delivery_type: DeliveryType;
   price_try: number;
   active: boolean;
 };
@@ -54,6 +63,7 @@ function ProductsAdmin() {
           slug: editing.slug ?? "",
           description: editing.description ?? "",
           duration: (editing.duration ?? "monthly") as "monthly" | "yearly" | "lifetime",
+          delivery_type: (editing.delivery_type ?? "key") as DeliveryType,
           price_try: Number(editing.price_try ?? 0),
           active: editing.active ?? true,
         },
@@ -70,7 +80,7 @@ function ProductsAdmin() {
         <h1 className="font-mono text-2xl neon-text">Ürünler</h1>
         <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
           <DialogTrigger asChild>
-            <Button onClick={() => setEditing({ active: true, duration: "monthly", price_try: 0 })} className="font-mono">
+            <Button onClick={() => setEditing({ active: true, duration: "monthly", delivery_type: "key", price_try: 0 })} className="font-mono">
               <Plus className="h-4 w-4 mr-1" />yeni ürün
             </Button>
           </DialogTrigger>
@@ -98,6 +108,24 @@ function ProductsAdmin() {
                 </div>
                 <Field label="fiyat (₺)" value={String(editing?.price_try ?? 0)} onChange={(v) => setEditing((p) => ({ ...p!, price_try: Number(v) }))} type="number" />
               </div>
+              <div>
+                <Label className="font-mono text-xs">teslim tipi</Label>
+                <select
+                  value={editing?.delivery_type ?? "key"}
+                  onChange={(e) => setEditing((p) => ({ ...p!, delivery_type: e.target.value as DeliveryType }))}
+                  className="w-full rounded border border-border bg-input px-3 py-2 font-mono text-sm"
+                >
+                  {(Object.keys(DELIVERY_LABELS) as DeliveryType[]).map((k) => (
+                    <option key={k} value={k}>{DELIVERY_LABELS[k]}</option>
+                  ))}
+                </select>
+                <p className="mt-1 font-mono text-[10px] text-muted-foreground">
+                  {editing?.delivery_type === "account" && "havuza her satıra 'email:sifre' formatında ekle"}
+                  {editing?.delivery_type === "link" && "havuza her satıra bir URL ekle"}
+                  {editing?.delivery_type === "link_token" && "havuza payload metnini ekle; sistem her sipariş için /aktivasyon/{token} üretecek"}
+                  {(!editing?.delivery_type || editing?.delivery_type === "key") && "havuza her satıra bir lisans anahtarı ekle"}
+                </p>
+              </div>
               <div className="flex items-center gap-2 font-mono text-sm">
                 <Switch checked={editing?.active ?? true} onCheckedChange={(v) => setEditing((p) => ({ ...p!, active: v }))} />
                 <span>aktif</span>
@@ -119,6 +147,9 @@ function ProductsAdmin() {
               <div>
                 <div className="font-semibold">{p.name} <span className="text-xs text-muted-foreground">/{p.slug}</span></div>
                 <div className="text-xs text-muted-foreground">{p.duration} · ₺{Number(p.price_try).toLocaleString("tr-TR")}</div>
+              </div>
+              <div className="text-[10px] rounded border border-primary/30 bg-primary/5 px-2 py-1 text-primary">
+                {DELIVERY_LABELS[(p.delivery_type ?? "key") as DeliveryType]}
               </div>
               <div className={`text-xs ${avail < 3 ? "text-warn" : "text-cyan"}`}>
                 stok: {avail} / {total}

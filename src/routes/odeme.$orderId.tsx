@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
 import { markOrderPaid } from "@/lib/orders.functions";
+import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -50,7 +51,7 @@ function Payment() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, status, price_try, reference_code, receipt_path, created_at, product:products(name, slug, duration), keys:order_keys(license_key:license_keys(key_value))"
+          "id, status, price_try, reference_code, receipt_path, created_at, product:products(name, slug, duration, delivery_type), keys:order_keys(license_key:license_keys(key_value, activation_token))"
         )
         .eq("id", orderId)
         .single();
@@ -112,6 +113,8 @@ function Payment() {
   if (!order) return <div className="p-12 font-mono text-center">yükleniyor…</div>;
 
   const deliveredKey = order.keys?.[0]?.license_key?.key_value;
+  const deliveredToken = order.keys?.[0]?.license_key?.activation_token ?? null;
+  const deliveryType = (order.product?.delivery_type ?? "key") as DeliveryType;
   const stepIndex = STEPS.findIndex((s) => s.key === currentStep);
 
   return (
@@ -166,7 +169,12 @@ function Payment() {
         {/* MAIN CONTENT */}
         <div className="space-y-6">
           {order.status === "approved" && deliveredKey && (
-            <DeliveryBlock keyValue={deliveredKey} product={order.product?.name ?? ""} />
+            <DeliveryBlock
+              keyValue={deliveredKey}
+              activationToken={deliveredToken}
+              deliveryType={deliveryType}
+              product={order.product?.name ?? ""}
+            />
           )}
 
           {order.status === "rejected" && (
@@ -435,33 +443,18 @@ function ReceiptBlock({
 
 /* ============================ DELIVERY ============================ */
 
-function DeliveryBlock({ keyValue, product }: { keyValue: string; product: string }) {
+function DeliveryBlock({
+  keyValue,
+  activationToken,
+  deliveryType,
+  product,
+}: {
+  keyValue: string;
+  activationToken: string | null;
+  deliveryType: DeliveryType;
+  product: string;
+}) {
   const [revealed, setRevealed] = useState(false);
-  const [display, setDisplay] = useState("████████-████████-████████");
-
-  useEffect(() => {
-    if (!revealed) return;
-    const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-    let frame = 0;
-    const total = 22;
-    const id = setInterval(() => {
-      frame++;
-      if (frame >= total) {
-        setDisplay(keyValue);
-        clearInterval(id);
-        return;
-      }
-      const revealCount = Math.floor((frame / total) * keyValue.length);
-      const out = keyValue
-        .split("")
-        .map((c, i) =>
-          i < revealCount ? c : c === "-" ? "-" : chars[Math.floor(Math.random() * chars.length)]
-        )
-        .join("");
-      setDisplay(out);
-    }, 40);
-    return () => clearInterval(id);
-  }, [revealed, keyValue]);
 
   return (
     <section className="glass-card rounded-lg p-6 scan-line neon-glow">
@@ -478,28 +471,28 @@ function DeliveryBlock({ keyValue, product }: { keyValue: string; product: strin
 
       <div className="mt-5 rounded-md border border-primary/40 bg-black/30 p-4">
         <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
-          $ ./decrypt --key
+          $ ./decrypt --{deliveryType}
         </div>
-        <div className="mt-2 font-mono text-lg sm:text-xl text-primary break-all tracking-widest">
-          {display}
-          {!revealed || display !== keyValue ? <span className="terminal-caret" /> : null}
+        <div className="mt-3">
+          {revealed ? (
+            <DeliveryPayload
+              deliveryType={deliveryType}
+              keyValue={keyValue}
+              activationToken={activationToken}
+            />
+          ) : (
+            <div className="font-mono text-lg sm:text-xl text-primary tracking-widest">
+              ████████-████████-████████
+              <span className="terminal-caret" />
+            </div>
+          )}
         </div>
       </div>
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {!revealed ? (
+        {!revealed && (
           <Button onClick={() => setRevealed(true)} className="font-mono neon-glow">
-            <KeyRound className="mr-2 h-4 w-4" /> anahtarı çöz
-          </Button>
-        ) : (
-          <Button
-            onClick={() => {
-              navigator.clipboard.writeText(keyValue);
-              toast.success("Anahtar kopyalandı");
-            }}
-            className="font-mono neon-glow"
-          >
-            <Copy className="mr-2 h-4 w-4" /> kopyala
+            <KeyRound className="mr-2 h-4 w-4" /> teslimatı aç
           </Button>
         )}
         <Button asChild variant="outline" className="font-mono">

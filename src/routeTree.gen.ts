@@ -17,6 +17,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
 import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
+import { Route as AktivasyonTokenRouteImport } from './routes/aktivasyon.$token'
 import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
@@ -62,6 +63,11 @@ const UrunSlugRoute = UrunSlugRouteImport.update({
 const OdemeOrderIdRoute = OdemeOrderIdRouteImport.update({
   id: '/odeme/$orderId',
   path: '/odeme/$orderId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AktivasyonTokenRoute = AktivasyonTokenRouteImport.update({
+  id: '/aktivasyon/$token',
+  path: '/aktivasyon/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedHesabimRoute = AuthenticatedHesabimRouteImport.update({
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/urunler': typeof UrunlerRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/hesabim': typeof AuthenticatedHesabimRoute
+  '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByTo {
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
+  '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
@@ -145,6 +153,7 @@ export interface FileRoutesById {
   '/urunler': typeof UrunlerRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/hesabim': typeof AuthenticatedHesabimRoute
+  '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/_authenticated/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
@@ -163,6 +172,7 @@ export interface FileRouteTypes {
     | '/urunler'
     | '/admin'
     | '/hesabim'
+    | '/aktivasyon/$token'
     | '/odeme/$orderId'
     | '/urun/$slug'
     | '/admin/ayarlar'
@@ -178,6 +188,7 @@ export interface FileRouteTypes {
     | '/sss'
     | '/urunler'
     | '/hesabim'
+    | '/aktivasyon/$token'
     | '/odeme/$orderId'
     | '/urun/$slug'
     | '/admin/ayarlar'
@@ -195,6 +206,7 @@ export interface FileRouteTypes {
     | '/urunler'
     | '/_authenticated/admin'
     | '/_authenticated/hesabim'
+    | '/aktivasyon/$token'
     | '/odeme/$orderId'
     | '/urun/$slug'
     | '/_authenticated/admin/ayarlar'
@@ -211,6 +223,7 @@ export interface RootRouteChildren {
   NasilCalisirRoute: typeof NasilCalisirRoute
   SssRoute: typeof SssRoute
   UrunlerRoute: typeof UrunlerRoute
+  AktivasyonTokenRoute: typeof AktivasyonTokenRoute
   OdemeOrderIdRoute: typeof OdemeOrderIdRoute
   UrunSlugRoute: typeof UrunSlugRoute
 }
@@ -271,6 +284,13 @@ declare module '@tanstack/react-router' {
       path: '/odeme/$orderId'
       fullPath: '/odeme/$orderId'
       preLoaderRoute: typeof OdemeOrderIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/aktivasyon/$token': {
+      id: '/aktivasyon/$token'
+      path: '/aktivasyon/$token'
+      fullPath: '/aktivasyon/$token'
+      preLoaderRoute: typeof AktivasyonTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/hesabim': {
@@ -367,6 +387,7 @@ const rootRouteChildren: RootRouteChildren = {
   NasilCalisirRoute: NasilCalisirRoute,
   SssRoute: SssRoute,
   UrunlerRoute: UrunlerRoute,
+  AktivasyonTokenRoute: AktivasyonTokenRoute,
   OdemeOrderIdRoute: OdemeOrderIdRoute,
   UrunSlugRoute: UrunSlugRoute,
 }

@@ -14,12 +14,21 @@ export const Route = createFileRoute("/_authenticated/admin/keyler")({
   component: KeysAdmin,
 });
 
+type DeliveryType = "key" | "account" | "link" | "link_token";
+const DELIVERY_HINTS: Record<DeliveryType, { title: string; placeholder: string; help: string }> = {
+  key: { title: "Lisans anahtarları", placeholder: "XXXX-XXXX-XXXX-XXXX\nYYYY-YYYY-YYYY-YYYY", help: "her satıra bir anahtar" },
+  account: { title: "Hesap bilgileri", placeholder: "kullanici1@mail.com:sifre1\nkullanici2@mail.com:sifre2", help: "her satıra 'email:şifre'" },
+  link: { title: "Aktivasyon linkleri", placeholder: "https://ornek.com/davet/abc\nhttps://ornek.com/davet/xyz", help: "her satıra bir URL" },
+  link_token: { title: "Token payload'ları", placeholder: "PAYLOAD-1\nPAYLOAD-2", help: "her satıra bir metin. Müşteriye /aktivasyon/{token} linki gösterilir." },
+};
+
 type PoolRow = {
   id: string;
   name: string;
   slug: string;
   active: boolean;
   price_try: number;
+  delivery_type: DeliveryType;
   license_keys: { status: string }[];
 };
 
@@ -33,17 +42,21 @@ function KeysAdmin() {
   const { data: products } = useQuery({
     queryKey: ["products", "for-keys"],
     queryFn: async () => {
-      const { data } = await supabase.from("products").select("id, name").order("name");
+      const { data } = await supabase.from("products").select("id, name, delivery_type").order("name");
       return data;
     },
   });
+
+  const currentProduct = (products ?? []).find((p) => p.id === productId);
+  const currentDT = (currentProduct?.delivery_type ?? "key") as DeliveryType;
+  const hint = DELIVERY_HINTS[currentDT];
 
   const { data: pool } = useQuery({
     queryKey: ["admin-pool"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, active, price_try, license_keys(status)")
+        .select("id, name, slug, active, price_try, delivery_type, license_keys(status)")
         .order("name");
       if (error) throw error;
       return data as PoolRow[];
@@ -154,6 +167,7 @@ function KeysAdmin() {
               </div>
               <div className="mt-2 flex items-center justify-between font-mono text-[10px] text-muted-foreground">
                 <span>/{p.slug}</span>
+                <span className="text-primary/80">{DELIVERY_HINTS[(p.delivery_type ?? "key") as DeliveryType].title.toLowerCase()}</span>
                 <span>{p.active ? "aktif" : "pasif"}</span>
               </div>
             </button>
@@ -179,12 +193,14 @@ function KeysAdmin() {
             </select>
           </div>
           <div>
-            <Label className="font-mono text-xs">key listesi (her satıra bir tane)</Label>
+            <Label className="font-mono text-xs">
+              {hint.title} <span className="text-primary/70">— {hint.help}</span>
+            </Label>
             <Textarea
               rows={8}
               value={raw}
               onChange={(e) => setRaw(e.target.value)}
-              placeholder="XXXX-XXXX-XXXX-XXXX&#10;YYYY-YYYY-YYYY-YYYY"
+              placeholder={hint.placeholder}
               className="font-mono"
             />
           </div>
