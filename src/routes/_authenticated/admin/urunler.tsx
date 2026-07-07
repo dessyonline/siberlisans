@@ -108,6 +108,24 @@ function ProductsAdmin() {
                 </div>
                 <Field label="fiyat (₺)" value={String(editing?.price_try ?? 0)} onChange={(v) => setEditing((p) => ({ ...p!, price_try: Number(v) }))} type="number" />
               </div>
+              <div>
+                <Label className="font-mono text-xs">teslim tipi</Label>
+                <select
+                  value={editing?.delivery_type ?? "key"}
+                  onChange={(e) => setEditing((p) => ({ ...p!, delivery_type: e.target.value as DeliveryType }))}
+                  className="w-full rounded border border-border bg-input px-3 py-2 font-mono text-sm"
+                >
+                  {(Object.keys(DELIVERY_LABELS) as DeliveryType[]).map((k) => (
+                    <option key={k} value={k}>{DELIVERY_LABELS[k]}</option>
+                  ))}
+                </select>
+                <p className="mt-1 font-mono text-[10px] text-muted-foreground">
+                  {editing?.delivery_type === "account" && "havuza her satıra 'email:sifre' formatında ekle"}
+                  {editing?.delivery_type === "link" && "havuza her satıra bir URL ekle"}
+                  {editing?.delivery_type === "link_token" && "havuza payload metnini ekle; sistem her sipariş için /aktivasyon/{token} üretecek"}
+                  {(!editing?.delivery_type || editing?.delivery_type === "key") && "havuza her satıra bir lisans anahtarı ekle"}
+                </p>
+              </div>
               <div className="flex items-center gap-2 font-mono text-sm">
                 <Switch checked={editing?.active ?? true} onCheckedChange={(v) => setEditing((p) => ({ ...p!, active: v }))} />
                 <span>aktif</span>
