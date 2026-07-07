@@ -119,6 +119,7 @@ function Payment() {
   const deliveredKey = order.keys?.[0]?.license_key?.key_value;
   const deliveredToken = order.keys?.[0]?.license_key?.activation_token ?? null;
   const deliveryType = (order.product?.delivery_type ?? "key") as DeliveryType;
+  const isManual = !!order.product?.manual_fulfillment;
   const stepIndex = STEPS.findIndex((s) => s.key === currentStep);
 
   return (
