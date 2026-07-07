@@ -66,8 +66,12 @@ export const approveOrder = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Yetkisiz.");
     const { data: result, error } = await supabase.rpc("approve_order", { _order_id: data.orderId });
     if (error) throw new Error(error.message);
-    const licenseKey = Array.isArray(result) && result[0]?.license_key;
-    return { ok: true, licenseKey };
+    const row = Array.isArray(result) ? result[0] : null;
+    return {
+      ok: true,
+      licenseKey: row?.license_key ?? null,
+      activationToken: row?.activation_token ?? null,
+    };
   });
 
 const rejectInput = z.object({ orderId: z.string().uuid(), note: z.string().max(500).optional() });
