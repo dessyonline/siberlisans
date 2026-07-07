@@ -175,6 +175,7 @@ function ProductsAdmin() {
                 <div className="flex items-center gap-2 font-mono text-sm">
                   <Switch checked={editing?.unlimited_stock ?? false} onCheckedChange={(v) => setEditing((p) => ({ ...p!, unlimited_stock: v }))} />
                   <span>sınırsız stok ∞</span>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <Field
