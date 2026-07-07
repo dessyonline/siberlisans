@@ -28,23 +28,23 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
 function AdminLayout() {
   const loc = useLocation();
   return (
-    <div className="mx-auto max-w-7xl px-3 py-4 grid gap-4 md:px-4 md:py-6 md:gap-6 md:grid-cols-[220px,1fr]">
-      <aside className="glass-card rounded-lg p-2 h-fit md:sticky md:top-20 md:p-3">
+    <div className="mx-auto max-w-7xl px-2 py-3 grid gap-3 sm:px-3 sm:py-4 md:px-4 md:py-6 md:gap-6 md:grid-cols-[220px,1fr]">
+      <aside className="glass-card rounded-lg p-2 h-fit md:sticky md:top-20 md:p-3 min-w-0 overflow-hidden">
         <div className="hidden font-mono text-xs text-muted-foreground px-2 pt-2 pb-3 md:block">
           $ /admin<span className="terminal-caret" />
         </div>
-        <nav className="flex gap-1 overflow-x-auto pb-1 md:block md:space-y-1 md:overflow-visible md:pb-0">
+        <nav className="flex gap-1 overflow-x-auto pb-1 -mx-1 px-1 md:block md:space-y-1 md:overflow-visible md:pb-0 md:mx-0 md:px-0 scrollbar-none">
           {NAV.map((n) => {
             const active = n.exact ? loc.pathname === n.to : loc.pathname.startsWith(n.to);
             return (
               <Link
                 key={n.to}
                 to={n.to as "/admin"}
-                className={`flex shrink-0 items-center gap-2 rounded px-3 py-2 font-mono text-xs md:text-sm ${
+                className={`flex shrink-0 items-center gap-1.5 rounded px-2.5 py-2 font-mono text-[11px] whitespace-nowrap md:px-3 md:text-sm md:gap-2 ${
                   active ? "bg-primary/10 text-primary neon-text" : "text-muted-foreground hover:text-primary"
                 }`}
               >
-                <n.icon className="h-4 w-4" />
+                <n.icon className="h-3.5 w-3.5 md:h-4 md:w-4" />
                 {n.label}
               </Link>
             );
@@ -54,7 +54,8 @@ function AdminLayout() {
           <ArrowLeft className="h-3 w-3" /> siteye dön
         </Link>
       </aside>
-      <div><Outlet /></div>
+      <div className="min-w-0"><Outlet /></div>
     </div>
   );
 }
+
