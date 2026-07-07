@@ -142,118 +142,199 @@ function ProductDetail() {
     .filter(Boolean);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10 pb-32 md:pb-10">
-      <div className="mb-6 flex items-center justify-between">
-        <Link to="/urunler" className="font-mono text-sm text-muted-foreground hover:text-primary">
-          ← tüm lisanslar
-        </Link>
-        <Link to="/urunler" className="rounded-full border border-border/60 p-2 text-muted-foreground hover:text-primary hover:border-primary/40">
-          <X className="h-4 w-4" />
-        </Link>
-      </div>
+    <div className="relative overflow-hidden">
+      {/* cyber backdrop */}
+      <div className="pointer-events-none absolute inset-0 cyber-grid grid-drift opacity-60" aria-hidden />
+      <div className="hero-orb h-[380px] w-[380px] left-[-120px] top-[-60px]" style={{ background: "oklch(0.82 0.20 145 / 0.35)" }} aria-hidden />
+      <div className="hero-orb h-[300px] w-[300px] right-[-80px] top-[40%]" style={{ background: "oklch(0.65 0.20 300 / 0.25)", animationDelay: "3s" }} aria-hidden />
+      <div className="pointer-events-none absolute inset-0 scan-line opacity-30" aria-hidden />
 
-      <div className="glass-card rounded-xl overflow-hidden">
-        <div className="flex items-center justify-between border-b border-border/60 px-6 py-4">
-          <div className="flex items-center gap-2 font-mono text-sm text-muted-foreground">
-            <Info className="h-4 w-4 text-primary" />
-            Ürün Bilgisi
+      <div className="relative mx-auto max-w-5xl px-4 py-10 pb-32 md:pb-14">
+        {/* Breadcrumb terminal */}
+        <div className="mb-6 flex items-center justify-between font-mono text-xs">
+          <Link to="/urunler" className="inline-flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors group">
+            <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+            <span className="text-primary">$</span>
+            <span>cd ../lisanslar</span>
+          </Link>
+          <div className="hidden sm:flex items-center gap-3 text-muted-foreground/70">
+            <span className="inline-flex items-center gap-1.5"><Wifi className="h-3 w-3 text-primary" /> online</span>
+            <span>·</span>
+            <span className="inline-flex items-center gap-1.5"><Lock className="h-3 w-3 text-primary" /> TLS 1.3</span>
           </div>
         </div>
 
-        {product.image_url && (
-          <div className="relative h-56 md:h-72 overflow-hidden border-b border-border/60 bg-black/30 flex items-center justify-center p-6">
-            <img
-              src={product.image_url}
-              alt={product.name}
-              className="h-full w-full object-contain"
-            />
-          </div>
-        )}
-
-        <div className="p-6 md:p-8">
-          <h1 className="font-mono text-2xl md:text-3xl font-semibold neon-text">{product.name}</h1>
-
-          <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-xs">
-            <StockBadge stock={stock} manual={manual} unlimited={unlimited} />
-            {product.category && (
-              <span className="rounded-full border border-border/60 bg-background px-3 py-1 text-muted-foreground">
-                {product.category}
+        {/* Terminal window frame */}
+        <div className="glass-card rounded-xl overflow-hidden neon-glow-strong">
+          {/* window chrome */}
+          <div className="flex items-center justify-between border-b border-border/60 bg-background/50 px-4 py-2.5 backdrop-blur">
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-destructive/70" />
+              <span className="h-2.5 w-2.5 rounded-full bg-warn/70" />
+              <span className="h-2.5 w-2.5 rounded-full bg-primary/70" />
+              <span className="ml-3 inline-flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
+                <Terminal className="h-3 w-3 text-primary" />
+                siberphp@secure:~/urun/{slug}
               </span>
-            )}
-            <span className="rounded-full border border-border/60 bg-background px-3 py-1 text-muted-foreground">
-              {manual ? "Manuel Teslimat" : "Otomatik Teslimat"}
+            </div>
+            <span className="hidden sm:inline-flex items-center gap-1.5 font-mono text-[10px] text-primary">
+              <span className="relative flex h-1.5 w-1.5">
+                <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-75" />
+                <span className="relative h-1.5 w-1.5 rounded-full bg-primary" />
+              </span>
+              LIVE
             </span>
           </div>
 
-          {!manual && !unlimited && stock > 0 && stock <= 10 && (
-            <div className="mt-4">
-              <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground mb-1">
-                <span>stok durumu</span>
-                <span className={stock <= 3 ? "text-warn" : "text-primary"}>{stock} / 10</span>
-              </div>
-              <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
-                <div
-                  className={`h-full transition-all ${stock <= 3 ? "bg-warn" : "bg-primary"}`}
-                  style={{ width: `${Math.min(100, stock * 10)}%` }}
+          <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
+            {/* Left: image / key visual */}
+            <div className="relative border-b md:border-b-0 md:border-r border-border/60 bg-black/40 min-h-[280px] flex items-center justify-center p-8 overflow-hidden">
+              <div className="pointer-events-none absolute inset-0 cyber-grid opacity-40" aria-hidden />
+              {product.image_url ? (
+                <img
+                  src={product.image_url}
+                  alt={product.name}
+                  className="relative h-full max-h-64 w-auto object-contain drop-shadow-[0_0_30px_oklch(0.82_0.20_145/0.35)]"
                 />
-              </div>
+              ) : (
+                <div className="relative flex flex-col items-center gap-3 text-primary">
+                  <KeyRound className="h-20 w-20 opacity-80 drop-shadow-[0_0_20px_oklch(0.82_0.20_145/0.6)]" />
+                  <span className="font-mono text-xs text-muted-foreground uppercase tracking-widest">
+                    {product.category ?? "lisans"}
+                  </span>
+                </div>
+              )}
+              {/* corner brackets */}
+              <span className="absolute top-3 left-3 h-4 w-4 border-l-2 border-t-2 border-primary/50" />
+              <span className="absolute top-3 right-3 h-4 w-4 border-r-2 border-t-2 border-primary/50" />
+              <span className="absolute bottom-3 left-3 h-4 w-4 border-l-2 border-b-2 border-primary/50" />
+              <span className="absolute bottom-3 right-3 h-4 w-4 border-r-2 border-b-2 border-primary/50" />
             </div>
-          )}
 
-          <div className="mt-6 font-mono text-4xl neon-text">
-            ₺{Number(product.price_try).toLocaleString("tr-TR")}
-          </div>
-          <div className="mt-1 font-mono text-xs text-muted-foreground">KDV dahil · Havale/EFT</div>
-
-          <div className="mt-6">
-            <div className="mb-2 font-mono text-sm font-semibold">Ürün Açıklaması:</div>
-            {bullets.length > 1 ? (
-              <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-                {bullets.map((b, i) => (
-                  <li key={i}>{b}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-muted-foreground">{product.description || "Açıklama bulunmuyor."}</p>
-            )}
-          </div>
-
-          <div className="mt-6 grid grid-cols-3 gap-3 font-mono text-xs">
-            {[
-              { i: Zap, t: "anlık teslim" },
-              { i: ShieldCheck, t: "orijinal key" },
-              { i: CheckCircle2, t: "değişim garantisi" },
-            ].map((b) => (
-              <div key={b.t} className="rounded-md border border-border/60 p-3 flex items-center gap-2">
-                <b.i className="h-4 w-4 text-primary" />
-                <span>{b.t}</span>
+            {/* Right: info */}
+            <div className="p-6 md:p-8">
+              <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-primary/80 flex items-center gap-2">
+                <Info className="h-3 w-3" /> product_manifest
               </div>
-            ))}
-          </div>
+              <h1 className="mt-2 font-mono text-2xl md:text-[28px] font-semibold tracking-tight leading-tight flex items-baseline gap-2">
+                <span className="text-muted-foreground/60 select-none">&gt;</span>
+                <span className="neon-sweep">{product.name}</span>
+                <span aria-hidden className="caret-blink inline-block w-[2px] h-[0.9em] translate-y-[0.05em] bg-primary shadow-[0_0_10px_oklch(0.82_0.20_145/0.9)]" />
+              </h1>
 
-          <Button
-            disabled={loading || soldOut}
-            onClick={handleBuy}
-            className="mt-8 w-full font-mono neon-glow hidden md:inline-flex"
-            size="lg"
-          >
-            {loading
-              ? "işleniyor…"
-              : soldOut
-              ? "stok tükendi"
-              : "> satın al"}
-          </Button>
-          <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center hidden md:block">
-            kredi kartı KABUL EDİLMEZ · sadece banka transferi
-          </p>
+              <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-[11px]">
+                <StockBadge stock={stock} manual={manual} unlimited={unlimited} />
+                {product.category && (
+                  <span className="rounded-full border border-border/60 bg-background/60 backdrop-blur px-2.5 py-1 text-muted-foreground">
+                    <span className="text-primary/60">#</span> {product.category}
+                  </span>
+                )}
+                <span className="rounded-full border border-border/60 bg-background/60 backdrop-blur px-2.5 py-1 text-muted-foreground">
+                  <Cpu className="mr-1 inline h-3 w-3 text-primary" />
+                  {manual ? "manuel teslim" : "otomatik teslim"}
+                </span>
+              </div>
+
+              {!manual && !unlimited && stock > 0 && stock <= 10 && (
+                <div className="mt-5 rounded-lg border border-border/40 bg-background/40 backdrop-blur p-3">
+                  <div className="flex items-center justify-between font-mono text-[10px] mb-1.5">
+                    <span className="text-muted-foreground uppercase tracking-widest">stock.status</span>
+                    <span className={stock <= 3 ? "text-warn" : "text-primary"}>[{stock}/10]</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
+                    <div
+                      className={`h-full transition-all ${stock <= 3 ? "bg-warn shadow-[0_0_10px_currentColor]" : "bg-primary shadow-[0_0_10px_currentColor]"}`}
+                      style={{ width: `${Math.min(100, stock * 10)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Price block */}
+              <div className="mt-6 rounded-lg border border-primary/30 bg-primary/5 backdrop-blur p-4 relative overflow-hidden">
+                <div className="pointer-events-none absolute inset-0 scan-line opacity-40" aria-hidden />
+                <div className="relative flex items-end justify-between gap-4">
+                  <div>
+                    <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">final_price</div>
+                    <div className="mt-1 font-mono text-4xl md:text-5xl neon-text-glow leading-none">
+                      ₺{Number(product.price_try).toLocaleString("tr-TR")}
+                    </div>
+                    <div className="mt-2 font-mono text-[10px] text-muted-foreground">
+                      KDV dahil <span className="text-primary/60">·</span> Havale / EFT
+                    </div>
+                  </div>
+                  <div className="hidden sm:flex flex-col items-end gap-1 font-mono text-[10px] text-muted-foreground">
+                    <span className="text-primary">✓ dekont gerekmez ≥ ₺100</span>
+                    <span>referans kodu ile eşleşir</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="mt-6">
+                <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-primary/80 flex items-center gap-2">
+                  <span>~</span> description.md
+                </div>
+                {bullets.length > 1 ? (
+                  <ul className="space-y-2 font-mono text-sm">
+                    {bullets.map((b, i) => (
+                      <li key={i} className="flex items-start gap-2 text-muted-foreground">
+                        <span className="text-primary shrink-0 mt-0.5">[✓]</span>
+                        <span className="text-foreground/90">{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="font-mono text-sm text-muted-foreground leading-relaxed">
+                    {product.description || "// açıklama bulunmuyor."}
+                  </p>
+                )}
+              </div>
+
+              {/* Guarantees */}
+              <div className="mt-6 grid grid-cols-3 gap-2 font-mono text-[11px]">
+                {[
+                  { i: Zap, t: "anlık teslim" },
+                  { i: ShieldCheck, t: "orijinal key" },
+                  { i: CheckCircle2, t: "değişim garantili" },
+                ].map((b) => (
+                  <div
+                    key={b.t}
+                    className="rounded-md border border-border/40 bg-background/40 backdrop-blur px-2.5 py-2 flex items-center gap-1.5 hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                  >
+                    <b.i className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <span className="truncate">{b.t}</span>
+                  </div>
+                ))}
+              </div>
+
+              <Button
+                disabled={loading || soldOut}
+                onClick={handleBuy}
+                className="mt-7 w-full font-mono neon-glow-strong hidden md:inline-flex"
+                size="lg"
+              >
+                {loading
+                  ? "$ processing…"
+                  : soldOut
+                  ? "$ out_of_stock"
+                  : "$ satın al --now"}
+              </Button>
+              <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center hidden md:block">
+                <span className="text-primary/60">//</span> kredi kartı KABUL EDİLMEZ · sadece banka transferi
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Sticky mobile buy bar */}
-      <div className="fixed bottom-0 inset-x-0 z-40 md:hidden border-t border-border/60 bg-background/95 backdrop-blur-md p-3 shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
+      <div className="fixed bottom-0 inset-x-0 z-40 md:hidden border-t border-primary/30 bg-background/95 backdrop-blur-md p-3 shadow-[0_-4px_30px_oklch(0.82_0.20_145/0.15)]">
         <div className="mx-auto max-w-2xl flex items-center gap-3">
           <div className="flex-1 min-w-0">
-            <div className="font-mono text-[10px] text-muted-foreground truncate">{product.name}</div>
+            <div className="font-mono text-[10px] text-muted-foreground truncate">
+              <span className="text-primary">&gt;</span> {product.name}
+            </div>
             <div className="font-mono text-lg neon-text leading-none">
               ₺{Number(product.price_try).toLocaleString("tr-TR")}
             </div>
@@ -264,7 +345,7 @@ function ProductDetail() {
             className="font-mono neon-glow shrink-0"
             size="lg"
           >
-            {loading ? "…" : soldOut ? "tükendi" : "> satın al"}
+            {loading ? "…" : soldOut ? "tükendi" : "$ satın al"}
           </Button>
         </div>
       </div>
