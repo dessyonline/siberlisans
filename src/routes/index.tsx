@@ -350,22 +350,32 @@ function Index() {
 
 
       {/* HOW IT WORKS */}
-      <section id="nasil-calisir" className="mx-auto max-w-6xl px-4 py-16">
-        <div className="mb-8 font-mono">
+      <section id="nasil-calisir" className="relative mx-auto max-w-6xl px-4 py-20">
+        <div className="mb-10 font-mono">
           <div className="text-xs text-muted-foreground">$ man siberphp</div>
-          <h2 className="mt-2 text-2xl sm:text-3xl neon-text">Nasıl Çalışır?</h2>
+          <h2 className="mt-2 text-3xl sm:text-4xl neon-text-glow">Nasıl Çalışır?</h2>
+          <p className="mt-3 text-sm text-muted-foreground max-w-xl font-sans">
+            Dört adımda lisansın panelinde. Ortalama uçtan uca süre: <span className="text-primary">5–15 dk</span>.
+          </p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="relative grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {/* connector line (desktop) */}
+          <div className="hidden lg:block absolute top-8 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" aria-hidden />
           {[
             { n: "01", t: "Ürün Seç", d: "Kataloğumuzdan lisansı seç, satın al butonuna bas." },
             { n: "02", t: "Havale Yap", d: "Otomatik oluşturulan referans kodunu açıklamaya yazarak transfer et." },
             { n: "03", t: "Dekont Yükle", d: "Panel üzerinden dekont/makbuz görselini yükle." },
             { n: "04", t: "Anahtarını Al", d: "Onay sonrası key panelde ve e-postanda görünür." },
           ].map((s) => (
-            <div key={s.n} className="glass-card rounded-lg p-5">
-              <div className="font-mono text-3xl neon-text">{s.n}</div>
-              <div className="mt-2 font-mono font-semibold">{s.t}</div>
-              <p className="mt-1 text-sm text-muted-foreground">{s.d}</p>
+            <div key={s.n} className="relative glass-card glass-card-hover rounded-xl p-5 corner-cut">
+              <div className="flex items-center gap-3">
+                <div className="relative flex h-10 w-10 items-center justify-center rounded-lg border border-primary/40 bg-primary/10 font-mono text-primary neon-glow">
+                  {s.n}
+                </div>
+                <div className="h-px flex-1 bg-gradient-to-r from-primary/30 to-transparent" />
+              </div>
+              <div className="mt-4 font-semibold tracking-tight">{s.t}</div>
+              <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{s.d}</p>
             </div>
           ))}
         </div>
@@ -373,19 +383,26 @@ function Index() {
 
       {/* SECURITY */}
       <section className="mx-auto max-w-6xl px-4 py-16">
-        <div className="glass-card rounded-xl p-8 sm:p-10 scan-line">
-          <div className="grid gap-8 md:grid-cols-2 items-center">
+        <div className="relative overflow-hidden glass-card rounded-2xl p-8 sm:p-12 scan-line neon-glow-strong">
+          <div className="hero-orb h-[300px] w-[300px] -right-20 -top-20" style={{ background: "oklch(0.82 0.20 145 / 0.35)" }} aria-hidden />
+          <div className="hero-orb h-[260px] w-[260px] -left-16 -bottom-16" style={{ background: "oklch(0.65 0.20 300 / 0.25)", animationDelay: "4s" }} aria-hidden />
+          <div className="relative grid gap-8 md:grid-cols-2 items-center">
             <div>
               <div className="font-mono text-xs text-muted-foreground">$ security --status</div>
-              <h2 className="mt-2 font-mono text-2xl sm:text-3xl neon-text">
+              <h2 className="mt-2 font-mono text-3xl sm:text-4xl neon-text-glow">
                 Güvenlik Katmanları
               </h2>
-              <p className="mt-3 text-muted-foreground">
+              <p className="mt-4 text-muted-foreground leading-relaxed">
                 Her satın alma; uçtan uca şifreli aktarım, izole edilmiş key havuzu ve rol
                 tabanlı erişim kontrolü ile korunur.
               </p>
+              <div className="mt-5 flex gap-2 font-mono text-[10px]">
+                <span className="rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-primary">SOC-ready</span>
+                <span className="rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-primary">Zero-trust</span>
+                <span className="rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-primary">TLS 1.3</span>
+              </div>
             </div>
-            <ul className="space-y-3 font-mono text-sm">
+            <ul className="space-y-2.5 font-mono text-sm">
               {[
                 "Row Level Security politikaları",
                 "SHA-256 imzalı sipariş referansları",
@@ -393,7 +410,7 @@ function Index() {
                 "Şifreli dekont depolama",
                 "Şüpheli aktivite izleme",
               ].map((f) => (
-                <li key={f} className="flex items-start gap-2">
+                <li key={f} className="flex items-start gap-3 rounded-lg border border-border/40 bg-background/40 px-3 py-2.5 hover:border-primary/40 transition">
                   <CheckCircle2 className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                   <span>{f}</span>
                 </li>
@@ -402,6 +419,7 @@ function Index() {
           </div>
         </div>
       </section>
+
 
       {/* FAQ */}
       <section id="sss" className="mx-auto max-w-3xl px-4 py-16">
@@ -486,7 +504,9 @@ function ProductCard({
     : false;
   const showStockBar = !manual && !unlimited && stock > 0 && stock <= 10;
   return (
-    <div className={`glass-card rounded-xl p-5 flex flex-col group transition-all hover:-translate-y-0.5 hover:border-primary/40 relative ${featured ? "border-warn/30" : ""}`}>
+    <div className={`glass-card glass-card-hover rounded-xl p-5 flex flex-col group relative overflow-hidden ${featured ? "border-warn/30" : ""}`}>
+      {/* corner shine on hover */}
+      <div className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" aria-hidden />
       {isNew && (
         <span className="absolute -top-2 -right-2 rounded-full px-2 py-0.5 font-mono text-[10px] border border-cyan/50 bg-cyan/20 text-cyan animate-pulse shadow-lg">
           ✦ YENİ
