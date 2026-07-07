@@ -21,7 +21,6 @@ import {
   UploadCloud,
   ArrowRight,
   Lock,
-  QrCode,
 } from "lucide-react";
 
 export const Route = createFileRoute("/odeme/$orderId")({
