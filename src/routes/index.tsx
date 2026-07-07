@@ -261,14 +261,16 @@ function ProductCard({
     category?: string | null;
     manual_fulfillment?: boolean | null;
     stock_hint?: number | null;
+    unlimited_stock?: boolean | null;
     license_keys?: { status: string }[] | null;
   };
   featured?: boolean;
 }) {
   const manual = !!p.manual_fulfillment;
+  const unlimited = !!p.unlimited_stock;
   const liveStock = (p.license_keys ?? []).filter((k) => k.status === "available").length;
   const stock = liveStock > 0 ? liveStock : (p.stock_hint ?? 0);
-  const soldOut = !manual && stock === 0;
+  const soldOut = !manual && !unlimited && stock === 0;
   return (
     <div className={`glass-card rounded-lg p-5 flex flex-col group hover:neon-glow transition-shadow ${featured ? "border-warn/40" : ""}`}>
       <div className="flex items-start justify-between">
