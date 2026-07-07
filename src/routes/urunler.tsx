@@ -26,6 +26,8 @@ type Row = {
   price_try: number;
   category: string | null;
   image_url: string | null;
+  manual_fulfillment: boolean | null;
+  stock_hint: number | null;
   license_keys: { status: string }[] | null;
 };
 
@@ -34,11 +36,12 @@ const GROUPS: { key: string; label: string; cats: string[] }[] = [
   {
     key: "gorsel",
     label: "Görsel & Tasarım",
-    cats: ["Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array"],
+    cats: ["Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array", "CorelDRAW", "Autodesk"],
   },
-  { key: "ai", label: "Yapay Zeka", cats: ["Google Gemini", "Nano Banana"] },
+  { key: "ai", label: "Yapay Zeka", cats: ["Google Gemini", "Nano Banana", "Midjourney", "Ideogram"] },
   { key: "office", label: "Microsoft Office", cats: ["Office (Ömürlük)", "Office 365"] },
   { key: "oyun", label: "Oyunlar", cats: ["Steam Oyunları"] },
+  { key: "email", label: "E-posta", cats: ["Email Hesapları"] },
 ];
 
 function groupOf(cat: string | null): string {
@@ -52,7 +55,7 @@ function ProductsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, category, image_url, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, license_keys(status)")
         .eq("active", true)
         .order("price_try");
       if (error) throw error;
