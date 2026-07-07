@@ -86,11 +86,11 @@ function ProductDetail() {
 
         <div className="grid gap-0 md:grid-cols-[420px,1fr]">
           {product.image_url && (
-            <div className="relative h-64 md:h-auto overflow-hidden border-b md:border-b-0 md:border-r border-border/60 bg-black/20">
+            <div className="relative h-56 md:h-80 overflow-hidden border-b md:border-b-0 md:border-r border-border/60 bg-black/30 flex items-center justify-center p-6">
               <img
                 src={product.image_url}
                 alt={product.name}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-contain"
               />
             </div>
           )}
