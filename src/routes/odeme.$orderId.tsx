@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
 import { markOrderPaid } from "@/lib/orders.functions";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
+import enparaQr from "@/assets/enpara-qr.png.asset.json";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
