@@ -100,6 +100,19 @@ function OrdersAdmin() {
               <div className="text-xs uppercase text-cyan">{STATUS[o.status]}</div>
               <div className="neon-text">₺{Number(o.price_try).toLocaleString("tr-TR")}</div>
               <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  title="ödeme sayfası linkini kopyala"
+                  onClick={() => {
+                    const url = `${window.location.origin}/odeme/${o.id}`;
+                    navigator.clipboard.writeText(url);
+                    toast.success("ödeme linki kopyalandı");
+                  }}
+                >
+                  <Link2 className="h-4 w-4 mr-1" />ödeme linki
+                </Button>
                 {o.receipt_path ? (
                   <Button size="sm" variant="outline" onClick={() => openReceipt(o.receipt_path!)}>
                     <Eye className="h-4 w-4 mr-1" />dekont
