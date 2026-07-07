@@ -185,7 +185,7 @@ function Payment() {
             />
           )}
 
-          {isManual && (order.status === "reviewing" || order.status === "approved") && (
+          {needsManualContact && (order.status === "reviewing" || order.status === "approved") && (
             <ManualContactBlock
               orderId={orderId}
               reference={order.reference_code}
