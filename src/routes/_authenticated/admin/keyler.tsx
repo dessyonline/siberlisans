@@ -62,6 +62,8 @@ function KeysAdmin() {
     });
     return { avail, assigned, total };
   }, [pool]);
+
+  const { data: keys } = useQuery({
     queryKey: ["license-keys", productId],
     enabled: !!productId,
     queryFn: async () => {
