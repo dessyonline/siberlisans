@@ -63,6 +63,7 @@ function ProductsAdmin() {
           slug: editing.slug ?? "",
           description: editing.description ?? "",
           duration: (editing.duration ?? "monthly") as "monthly" | "yearly" | "lifetime",
+          delivery_type: (editing.delivery_type ?? "key") as DeliveryType,
           price_try: Number(editing.price_try ?? 0),
           active: editing.active ?? true,
         },
@@ -79,7 +80,7 @@ function ProductsAdmin() {
         <h1 className="font-mono text-2xl neon-text">Ürünler</h1>
         <Dialog open={!!editing} onOpenChange={(v) => !v && setEditing(null)}>
           <DialogTrigger asChild>
-            <Button onClick={() => setEditing({ active: true, duration: "monthly", price_try: 0 })} className="font-mono">
+            <Button onClick={() => setEditing({ active: true, duration: "monthly", delivery_type: "key", price_try: 0 })} className="font-mono">
               <Plus className="h-4 w-4 mr-1" />yeni ürün
             </Button>
           </DialogTrigger>
