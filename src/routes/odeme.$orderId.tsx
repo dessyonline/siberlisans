@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
 import { markOrderPaid } from "@/lib/orders.functions";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
-import enparaQr from "@/assets/enpara-qr.png.asset.json";
+import enparaQr from "@/assets/enpara-qr.png";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -281,19 +281,15 @@ function TransferBlock({
         </dl>
 
         {/* QR — Enpara */}
-        <div className="flex flex-col items-center justify-start rounded-lg border border-border/60 bg-white p-4 min-w-[220px]">
-          <div className="flex items-center gap-1.5 font-mono text-[10px] tracking-widest text-muted-foreground bg-background/80 rounded px-2 py-0.5">
-            <QrCode className="h-3 w-3" /> enpara_qr
-          </div>
+        <div className="flex flex-col items-center justify-start rounded-lg border border-border/60 bg-transparent min-w-[220px]">
           <img
-            src={enparaQr.url}
-            alt="Enpara Havale QR — Melih Kuşkaya"
+            src={enparaQr}
+            alt="Enpara Havale QR"
             width={200}
-            height={220}
-            className="mt-2 rounded-md"
+            className="mt-2"
           />
-          <p className="mt-2 text-center text-[10px] text-muted-foreground font-mono bg-background/80 rounded px-2 py-1">
-            Enpara uygulamasında<br />QR ile aktar
+          <p className="mt-2 text-center text-[10px] text-muted-foreground font-mono">
+            Enpara uygulamasında QR ile aktar
           </p>
         </div>
       </div>
