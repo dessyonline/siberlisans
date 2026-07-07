@@ -27,7 +27,6 @@ import {
   Instagram,
   Send,
   MessageCircle,
-  TimerReset,
   Hourglass,
   FileCheck2,
   PackageCheck,
