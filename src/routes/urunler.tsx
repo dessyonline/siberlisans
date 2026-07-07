@@ -72,7 +72,6 @@ function ProductsPage() {
           );
         })}
       </div>
-      </div>
     </div>
   );
 }
