@@ -304,9 +304,9 @@ body > a[class*="lovable"],
   100% { background-position: 0% 50%; }
 }
 @keyframes epic-shimmer-sweep {
-  0%   { transform: translateX(-120%); opacity: 0; }
-  30%  { opacity: 1; }
-  100% { transform: translateX(120%); opacity: 0; }
+  0%   { background-position: 200% 0; opacity: 0.4; }
+  50%  { opacity: 1; }
+  100% { background-position: -100% 0; opacity: 0.4; }
 }
 @utility epic-card {
   position: relative;
