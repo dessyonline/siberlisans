@@ -120,6 +120,7 @@ const productInput = z.object({
   slug: z.string().min(2).max(120).regex(/^[a-z0-9-]+$/),
   description: z.string().max(1000).optional(),
   duration: z.enum(["monthly", "yearly", "lifetime"]),
+  delivery_type: z.enum(["key", "account", "link", "link_token"]).default("key"),
   price_try: z.number().min(0).max(1000000),
   active: z.boolean(),
 });
