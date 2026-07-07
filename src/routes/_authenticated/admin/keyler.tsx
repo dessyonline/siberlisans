@@ -38,7 +38,30 @@ function KeysAdmin() {
     },
   });
 
-  const { data: keys } = useQuery({
+  const { data: pool } = useQuery({
+    queryKey: ["admin-pool"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select("id, name, slug, active, price_try, license_keys(status)")
+        .order("name");
+      if (error) throw error;
+      return data as PoolRow[];
+    },
+    refetchInterval: 15000,
+  });
+
+  const totals = useMemo(() => {
+    let avail = 0, assigned = 0, total = 0;
+    (pool ?? []).forEach((p) => {
+      p.license_keys.forEach((k) => {
+        total++;
+        if (k.status === "available") avail++;
+        else if (k.status === "assigned") assigned++;
+      });
+    });
+    return { avail, assigned, total };
+  }, [pool]);
     queryKey: ["license-keys", productId],
     enabled: !!productId,
     queryFn: async () => {
