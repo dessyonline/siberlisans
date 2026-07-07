@@ -29,6 +29,32 @@ export const Route = createFileRoute("/urunler")({
 
 const DUR: Record<string, string> = { monthly: "aylık", yearly: "yıllık", lifetime: "ömürlük" };
 
+// Cyber-styled product title — terminal prompt + hover caret + glitch
+function CyberTitle({
+  name,
+  size = "base",
+  color = "primary",
+}: {
+  name: string;
+  size?: "sm" | "base";
+  color?: "primary" | "warn" | "cyan";
+}) {
+  const hoverText = color === "warn" ? "group-hover:text-warn" : color === "cyan" ? "group-hover:text-cyan" : "group-hover:text-primary";
+  const caretBg = color === "warn" ? "bg-warn" : color === "cyan" ? "bg-cyan" : "bg-primary";
+  const sizeCls = size === "sm" ? "text-sm" : "text-base";
+  return (
+    <h3 className={`font-mono ${sizeCls} font-semibold tracking-tight flex items-baseline gap-1.5 min-w-0`}>
+      <span className="text-muted-foreground/60 shrink-0 select-none">&gt;</span>
+      <span className={`truncate transition-colors ${hoverText} group-hover:glitch`}>{name}</span>
+      <span
+        aria-hidden
+        className={`caret-blink inline-block w-[2px] h-[0.9em] translate-y-[0.05em] ${caretBg} opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_8px_currentColor] shrink-0`}
+      />
+    </h3>
+  );
+}
+
+
 type Row = {
   id: string;
   name: string;
