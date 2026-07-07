@@ -36,12 +36,14 @@ const DURATION_LABEL: Record<string, string> = {
 };
 
 function Index() {
+  const navigate = useNavigate();
+  const [search, setSearch] = useState("");
   const { data: products } = useQuery({
     queryKey: ["products", "active"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, image_url, category, featured, manual_fulfillment, stock_hint, unlimited_stock, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, image_url, category, featured, manual_fulfillment, stock_hint, unlimited_stock, created_at, license_keys(status)")
         .eq("active", true)
         .order("price_try");
       if (error) throw error;
@@ -50,6 +52,29 @@ function Index() {
   });
 
   const featured = (products ?? []).filter((p) => p.featured);
+
+  const recent = useMemo(() => {
+    return [...(products ?? [])]
+      .sort(
+        (a, b) =>
+          new Date((b as { created_at: string }).created_at).getTime() -
+          new Date((a as { created_at: string }).created_at).getTime(),
+      )
+      .slice(0, 8);
+  }, [products]);
+
+  const searchResults = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return [];
+    return (products ?? [])
+      .filter(
+        (p) =>
+          p.name.toLowerCase().includes(q) ||
+          (p.description ?? "").toLowerCase().includes(q) ||
+          (p.category ?? "").toLowerCase().includes(q),
+      )
+      .slice(0, 8);
+  }, [products, search]);
 
   return (
     <div>
