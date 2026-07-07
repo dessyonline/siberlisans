@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { importLicenseKeys } from "@/lib/orders.functions";
@@ -8,11 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Upload } from "lucide-react";
+import { Upload, AlertTriangle, CheckCircle2, Database, Package } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/keyler")({
   component: KeysAdmin,
 });
+
+type PoolRow = {
+  id: string;
+  name: string;
+  slug: string;
+  active: boolean;
+  price_try: number;
+  license_keys: { status: string }[];
+};
 
 function KeysAdmin() {
   const qc = useQueryClient();
