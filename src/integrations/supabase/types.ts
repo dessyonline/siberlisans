@@ -50,6 +50,7 @@ export type Database = {
           claimed_at: string | null
           created_at: string
           duration_days: number | null
+          duration_minutes: number | null
           expires_at: string | null
           hwid: string | null
           id: string
@@ -67,6 +68,7 @@ export type Database = {
           claimed_at?: string | null
           created_at?: string
           duration_days?: number | null
+          duration_minutes?: number | null
           expires_at?: string | null
           hwid?: string | null
           id?: string
@@ -84,6 +86,7 @@ export type Database = {
           claimed_at?: string | null
           created_at?: string
           duration_days?: number | null
+          duration_minutes?: number | null
           expires_at?: string | null
           hwid?: string | null
           id?: string
@@ -318,6 +321,7 @@ export type Database = {
           claimed_at: string | null
           created_at: string
           duration_days: number | null
+          duration_minutes: number | null
           expires_at: string | null
           hwid: string | null
           id: string
