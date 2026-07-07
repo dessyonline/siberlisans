@@ -93,13 +93,13 @@ function ProductsPage() {
       </div>
 
       <div className="mb-8 flex flex-wrap gap-2 font-mono text-xs">
-        <CatChip label="hepsi" active={active === "all"} onClick={() => setActive("all")} />
-        {grouped.map(([cat, items]) => (
+        <CatChip label={`hepsi · ${data?.length ?? 0}`} active={group === "all"} onClick={() => setGroup("all")} />
+        {GROUPS.map((g) => (
           <CatChip
-            key={cat}
-            label={`${cat} · ${items.length}`}
-            active={active === cat}
-            onClick={() => setActive(cat)}
+            key={g.key}
+            label={`${g.label} · ${groupCounts.get(g.key) ?? 0}`}
+            active={group === g.key}
+            onClick={() => setGroup(g.key)}
           />
         ))}
       </div>
