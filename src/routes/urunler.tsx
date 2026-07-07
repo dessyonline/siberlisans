@@ -30,6 +30,7 @@ type Row = {
   manual_fulfillment: boolean | null;
   stock_hint: number | null;
   unlimited_stock: boolean | null;
+  created_at: string;
   license_keys: { status: string }[] | null;
 };
 
