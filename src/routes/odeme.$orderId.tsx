@@ -456,13 +456,13 @@ function ReceiptBlock({
         />
         <div className="mt-3 font-mono text-sm">
           {uploading
-            ? "→ uploading & signing…"
+            ? "→ yükleniyor & imzalanıyor…"
             : dragOver
             ? "// bırak, doğrulamayı başlatayım"
             : "dekont/makbuz dosyasını buraya sürükle"}
         </div>
         <div className="mt-1 font-mono text-[10px] text-muted-foreground">
-          jpg · png · pdf · max 5MB · AES-256 şifreli depolama
+          jpg · png · pdf · maks 5MB · AES-256 şifreli depolama
         </div>
         {!uploading && (
           <Button
