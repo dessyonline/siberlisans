@@ -266,6 +266,16 @@ function ProductsPage() {
       .slice(0, 3);
   }, [data]);
 
+  // Kategori sıralama önceliği: GROUPS sırası + AI içi (ChatGPT, Gemini, Lovable, ...)
+  const catPriority = (cat: string): number => {
+    const g = groupOf(cat);
+    const gIdx = GROUPS.findIndex((x) => x.key === g);
+    const baseGroup = gIdx === -1 ? 99 : gIdx;
+    const group = GROUPS[gIdx];
+    const inCat = group ? group.cats.indexOf(cat) : -1;
+    return baseGroup * 100 + (inCat === -1 ? 50 : inCat);
+  };
+
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
     const entries = Array.from(byCategory.entries()).map(([cat, items]) => {
@@ -278,10 +288,22 @@ function ProductsPage() {
             (p.category ?? "").toLowerCase().includes(q),
         );
       }
+      // Kategori içi: destansı önce, sonra sort_order yüksek olan, sonra fiyat
+      list = [...list].sort((a, b) => {
+        const ea = a.tier === "epic" ? 0 : 1;
+        const eb = b.tier === "epic" ? 0 : 1;
+        if (ea !== eb) return ea - eb;
+        const sa = a.sort_order ?? 0;
+        const sb = b.sort_order ?? 0;
+        if (sa !== sb) return sb - sa;
+        return (a.price_try ?? 0) - (b.price_try ?? 0);
+      });
       return [cat, list] as [string, Row[]];
     });
     const filtered = group === "all" ? entries : entries.filter(([cat]) => groupOf(cat) === group);
-    return filtered.filter(([, items]) => items.length > 0);
+    const nonEmpty = filtered.filter(([, items]) => items.length > 0);
+    // Kategoriler arası: GROUPS sırasına göre
+    return nonEmpty.sort(([a], [b]) => catPriority(a) - catPriority(b));
   }, [byCategory, group, search]);
 
   return (
