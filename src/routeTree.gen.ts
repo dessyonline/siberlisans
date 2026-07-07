@@ -13,9 +13,11 @@ import { Route as UrunlerRouteImport } from './routes/urunler'
 import { Route as SssRouteImport } from './routes/sss'
 import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
 import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
+import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
 
 const UrunlerRoute = UrunlerRouteImport.update({
   id: '/urunler',
@@ -37,6 +39,10 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -52,6 +58,11 @@ const OdemeOrderIdRoute = OdemeOrderIdRouteImport.update({
   path: '/odeme/$orderId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedHesabimRoute = AuthenticatedHesabimRouteImport.update({
+  id: '/hesabim',
+  path: '/hesabim',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/nasil-calisir': typeof NasilCalisirRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
+  '/hesabim': typeof AuthenticatedHesabimRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
 }
@@ -68,16 +80,19 @@ export interface FileRoutesByTo {
   '/nasil-calisir': typeof NasilCalisirRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
+  '/hesabim': typeof AuthenticatedHesabimRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
+  '/_authenticated/hesabim': typeof AuthenticatedHesabimRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
 }
@@ -89,6 +104,7 @@ export interface FileRouteTypes {
     | '/nasil-calisir'
     | '/sss'
     | '/urunler'
+    | '/hesabim'
     | '/odeme/$orderId'
     | '/urun/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -98,21 +114,25 @@ export interface FileRouteTypes {
     | '/nasil-calisir'
     | '/sss'
     | '/urunler'
+    | '/hesabim'
     | '/odeme/$orderId'
     | '/urun/$slug'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/auth'
     | '/nasil-calisir'
     | '/sss'
     | '/urunler'
+    | '/_authenticated/hesabim'
     | '/odeme/$orderId'
     | '/urun/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   NasilCalisirRoute: typeof NasilCalisirRoute
   SssRoute: typeof SssRoute
@@ -151,6 +171,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -172,11 +199,30 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OdemeOrderIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/hesabim': {
+      id: '/_authenticated/hesabim'
+      path: '/hesabim'
+      fullPath: '/hesabim'
+      preLoaderRoute: typeof AuthenticatedHesabimRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedHesabimRoute: typeof AuthenticatedHesabimRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedHesabimRoute: AuthenticatedHesabimRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   NasilCalisirRoute: NasilCalisirRoute,
   SssRoute: SssRoute,
