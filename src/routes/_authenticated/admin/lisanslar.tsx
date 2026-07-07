@@ -103,6 +103,7 @@ type Row = {
   activated_at: string | null;
   expires_at: string | null;
   duration_days: number | null;
+  duration_minutes: number | null;
   revoked: boolean;
   last_validated_at: string | null;
   product: { name: string; slug: string } | null;
@@ -116,6 +117,14 @@ function fmt(d: string | null) {
   });
 }
 
+function fmtDuration(mins: number | null): string {
+  if (mins === null || mins === undefined) return "süresiz";
+  if (mins < 60) return `${mins} dk`;
+  if (mins < 1440) return `${Math.round(mins / 60)} sa`;
+  if (mins < 43200) return `${Math.round(mins / 1440)} gün`;
+  return `${Math.round(mins / 43200)} ay`;
+}
+
 function daysLeft(exp: string | null): number | null {
   if (!exp) return null;
   const ms = new Date(exp).getTime() - Date.now();
@@ -127,16 +136,24 @@ function LicensesAdmin() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "revoked" | "expired" | "unactivated">("all");
   const [qty, setQty] = useState(1);
-  const [days, setDays] = useState(30);
+  const [amount, setAmount] = useState(30);
+  const [unit, setUnit] = useState<"minute" | "hour" | "day" | "month">("day");
   const [busy, setBusy] = useState(false);
   const [lastGenerated, setLastGenerated] = useState<string[]>([]);
+
+  const unitToMinutes = (v: number, u: typeof unit): number => {
+    if (u === "minute") return v;
+    if (u === "hour") return v * 60;
+    if (u === "day") return v * 1440;
+    return v * 43200; // month = 30d
+  };
 
   const { data: rows } = useQuery({
     queryKey: ["licenses-manage-lovable"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("license_keys")
-        .select("id, key_value, status, hwid, activated_at, expires_at, duration_days, revoked, last_validated_at, product:products(name, slug)")
+        .select("id, key_value, status, hwid, activated_at, expires_at, duration_days, duration_minutes, revoked, last_validated_at, product:products(name, slug)")
         .eq("product_id", LOVABLE_PRODUCT_ID)
         .order("created_at", { ascending: false })
         .limit(500);
@@ -148,13 +165,16 @@ function LicensesAdmin() {
 
   const generate = async () => {
     if (qty < 1 || qty > 200) return toast.error("Miktar 1-200 arası olmalı");
+    if (amount < 0) return toast.error("Süre negatif olamaz");
     setBusy(true);
     try {
+      const minutes = amount > 0 ? unitToMinutes(amount, unit) : null;
       const keys = Array.from({ length: qty }, () => genKey());
       const rows = keys.map((k) => ({
         product_id: LOVABLE_PRODUCT_ID,
         key_value: k,
-        duration_days: days > 0 ? days : null,
+        duration_minutes: minutes,
+        duration_days: minutes ? Math.max(1, Math.round(minutes / 1440)) : null,
         status: "available" as const,
       }));
       const { error } = await supabase.from("license_keys").insert(rows);
@@ -168,6 +188,7 @@ function LicensesAdmin() {
       setBusy(false);
     }
   };
+
 
   const downloadScript = (key: string) => {
     const blob = new Blob([buildUserscript(key)], { type: "text/plain;charset=utf-8" });
@@ -230,7 +251,7 @@ function LicensesAdmin() {
         <div className="flex items-center gap-2 font-mono text-sm neon-text">
           <Sparkles className="h-4 w-4" /> anahtar üret
         </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-[120px,140px,1fr] sm:items-end">
+        <div className="mt-3 grid gap-3 sm:grid-cols-[100px,110px,120px,1fr] sm:items-end">
           <div>
             <Label className="font-mono text-[11px]">miktar</Label>
             <Input type="number" min={1} max={200} value={qty}
@@ -238,15 +259,26 @@ function LicensesAdmin() {
               className="h-8 font-mono text-sm" />
           </div>
           <div>
-            <Label className="font-mono text-[11px]">süre (gün, 0=süresiz)</Label>
-            <Input type="number" min={0} value={days}
-              onChange={(e) => setDays(parseInt(e.target.value) || 0)}
+            <Label className="font-mono text-[11px]">süre (0=süresiz)</Label>
+            <Input type="number" min={0} value={amount}
+              onChange={(e) => setAmount(parseInt(e.target.value) || 0)}
               className="h-8 font-mono text-sm" />
+          </div>
+          <div>
+            <Label className="font-mono text-[11px]">birim</Label>
+            <select value={unit} onChange={(e) => setUnit(e.target.value as typeof unit)}
+              className="h-8 w-full rounded border border-border bg-input px-2 font-mono text-sm">
+              <option value="minute">dakika</option>
+              <option value="hour">saat</option>
+              <option value="day">gün</option>
+              <option value="month">ay (30g)</option>
+            </select>
           </div>
           <Button disabled={busy} onClick={generate} className="h-8 font-mono">
             <Sparkles className="h-3.5 w-3.5 mr-1" /> üret
           </Button>
         </div>
+
 
         {lastGenerated.length > 0 && (
           <div className="mt-4 rounded border border-primary/30 bg-primary/5 p-3">
@@ -374,7 +406,7 @@ function LicensesAdmin() {
                       )}
                     </div>
                     <div className="text-muted-foreground">
-                      Süre: <span className="text-foreground">{r.duration_days ?? "süresiz"}</span>
+                      Süre: <span className="text-foreground">{fmtDuration(r.duration_minutes ?? (r.duration_days ? r.duration_days * 1440 : null))}</span>
                     </div>
                     <div className="text-muted-foreground">
                       Son doğrulama: <span className="text-foreground">{fmt(r.last_validated_at)}</span>
