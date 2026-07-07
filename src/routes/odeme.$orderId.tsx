@@ -120,6 +120,9 @@ function Payment() {
   const deliveredToken = order.keys?.[0]?.license_key?.activation_token ?? null;
   const deliveryType = (order.product?.delivery_type ?? "key") as DeliveryType;
   const isManual = !!order.product?.manual_fulfillment;
+  const isUnlimited = !!(order.product as { unlimited_stock?: boolean } | null)?.unlimited_stock;
+  const needsManualContact =
+    isManual || isUnlimited || (order.status === "approved" && !deliveredKey);
   const stepIndex = STEPS.findIndex((s) => s.key === currentStep);
 
   return (
