@@ -242,7 +242,7 @@ function LicensesAdmin() {
         <div className="flex items-center gap-2 font-mono text-sm neon-text">
           <Sparkles className="h-4 w-4" /> anahtar üret
         </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-[120px,140px,1fr] sm:items-end">
+        <div className="mt-3 grid gap-3 sm:grid-cols-[100px,110px,120px,1fr] sm:items-end">
           <div>
             <Label className="font-mono text-[11px]">miktar</Label>
             <Input type="number" min={1} max={200} value={qty}
@@ -250,15 +250,26 @@ function LicensesAdmin() {
               className="h-8 font-mono text-sm" />
           </div>
           <div>
-            <Label className="font-mono text-[11px]">süre (gün, 0=süresiz)</Label>
-            <Input type="number" min={0} value={days}
-              onChange={(e) => setDays(parseInt(e.target.value) || 0)}
+            <Label className="font-mono text-[11px]">süre (0=süresiz)</Label>
+            <Input type="number" min={0} value={amount}
+              onChange={(e) => setAmount(parseInt(e.target.value) || 0)}
               className="h-8 font-mono text-sm" />
+          </div>
+          <div>
+            <Label className="font-mono text-[11px]">birim</Label>
+            <select value={unit} onChange={(e) => setUnit(e.target.value as typeof unit)}
+              className="h-8 w-full rounded border border-border bg-input px-2 font-mono text-sm">
+              <option value="minute">dakika</option>
+              <option value="hour">saat</option>
+              <option value="day">gün</option>
+              <option value="month">ay (30g)</option>
+            </select>
           </div>
           <Button disabled={busy} onClick={generate} className="h-8 font-mono">
             <Sparkles className="h-3.5 w-3.5 mr-1" /> üret
           </Button>
         </div>
+
 
         {lastGenerated.length > 0 && (
           <div className="mt-4 rounded border border-primary/30 bg-primary/5 p-3">
