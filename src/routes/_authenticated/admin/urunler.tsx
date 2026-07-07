@@ -148,6 +148,9 @@ function ProductsAdmin() {
                 <div className="font-semibold">{p.name} <span className="text-xs text-muted-foreground">/{p.slug}</span></div>
                 <div className="text-xs text-muted-foreground">{p.duration} · ₺{Number(p.price_try).toLocaleString("tr-TR")}</div>
               </div>
+              <div className="text-[10px] rounded border border-primary/30 bg-primary/5 px-2 py-1 text-primary">
+                {DELIVERY_LABELS[(p.delivery_type ?? "key") as DeliveryType]}
+              </div>
               <div className={`text-xs ${avail < 3 ? "text-warn" : "text-cyan"}`}>
                 stok: {avail} / {total}
               </div>
