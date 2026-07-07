@@ -248,8 +248,11 @@ function ProductsPage() {
                     : stock < 3
                     ? "text-warn border-warn/40 bg-warn/10 animate-pulse"
                     : "text-primary border-primary/30 bg-primary/10";
+                  const isNew =
+                    (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7;
+                  const showStockBar = !manual && !unlimited && stock > 0 && stock <= 10;
                   return (
-                    <div key={p.id} className="glass-card rounded-lg overflow-hidden flex flex-col">
+                    <div key={p.id} className="glass-card rounded-lg overflow-hidden flex flex-col hover:-translate-y-0.5 hover:border-primary/40 transition-all">
                       {p.image_url && (
                         <div className="relative h-32 overflow-hidden border-b border-border/60">
                           <img
@@ -269,6 +272,11 @@ function ProductsPage() {
                           >
                             {manual ? "manuel teslimat" : "otomatik teslimat"}
                           </span>
+                          {isNew && (
+                            <span className="absolute right-3 bottom-3 rounded px-2 py-0.5 font-mono text-[10px] border border-cyan/50 bg-cyan/20 text-cyan animate-pulse">
+                              ✦ YENİ
+                            </span>
+                          )}
                         </div>
                       )}
                       <div className="p-5 flex flex-col flex-1">
@@ -282,6 +290,16 @@ function ProductsPage() {
                           </span>
                           <span className={`rounded px-2 py-0.5 border ${stockCls}`}>● {stockLabel}</span>
                         </div>
+                        {showStockBar && (
+                          <div className="mt-3">
+                            <div className="h-1 rounded-full bg-muted/40 overflow-hidden">
+                              <div
+                                className={`h-full transition-all ${stock <= 3 ? "bg-warn" : "bg-primary"}`}
+                                style={{ width: `${Math.min(100, stock * 10)}%` }}
+                              />
+                            </div>
+                          </div>
+                        )}
                         <div className="mt-auto pt-4">
                           <div className="mb-3 font-mono text-xl neon-text">
                             ₺{Number(p.price_try).toLocaleString("tr-TR")}
