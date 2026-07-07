@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,11 @@ import {
   Instagram,
   Send,
   MessageCircle,
+  TimerReset,
+  Hourglass,
+  FileCheck2,
+  PackageCheck,
+  Sparkles,
 } from "lucide-react";
 
 export const Route = createFileRoute("/odeme/$orderId")({
@@ -34,16 +39,20 @@ export const Route = createFileRoute("/odeme/$orderId")({
 type StepKey = "init" | "transfer" | "receipt" | "delivery";
 
 const STEPS: { key: StepKey; label: string; sub: string }[] = [
-  { key: "init", label: "handshake", sub: "sipariş imzalanıyor" },
-  { key: "transfer", label: "transfer", sub: "havale bilgileri" },
-  { key: "receipt", label: "receipt", sub: "dekont doğrulama" },
-  { key: "delivery", label: "delivery", sub: "key teslimi" },
+  { key: "init", label: "sipariş", sub: "referans oluşturuldu" },
+  { key: "transfer", label: "havale", sub: "banka bilgileri" },
+  { key: "receipt", label: "dekont", sub: "doğrulama" },
+  { key: "delivery", label: "teslimat", sub: "ürün / key" },
 ];
+
+// Ödeme (pending) için maksimum süre — dolarsa kullanıcı sayfadan atılır
+const PAYMENT_WINDOW_SEC = 3 * 60;
 
 function Payment() {
   const { orderId } = Route.useParams();
   const { user } = useAuth();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const markPaidFn = useServerFn(markOrderPaid);
