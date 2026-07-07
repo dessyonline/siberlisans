@@ -193,12 +193,14 @@ function KeysAdmin() {
             </select>
           </div>
           <div>
-            <Label className="font-mono text-xs">key listesi (her satıra bir tane)</Label>
+            <Label className="font-mono text-xs">
+              {hint.title} <span className="text-primary/70">— {hint.help}</span>
+            </Label>
             <Textarea
               rows={8}
               value={raw}
               onChange={(e) => setRaw(e.target.value)}
-              placeholder="XXXX-XXXX-XXXX-XXXX&#10;YYYY-YYYY-YYYY-YYYY"
+              placeholder={hint.placeholder}
               className="font-mono"
             />
           </div>
