@@ -95,67 +95,66 @@ function ProductDetail() {
         )}
 
         <div className="p-6 md:p-8">
-            <h1 className="font-mono text-2xl md:text-3xl font-semibold neon-text">{product.name}</h1>
+          <h1 className="font-mono text-2xl md:text-3xl font-semibold neon-text">{product.name}</h1>
 
-            <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-xs">
-              <StockBadge stock={stock} manual={manual} />
-              {product.category && (
-                <span className="rounded-full border border-border/60 bg-background px-3 py-1 text-muted-foreground">
-                  {product.category}
-                </span>
-              )}
+          <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-xs">
+            <StockBadge stock={stock} manual={manual} />
+            {product.category && (
               <span className="rounded-full border border-border/60 bg-background px-3 py-1 text-muted-foreground">
-                {manual ? "Manuel Teslimat" : "Otomatik Teslimat"}
+                {product.category}
               </span>
-            </div>
-
-            <div className="mt-6 font-mono text-4xl neon-text">
-              ₺{Number(product.price_try).toLocaleString("tr-TR")}
-            </div>
-            <div className="mt-1 font-mono text-xs text-muted-foreground">KDV dahil · Havale/EFT</div>
-
-            <div className="mt-6">
-              <div className="mb-2 font-mono text-sm font-semibold">Ürün Açıklaması:</div>
-              {bullets.length > 1 ? (
-                <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
-                  {bullets.map((b, i) => (
-                    <li key={i}>{b}</li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-muted-foreground">{product.description || "Açıklama bulunmuyor."}</p>
-              )}
-            </div>
-
-            <div className="mt-6 grid grid-cols-3 gap-3 font-mono text-xs">
-              {[
-                { i: Zap, t: "anlık teslim" },
-                { i: ShieldCheck, t: "orijinal key" },
-                { i: CheckCircle2, t: "değişim garantisi" },
-              ].map((b) => (
-                <div key={b.t} className="rounded-md border border-border/60 p-3 flex items-center gap-2">
-                  <b.i className="h-4 w-4 text-primary" />
-                  <span>{b.t}</span>
-                </div>
-              ))}
-            </div>
-
-            <Button
-              disabled={loading || soldOut}
-              onClick={handleBuy}
-              className="mt-8 w-full font-mono neon-glow"
-              size="lg"
-            >
-              {loading
-                ? "işleniyor…"
-                : soldOut
-                ? "stok tükendi"
-                : "> satın al"}
-            </Button>
-            <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center">
-              kredi kartı KABUL EDİLMEZ · sadece banka transferi
-            </p>
+            )}
+            <span className="rounded-full border border-border/60 bg-background px-3 py-1 text-muted-foreground">
+              {manual ? "Manuel Teslimat" : "Otomatik Teslimat"}
+            </span>
           </div>
+
+          <div className="mt-6 font-mono text-4xl neon-text">
+            ₺{Number(product.price_try).toLocaleString("tr-TR")}
+          </div>
+          <div className="mt-1 font-mono text-xs text-muted-foreground">KDV dahil · Havale/EFT</div>
+
+          <div className="mt-6">
+            <div className="mb-2 font-mono text-sm font-semibold">Ürün Açıklaması:</div>
+            {bullets.length > 1 ? (
+              <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                {bullets.map((b, i) => (
+                  <li key={i}>{b}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">{product.description || "Açıklama bulunmuyor."}</p>
+            )}
+          </div>
+
+          <div className="mt-6 grid grid-cols-3 gap-3 font-mono text-xs">
+            {[
+              { i: Zap, t: "anlık teslim" },
+              { i: ShieldCheck, t: "orijinal key" },
+              { i: CheckCircle2, t: "değişim garantisi" },
+            ].map((b) => (
+              <div key={b.t} className="rounded-md border border-border/60 p-3 flex items-center gap-2">
+                <b.i className="h-4 w-4 text-primary" />
+                <span>{b.t}</span>
+              </div>
+            ))}
+          </div>
+
+          <Button
+            disabled={loading || soldOut}
+            onClick={handleBuy}
+            className="mt-8 w-full font-mono neon-glow"
+            size="lg"
+          >
+            {loading
+              ? "işleniyor…"
+              : soldOut
+              ? "stok tükendi"
+              : "> satın al"}
+          </Button>
+          <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center">
+            kredi kartı KABUL EDİLMEZ · sadece banka transferi
+          </p>
         </div>
       </div>
     </div>
