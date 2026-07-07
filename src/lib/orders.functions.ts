@@ -55,6 +55,22 @@ export const markOrderPaid = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const noteInput = z.object({ orderId: z.string().uuid(), note: z.string().min(1).max(1000) });
+
+export const setOrderUserNote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => noteInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { error } = await supabase
+      .from("orders")
+      .update({ user_note: data.note })
+      .eq("id", data.orderId)
+      .eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
 const approveInput = z.object({ orderId: z.string().uuid() });
 
 export const approveOrder = createServerFn({ method: "POST" })

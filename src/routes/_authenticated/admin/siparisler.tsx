@@ -35,7 +35,7 @@ function OrdersAdmin() {
     queryFn: async () => {
       let q = supabase
         .from("orders")
-        .select("id, status, price_try, reference_code, receipt_path, admin_note, created_at, product:products(name), user_id")
+        .select("id, status, price_try, reference_code, receipt_path, admin_note, user_note, created_at, product:products(name, manual_fulfillment), user_id")
         .order("created_at", { ascending: false });
       if (filter !== "all") q = q.eq("status", filter);
       const { data, error } = await q;
@@ -150,6 +150,17 @@ function OrdersAdmin() {
                 )}
               </div>
             </div>
+            {o.product?.manual_fulfillment && (
+              <div className="mt-2 text-[10px] font-mono rounded border border-cyan/40 bg-cyan/10 px-2 py-1 text-cyan inline-block">
+                manuel teslimat
+              </div>
+            )}
+            {o.user_note && (
+              <div className="mt-2 rounded border border-cyan/30 bg-cyan/5 p-2 text-xs">
+                <span className="text-cyan font-semibold">müşteri mesajı:</span>{" "}
+                <span className="text-foreground/90 whitespace-pre-wrap">{o.user_note}</span>
+              </div>
+            )}
             {o.admin_note && (
               <div className="mt-2 text-xs text-destructive">not: {o.admin_note}</div>
             )}

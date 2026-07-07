@@ -134,6 +134,7 @@ export type Database = {
           status: Database["public"]["Enums"]["order_status"]
           updated_at: string
           user_id: string
+          user_note: string | null
         }
         Insert: {
           admin_note?: string | null
@@ -147,6 +148,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           updated_at?: string
           user_id: string
+          user_note?: string | null
         }
         Update: {
           admin_note?: string | null
@@ -160,6 +162,7 @@ export type Database = {
           status?: Database["public"]["Enums"]["order_status"]
           updated_at?: string
           user_id?: string
+          user_note?: string | null
         }
         Relationships: [
           {
