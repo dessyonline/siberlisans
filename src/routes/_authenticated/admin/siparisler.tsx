@@ -366,76 +366,76 @@ function OrdersAdmin() {
               <Button
                 size="sm"
                 variant="ghost"
+                className="text-xs"
                 onClick={() => {
                   const url = `${window.location.origin}/odeme/${o.id}`;
                   navigator.clipboard.writeText(url);
                   toast.success("ödeme linki kopyalandı");
                 }}
               >
-                <Link2 className="h-4 w-4 mr-1" />
-                ödeme linki
+                <Link2 className="h-3.5 w-3.5 mr-1" />
+                <span className="hidden sm:inline">ödeme </span>linki
               </Button>
               {o.receipt_path ? (
-                <Button size="sm" variant="outline" onClick={() => openReceipt(o.receipt_path!)}>
-                  <Eye className="h-4 w-4 mr-1" />
+                <Button size="sm" variant="outline" className="text-xs" onClick={() => openReceipt(o.receipt_path!)}>
+                  <Eye className="h-3.5 w-3.5 mr-1" />
                   dekont
                 </Button>
               ) : (
-                <span className="text-xs text-muted-foreground flex items-center gap-1">
-                  <ImageIcon className="h-3.5 w-3.5" /> dekont yok
+                <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                  <ImageIcon className="h-3 w-3" /> dekont yok
                 </span>
               )}
               <a
                 href="https://t.me/dessyoffical"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs rounded-md border border-primary/40 bg-primary/5 px-2.5 py-1.5 hover:bg-primary/10 text-primary transition"
+                className="inline-flex items-center gap-1 text-[11px] rounded-md border border-primary/40 bg-primary/5 px-2 py-1.5 hover:bg-primary/10 text-primary transition"
               >
-                <Send className="h-3.5 w-3.5" /> Telegram
+                <Send className="h-3 w-3" /> TG
               </a>
               <a
                 href="https://ig.me/m/siber.php"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs rounded-md border border-cyan/40 bg-cyan/5 px-2.5 py-1.5 hover:bg-cyan/10 text-cyan transition"
+                className="inline-flex items-center gap-1 text-[11px] rounded-md border border-cyan/40 bg-cyan/5 px-2 py-1.5 hover:bg-cyan/10 text-cyan transition"
               >
-                <Instagram className="h-3.5 w-3.5" /> Instagram
+                <Instagram className="h-3 w-3" /> IG
               </a>
-              {(o.status === "reviewing" || o.status === "pending") && (
-                <>
-                  <div className="ml-auto flex gap-2">
-                    <Button size="sm" onClick={() => handleApprove(o.id)}>
-                      <Check className="h-4 w-4 mr-1" />
-                      onayla
-                    </Button>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button size="sm" variant="destructive">
-                          <X className="h-4 w-4 mr-1" />
-                          reddet
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Siparişi reddet</DialogTitle>
-                        </DialogHeader>
-                        <Input
-                          placeholder="müşteriye gösterilecek not (opsiyonel)"
-                          value={note}
-                          onChange={(e) => setNote(e.target.value)}
-                        />
-                        <DialogFooter>
-                          <Button variant="destructive" onClick={() => handleReject(o.id)}>
-                            reddet
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  </div>
-                </>
-              )}
             </div>
+            {(o.status === "reviewing" || o.status === "pending") && (
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:justify-end">
+                <Button size="sm" onClick={() => handleApprove(o.id)} className="w-full sm:w-auto">
+                  <Check className="h-4 w-4 mr-1" />
+                  onayla
+                </Button>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button size="sm" variant="destructive" className="w-full sm:w-auto">
+                      <X className="h-4 w-4 mr-1" />
+                      reddet
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Siparişi reddet</DialogTitle>
+                    </DialogHeader>
+                    <Input
+                      placeholder="müşteriye gösterilecek not (opsiyonel)"
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                    />
+                    <DialogFooter>
+                      <Button variant="destructive" onClick={() => handleReject(o.id)}>
+                        reddet
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            )}
           </div>
+
           );
         })}
       </div>
