@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +25,11 @@ import {
   Instagram,
   Send,
   MessageCircle,
+  TimerReset,
+  Hourglass,
+  FileCheck2,
+  PackageCheck,
+  Sparkles,
 } from "lucide-react";
 
 export const Route = createFileRoute("/odeme/$orderId")({
@@ -34,16 +39,20 @@ export const Route = createFileRoute("/odeme/$orderId")({
 type StepKey = "init" | "transfer" | "receipt" | "delivery";
 
 const STEPS: { key: StepKey; label: string; sub: string }[] = [
-  { key: "init", label: "handshake", sub: "sipariş imzalanıyor" },
-  { key: "transfer", label: "transfer", sub: "havale bilgileri" },
-  { key: "receipt", label: "receipt", sub: "dekont doğrulama" },
-  { key: "delivery", label: "delivery", sub: "key teslimi" },
+  { key: "init", label: "sipariş", sub: "referans oluşturuldu" },
+  { key: "transfer", label: "havale", sub: "banka bilgileri" },
+  { key: "receipt", label: "dekont", sub: "doğrulama" },
+  { key: "delivery", label: "teslimat", sub: "ürün / key" },
 ];
+
+// Ödeme (pending) için maksimum süre — dolarsa kullanıcı sayfadan atılır
+const PAYMENT_WINDOW_SEC = 3 * 60;
 
 function Payment() {
   const { orderId } = Route.useParams();
   const { user } = useAuth();
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const markPaidFn = useServerFn(markOrderPaid);
@@ -55,7 +64,7 @@ function Payment() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, status, price_try, reference_code, receipt_path, user_note, created_at, product:products(name, slug, duration, delivery_type, manual_fulfillment, unlimited_stock), keys:order_keys(license_key:license_keys(key_value, activation_token))"
+          "id, status, price_try, reference_code, receipt_path, user_note, created_at, updated_at, approved_at, product:products(name, slug, duration, delivery_type, manual_fulfillment, unlimited_stock), keys:order_keys(license_key:license_keys(key_value, activation_token))"
         )
         .eq("id", orderId)
         .single();
@@ -85,6 +94,26 @@ function Payment() {
     if (order.status === "rejected") return "receipt";
     return "transfer";
   }, [order]);
+
+  // 3 dk ödeme penceresi (pending durumu için)
+  const createdMs = order?.created_at ? new Date(order.created_at).getTime() : null;
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const secondsLeft = createdMs
+    ? Math.max(0, PAYMENT_WINDOW_SEC - Math.floor((nowMs - createdMs) / 1000))
+    : PAYMENT_WINDOW_SEC;
+  const expired = order?.status === "pending" && secondsLeft <= 0;
+
+  useEffect(() => {
+    if (expired) {
+      toast.error("Süre doldu — ödeme yapılmadı, siparişin iptal edildi", { duration: 5000 });
+      const t = setTimeout(() => navigate({ to: "/urunler" }), 400);
+      return () => clearTimeout(t);
+    }
+  }, [expired, navigate]);
 
   const handleFile = async (file: File) => {
     if (!user) return;
@@ -198,12 +227,16 @@ function Payment() {
           {order.status === "rejected" && (
             <div className="glass-card rounded-lg p-6 border-destructive/40">
               <div className="flex items-center gap-2 font-mono text-destructive">
-                <XCircle className="h-5 w-5" /> transfer_rejected
+                <XCircle className="h-5 w-5" /> Ödeme Reddedildi
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
                 Ödemeniz reddedildi. Destek hattımız üzerinden yeni bir referans oluşturabiliriz.
               </p>
             </div>
+          )}
+
+          {order.status === "pending" && (
+            <CountdownBanner secondsLeft={secondsLeft} totalSec={PAYMENT_WINDOW_SEC} />
           )}
 
           {(order.status === "pending" || order.status === "reviewing") && (
@@ -224,7 +257,10 @@ function Payment() {
               />
             </>
           )}
+
+          <OrderTimeline order={order} />
         </div>
+
 
         {/* SIDE: live monitor */}
         <aside className="space-y-4">
@@ -258,12 +294,12 @@ function TransferBlock({
       <div className="flex items-center justify-between">
         <div>
           <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
-            [02/04] · transfer_channel
+            [02/04] · havale kanalı
           </div>
           <h2 className="mt-1 font-mono text-xl neon-text">Havale / EFT</h2>
         </div>
         <div className="hidden sm:flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-1.5 font-mono text-xs text-primary">
-          <Lock className="h-3.5 w-3.5" /> secure_channel
+          <Lock className="h-3.5 w-3.5" /> güvenli kanal
         </div>
       </div>
 
@@ -281,7 +317,7 @@ function TransferBlock({
           />
           <div className="pt-2">
             <div className="text-[10px] tracking-widest text-muted-foreground mb-1">
-              açıklama / reference_key
+              açıklama / referans kodu
             </div>
             <button
               onClick={() => copy(reference, "Referans")}
@@ -373,14 +409,14 @@ function ReceiptBlock({
       <div className="flex items-center justify-between">
         <div>
           <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
-            [03/04] · receipt_upload
+            [03/04] · dekont yükleme
           </div>
           <h2 className="mt-1 font-mono text-xl neon-text">Dekont Doğrulama</h2>
         </div>
         {reviewing && (
           <div className="flex items-center gap-2 font-mono text-xs text-cyan">
             <span className="h-2 w-2 rounded-full bg-cyan animate-pulse" />
-            analyzing…
+            inceleniyor…
           </div>
         )}
       </div>
@@ -420,13 +456,13 @@ function ReceiptBlock({
         />
         <div className="mt-3 font-mono text-sm">
           {uploading
-            ? "→ uploading & signing…"
+            ? "→ yükleniyor & imzalanıyor…"
             : dragOver
             ? "// bırak, doğrulamayı başlatayım"
             : "dekont/makbuz dosyasını buraya sürükle"}
         </div>
         <div className="mt-1 font-mono text-[10px] text-muted-foreground">
-          jpg · png · pdf · max 5MB · AES-256 şifreli depolama
+          jpg · png · pdf · maks 5MB · AES-256 şifreli depolama
         </div>
         {!uploading && (
           <Button
@@ -447,7 +483,7 @@ function ReceiptBlock({
       {receiptPath && (
         <div className="mt-3 flex items-center gap-2 font-mono text-xs text-primary">
           <CheckCircle2 className="h-4 w-4" />
-          hash_verified: {receiptPath.split("/").pop()}
+          dosya alındı: {receiptPath.split("/").pop()}
         </div>
       )}
     </section>
@@ -754,3 +790,160 @@ function ManualContactBlock({
     </section>
   );
 }
+
+/* ============================ COUNTDOWN ============================ */
+
+function CountdownBanner({ secondsLeft, totalSec }: { secondsLeft: number; totalSec: number }) {
+  const mm = String(Math.floor(secondsLeft / 60)).padStart(2, "0");
+  const ss = String(secondsLeft % 60).padStart(2, "0");
+  const pct = Math.max(0, Math.min(100, (secondsLeft / totalSec) * 100));
+  const critical = secondsLeft <= 30;
+  const warn = secondsLeft <= 60;
+  const tone = critical
+    ? "border-destructive/60 bg-destructive/10 text-destructive"
+    : warn
+    ? "border-warn/60 bg-warn/10 text-warn"
+    : "border-primary/40 bg-primary/5 text-primary";
+
+  return (
+    <div className={`glass-card rounded-lg p-4 border ${tone}`}>
+      <div className="flex items-center gap-3">
+        <Hourglass className={`h-5 w-5 ${critical ? "animate-pulse" : ""}`} />
+        <div className="flex-1">
+          <div className="font-mono text-xs tracking-widest uppercase opacity-80">
+            ödeme süresi
+          </div>
+          <div className="font-mono text-2xl neon-text tabular-nums">
+            {mm}:{ss}
+          </div>
+        </div>
+        <div className="text-right font-mono text-[11px] opacity-80 max-w-[180px]">
+          Bu süre içinde dekont yüklenmezse sipariş iptal edilir.
+        </div>
+      </div>
+      <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-background/60">
+        <div
+          className={`h-full transition-all ${
+            critical ? "bg-destructive" : warn ? "bg-warn" : "bg-primary"
+          }`}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ============================ TIMELINE ============================ */
+
+function OrderTimeline({
+  order,
+}: {
+  order: {
+    status: string;
+    created_at?: string;
+    updated_at?: string;
+    approved_at?: string | null;
+    receipt_path?: string | null;
+  };
+}) {
+  const fmt = (iso?: string | null) =>
+    iso
+      ? new Date(iso).toLocaleString("tr-TR", {
+          day: "2-digit",
+          month: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "—";
+
+  const status = order.status;
+  const hasReceipt = !!order.receipt_path;
+  const isApproved = status === "approved";
+  const isRejected = status === "rejected";
+  const isReviewing = status === "reviewing" || isApproved || isRejected;
+
+  const steps = [
+    {
+      icon: Sparkles,
+      title: "Sipariş oluşturuldu",
+      desc: "Referans kodu üretildi",
+      time: fmt(order.created_at),
+      state: "done" as const,
+    },
+    {
+      icon: FileCheck2,
+      title: "Dekont yüklendi",
+      desc: hasReceipt ? "Ödeme sisteme iletildi" : "Bekleniyor",
+      time: hasReceipt ? fmt(order.updated_at) : "—",
+      state: hasReceipt ? ("done" as const) : ("pending" as const),
+    },
+    {
+      icon: ShieldCheck,
+      title: "Ödeme inceleniyor",
+      desc: isRejected
+        ? "Ödeme reddedildi"
+        : isReviewing
+        ? "Operatör doğruluyor"
+        : "Sırada",
+      time: isReviewing ? fmt(order.updated_at) : "—",
+      state: isRejected
+        ? ("error" as const)
+        : isApproved
+        ? ("done" as const)
+        : isReviewing
+        ? ("active" as const)
+        : ("pending" as const),
+    },
+    {
+      icon: PackageCheck,
+      title: "Teslimat tamamlandı",
+      desc: isApproved ? "Ürün hesabına tanımlandı" : "Onayla birlikte açılır",
+      time: isApproved ? fmt(order.approved_at ?? order.updated_at) : "—",
+      state: isApproved ? ("done" as const) : ("pending" as const),
+    },
+  ];
+
+  return (
+    <section className="glass-card rounded-lg p-6">
+      <div className="flex items-center gap-2">
+        <TimerReset className="h-4 w-4 text-primary" />
+        <h3 className="font-mono text-sm tracking-widest uppercase text-muted-foreground">
+          sipariş durum çizelgesi
+        </h3>
+      </div>
+
+      <ol className="mt-5 relative">
+        <div className="absolute left-[15px] top-2 bottom-2 w-px bg-border/60" />
+        {steps.map((s, i) => {
+          const color =
+            s.state === "done"
+              ? "text-primary border-primary/60 bg-primary/10"
+              : s.state === "active"
+              ? "text-cyan border-cyan/60 bg-cyan/10 animate-pulse"
+              : s.state === "error"
+              ? "text-destructive border-destructive/60 bg-destructive/10"
+              : "text-muted-foreground border-border/60 bg-background/40";
+          return (
+            <li key={i} className="relative flex gap-4 pb-5 last:pb-0">
+              <div
+                className={`relative z-10 h-8 w-8 shrink-0 rounded-full border flex items-center justify-center ${color}`}
+              >
+                <s.icon className="h-4 w-4" />
+              </div>
+              <div className="flex-1 pt-0.5">
+                <div className="flex items-baseline justify-between gap-3">
+                  <div className="font-mono text-sm">{s.title}</div>
+                  <div className="font-mono text-[10px] text-muted-foreground tabular-nums">
+                    {s.time}
+                  </div>
+                </div>
+                <div className="text-xs text-muted-foreground mt-0.5">{s.desc}</div>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
