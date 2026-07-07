@@ -192,18 +192,21 @@ type Row = {
   stock_hint: number | null;
   unlimited_stock: boolean | null;
   created_at: string;
+  sort_order?: number | null;
+  tier?: string | null;
   license_keys: { status: string }[] | null;
 };
 
+// Kategori grupları — talep sırasına göre: AI en önce, sonra görsel/office...
 const GROUPS: { key: string; label: string; cats: string[] }[] = [
-  { key: "windows", label: "Windows", cats: ["Windows 10/11", "Windows Server"] },
+  { key: "ai", label: "Yapay Zeka", cats: ["ChatGPT", "Google Gemini", "Lovable", "Claude", "Nano Banana", "Midjourney", "Ideogram"] },
   {
     key: "gorsel",
     label: "Görsel & Tasarım",
     cats: ["Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array", "CorelDRAW", "Autodesk"],
   },
-  { key: "ai", label: "Yapay Zeka", cats: ["ChatGPT", "Google Gemini", "Nano Banana", "Midjourney", "Ideogram"] },
   { key: "office", label: "Microsoft Office", cats: ["Office (Ömürlük)", "Office 365"] },
+  { key: "windows", label: "Windows", cats: ["Windows 10/11", "Windows Server"] },
   { key: "oyun", label: "Oyunlar", cats: ["Steam Oyunları"] },
   { key: "email", label: "E-posta", cats: ["Email Hesapları"] },
 ];
@@ -212,6 +215,7 @@ function groupOf(cat: string | null): string {
   const c = cat ?? "Diğer";
   return GROUPS.find((g) => g.cats.includes(c))?.key ?? "diger";
 }
+
 
 function ProductsPage() {
   const { data } = useQuery({
