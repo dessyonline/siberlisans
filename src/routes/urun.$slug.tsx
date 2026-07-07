@@ -57,8 +57,9 @@ function ProductDetail() {
   if (!product) return <div className="p-12 font-mono text-center">ürün bulunamadı</div>;
 
   const liveStock = (product.license_keys ?? []).filter((k: { status: string }) => k.status === "available").length;
+  const stock = liveStock > 0 ? liveStock : (product.stock_hint ?? 0);
   const manual = !!product.manual_fulfillment;
-  const soldOut = !manual && liveStock === 0;
+  const soldOut = !manual && stock === 0;
   const bullets = (product.description ?? "")
     .split("|")
     .map((s) => s.trim())
