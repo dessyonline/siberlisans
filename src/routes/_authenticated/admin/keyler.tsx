@@ -244,14 +244,14 @@ function KeysAdmin() {
               ({filteredKeys.length}/{(keys ?? []).length})
             </span>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <div className="relative flex-1 sm:flex-none min-w-0">
               <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="key veya ürün ara…"
-                className="pl-7 pr-7 h-8 w-56 font-mono text-xs"
+                className="pl-7 pr-7 h-8 w-full sm:w-56 font-mono text-xs"
               />
               {search && (
                 <button
