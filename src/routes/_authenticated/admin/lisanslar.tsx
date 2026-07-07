@@ -383,6 +383,13 @@ function LicensesAdmin() {
                 </div>
 
                 <div className="flex flex-wrap gap-1">
+                  <Button size="sm" variant="outline" className="h-7 font-mono text-[11px]"
+                    onClick={() => { navigator.clipboard.writeText(r.key_value); toast.success("kopyalandı"); }}>
+                    <Copy className="h-3 w-3 mr-1" /> kopyala
+                  </Button>
+                  <Button size="sm" variant="outline" className="h-7 font-mono text-[11px]" onClick={() => downloadScript(r.key_value)}>
+                    <Download className="h-3 w-3 mr-1" /> .user.js
+                  </Button>
                   <Button size="sm" variant="outline" className="h-7 font-mono text-[11px]" onClick={() => setDuration(r.id)}>
                     <Clock className="h-3 w-3 mr-1" /> süre
                   </Button>
