@@ -50,7 +50,7 @@ function Payment() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, status, price_try, reference_code, receipt_path, created_at, product:products(name, slug, duration), keys:order_keys(license_key:license_keys(key_value))"
+          "id, status, price_try, reference_code, receipt_path, created_at, product:products(name, slug, duration, delivery_type), keys:order_keys(license_key:license_keys(key_value, activation_token))"
         )
         .eq("id", orderId)
         .single();
