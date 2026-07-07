@@ -175,8 +175,29 @@ function ProductsAdmin() {
                 <div className="flex items-center gap-2 font-mono text-sm">
                   <Switch checked={editing?.unlimited_stock ?? false} onCheckedChange={(v) => setEditing((p) => ({ ...p!, unlimited_stock: v }))} />
                   <span>sınırsız stok ∞</span>
+              </div>
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <Field
+                  label="sıra (yüksek = üstte)"
+                  value={String(editing?.sort_order ?? 0)}
+                  onChange={(v) => setEditing((p) => ({ ...p!, sort_order: Number(v) || 0 }))}
+                  type="number"
+                />
+                <div>
+                  <Label className="font-mono text-xs">seviye</Label>
+                  <select
+                    value={editing?.tier ?? "standard"}
+                    onChange={(e) => setEditing((p) => ({ ...p!, tier: e.target.value as "standard" | "epic" }))}
+                    className="w-full rounded border border-border bg-input px-3 py-2 font-mono text-sm"
+                  >
+                    <option value="standard">standart</option>
+                    <option value="epic">★ destansı (özel tema)</option>
+                  </select>
                 </div>
               </div>
+              <p className="font-mono text-[10px] text-muted-foreground">
+                "öne çıkan" = ana sayfada Popüler Lisanslar'da gösterilir · "sıra" = büyük olan önce · "destansı" = kartta altın/mor cyber tema
+              </p>
             </div>
             <DialogFooter>
               <Button onClick={save} className="font-mono">kaydet</Button>
