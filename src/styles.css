@@ -191,6 +191,41 @@
 }
 @utility glitch { animation: glitch 3.5s infinite; }
 @utility grid-drift { animation: grid-drift 20s linear infinite; }
+
+/* Cyber typewriter caret */
+@keyframes caret-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@utility caret-blink { animation: caret-blink 1s steps(1) infinite; }
+
+/* Rotating word: slide + fade + blur */
+@keyframes word-in {
+  0%   { opacity: 0; transform: translateY(0.35em); filter: blur(6px); letter-spacing: 0.15em; }
+  60%  { opacity: 1; transform: translateY(0);      filter: blur(0);   letter-spacing: 0; }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@utility word-in { animation: word-in 0.55s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+/* Neon sweep across headline */
+@keyframes neon-sweep {
+  0%   { background-position: -150% 0; }
+  100% { background-position: 250% 0; }
+}
+@utility neon-sweep {
+  background-image: linear-gradient(
+    90deg,
+    oklch(0.85 0.24 145 / 0.85) 0%,
+    #ffffff 50%,
+    oklch(0.85 0.24 145 / 0.85) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: neon-sweep 5s linear infinite;
+}
+
+/* Terminal char reveal */
+@keyframes type-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@utility type-in { animation: type-in 1.2s steps(40, end) both; }
 @utility scan-line {
   position: relative;
   &::before {
