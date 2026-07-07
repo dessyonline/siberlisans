@@ -14,12 +14,21 @@ export const Route = createFileRoute("/_authenticated/admin/keyler")({
   component: KeysAdmin,
 });
 
+type DeliveryType = "key" | "account" | "link" | "link_token";
+const DELIVERY_HINTS: Record<DeliveryType, { title: string; placeholder: string; help: string }> = {
+  key: { title: "Lisans anahtarları", placeholder: "XXXX-XXXX-XXXX-XXXX\nYYYY-YYYY-YYYY-YYYY", help: "her satıra bir anahtar" },
+  account: { title: "Hesap bilgileri", placeholder: "kullanici1@mail.com:sifre1\nkullanici2@mail.com:sifre2", help: "her satıra 'email:şifre'" },
+  link: { title: "Aktivasyon linkleri", placeholder: "https://ornek.com/davet/abc\nhttps://ornek.com/davet/xyz", help: "her satıra bir URL" },
+  link_token: { title: "Token payload'ları", placeholder: "PAYLOAD-1\nPAYLOAD-2", help: "her satıra bir metin. Müşteriye /aktivasyon/{token} linki gösterilir." },
+};
+
 type PoolRow = {
   id: string;
   name: string;
   slug: string;
   active: boolean;
   price_try: number;
+  delivery_type: DeliveryType;
   license_keys: { status: string }[];
 };
 
