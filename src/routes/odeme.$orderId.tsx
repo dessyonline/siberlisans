@@ -227,12 +227,16 @@ function Payment() {
           {order.status === "rejected" && (
             <div className="glass-card rounded-lg p-6 border-destructive/40">
               <div className="flex items-center gap-2 font-mono text-destructive">
-                <XCircle className="h-5 w-5" /> transfer_rejected
+                <XCircle className="h-5 w-5" /> Ödeme Reddedildi
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
                 Ödemeniz reddedildi. Destek hattımız üzerinden yeni bir referans oluşturabiliriz.
               </p>
             </div>
+          )}
+
+          {order.status === "pending" && (
+            <CountdownBanner secondsLeft={secondsLeft} totalSec={PAYMENT_WINDOW_SEC} />
           )}
 
           {(order.status === "pending" || order.status === "reviewing") && (
@@ -253,7 +257,10 @@ function Payment() {
               />
             </>
           )}
+
+          <OrderTimeline order={order} />
         </div>
+
 
         {/* SIDE: live monitor */}
         <aside className="space-y-4">
