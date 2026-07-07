@@ -1,6 +1,6 @@
 import { createFileRoute, Outlet, redirect, Link, useLocation } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { LayoutDashboard, ShoppingCart, Package, KeyRound, Settings, ArrowLeft, Users, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, ShoppingCart, Package, KeyRound, Settings, ArrowLeft, Users, ShieldCheck, Ticket } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   ssr: false,
@@ -20,6 +20,8 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
   { to: "/admin/keyler", label: "key havuzu", icon: KeyRound },
   { to: "/admin/lisanslar", label: "lisanslar", icon: ShieldCheck },
   { to: "/admin/kullanicilar", label: "kullanıcılar", icon: Users },
+  { to: "/admin/promosyonlar", label: "promosyonlar", icon: Ticket },
+
   { to: "/admin/ayarlar", label: "ayarlar", icon: Settings },
 ];
 

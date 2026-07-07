@@ -106,6 +106,45 @@ export type Database = {
           },
         ]
       }
+      order_discounts: {
+        Row: {
+          code_snapshot: string
+          created_at: string
+          discount_try: number
+          order_id: string
+          promo_code_id: string
+        }
+        Insert: {
+          code_snapshot: string
+          created_at?: string
+          discount_try: number
+          order_id: string
+          promo_code_id: string
+        }
+        Update: {
+          code_snapshot?: string
+          created_at?: string
+          discount_try?: number
+          order_id?: string
+          promo_code_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_discounts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_discounts_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_keys: {
         Row: {
           delivered_at: string
@@ -279,6 +318,62 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_codes: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          discount_type: Database["public"]["Enums"]["promo_type"]
+          discount_value: number
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          min_amount: number
+          note: string | null
+          product_id: string | null
+          updated_at: string
+          used_count: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          discount_type?: Database["public"]["Enums"]["promo_type"]
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          min_amount?: number
+          note?: string | null
+          product_id?: string | null
+          updated_at?: string
+          used_count?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          discount_type?: Database["public"]["Enums"]["promo_type"]
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          min_amount?: number
+          note?: string | null
+          product_id?: string | null
+          updated_at?: string
+          used_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promo_codes_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -338,6 +433,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      apply_promo_code: {
+        Args: { _code: string; _order_id: string }
+        Returns: {
+          code: string
+          discount_try: number
+          final_price: number
+        }[]
+      }
       approve_order: {
         Args: { _order_id: string }
         Returns: {
@@ -362,6 +465,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      remove_promo_code: { Args: { _order_id: string }; Returns: undefined }
       validate_license: { Args: { _hwid: string; _key: string }; Returns: Json }
     }
     Enums: {
@@ -370,6 +474,7 @@ export type Database = {
       duration_type: "monthly" | "yearly" | "lifetime"
       key_status: "available" | "assigned" | "revoked"
       order_status: "pending" | "reviewing" | "approved" | "rejected"
+      promo_type: "percent" | "fixed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -502,6 +607,7 @@ export const Constants = {
       duration_type: ["monthly", "yearly", "lifetime"],
       key_status: ["available", "assigned", "revoked"],
       order_status: ["pending", "reviewing", "approved", "rejected"],
+      promo_type: ["percent", "fixed"],
     },
   },
 } as const

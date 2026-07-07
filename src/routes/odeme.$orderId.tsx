@@ -4,7 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
-import { markOrderPaid, setOrderUserNote } from "@/lib/orders.functions";
+import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode } from "@/lib/orders.functions";
+import { Input } from "@/components/ui/input";
+
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import enparaQr from "@/assets/enpara-qr.png";
 import { Button } from "@/components/ui/button";
@@ -30,7 +32,10 @@ import {
   FileCheck2,
   PackageCheck,
   Sparkles,
+  Ticket,
+  Tag,
 } from "lucide-react";
+
 
 export const Route = createFileRoute("/odeme/$orderId")({
   component: Payment,
@@ -64,7 +69,7 @@ function Payment() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, status, price_try, reference_code, receipt_path, user_note, created_at, updated_at, approved_at, product:products(name, slug, duration, delivery_type, manual_fulfillment, unlimited_stock), keys:order_keys(license_key:license_keys(key_value, activation_token))"
+          "id, status, price_try, reference_code, receipt_path, user_note, created_at, updated_at, approved_at, product:products(name, slug, duration, delivery_type, manual_fulfillment, unlimited_stock), keys:order_keys(license_key:license_keys(key_value, activation_token)), discount:order_discounts(discount_try, code_snapshot)"
         )
         .eq("id", orderId)
         .single();
@@ -73,6 +78,7 @@ function Payment() {
     },
     refetchInterval: 4000,
   });
+
 
   const { data: bank } = useQuery({
     queryKey: ["bank", "active"],
@@ -244,24 +250,44 @@ function Payment() {
 
           {(order.status === "pending" || order.status === "reviewing") && (
             <>
-              <TransferBlock
-                bank={bank}
-                amount={Number(order.price_try)}
-                reference={order.reference_code}
-                productName={order.product?.name ?? ""}
-                productDuration={order.product?.duration}
-              />
-              <ReceiptBlock
-                dragOver={dragOver}
-                setDragOver={setDragOver}
-                uploading={uploading}
-                fileRef={fileRef}
-                onFile={handleFile}
-                reviewing={order.status === "reviewing"}
-                receiptPath={order.receipt_path}
-              />
+              {(() => {
+                const disc = Array.isArray(order.discount) ? order.discount[0] : order.discount;
+                const discountTry = Number(disc?.discount_try ?? 0);
+                const codeSnap = disc?.code_snapshot ?? null;
+                const finalAmount = Math.max(0, Number(order.price_try) - discountTry);
+                return (
+                  <>
+                    <PromoBlock
+                      orderId={orderId}
+                      originalPrice={Number(order.price_try)}
+                      discountTry={discountTry}
+                      appliedCode={codeSnap}
+                    />
+                    <TransferBlock
+                      bank={bank}
+                      amount={finalAmount}
+                      originalAmount={Number(order.price_try)}
+                      discountTry={discountTry}
+                      appliedCode={codeSnap}
+                      reference={order.reference_code}
+                      productName={order.product?.name ?? ""}
+                      productDuration={order.product?.duration}
+                    />
+                    <ReceiptBlock
+                      dragOver={dragOver}
+                      setDragOver={setDragOver}
+                      uploading={uploading}
+                      fileRef={fileRef}
+                      onFile={handleFile}
+                      reviewing={order.status === "reviewing"}
+                      receiptPath={order.receipt_path}
+                    />
+                  </>
+                );
+              })()}
             </>
           )}
+
 
           <OrderTimeline order={order} />
         </div>
@@ -282,12 +308,18 @@ function Payment() {
 function TransferBlock({
   bank,
   amount,
+  originalAmount,
+  discountTry,
+  appliedCode,
   reference,
   productName,
   productDuration,
 }: {
   bank: { bank_name?: string; holder_name?: string; iban?: string } | null | undefined;
   amount: number;
+  originalAmount?: number;
+  discountTry?: number;
+  appliedCode?: string | null;
   reference: string;
   productName: string;
   productDuration?: string;
@@ -305,6 +337,7 @@ function TransferBlock({
       : productDuration === "lifetime"
       ? "Ömür Boyu"
       : null;
+  const hasDiscount = (discountTry ?? 0) > 0;
 
   return (
     <section className="glass-card rounded-lg p-6">
@@ -340,12 +373,23 @@ function TransferBlock({
             <div className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
               tutar
             </div>
+            {hasDiscount && originalAmount !== undefined && (
+              <div className="mt-1 font-mono text-xs text-muted-foreground line-through">
+                ₺{originalAmount.toLocaleString("tr-TR")}
+              </div>
+            )}
             <div className="mt-1 font-mono text-lg neon-text">
               ₺{amount.toLocaleString("tr-TR")}
             </div>
+            {hasDiscount && appliedCode && (
+              <div className="mt-1 inline-flex items-center gap-1 rounded border border-warn/40 bg-warn/10 px-2 py-0.5 font-mono text-[10px] text-warn">
+                <Tag className="h-3 w-3" /> {appliedCode} · −₺{(discountTry ?? 0).toLocaleString("tr-TR")}
+              </div>
+            )}
           </div>
         </div>
       </div>
+
 
       <div className="mt-5 grid gap-5 md:grid-cols-[1fr_auto]">
         {/* Bank fields */}
@@ -990,4 +1034,96 @@ function OrderTimeline({
     </section>
   );
 }
+
+/* ============================ PROMO ============================ */
+
+function PromoBlock({
+  orderId,
+  originalPrice,
+  discountTry,
+  appliedCode,
+}: {
+  orderId: string;
+  originalPrice: number;
+  discountTry: number;
+  appliedCode: string | null;
+}) {
+  const qc = useQueryClient();
+  const applyFn = useServerFn(applyPromoCode);
+  const removeFn = useServerFn(removePromoCode);
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const hasDiscount = discountTry > 0 && !!appliedCode;
+  const finalPrice = Math.max(0, originalPrice - discountTry);
+
+  const apply = async () => {
+    if (!code.trim()) return;
+    setBusy(true);
+    try {
+      const res = await applyFn({ data: { orderId, code: code.trim() } });
+      toast.success(`Kod uygulandı: −₺${res.discountTry.toLocaleString("tr-TR")}`);
+      setCode("");
+      qc.invalidateQueries({ queryKey: ["order", orderId] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async () => {
+    setBusy(true);
+    try {
+      await removeFn({ data: { orderId } });
+      toast.success("Kod kaldırıldı");
+      qc.invalidateQueries({ queryKey: ["order", orderId] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="glass-card rounded-lg p-5">
+      <div className="flex items-center gap-2 font-mono text-sm">
+        <Ticket className="h-4 w-4 text-primary" />
+        <span className="neon-text">Promosyon Kodu</span>
+      </div>
+      {hasDiscount ? (
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="font-mono text-lg text-primary neon-text flex items-center gap-2">
+              <Tag className="h-4 w-4" /> {appliedCode}
+            </div>
+            <div className="mt-1 text-xs font-mono text-muted-foreground">
+              <span className="line-through">₺{originalPrice.toLocaleString("tr-TR")}</span>{" "}
+              → <span className="text-primary">₺{finalPrice.toLocaleString("tr-TR")}</span>{" "}
+              <span className="text-warn">(−₺{discountTry.toLocaleString("tr-TR")})</span>
+            </div>
+          </div>
+          <Button size="sm" variant="outline" onClick={remove} disabled={busy}>
+            kaldır
+          </Button>
+        </div>
+      ) : (
+        <div className="mt-3 flex gap-2">
+          <Input
+            value={code}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
+            placeholder="KODUNUZ"
+            className="font-mono uppercase"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") apply();
+            }}
+          />
+          <Button onClick={apply} disabled={busy || !code.trim()}>
+            uygula
+          </Button>
+        </div>
+      )}
+    </section>
+  );
+}
+
 
