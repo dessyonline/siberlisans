@@ -4,7 +4,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
-import { markOrderPaid, setOrderUserNote } from "@/lib/orders.functions";
+import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode } from "@/lib/orders.functions";
+import { Input } from "@/components/ui/input";
+
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import enparaQr from "@/assets/enpara-qr.png";
 import { Button } from "@/components/ui/button";
@@ -30,7 +32,10 @@ import {
   FileCheck2,
   PackageCheck,
   Sparkles,
+  Ticket,
+  Tag,
 } from "lucide-react";
+
 
 export const Route = createFileRoute("/odeme/$orderId")({
   component: Payment,
