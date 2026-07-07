@@ -492,14 +492,16 @@ function ProductCard({ product: p }: { product: Row }) {
     ? "text-warn border-warn/40 bg-warn/10 animate-pulse"
     : "text-primary border-primary/30 bg-primary/10";
   const isNew = (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7;
-  
+  const epic = p.tier === "epic";
+
 
   return (
-    <div className="group relative glass-card rounded-xl overflow-hidden flex flex-col glass-card-hover border border-border/60">
+    <div className={`group relative rounded-xl overflow-hidden flex flex-col glass-card-hover ${epic ? "epic-card border border-transparent" : "glass-card border border-border/60"}`}>
       <div className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none">
         <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-primary/15 blur-[60px]" />
         <div className="absolute -left-20 -bottom-20 h-40 w-40 rounded-full bg-cyan/10 blur-[60px]" />
       </div>
+      {epic && <div className="pointer-events-none absolute inset-0 epic-shimmer" aria-hidden />}
 
       {(() => {
         const cv = catVisual(p.category);
@@ -507,7 +509,11 @@ function ProductCard({ product: p }: { product: Row }) {
         return (
           <div
             className="relative h-40 overflow-hidden border-b border-border/60"
-            style={{ background: `radial-gradient(circle at 30% 30%, ${cv.hue.replace(")", " / 0.18)")}, transparent 65%), oklch(0.13 0.02 145)` }}
+            style={{
+              background: epic
+                ? "radial-gradient(circle at 30% 30%, oklch(0.78 0.16 75 / 0.28), transparent 60%), radial-gradient(circle at 80% 80%, oklch(0.65 0.20 300 / 0.20), transparent 55%), oklch(0.13 0.02 145)"
+                : `radial-gradient(circle at 30% 30%, ${cv.hue.replace(")", " / 0.18)")}, transparent 65%), oklch(0.13 0.02 145)`,
+            }}
           >
             {/* cyber grid backdrop */}
             <div className="pointer-events-none absolute inset-0 cyber-grid opacity-40" aria-hidden />
