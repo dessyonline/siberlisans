@@ -79,15 +79,57 @@ export function DeliveryPayload({
   }
 
   // default: key
+  const isLovable = /^LVBL-/i.test(keyValue);
   return (
-    <div className="flex items-center gap-2 rounded border border-primary/30 bg-primary/5 px-3 py-2 font-mono text-primary text-sm">
-      <KeyRound className="h-4 w-4" />
-      <code className="flex-1 break-all">{keyValue}</code>
-      <button onClick={() => copy(keyValue, "Key")}>
-        <Copy className="h-3.5 w-3.5" />
-      </button>
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 rounded border border-primary/30 bg-primary/5 px-3 py-2 font-mono text-primary text-sm">
+        <KeyRound className="h-4 w-4" />
+        <code className="flex-1 break-all">{keyValue}</code>
+        <button onClick={() => copy(keyValue, "Key")}>
+          <Copy className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      {isLovable && (
+        <button
+          onClick={() => downloadLovableUserscript(keyValue)}
+          className="flex w-full items-center justify-center gap-2 rounded border border-cyan/40 bg-cyan/5 px-3 py-2 font-mono text-xs text-cyan hover:bg-cyan/10"
+        >
+          <Download className="h-3.5 w-3.5" />
+          Tampermonkey scriptini indir (.user.js)
+        </button>
+      )}
     </div>
   );
+}
+
+function downloadLovableUserscript(licenseKey: string) {
+  const script = `// ==UserScript==
+// @name         Lovable Sınırsız — Kredisiz
+// @namespace    https://siberlisans.lovable.app
+// @version      1.0.0
+// @match        https://lovable.dev/*
+// @match        https://*.lovable.dev/*
+// @run-at       document-start
+// @grant        GM_getValue
+// @grant        GM_setValue
+// ==/UserScript==
+(function(){"use strict";
+  const API="https://siberlisans.lovable.app",KEY="${licenseKey}";
+  const hwid=(()=>{let h=GM_getValue("siber_hwid",null);if(!h){h=crypto.randomUUID();GM_setValue("siber_hwid",h);}return h;})();
+  const post=(p,b)=>fetch(API+p,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)}).then(r=>r.json());
+  (async()=>{try{
+    const act=GM_getValue("siber_activated",false),last=Number(GM_getValue("siber_last_check",0));
+    if(!act){const r=await post("/api/activate",{license_key:KEY,hwid});if(!r.success)throw new Error(r.error);GM_setValue("siber_activated",true);GM_setValue("siber_last_check",Date.now());}
+    else if(Date.now()-last>6*3600*1000){const r=await post("/api/validate",{license_key:KEY,hwid});if(!r.valid)throw new Error(r.error);GM_setValue("siber_last_check",Date.now());}
+  }catch(e){alert("Lisans hatası: "+e.message);}})();
+})();`;
+  const blob = new Blob([script], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `lovable-lisans-${licenseKey.slice(-8)}.user.js`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function Row({ icon, label, value, mono }: { icon: React.ReactNode; label: string; value: string; mono?: boolean }) {
