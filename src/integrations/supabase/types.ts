@@ -179,6 +179,7 @@ export type Database = {
           delivery_type: Database["public"]["Enums"]["delivery_type"]
           description: string | null
           duration: Database["public"]["Enums"]["duration_type"]
+          featured: boolean
           id: string
           image_url: string | null
           manual_fulfillment: boolean
@@ -195,6 +196,7 @@ export type Database = {
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           duration?: Database["public"]["Enums"]["duration_type"]
+          featured?: boolean
           id?: string
           image_url?: string | null
           manual_fulfillment?: boolean
@@ -211,6 +213,7 @@ export type Database = {
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           duration?: Database["public"]["Enums"]["duration_type"]
+          featured?: boolean
           id?: string
           image_url?: string | null
           manual_fulfillment?: boolean
