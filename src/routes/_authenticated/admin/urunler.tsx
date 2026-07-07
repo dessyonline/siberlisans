@@ -35,6 +35,10 @@ type Product = {
   delivery_type: DeliveryType;
   price_try: number;
   active: boolean;
+  category: string | null;
+  manual_fulfillment: boolean;
+  stock_hint: number | null;
+  featured: boolean;
 };
 
 function ProductsAdmin() {
