@@ -264,8 +264,8 @@ function ProductDetail() {
                     </div>
                   </div>
                   <div className="hidden sm:flex flex-col items-end gap-1 font-mono text-[10px] text-muted-foreground">
-                    <span className="text-primary">✓ dekont gerekmez ≥ ₺100</span>
-                    <span>referans kodu ile eşleşir</span>
+                    <span className="text-primary">✓ anında teslim</span>
+                    <span>7/24 destek</span>
                   </div>
                 </div>
               </div>
