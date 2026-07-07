@@ -103,6 +103,7 @@ type Row = {
   activated_at: string | null;
   expires_at: string | null;
   duration_days: number | null;
+  duration_minutes: number | null;
   revoked: boolean;
   last_validated_at: string | null;
   product: { name: string; slug: string } | null;
