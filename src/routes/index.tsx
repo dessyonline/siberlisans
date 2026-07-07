@@ -326,15 +326,23 @@ function Index() {
       });
   }, [products]);
 
-  const recent = useMemo(() => {
-    return [...(products ?? [])]
-      .sort(
-        (a, b) =>
-          new Date((b as { created_at: string }).created_at).getTime() -
-          new Date((a as { created_at: string }).created_at).getTime(),
-      )
-      .slice(0, 8);
-  }, [products]);
+  // Genel sıralama yardımcısı: destansı → sıra → tarih
+  const adminOrder = (list: typeof products) =>
+    [...(list ?? [])].sort((a, b) => {
+      const ea = ((a as { tier?: string }).tier === "epic") ? 0 : 1;
+      const eb = ((b as { tier?: string }).tier === "epic") ? 0 : 1;
+      if (ea !== eb) return ea - eb;
+      const sa = (a as { sort_order?: number }).sort_order ?? 0;
+      const sb = (b as { sort_order?: number }).sort_order ?? 0;
+      if (sa !== sb) return sb - sa;
+      return (
+        new Date((b as { created_at: string }).created_at).getTime() -
+        new Date((a as { created_at: string }).created_at).getTime()
+      );
+    });
+
+  const recent = useMemo(() => adminOrder(products).slice(0, 8), [products]);
+  const activeSorted = useMemo(() => adminOrder(products), [products]);
 
   const searchResults = useMemo(() => {
     const q = search.trim().toLowerCase();
