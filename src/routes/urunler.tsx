@@ -10,9 +10,20 @@ export const Route = createFileRoute("/urunler")({
   component: ProductsPage,
   head: () => ({
     meta: [
-      { title: "Lisanslar — SiberPHP" },
-      { name: "description", content: "SiberPHP lisans kataloğu. Havale/EFT ile güvenli teslimat." },
+      { title: "Lisans Kataloğu — SiberPHP" },
+      {
+        name: "description",
+        content:
+          "Windows, Office, Adobe, ChatGPT, Midjourney ve daha fazlası. Havale/EFT ile anında teslim edilen orijinal lisans anahtarları.",
+      },
+      { property: "og:title", content: "Lisans Kataloğu — SiberPHP" },
+      {
+        property: "og:description",
+        content: "Anında teslim edilen orijinal yazılım lisansları — Windows, Office, Adobe, AI araçları ve daha fazlası.",
+      },
+      { property: "og:url", content: "https://siberlisans.lovable.app/urunler" },
     ],
+    links: [{ rel: "canonical", href: "https://siberlisans.lovable.app/urunler" }],
   }),
 });
 

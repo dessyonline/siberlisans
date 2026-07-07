@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UrunlerRouteImport } from './routes/urunler'
 import { Route as SssRouteImport } from './routes/sss'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
@@ -35,6 +36,11 @@ const UrunlerRoute = UrunlerRouteImport.update({
 const SssRoute = SssRouteImport.update({
   id: '/sss',
   path: '/sss',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NasilCalisirRoute = NasilCalisirRouteImport.update({
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/nasil-calisir': typeof NasilCalisirRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/nasil-calisir': typeof NasilCalisirRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
@@ -158,6 +166,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/nasil-calisir': typeof NasilCalisirRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/nasil-calisir'
+    | '/sitemap.xml'
     | '/sss'
     | '/urunler'
     | '/admin'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/nasil-calisir'
+    | '/sitemap.xml'
     | '/sss'
     | '/urunler'
     | '/hesabim'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/nasil-calisir'
+    | '/sitemap.xml'
     | '/sss'
     | '/urunler'
     | '/_authenticated/admin'
@@ -234,6 +246,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   NasilCalisirRoute: typeof NasilCalisirRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SssRoute: typeof SssRoute
   UrunlerRoute: typeof UrunlerRoute
   AktivasyonTokenRoute: typeof AktivasyonTokenRoute
@@ -255,6 +268,13 @@ declare module '@tanstack/react-router' {
       path: '/sss'
       fullPath: '/sss'
       preLoaderRoute: typeof SssRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nasil-calisir': {
@@ -407,6 +427,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   NasilCalisirRoute: NasilCalisirRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SssRoute: SssRoute,
   UrunlerRoute: UrunlerRoute,
   AktivasyonTokenRoute: AktivasyonTokenRoute,
@@ -416,13 +437,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
