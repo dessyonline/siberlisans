@@ -250,24 +250,44 @@ function Payment() {
 
           {(order.status === "pending" || order.status === "reviewing") && (
             <>
-              <TransferBlock
-                bank={bank}
-                amount={Number(order.price_try)}
-                reference={order.reference_code}
-                productName={order.product?.name ?? ""}
-                productDuration={order.product?.duration}
-              />
-              <ReceiptBlock
-                dragOver={dragOver}
-                setDragOver={setDragOver}
-                uploading={uploading}
-                fileRef={fileRef}
-                onFile={handleFile}
-                reviewing={order.status === "reviewing"}
-                receiptPath={order.receipt_path}
-              />
+              {(() => {
+                const disc = Array.isArray(order.discount) ? order.discount[0] : order.discount;
+                const discountTry = Number(disc?.discount_try ?? 0);
+                const codeSnap = disc?.code_snapshot ?? null;
+                const finalAmount = Math.max(0, Number(order.price_try) - discountTry);
+                return (
+                  <>
+                    <PromoBlock
+                      orderId={orderId}
+                      originalPrice={Number(order.price_try)}
+                      discountTry={discountTry}
+                      appliedCode={codeSnap}
+                    />
+                    <TransferBlock
+                      bank={bank}
+                      amount={finalAmount}
+                      originalAmount={Number(order.price_try)}
+                      discountTry={discountTry}
+                      appliedCode={codeSnap}
+                      reference={order.reference_code}
+                      productName={order.product?.name ?? ""}
+                      productDuration={order.product?.duration}
+                    />
+                    <ReceiptBlock
+                      dragOver={dragOver}
+                      setDragOver={setDragOver}
+                      uploading={uploading}
+                      fileRef={fileRef}
+                      onFile={handleFile}
+                      reviewing={order.status === "reviewing"}
+                      receiptPath={order.receipt_path}
+                    />
+                  </>
+                );
+              })()}
             </>
           )}
+
 
           <OrderTimeline order={order} />
         </div>
