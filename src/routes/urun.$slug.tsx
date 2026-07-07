@@ -99,7 +99,7 @@ function ProductDetail() {
           <h1 className="font-mono text-2xl md:text-3xl font-semibold neon-text">{product.name}</h1>
 
           <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-xs">
-            <StockBadge stock={stock} manual={manual} />
+            <StockBadge stock={stock} manual={manual} unlimited={unlimited} />
             {product.category && (
               <span className="rounded-full border border-border/60 bg-background px-3 py-1 text-muted-foreground">
                 {product.category}
