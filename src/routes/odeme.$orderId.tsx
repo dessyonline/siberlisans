@@ -55,7 +55,7 @@ function Payment() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, status, price_try, reference_code, receipt_path, user_note, created_at, product:products(name, slug, duration, delivery_type, manual_fulfillment), keys:order_keys(license_key:license_keys(key_value, activation_token))"
+          "id, status, price_try, reference_code, receipt_path, user_note, created_at, product:products(name, slug, duration, delivery_type, manual_fulfillment, unlimited_stock), keys:order_keys(license_key:license_keys(key_value, activation_token))"
         )
         .eq("id", orderId)
         .single();
@@ -120,6 +120,9 @@ function Payment() {
   const deliveredToken = order.keys?.[0]?.license_key?.activation_token ?? null;
   const deliveryType = (order.product?.delivery_type ?? "key") as DeliveryType;
   const isManual = !!order.product?.manual_fulfillment;
+  const isUnlimited = !!(order.product as { unlimited_stock?: boolean } | null)?.unlimited_stock;
+  const needsManualContact =
+    isManual || isUnlimited || (order.status === "approved" && !deliveredKey);
   const stepIndex = STEPS.findIndex((s) => s.key === currentStep);
 
   return (
@@ -182,7 +185,7 @@ function Payment() {
             />
           )}
 
-          {isManual && (order.status === "reviewing" || order.status === "approved") && (
+          {needsManualContact && (order.status === "reviewing" || order.status === "approved") && (
             <ManualContactBlock
               orderId={orderId}
               reference={order.reference_code}
