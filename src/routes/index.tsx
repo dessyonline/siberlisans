@@ -326,15 +326,23 @@ function Index() {
       });
   }, [products]);
 
-  const recent = useMemo(() => {
-    return [...(products ?? [])]
-      .sort(
-        (a, b) =>
-          new Date((b as { created_at: string }).created_at).getTime() -
-          new Date((a as { created_at: string }).created_at).getTime(),
-      )
-      .slice(0, 8);
-  }, [products]);
+  // Genel sıralama yardımcısı: destansı → sıra → tarih
+  const adminOrder = (list: typeof products) =>
+    [...(list ?? [])].sort((a, b) => {
+      const ea = ((a as { tier?: string }).tier === "epic") ? 0 : 1;
+      const eb = ((b as { tier?: string }).tier === "epic") ? 0 : 1;
+      if (ea !== eb) return ea - eb;
+      const sa = (a as { sort_order?: number }).sort_order ?? 0;
+      const sb = (b as { sort_order?: number }).sort_order ?? 0;
+      if (sa !== sb) return sb - sa;
+      return (
+        new Date((b as { created_at: string }).created_at).getTime() -
+        new Date((a as { created_at: string }).created_at).getTime()
+      );
+    });
+
+  const recent = useMemo(() => adminOrder(products).slice(0, 8), [products]);
+  const activeSorted = useMemo(() => adminOrder(products), [products]);
 
   const searchResults = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -678,7 +686,7 @@ function Index() {
           <h2 className="mt-2 text-2xl sm:text-3xl neon-text">Aktif Lisanslar</h2>
         </div>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {(products ?? []).slice(0, 9).map((p) => (
+          {activeSorted.slice(0, 9).map((p) => (
             <ProductCard key={p.id} p={p} />
           ))}
           {!products &&
