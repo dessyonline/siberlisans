@@ -23,6 +23,13 @@ import {
   Search,
   X,
   Sparkles,
+  MonitorSmartphone,
+  Palette,
+  Brain,
+  FileText,
+  Gamepad2,
+  Mail,
+  ArrowRight,
 } from "lucide-react";
 import { ProductCardSkeleton } from "@/components/Skeleton";
 
