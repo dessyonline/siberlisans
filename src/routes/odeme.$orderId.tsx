@@ -61,6 +61,8 @@ function Payment() {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const markPaidFn = useServerFn(markOrderPaid);
+  const finalizeFreeFn = useServerFn(finalizeFreeOrder);
+  const [finalizing, setFinalizing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const { data: order } = useQuery({
