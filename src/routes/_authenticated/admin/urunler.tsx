@@ -201,8 +201,8 @@ function ProductsAdmin() {
               {p.manual_fulfillment && (
                 <div className="text-[10px] rounded border border-warn/40 bg-warn/10 px-2 py-1 text-warn">manuel</div>
               )}
-              <div className={`text-xs ${stockShown < 3 ? "text-warn" : "text-cyan"}`}>
-                stok: {avail}/{total}{p.stock_hint != null && ` · hint:${p.stock_hint}`}
+              <div className={`text-xs ${p.unlimited_stock ? "text-cyan" : (stockShown < 3 ? "text-warn" : "text-cyan")}`}>
+                stok: {p.unlimited_stock ? "∞" : `${avail}/${total}`}{!p.unlimited_stock && p.stock_hint != null && ` · hint:${p.stock_hint}`}
               </div>
               <div className={`text-xs ${p.active ? "text-primary" : "text-muted-foreground"}`}>
                 {p.active ? "aktif" : "pasif"}
