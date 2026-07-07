@@ -686,7 +686,7 @@ function Index() {
           <h2 className="mt-2 text-2xl sm:text-3xl neon-text">Aktif Lisanslar</h2>
         </div>
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {(products ?? []).slice(0, 9).map((p) => (
+          {activeSorted.slice(0, 9).map((p) => (
             <ProductCard key={p.id} p={p} />
           ))}
           {!products &&
