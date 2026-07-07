@@ -9,8 +9,70 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Info, ShieldCheck, Zap, CheckCircle2, X } from "lucide-react";
 
+const productMetaQuery = (slug: string) => ({
+  queryKey: ["product-meta", slug],
+  queryFn: async () => {
+    const { data } = await supabase
+      .from("products")
+      .select("name, description, image_url, price_try, category")
+      .eq("slug", slug)
+      .eq("active", true)
+      .maybeSingle();
+    return data;
+  },
+});
+
 export const Route = createFileRoute("/urun/$slug")({
   component: ProductDetail,
+  loader: async ({ params, context }) => {
+    const q = productMetaQuery(params.slug);
+    const product = await (context as { queryClient: import("@tanstack/react-query").QueryClient }).queryClient.ensureQueryData(q);
+    return { product };
+  },
+  head: ({ params, loaderData }) => {
+    const p = loaderData?.product;
+    const url = `https://siberlisans.lovable.app/urun/${params.slug}`;
+    const title = p ? `${p.name} — SiberPHP` : "Lisans — SiberPHP";
+    const desc = p?.description
+      ? p.description.replace(/\|/g, " · ").slice(0, 155)
+      : "SiberPHP üzerinden güvenli ve anında teslim edilen yazılım lisansı.";
+    const meta: Array<Record<string, string>> = [
+      { title },
+      { name: "description", content: desc },
+      { property: "og:title", content: title },
+      { property: "og:description", content: desc },
+      { property: "og:type", content: "product" },
+      { property: "og:url", content: url },
+    ];
+    if (p?.image_url) {
+      meta.push({ property: "og:image", content: p.image_url });
+      meta.push({ name: "twitter:image", content: p.image_url });
+    }
+    const scripts = p
+      ? [
+          {
+            type: "application/ld+json",
+            children: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Product",
+              name: p.name,
+              description: desc,
+              image: p.image_url || undefined,
+              category: p.category || undefined,
+              brand: { "@type": "Brand", name: "SiberPHP" },
+              offers: {
+                "@type": "Offer",
+                priceCurrency: "TRY",
+                price: Number(p.price_try),
+                url,
+                availability: "https://schema.org/InStock",
+              },
+            }),
+          },
+        ]
+      : [];
+    return { meta, links: [{ rel: "canonical", href: url }], scripts };
+  },
 });
 
 const DUR: Record<string, string> = { monthly: "aylık", yearly: "yıllık", lifetime: "ömürlük" };
