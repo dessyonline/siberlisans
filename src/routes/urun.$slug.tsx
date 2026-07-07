@@ -66,7 +66,7 @@ function ProductDetail() {
     .filter(Boolean);
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10">
+    <div className="mx-auto max-w-2xl px-4 py-10">
       <div className="mb-6 flex items-center justify-between">
         <Link to="/urunler" className="font-mono text-sm text-muted-foreground hover:text-primary">
           ← tüm lisanslar
@@ -84,18 +84,17 @@ function ProductDetail() {
           </div>
         </div>
 
-        <div className="grid gap-0 md:grid-cols-[420px,1fr]">
-          {product.image_url && (
-            <div className="relative h-56 md:h-80 overflow-hidden border-b md:border-b-0 md:border-r border-border/60 bg-black/30 flex items-center justify-center p-6">
-              <img
-                src={product.image_url}
-                alt={product.name}
-                className="h-full w-full object-contain"
-              />
-            </div>
-          )}
+        {product.image_url && (
+          <div className="relative h-56 md:h-72 overflow-hidden border-b border-border/60 bg-black/30 flex items-center justify-center p-6">
+            <img
+              src={product.image_url}
+              alt={product.name}
+              className="h-full w-full object-contain"
+            />
+          </div>
+        )}
 
-          <div className="p-6 md:p-8">
+        <div className="p-6 md:p-8">
             <h1 className="font-mono text-2xl md:text-3xl font-semibold neon-text">{product.name}</h1>
 
             <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-xs">
