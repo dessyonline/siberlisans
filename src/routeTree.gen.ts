@@ -19,6 +19,7 @@ import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
 import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
 import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 
 const UrunlerRoute = UrunlerRouteImport.update({
   id: '/urunler',
@@ -69,6 +70,11 @@ const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -76,10 +82,11 @@ export interface FileRoutesByFullPath {
   '/nasil-calisir': typeof NasilCalisirRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
-  '/admin': typeof AuthenticatedAdminRouteRoute
+  '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
+  '/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -87,10 +94,10 @@ export interface FileRoutesByTo {
   '/nasil-calisir': typeof NasilCalisirRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
-  '/admin': typeof AuthenticatedAdminRouteRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
+  '/admin': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -100,10 +107,11 @@ export interface FileRoutesById {
   '/nasil-calisir': typeof NasilCalisirRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
-  '/_authenticated/admin': typeof AuthenticatedAdminRouteRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/hesabim': typeof AuthenticatedHesabimRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
+  '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,6 +125,7 @@ export interface FileRouteTypes {
     | '/hesabim'
     | '/odeme/$orderId'
     | '/urun/$slug'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -124,10 +133,10 @@ export interface FileRouteTypes {
     | '/nasil-calisir'
     | '/sss'
     | '/urunler'
-    | '/admin'
     | '/hesabim'
     | '/odeme/$orderId'
     | '/urun/$slug'
+    | '/admin'
   id:
     | '__root__'
     | '/'
@@ -140,6 +149,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hesabim'
     | '/odeme/$orderId'
     | '/urun/$slug'
+    | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -225,16 +235,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/admin/': {
+      id: '/_authenticated/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
   }
 }
 
+interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
+}
+
+const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
+  {
+    AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
+  }
+
+const AuthenticatedAdminRouteRouteWithChildren =
+  AuthenticatedAdminRouteRoute._addFileChildren(
+    AuthenticatedAdminRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRoute
+  AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedHesabimRoute: typeof AuthenticatedHesabimRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRoute,
+  AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedHesabimRoute: AuthenticatedHesabimRoute,
 }
 
