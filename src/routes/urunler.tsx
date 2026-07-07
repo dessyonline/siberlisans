@@ -56,7 +56,7 @@ function ProductsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, license_keys(status)")
         .eq("active", true)
         .order("price_try");
       if (error) throw error;
