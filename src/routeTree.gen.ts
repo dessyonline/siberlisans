@@ -13,6 +13,7 @@ import { Route as UrunlerRouteImport } from './routes/urunler'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
+import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
 
 const UrunlerRoute = UrunlerRouteImport.update({
   id: '/urunler',
@@ -34,17 +35,24 @@ const UrunSlugRoute = UrunSlugRouteImport.update({
   path: '/urun/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OdemeOrderIdRoute = OdemeOrderIdRouteImport.update({
+  id: '/odeme/$orderId',
+  path: '/odeme/$orderId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/urunler': typeof UrunlerRoute
+  '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/urunler': typeof UrunlerRoute
+  '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,28 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/urunler': typeof UrunlerRoute
+  '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/urunler' | '/urun/$slug'
+  fullPaths: '/' | '/auth' | '/urunler' | '/odeme/$orderId' | '/urun/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/urunler' | '/urun/$slug'
-  id: '__root__' | '/' | '/auth' | '/urunler' | '/urun/$slug'
+  to: '/' | '/auth' | '/urunler' | '/odeme/$orderId' | '/urun/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/urunler'
+    | '/odeme/$orderId'
+    | '/urun/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   UrunlerRoute: typeof UrunlerRoute
+  OdemeOrderIdRoute: typeof OdemeOrderIdRoute
   UrunSlugRoute: typeof UrunSlugRoute
 }
 
@@ -99,6 +115,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UrunSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/odeme/$orderId': {
+      id: '/odeme/$orderId'
+      path: '/odeme/$orderId'
+      fullPath: '/odeme/$orderId'
+      preLoaderRoute: typeof OdemeOrderIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -106,6 +129,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   UrunlerRoute: UrunlerRoute,
+  OdemeOrderIdRoute: OdemeOrderIdRoute,
   UrunSlugRoute: UrunSlugRoute,
 }
 export const routeTree = rootRouteImport
