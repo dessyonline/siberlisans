@@ -528,16 +528,7 @@ function ProductCard({ product: p }: { product: Row }) {
           </span>
           <span className={`rounded px-2 py-0.5 border ${stockCls}`}>● {stockLabel}</span>
         </div>
-        {showStockBar && (
-          <div className="mt-3">
-            <div className="h-1 rounded-full bg-muted/40 overflow-hidden">
-              <div
-                className={`h-full transition-all ${stock <= 3 ? "bg-warn" : "bg-primary"}`}
-                style={{ width: `${Math.min(100, stock * 10)}%` }}
-              />
-            </div>
-          </div>
-        )}
+        <CyberStockLoader stock={stock} manual={manual} unlimited={unlimited} soldOut={soldOut} />
         <div className="mt-auto pt-4">
           <div className="mb-3 font-mono text-2xl neon-text">
             ₺{Number(p.price_try).toLocaleString("tr-TR")}
