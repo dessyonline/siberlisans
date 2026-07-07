@@ -250,10 +250,47 @@ function OrdersAdmin() {
           <MessageCircle className="h-3.5 w-3.5" />
           mesajlı ({messageCount})
         </button>
+        <Button variant="outline" size="sm" onClick={exportCsv} className="font-mono">
+          <Download className="h-3.5 w-3.5 mr-1" /> CSV
+        </Button>
         <div className="text-xs text-muted-foreground font-mono ml-auto">
           {filtered.length} sonuç
         </div>
       </div>
+
+      {selectableIds.length > 0 && (
+        <div className="glass-card rounded-xl p-3 flex flex-wrap items-center gap-3 border-primary/30">
+          <button
+            onClick={toggleAll}
+            className="flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-mono hover:border-primary/40"
+          >
+            {allSelected ? <CheckSquare className="h-3.5 w-3.5 text-primary" /> : <Square className="h-3.5 w-3.5" />}
+            {allSelected ? "tümünü kaldır" : `tümünü seç (${selectableIds.length})`}
+          </button>
+          <div className="text-xs font-mono text-muted-foreground">
+            <span className="text-primary font-semibold">{selected.size}</span> seçili
+          </div>
+          <div className="ml-auto flex gap-2">
+            <Button
+              size="sm"
+              disabled={selected.size === 0 || bulkBusy}
+              onClick={bulkApprove}
+              className="font-mono"
+            >
+              <Check className="h-3.5 w-3.5 mr-1" /> toplu onayla
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={selected.size === 0 || bulkBusy}
+              onClick={bulkReject}
+              className="font-mono"
+            >
+              <X className="h-3.5 w-3.5 mr-1" /> toplu reddet
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-3">
         {filtered.length === 0 && (
@@ -261,10 +298,23 @@ function OrdersAdmin() {
             bu filtrede sipariş yok
           </div>
         )}
-        {filtered.map((o) => (
-          <div key={o.id} className="glass-card rounded-xl p-5">
+        {filtered.map((o) => {
+          const canSelect = o.status === "reviewing" || o.status === "pending";
+          const isSel = selected.has(o.id);
+          return (
+          <div key={o.id} className={`glass-card rounded-xl p-5 transition ${isSel ? "border-primary/60 bg-primary/5" : ""}`}>
             <div className="flex flex-wrap items-start gap-4 justify-between">
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 flex gap-3">
+                {canSelect && (
+                  <button
+                    onClick={() => toggleOne(o.id)}
+                    className="shrink-0 pt-1 text-muted-foreground hover:text-primary"
+                    aria-label="seç"
+                  >
+                    {isSel ? <CheckSquare className="h-4 w-4 text-primary" /> : <Square className="h-4 w-4" />}
+                  </button>
+                )}
+                <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold text-base">{o.product?.name}</span>
                   <span className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md border ${STATUS_CLS[o.status]}`}>
