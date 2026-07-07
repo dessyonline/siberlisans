@@ -187,28 +187,100 @@ function ProductDetail() {
           </div>
 
           <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
-            {/* Left: image / key visual */}
-            <div className="relative border-b md:border-b-0 md:border-r border-border/60 bg-black/40 min-h-[280px] flex items-center justify-center p-8 overflow-hidden">
-              <div className="pointer-events-none absolute inset-0 cyber-grid opacity-40" aria-hidden />
-              {product.image_url ? (
-                <img
-                  src={product.image_url}
-                  alt={product.name}
-                  className="relative h-full max-h-64 w-auto object-contain drop-shadow-[0_0_30px_oklch(0.82_0.20_145/0.35)]"
+            {/* Left: digital ID card */}
+            <div className="relative border-b md:border-b-0 md:border-r border-border/60 bg-black/40 p-4 sm:p-6 flex items-center justify-center">
+              <div className="pointer-events-none absolute inset-0 cyber-grid opacity-30" aria-hidden />
+
+              {/* ID CARD */}
+              <div className="relative w-full max-w-[420px] mx-auto rounded-xl overflow-hidden border border-primary/40 bg-gradient-to-br from-[oklch(0.16_0.03_145)] via-[oklch(0.13_0.02_180)] to-[oklch(0.14_0.04_270)] shadow-[0_0_30px_oklch(0.82_0.20_145/0.25),inset_0_0_0_1px_oklch(0.82_0.20_145/0.15)]">
+                {/* holographic sheen */}
+                <div
+                  className="pointer-events-none absolute inset-0 opacity-30 mix-blend-screen"
+                  aria-hidden
+                  style={{
+                    background:
+                      "linear-gradient(115deg, transparent 30%, oklch(0.85 0.18 200 / 0.35) 45%, oklch(0.75 0.18 300 / 0.30) 55%, transparent 70%)",
+                  }}
                 />
-              ) : (
-                <div className="relative flex flex-col items-center gap-3 text-primary">
-                  <KeyRound className="h-20 w-20 opacity-80 drop-shadow-[0_0_20px_oklch(0.82_0.20_145/0.6)]" />
-                  <span className="font-mono text-xs text-muted-foreground uppercase tracking-widest">
-                    {product.category ?? "lisans"}
-                  </span>
+                {/* micro-print grid */}
+                <div className="pointer-events-none absolute inset-0 cyber-grid opacity-20" aria-hidden />
+
+                {/* card header */}
+                <div className="relative flex items-center justify-between border-b border-primary/25 bg-black/30 px-3 py-2 backdrop-blur-sm">
+                  <div className="flex items-center gap-2 font-mono text-[9px] uppercase tracking-[0.28em] text-primary/90">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-60" />
+                      <span className="relative h-1.5 w-1.5 rounded-full bg-primary" />
+                    </span>
+                    digital_license · id-card
+                  </div>
+                  <div className="font-mono text-[9px] text-primary/70 tracking-wider">
+                    #{(product.id ?? "").slice(0, 8).toUpperCase()}
+                  </div>
                 </div>
-              )}
-              {/* corner brackets */}
-              <span className="absolute top-3 left-3 h-4 w-4 border-l-2 border-t-2 border-primary/50" />
-              <span className="absolute top-3 right-3 h-4 w-4 border-r-2 border-t-2 border-primary/50" />
-              <span className="absolute bottom-3 left-3 h-4 w-4 border-l-2 border-b-2 border-primary/50" />
-              <span className="absolute bottom-3 right-3 h-4 w-4 border-r-2 border-b-2 border-primary/50" />
+
+                {/* image window (16:10) */}
+                <div className="relative aspect-[16/10] w-full bg-black/50 overflow-hidden">
+                  {/* corner brackets */}
+                  <span className="pointer-events-none absolute top-2 left-2 h-3 w-3 border-l border-t border-primary/60" />
+                  <span className="pointer-events-none absolute top-2 right-2 h-3 w-3 border-r border-t border-primary/60" />
+                  <span className="pointer-events-none absolute bottom-2 left-2 h-3 w-3 border-l border-b border-primary/60" />
+                  <span className="pointer-events-none absolute bottom-2 right-2 h-3 w-3 border-r border-b border-primary/60" />
+                  {product.image_url ? (
+                    <img
+                      src={product.image_url}
+                      alt={product.name}
+                      className="relative h-full w-full object-contain p-4 drop-shadow-[0_0_18px_oklch(0.82_0.20_145/0.45)]"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-primary">
+                      <KeyRound className="h-16 w-16 opacity-80 drop-shadow-[0_0_20px_oklch(0.82_0.20_145/0.6)]" />
+                      <span className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
+                        {product.category ?? "lisans"}
+                      </span>
+                    </div>
+                  )}
+                  {/* scanline */}
+                  <div className="pointer-events-none absolute inset-x-0 top-0 h-full scan-line opacity-30" aria-hidden />
+                </div>
+
+                {/* card body: identity strip */}
+                <div className="relative px-3 py-3 border-t border-primary/20 bg-black/40">
+                  <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
+                    <div className="min-w-0">
+                      <div className="font-mono text-[9px] uppercase tracking-[0.28em] text-primary/70">
+                        product_holder
+                      </div>
+                      <div className="mt-0.5 font-mono text-sm text-foreground truncate">
+                        {product.name}
+                      </div>
+                      <div className="mt-1 font-mono text-[9px] uppercase tracking-[0.24em] text-muted-foreground">
+                        cat · <span className="text-primary/90">{product.category ?? "license"}</span>
+                      </div>
+                    </div>
+                    {/* chip */}
+                    <div
+                      className="h-9 w-11 rounded border border-primary/40 relative overflow-hidden"
+                      style={{
+                        background:
+                          "linear-gradient(135deg, oklch(0.80 0.15 85) 0%, oklch(0.90 0.16 95) 45%, oklch(0.65 0.15 75) 100%)",
+                      }}
+                      aria-hidden
+                    >
+                      <div className="absolute inset-1 grid grid-cols-2 grid-rows-3 gap-[1px]">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                          <span key={i} className="bg-black/40 rounded-[1px]" />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* MRZ-like footer */}
+                  <div className="mt-3 font-mono text-[9px] text-primary/70 tracking-[0.15em] break-all border-t border-primary/15 pt-2">
+                    &lt;LIC&lt;{(product.slug ?? "").toUpperCase().padEnd(12, "<").slice(0, 12)}&lt;&lt;{String(product.duration ?? "std").toUpperCase().slice(0, 4)}&lt;&lt;{(product.id ?? "").replace(/-/g, "").slice(0, 10).toUpperCase()}
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Right: info */}
