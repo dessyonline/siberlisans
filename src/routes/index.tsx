@@ -24,6 +24,7 @@ import {
   X,
   Sparkles,
 } from "lucide-react";
+import { ProductCardSkeleton } from "@/components/Skeleton";
 
 export const Route = createFileRoute("/")({
   component: Index,
