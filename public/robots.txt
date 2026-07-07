@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /hesabim
+Disallow: /odeme
+Disallow: /aktivasyon
+Disallow: /auth
+
+Sitemap: https://siberlisans.lovable.app/sitemap.xml

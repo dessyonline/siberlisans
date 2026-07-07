@@ -24,6 +24,7 @@ import {
   X,
   Sparkles,
 } from "lucide-react";
+import { ProductCardSkeleton } from "@/components/Skeleton";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -274,11 +275,8 @@ function Index() {
           {(products ?? []).slice(0, 9).map((p) => (
             <ProductCard key={p.id} p={p} />
           ))}
-          {!products && (
-            <div className="col-span-full text-center text-muted-foreground font-mono text-sm py-12">
-              yükleniyor...
-            </div>
-          )}
+          {!products &&
+            Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)}
         </div>
         {(products?.length ?? 0) > 9 && (
           <div className="mt-8 flex justify-center">

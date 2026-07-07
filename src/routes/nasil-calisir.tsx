@@ -24,5 +24,17 @@ export const Route = createFileRoute("/nasil-calisir")({
       </ol>
     </div>
   ),
-  head: () => ({ meta: [{ title: "Nasıl Çalışır — SiberPHP" }] }),
+  head: () => ({
+    meta: [
+      { title: "Nasıl Çalışır? — SiberPHP" },
+      {
+        name: "description",
+        content: "SiberPHP'te lisans satın alma adımları: ürün seç, referans kodunla havale yap, dekont yükle, anahtarını dakikalar içinde al.",
+      },
+      { property: "og:title", content: "Nasıl Çalışır? — SiberPHP" },
+      { property: "og:description", content: "5 adımda güvenli lisans teslimi — referans, havale, dekont, onay, anahtar." },
+      { property: "og:url", content: "https://siberlisans.lovable.app/nasil-calisir" },
+    ],
+    links: [{ rel: "canonical", href: "https://siberlisans.lovable.app/nasil-calisir" }],
+  }),
 });

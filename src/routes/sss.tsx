@@ -24,5 +24,31 @@ export const Route = createFileRoute("/sss")({
       </Accordion>
     </div>
   ),
-  head: () => ({ meta: [{ title: "SSS — SiberPHP" }] }),
+  head: () => ({
+    meta: [
+      { title: "Sık Sorulan Sorular — SiberPHP" },
+      {
+        name: "description",
+        content: "Ödeme, teslim süresi, key değişimi, fatura, KVKK — SiberPHP hakkında en çok sorulan soruların yanıtları.",
+      },
+      { property: "og:title", content: "SSS — SiberPHP" },
+      { property: "og:description", content: "SiberPHP hakkında en çok sorulan sorular ve yanıtları." },
+      { property: "og:url", content: "https://siberlisans.lovable.app/sss" },
+    ],
+    links: [{ rel: "canonical", href: "https://siberlisans.lovable.app/sss" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: FAQS.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
+        }),
+      },
+    ],
+  }),
 });
