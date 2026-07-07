@@ -504,7 +504,9 @@ function ProductCard({
     : false;
   const showStockBar = !manual && !unlimited && stock > 0 && stock <= 10;
   return (
-    <div className={`glass-card rounded-xl p-5 flex flex-col group transition-all hover:-translate-y-0.5 hover:border-primary/40 relative ${featured ? "border-warn/30" : ""}`}>
+    <div className={`glass-card glass-card-hover rounded-xl p-5 flex flex-col group relative overflow-hidden ${featured ? "border-warn/30" : ""}`}>
+      {/* corner shine on hover */}
+      <div className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" aria-hidden />
       {isNew && (
         <span className="absolute -top-2 -right-2 rounded-full px-2 py-0.5 font-mono text-[10px] border border-cyan/50 bg-cyan/20 text-cyan animate-pulse shadow-lg">
           ✦ YENİ
