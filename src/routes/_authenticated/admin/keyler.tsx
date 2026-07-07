@@ -167,6 +167,7 @@ function KeysAdmin() {
               </div>
               <div className="mt-2 flex items-center justify-between font-mono text-[10px] text-muted-foreground">
                 <span>/{p.slug}</span>
+                <span className="text-primary/80">{DELIVERY_HINTS[(p.delivery_type ?? "key") as DeliveryType].title.toLowerCase()}</span>
                 <span>{p.active ? "aktif" : "pasif"}</span>
               </div>
             </button>
