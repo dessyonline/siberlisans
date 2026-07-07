@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
-  Eye, Check, X, ImageIcon, Link2, Search, MessageCircle, Send, Instagram, Copy,
+  Eye, Check, X, ImageIcon, Link2, Search, MessageCircle, Send, Instagram, Copy, Download, CheckSquare, Square,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/siparisler")({
@@ -43,6 +43,8 @@ function OrdersAdmin() {
   const approveFn = useServerFn(approveOrder);
   const rejectFn = useServerFn(rejectOrder);
   const [note, setNote] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   const { data: orders } = useQuery({
     queryKey: ["admin-orders", filter],
@@ -104,6 +106,95 @@ function OrdersAdmin() {
   const copyRef = (ref: string) => {
     navigator.clipboard.writeText(ref);
     toast.success(`${ref} kopyalandı`);
+  };
+
+  const toggleOne = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectableIds = useMemo(
+    () => filtered.filter((o) => o.status === "reviewing" || o.status === "pending").map((o) => o.id),
+    [filtered],
+  );
+  const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selected.has(id));
+  const toggleAll = () => {
+    setSelected(allSelected ? new Set() : new Set(selectableIds));
+  };
+
+  const bulkApprove = async () => {
+    if (selected.size === 0) return;
+    setBulkBusy(true);
+    let ok = 0;
+    let fail = 0;
+    for (const id of selected) {
+      try {
+        await approveFn({ data: { orderId: id } });
+        ok++;
+      } catch {
+        fail++;
+      }
+    }
+    setBulkBusy(false);
+    setSelected(new Set());
+    qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    toast.success(`[✓] ${ok} onaylandı${fail ? ` · ${fail} başarısız` : ""}`);
+  };
+
+  const bulkReject = async () => {
+    if (selected.size === 0) return;
+    if (!confirm(`${selected.size} siparişi reddetmek istediğine emin misin?`)) return;
+    setBulkBusy(true);
+    let ok = 0;
+    let fail = 0;
+    for (const id of selected) {
+      try {
+        await rejectFn({ data: { orderId: id, note: "toplu red" } });
+        ok++;
+      } catch {
+        fail++;
+      }
+    }
+    setBulkBusy(false);
+    setSelected(new Set());
+    qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    toast.success(`[✓] ${ok} reddedildi${fail ? ` · ${fail} başarısız` : ""}`);
+  };
+
+  const exportCsv = () => {
+    const rows = filtered;
+    if (rows.length === 0) return toast.error("[!] dışa aktarılacak sipariş yok");
+    const esc = (v: unknown) => {
+      const s = String(v ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const header = ["referans", "ürün", "durum", "tutar_try", "müşteri_notu", "admin_notu", "tarih"];
+    const lines = [header.join(",")];
+    for (const o of rows) {
+      lines.push(
+        [
+          esc(o.reference_code),
+          esc(o.product?.name ?? ""),
+          esc(STATUS[o.status] ?? o.status),
+          esc(o.price_try),
+          esc(o.user_note ?? ""),
+          esc(o.admin_note ?? ""),
+          esc(new Date(o.created_at).toISOString()),
+        ].join(","),
+      );
+    }
+    const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `siparisler-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`[✓] ${rows.length} sipariş CSV olarak indirildi`);
   };
 
   return (
