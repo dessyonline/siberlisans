@@ -210,6 +210,7 @@ function RootComponent() {
           </main>
           <SiteFooter />
         </div>
+        <RecentAdditionsBubble />
         <Toaster />
       </AuthProvider>
     </QueryClientProvider>
