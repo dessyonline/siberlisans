@@ -36,7 +36,7 @@ function Index() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, image_url, category, featured, manual_fulfillment, stock_hint, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, image_url, category, featured, manual_fulfillment, stock_hint, unlimited_stock, license_keys(status)")
         .eq("active", true)
         .order("price_try");
       if (error) throw error;
@@ -261,14 +261,16 @@ function ProductCard({
     category?: string | null;
     manual_fulfillment?: boolean | null;
     stock_hint?: number | null;
+    unlimited_stock?: boolean | null;
     license_keys?: { status: string }[] | null;
   };
   featured?: boolean;
 }) {
   const manual = !!p.manual_fulfillment;
+  const unlimited = !!p.unlimited_stock;
   const liveStock = (p.license_keys ?? []).filter((k) => k.status === "available").length;
   const stock = liveStock > 0 ? liveStock : (p.stock_hint ?? 0);
-  const soldOut = !manual && stock === 0;
+  const soldOut = !manual && !unlimited && stock === 0;
   return (
     <div className={`glass-card rounded-lg p-5 flex flex-col group hover:neon-glow transition-shadow ${featured ? "border-warn/40" : ""}`}>
       <div className="flex items-start justify-between">
@@ -286,8 +288,8 @@ function ProductCard({
         <span className="rounded bg-primary/10 text-primary border border-primary/30 px-2 py-0.5">
           {DURATION_LABEL[p.duration] ?? p.duration}
         </span>
-        <span className={`rounded px-2 py-0.5 border ${manual ? "text-cyan border-cyan/40 bg-cyan/10" : soldOut ? "text-destructive border-destructive/40 bg-destructive/10" : "text-primary border-primary/30 bg-primary/10"}`}>
-          {manual ? "sipariş sonrası" : soldOut ? "tükendi" : `stok: ${stock}`}
+        <span className={`rounded px-2 py-0.5 border ${unlimited ? "text-cyan border-cyan/40 bg-cyan/10" : manual ? "text-cyan border-cyan/40 bg-cyan/10" : soldOut ? "text-destructive border-destructive/40 bg-destructive/10" : "text-primary border-primary/30 bg-primary/10"}`}>
+          {unlimited ? "stok: ∞" : manual ? "sipariş sonrası" : soldOut ? "tükendi" : `stok: ${stock}`}
         </span>
       </div>
       <div className="mt-auto pt-5 flex items-end justify-between">

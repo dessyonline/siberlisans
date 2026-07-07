@@ -28,6 +28,7 @@ type Row = {
   image_url: string | null;
   manual_fulfillment: boolean | null;
   stock_hint: number | null;
+  unlimited_stock: boolean | null;
   license_keys: { status: string }[] | null;
 };
 
@@ -55,7 +56,7 @@ function ProductsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, license_keys(status)")
         .eq("active", true)
         .order("price_try");
       if (error) throw error;
@@ -132,17 +133,22 @@ function ProductsPage() {
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((p) => {
                   const manual = !!p.manual_fulfillment;
+                  const unlimited = !!p.unlimited_stock;
                   const liveStock = (p.license_keys ?? []).filter((k) => k.status === "available").length;
                   const stock = liveStock > 0 ? liveStock : (p.stock_hint ?? 0);
-                  const soldOut = !manual && stock === 0;
-                  const stockLabel = manual
+                  const soldOut = !manual && !unlimited && stock === 0;
+                  const stockLabel = unlimited
+                    ? "stok: ∞"
+                    : manual
                     ? "sipariş sonrası"
                     : soldOut
                     ? "tükendi"
                     : stock < 3
                     ? `son ${stock}`
                     : `stok: ${stock}`;
-                  const stockCls = manual
+                  const stockCls = unlimited
+                    ? "text-cyan border-cyan/40 bg-cyan/10"
+                    : manual
                     ? "text-cyan border-cyan/40 bg-cyan/10"
                     : soldOut
                     ? "text-destructive border-destructive/40 bg-destructive/10"

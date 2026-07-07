@@ -39,6 +39,7 @@ type Product = {
   manual_fulfillment: boolean;
   stock_hint: number | null;
   featured: boolean;
+  unlimited_stock: boolean;
 };
 
 function ProductsAdmin() {
@@ -76,11 +77,13 @@ function ProductsAdmin() {
           manual_fulfillment: editing.manual_fulfillment ?? false,
           stock_hint: editing.stock_hint == null ? null : Number(editing.stock_hint),
           featured: editing.featured ?? false,
+          unlimited_stock: editing.unlimited_stock ?? false,
         },
       });
       toast.success("Kaydedildi");
       setEditing(null);
       qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
     } catch (e) { toast.error((e as Error).message); }
   };
 
@@ -89,6 +92,7 @@ function ProductsAdmin() {
       await deleteFn({ data: { id } });
       toast.success("Silindi");
       qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
     } catch (e) { toast.error((e as Error).message); }
   };
 
@@ -151,18 +155,22 @@ function ProductsAdmin() {
                 onChange={(v) => setEditing((p) => ({ ...p!, stock_hint: v === "" ? null : Number(v) }))}
                 type="number"
               />
-              <div className="grid grid-cols-3 gap-3 pt-2">
+              <div className="grid grid-cols-2 gap-3 pt-2">
                 <div className="flex items-center gap-2 font-mono text-sm">
                   <Switch checked={editing?.active ?? true} onCheckedChange={(v) => setEditing((p) => ({ ...p!, active: v }))} />
                   <span>aktif</span>
                 </div>
                 <div className="flex items-center gap-2 font-mono text-sm">
                   <Switch checked={editing?.manual_fulfillment ?? false} onCheckedChange={(v) => setEditing((p) => ({ ...p!, manual_fulfillment: v }))} />
-                  <span>manuel</span>
+                  <span>manuel teslimat</span>
                 </div>
                 <div className="flex items-center gap-2 font-mono text-sm">
                   <Switch checked={editing?.featured ?? false} onCheckedChange={(v) => setEditing((p) => ({ ...p!, featured: v }))} />
                   <span>öne çıkan</span>
+                </div>
+                <div className="flex items-center gap-2 font-mono text-sm">
+                  <Switch checked={editing?.unlimited_stock ?? false} onCheckedChange={(v) => setEditing((p) => ({ ...p!, unlimited_stock: v }))} />
+                  <span>sınırsız stok ∞</span>
                 </div>
               </div>
             </div>
@@ -193,8 +201,8 @@ function ProductsAdmin() {
               {p.manual_fulfillment && (
                 <div className="text-[10px] rounded border border-warn/40 bg-warn/10 px-2 py-1 text-warn">manuel</div>
               )}
-              <div className={`text-xs ${stockShown < 3 ? "text-warn" : "text-cyan"}`}>
-                stok: {avail}/{total}{p.stock_hint != null && ` · hint:${p.stock_hint}`}
+              <div className={`text-xs ${p.unlimited_stock ? "text-cyan" : (stockShown < 3 ? "text-warn" : "text-cyan")}`}>
+                stok: {p.unlimited_stock ? "∞" : `${avail}/${total}`}{!p.unlimited_stock && p.stock_hint != null && ` · hint:${p.stock_hint}`}
               </div>
               <div className={`text-xs ${p.active ? "text-primary" : "text-muted-foreground"}`}>
                 {p.active ? "aktif" : "pasif"}

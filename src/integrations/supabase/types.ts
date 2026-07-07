@@ -187,6 +187,7 @@ export type Database = {
           price_try: number
           slug: string
           stock_hint: number | null
+          unlimited_stock: boolean
           updated_at: string
         }
         Insert: {
@@ -204,6 +205,7 @@ export type Database = {
           price_try: number
           slug: string
           stock_hint?: number | null
+          unlimited_stock?: boolean
           updated_at?: string
         }
         Update: {
@@ -221,6 +223,7 @@ export type Database = {
           price_try?: number
           slug?: string
           stock_hint?: number | null
+          unlimited_stock?: boolean
           updated_at?: string
         }
         Relationships: []

@@ -127,6 +127,7 @@ const productInput = z.object({
   manual_fulfillment: z.boolean().optional(),
   stock_hint: z.number().int().min(0).max(100000).optional().nullable(),
   featured: z.boolean().optional(),
+  unlimited_stock: z.boolean().optional(),
 });
 
 export const upsertProduct = createServerFn({ method: "POST" })

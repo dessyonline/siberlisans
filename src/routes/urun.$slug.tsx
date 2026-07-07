@@ -27,7 +27,7 @@ function ProductDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, active, category, image_url, manual_fulfillment, stock_hint, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, active, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, license_keys(status)")
         .eq("slug", slug)
         .single();
       if (error) throw error;
@@ -59,7 +59,8 @@ function ProductDetail() {
   const liveStock = (product.license_keys ?? []).filter((k: { status: string }) => k.status === "available").length;
   const stock = liveStock > 0 ? liveStock : (product.stock_hint ?? 0);
   const manual = !!product.manual_fulfillment;
-  const soldOut = !manual && stock === 0;
+  const unlimited = !!(product as { unlimited_stock?: boolean }).unlimited_stock;
+  const soldOut = !manual && !unlimited && stock === 0;
   const bullets = (product.description ?? "")
     .split("|")
     .map((s) => s.trim())
@@ -98,7 +99,7 @@ function ProductDetail() {
           <h1 className="font-mono text-2xl md:text-3xl font-semibold neon-text">{product.name}</h1>
 
           <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-xs">
-            <StockBadge stock={stock} manual={manual} />
+            <StockBadge stock={stock} manual={manual} unlimited={unlimited} />
             {product.category && (
               <span className="rounded-full border border-border/60 bg-background px-3 py-1 text-muted-foreground">
                 {product.category}
@@ -161,7 +162,14 @@ function ProductDetail() {
   );
 }
 
-function StockBadge({ stock, manual }: { stock: number; manual: boolean }) {
+function StockBadge({ stock, manual, unlimited }: { stock: number; manual: boolean; unlimited?: boolean }) {
+  if (unlimited) {
+    return (
+      <div className="flex items-center gap-2 rounded-full border border-cyan/40 bg-cyan/10 px-3 py-1 font-mono text-xs text-cyan">
+        <span className="h-2 w-2 rounded-full bg-cyan animate-pulse" /> Sınırsız Stok ∞
+      </div>
+    );
+  }
   if (manual) {
     return (
       <div className="flex items-center gap-2 rounded-full border border-warn/40 bg-warn/10 px-3 py-1 font-mono text-xs text-warn">
