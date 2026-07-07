@@ -339,6 +339,7 @@ function OrdersAdmin() {
                   <span className="mx-1">·</span>
                   {new Date(o.created_at).toLocaleString("tr-TR")}
                 </button>
+                </div>
               </div>
               <div className="text-right">
                 <div className="text-xl font-semibold text-primary font-mono">
@@ -435,7 +436,9 @@ function OrdersAdmin() {
               )}
             </div>
           </div>
-        ))}
+          </div>
+          );
+        })}
       </div>
 
       <Dialog open={!!previewUrl} onOpenChange={(v) => !v && setPreviewUrl(null)}>
