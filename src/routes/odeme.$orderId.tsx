@@ -409,14 +409,14 @@ function ReceiptBlock({
       <div className="flex items-center justify-between">
         <div>
           <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
-            [03/04] · receipt_upload
+            [03/04] · dekont yükleme
           </div>
           <h2 className="mt-1 font-mono text-xl neon-text">Dekont Doğrulama</h2>
         </div>
         {reviewing && (
           <div className="flex items-center gap-2 font-mono text-xs text-cyan">
             <span className="h-2 w-2 rounded-full bg-cyan animate-pulse" />
-            analyzing…
+            inceleniyor…
           </div>
         )}
       </div>
