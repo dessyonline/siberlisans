@@ -169,7 +169,12 @@ function Payment() {
         {/* MAIN CONTENT */}
         <div className="space-y-6">
           {order.status === "approved" && deliveredKey && (
-            <DeliveryBlock keyValue={deliveredKey} product={order.product?.name ?? ""} />
+            <DeliveryBlock
+              keyValue={deliveredKey}
+              activationToken={deliveredToken}
+              deliveryType={deliveryType}
+              product={order.product?.name ?? ""}
+            />
           )}
 
           {order.status === "rejected" && (
