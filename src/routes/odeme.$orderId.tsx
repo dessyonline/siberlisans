@@ -748,7 +748,7 @@ function ManualContactBlock({
           </Button>
         </div>
         <p className="mt-2 font-mono text-[10px] text-muted-foreground">
-          referans: <span className="text-primary">{reference}</span> · Instagram'dan yazarken bu kodu belirt.
+          referans: <span className="text-primary">{reference}</span> · Telegram/Instagram'dan yazarken bu kodu belirt.
         </p>
       </div>
     </section>
