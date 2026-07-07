@@ -201,3 +201,85 @@ export const upsertBankAccount = createServerFn({ method: "POST" })
     }
     return { ok: true };
   });
+
+/* ============ PROMO CODES ============ */
+
+const applyPromoInput = z.object({
+  orderId: z.string().uuid(),
+  code: z.string().min(2).max(64),
+});
+
+export const applyPromoCode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => applyPromoInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase.rpc("apply_promo_code", {
+      _order_id: data.orderId,
+      _code: data.code,
+    });
+    if (error) throw new Error(error.message);
+    const row = Array.isArray(rows) ? rows[0] : rows;
+    return {
+      discountTry: Number(row?.discount_try ?? 0),
+      finalPrice: Number(row?.final_price ?? 0),
+      code: (row?.code as string) ?? data.code,
+    };
+  });
+
+const removePromoInput = z.object({ orderId: z.string().uuid() });
+
+export const removePromoCode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => removePromoInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.rpc("remove_promo_code", { _order_id: data.orderId });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+const promoUpsertInput = z.object({
+  id: z.string().uuid().optional(),
+  code: z.string().min(2).max(64),
+  discount_type: z.enum(["percent", "fixed"]),
+  discount_value: z.number().min(0).max(1000000),
+  active: z.boolean(),
+  max_uses: z.number().int().min(1).nullable().optional(),
+  expires_at: z.string().nullable().optional(),
+  product_id: z.string().uuid().nullable().optional(),
+  min_amount: z.number().min(0).default(0),
+  note: z.string().max(500).nullable().optional(),
+});
+
+export const upsertPromoCode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => promoUpsertInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Yetkisiz.");
+    const payload = { ...data, code: data.code.toUpperCase().trim() };
+    if (data.id) {
+      const { error } = await supabase.from("promo_codes").update(payload).eq("id", data.id);
+      if (error) throw new Error(error.message);
+    } else {
+      const { error } = await supabase.from("promo_codes").insert(payload);
+      if (error) throw new Error(error.message);
+    }
+    return { ok: true };
+  });
+
+const promoDeleteInput = z.object({ id: z.string().uuid() });
+
+export const deletePromoCode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => promoDeleteInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Yetkisiz.");
+    const { error } = await supabase.from("promo_codes").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
