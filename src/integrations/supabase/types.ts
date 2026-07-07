@@ -174,11 +174,13 @@ export type Database = {
       products: {
         Row: {
           active: boolean
+          category: string | null
           created_at: string
           delivery_type: Database["public"]["Enums"]["delivery_type"]
           description: string | null
           duration: Database["public"]["Enums"]["duration_type"]
           id: string
+          image_url: string | null
           name: string
           price_try: number
           slug: string
@@ -186,11 +188,13 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          category?: string | null
           created_at?: string
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           duration?: Database["public"]["Enums"]["duration_type"]
           id?: string
+          image_url?: string | null
           name: string
           price_try: number
           slug: string
@@ -198,11 +202,13 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          category?: string | null
           created_at?: string
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           duration?: Database["public"]["Enums"]["duration_type"]
           id?: string
+          image_url?: string | null
           name?: string
           price_try?: number
           slug?: string
