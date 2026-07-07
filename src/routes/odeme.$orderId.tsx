@@ -317,7 +317,7 @@ function TransferBlock({
           />
           <div className="pt-2">
             <div className="text-[10px] tracking-widest text-muted-foreground mb-1">
-              açıklama / reference_key
+              açıklama / referans kodu
             </div>
             <button
               onClick={() => copy(reference, "Referans")}
