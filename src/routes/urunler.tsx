@@ -28,6 +28,7 @@ type Row = {
   image_url: string | null;
   manual_fulfillment: boolean | null;
   stock_hint: number | null;
+  unlimited_stock: boolean | null;
   license_keys: { status: string }[] | null;
 };
 
