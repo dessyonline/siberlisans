@@ -80,6 +80,8 @@ function ProductsAdmin() {
           stock_hint: editing.stock_hint == null ? null : Number(editing.stock_hint),
           featured: editing.featured ?? false,
           unlimited_stock: editing.unlimited_stock ?? false,
+          sort_order: Number(editing.sort_order ?? 0),
+          tier: (editing.tier ?? "standard") as "standard" | "epic",
         },
       });
       toast.success("Kaydedildi");
