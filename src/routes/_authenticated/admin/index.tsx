@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line } from "recharts";
 import {
   TrendingUp,
   ShoppingBag,
@@ -22,7 +22,7 @@ function Dashboard() {
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const [ordersRes, pendingRes, keysRes, lowStockRes, messagesRes, recentRes] =
+      const [ordersRes, pendingRes, keysRes, lowStockRes, messagesRes, recentRes, topProductsRes] =
         await Promise.all([
           supabase.from("orders").select("id, price_try, status, created_at"),
           supabase
@@ -49,6 +49,10 @@ function Dashboard() {
             .select("id, status, price_try, reference_code, created_at, product:products(name)")
             .order("created_at", { ascending: false })
             .limit(6),
+          supabase
+            .from("orders")
+            .select("price_try, product:products(name)")
+            .eq("status", "approved"),
         ]);
 
       const all = ordersRes.data ?? [];
@@ -94,6 +98,19 @@ function Dashboard() {
         .filter((p) => !p.unlimited && !p.manual && p.avail < 3)
         .sort((a, b) => a.avail - b.avail);
 
+      const productAgg = new Map<string, { name: string; revenue: number; count: number }>();
+      for (const row of (topProductsRes.data ?? []) as { price_try: number; product: { name: string } | null }[]) {
+        const name = row.product?.name ?? "—";
+        const cur = productAgg.get(name) ?? { name, revenue: 0, count: 0 };
+        cur.revenue += Number(row.price_try);
+        cur.count += 1;
+        productAgg.set(name, cur);
+      }
+      const topProducts = Array.from(productAgg.values())
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 6)
+        .map((p) => ({ ...p, name: p.name.length > 18 ? p.name.slice(0, 17) + "…" : p.name }));
+
       return {
         totalRev,
         todayRev,
@@ -104,6 +121,7 @@ function Dashboard() {
         lowStock,
         messages: messagesRes.data ?? [],
         recent: recentRes.data ?? [],
+        topProducts,
       };
     },
     refetchInterval: 15000,
@@ -155,12 +173,18 @@ function Dashboard() {
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stats?.chart ?? []}>
+              <LineChart data={stats?.chart ?? []} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="oklch(0.82 0.20 145)" stopOpacity={0.5} />
+                    <stop offset="100%" stopColor="oklch(0.82 0.20 145)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.24 0.02 220 / 0.5)" vertical={false} />
                 <XAxis dataKey="date" stroke="oklch(0.60 0.02 200)" style={{ fontFamily: "JetBrains Mono Variable", fontSize: 10 }} tickLine={false} axisLine={false} />
                 <YAxis stroke="oklch(0.60 0.02 200)" style={{ fontFamily: "JetBrains Mono Variable", fontSize: 10 }} tickLine={false} axisLine={false} />
                 <Tooltip
-                  cursor={{ fill: "oklch(0.20 0.015 240 / 0.5)" }}
+                  cursor={{ stroke: "oklch(0.82 0.20 145 / 0.4)", strokeWidth: 1 }}
                   contentStyle={{
                     background: "oklch(0.17 0.015 240)",
                     border: "1px solid oklch(0.28 0.02 220)",
@@ -170,8 +194,16 @@ function Dashboard() {
                   }}
                   formatter={(v: number) => [`₺${v.toLocaleString("tr-TR")}`, "ciro"]}
                 />
-                <Bar dataKey="revenue" fill="oklch(0.82 0.20 145)" radius={[6, 6, 0, 0]} />
-              </BarChart>
+                <Line
+                  type="monotone"
+                  dataKey="revenue"
+                  stroke="oklch(0.82 0.20 145)"
+                  strokeWidth={2}
+                  dot={{ r: 3, fill: "oklch(0.82 0.20 145)" }}
+                  activeDot={{ r: 5 }}
+                  fill="url(#revGrad)"
+                />
+              </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
@@ -218,6 +250,48 @@ function Dashboard() {
           </div>
         </div>
       </div>
+
+      <div className="glass-card rounded-xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="text-xs text-muted-foreground font-mono">Toplam ciroya göre</div>
+            <div className="text-lg font-semibold">En Çok Satan Ürünler</div>
+          </div>
+          <div className="text-xs text-muted-foreground font-mono">
+            {stats?.topProducts?.length ?? 0} ürün
+          </div>
+        </div>
+        <div className="h-72">
+          {(stats?.topProducts ?? []).length === 0 ? (
+            <div className="h-full flex items-center justify-center text-sm text-muted-foreground font-mono">
+              henüz onaylanmış sipariş yok
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={stats?.topProducts ?? []} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.24 0.02 220 / 0.5)" horizontal={false} />
+                <XAxis type="number" stroke="oklch(0.60 0.02 200)" style={{ fontFamily: "JetBrains Mono Variable", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `₺${(v / 1000).toFixed(0)}k`} />
+                <YAxis dataKey="name" type="category" width={120} stroke="oklch(0.60 0.02 200)" style={{ fontFamily: "JetBrains Mono Variable", fontSize: 10 }} tickLine={false} axisLine={false} />
+                <Tooltip
+                  cursor={{ fill: "oklch(0.20 0.015 240 / 0.5)" }}
+                  contentStyle={{
+                    background: "oklch(0.17 0.015 240)",
+                    border: "1px solid oklch(0.28 0.02 220)",
+                    borderRadius: 8,
+                    fontFamily: "Inter",
+                    fontSize: 12,
+                  }}
+                  formatter={(v: number, k: string) =>
+                    k === "revenue" ? [`₺${v.toLocaleString("tr-TR")}`, "ciro"] : [v, "adet"]
+                  }
+                />
+                <Bar dataKey="revenue" fill="oklch(0.75 0.18 200)" radius={[0, 6, 6, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="glass-card rounded-xl p-5">

@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
-  Eye, Check, X, ImageIcon, Link2, Search, MessageCircle, Send, Instagram, Copy,
+  Eye, Check, X, ImageIcon, Link2, Search, MessageCircle, Send, Instagram, Copy, Download, CheckSquare, Square,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/siparisler")({
@@ -43,6 +43,8 @@ function OrdersAdmin() {
   const approveFn = useServerFn(approveOrder);
   const rejectFn = useServerFn(rejectOrder);
   const [note, setNote] = useState("");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   const { data: orders } = useQuery({
     queryKey: ["admin-orders", filter],
@@ -106,6 +108,95 @@ function OrdersAdmin() {
     toast.success(`${ref} kopyalandı`);
   };
 
+  const toggleOne = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectableIds = useMemo(
+    () => filtered.filter((o) => o.status === "reviewing" || o.status === "pending").map((o) => o.id),
+    [filtered],
+  );
+  const allSelected = selectableIds.length > 0 && selectableIds.every((id) => selected.has(id));
+  const toggleAll = () => {
+    setSelected(allSelected ? new Set() : new Set(selectableIds));
+  };
+
+  const bulkApprove = async () => {
+    if (selected.size === 0) return;
+    setBulkBusy(true);
+    let ok = 0;
+    let fail = 0;
+    for (const id of selected) {
+      try {
+        await approveFn({ data: { orderId: id } });
+        ok++;
+      } catch {
+        fail++;
+      }
+    }
+    setBulkBusy(false);
+    setSelected(new Set());
+    qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    toast.success(`[✓] ${ok} onaylandı${fail ? ` · ${fail} başarısız` : ""}`);
+  };
+
+  const bulkReject = async () => {
+    if (selected.size === 0) return;
+    if (!confirm(`${selected.size} siparişi reddetmek istediğine emin misin?`)) return;
+    setBulkBusy(true);
+    let ok = 0;
+    let fail = 0;
+    for (const id of selected) {
+      try {
+        await rejectFn({ data: { orderId: id, note: "toplu red" } });
+        ok++;
+      } catch {
+        fail++;
+      }
+    }
+    setBulkBusy(false);
+    setSelected(new Set());
+    qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    toast.success(`[✓] ${ok} reddedildi${fail ? ` · ${fail} başarısız` : ""}`);
+  };
+
+  const exportCsv = () => {
+    const rows = filtered;
+    if (rows.length === 0) return toast.error("[!] dışa aktarılacak sipariş yok");
+    const esc = (v: unknown) => {
+      const s = String(v ?? "");
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const header = ["referans", "ürün", "durum", "tutar_try", "müşteri_notu", "admin_notu", "tarih"];
+    const lines = [header.join(",")];
+    for (const o of rows) {
+      lines.push(
+        [
+          esc(o.reference_code),
+          esc(o.product?.name ?? ""),
+          esc(STATUS[o.status] ?? o.status),
+          esc(o.price_try),
+          esc(o.user_note ?? ""),
+          esc(o.admin_note ?? ""),
+          esc(new Date(o.created_at).toISOString()),
+        ].join(","),
+      );
+    }
+    const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `siparisler-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`[✓] ${rows.length} sipariş CSV olarak indirildi`);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
@@ -159,10 +250,47 @@ function OrdersAdmin() {
           <MessageCircle className="h-3.5 w-3.5" />
           mesajlı ({messageCount})
         </button>
+        <Button variant="outline" size="sm" onClick={exportCsv} className="font-mono">
+          <Download className="h-3.5 w-3.5 mr-1" /> CSV
+        </Button>
         <div className="text-xs text-muted-foreground font-mono ml-auto">
           {filtered.length} sonuç
         </div>
       </div>
+
+      {selectableIds.length > 0 && (
+        <div className="glass-card rounded-xl p-3 flex flex-wrap items-center gap-3 border-primary/30">
+          <button
+            onClick={toggleAll}
+            className="flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-mono hover:border-primary/40"
+          >
+            {allSelected ? <CheckSquare className="h-3.5 w-3.5 text-primary" /> : <Square className="h-3.5 w-3.5" />}
+            {allSelected ? "tümünü kaldır" : `tümünü seç (${selectableIds.length})`}
+          </button>
+          <div className="text-xs font-mono text-muted-foreground">
+            <span className="text-primary font-semibold">{selected.size}</span> seçili
+          </div>
+          <div className="ml-auto flex gap-2">
+            <Button
+              size="sm"
+              disabled={selected.size === 0 || bulkBusy}
+              onClick={bulkApprove}
+              className="font-mono"
+            >
+              <Check className="h-3.5 w-3.5 mr-1" /> toplu onayla
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={selected.size === 0 || bulkBusy}
+              onClick={bulkReject}
+              className="font-mono"
+            >
+              <X className="h-3.5 w-3.5 mr-1" /> toplu reddet
+            </Button>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-3">
         {filtered.length === 0 && (
@@ -170,10 +298,23 @@ function OrdersAdmin() {
             bu filtrede sipariş yok
           </div>
         )}
-        {filtered.map((o) => (
-          <div key={o.id} className="glass-card rounded-xl p-5">
+        {filtered.map((o) => {
+          const canSelect = o.status === "reviewing" || o.status === "pending";
+          const isSel = selected.has(o.id);
+          return (
+          <div key={o.id} className={`glass-card rounded-xl p-5 transition ${isSel ? "border-primary/60 bg-primary/5" : ""}`}>
             <div className="flex flex-wrap items-start gap-4 justify-between">
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 flex gap-3">
+                {canSelect && (
+                  <button
+                    onClick={() => toggleOne(o.id)}
+                    className="shrink-0 pt-1 text-muted-foreground hover:text-primary"
+                    aria-label="seç"
+                  >
+                    {isSel ? <CheckSquare className="h-4 w-4 text-primary" /> : <Square className="h-4 w-4" />}
+                  </button>
+                )}
+                <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold text-base">{o.product?.name}</span>
                   <span className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md border ${STATUS_CLS[o.status]}`}>
@@ -198,6 +339,7 @@ function OrdersAdmin() {
                   <span className="mx-1">·</span>
                   {new Date(o.created_at).toLocaleString("tr-TR")}
                 </button>
+                </div>
               </div>
               <div className="text-right">
                 <div className="text-xl font-semibold text-primary font-mono">
@@ -294,7 +436,8 @@ function OrdersAdmin() {
               )}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       <Dialog open={!!previewUrl} onOpenChange={(v) => !v && setPreviewUrl(null)}>
