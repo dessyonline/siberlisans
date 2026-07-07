@@ -155,19 +155,22 @@ function LiveSalesStream({ products }: { products: SaleProd[] }) {
     <section className="relative border-y border-primary/25 bg-background/80 backdrop-blur">
       {/* thin marquee tape */}
       <div className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-background to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-background to-transparent" />
-        <div className="flex items-center gap-3 py-2 font-mono text-[11px] whitespace-nowrap">
-          <span className="ml-4 inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-primary">
+        {/* pinned LIVE badge sits above fade + tape */}
+        <div className="absolute left-3 top-1/2 -translate-y-1/2 z-20">
+          <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-primary/40 bg-background/90 px-2.5 py-1 font-mono text-[11px] text-primary neon-glow">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-75" />
               <span className="relative h-1.5 w-1.5 rounded-full bg-primary" />
             </span>
             LIVE_SALES
           </span>
+        </div>
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-40 bg-gradient-to-r from-background via-background/90 to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-background to-transparent" />
+        <div className="py-2.5 pl-36 font-mono text-[11px] whitespace-nowrap">
           <div className="flex marquee-track">
             {tape.map((s, i) => (
-              <div key={`${s.id}-${i}`} className="flex items-center gap-2 px-4">
+              <div key={`${s.id}-${i}`} className="flex items-center gap-2 px-5">
                 <span className="text-primary">[SOLD]</span>
                 <span className="text-muted-foreground">{s.ord}</span>
                 <span className="text-foreground/90">{s.p.name}</span>
