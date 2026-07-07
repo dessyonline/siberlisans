@@ -18,6 +18,8 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
 import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
+import { Route as ApiValidateRouteImport } from './routes/api/validate'
+import { Route as ApiActivateRouteImport } from './routes/api/activate'
 import { Route as AktivasyonTokenRouteImport } from './routes/aktivasyon.$token'
 import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
@@ -70,6 +72,16 @@ const UrunSlugRoute = UrunSlugRouteImport.update({
 const OdemeOrderIdRoute = OdemeOrderIdRouteImport.update({
   id: '/odeme/$orderId',
   path: '/odeme/$orderId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiValidateRoute = ApiValidateRouteImport.update({
+  id: '/api/validate',
+  path: '/api/validate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiActivateRoute = ApiActivateRouteImport.update({
+  id: '/api/activate',
+  path: '/api/activate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AktivasyonTokenRoute = AktivasyonTokenRouteImport.update({
@@ -133,6 +145,8 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
+  '/api/activate': typeof ApiActivateRoute
+  '/api/validate': typeof ApiValidateRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
@@ -151,6 +165,8 @@ export interface FileRoutesByTo {
   '/urunler': typeof UrunlerRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
+  '/api/activate': typeof ApiActivateRoute
+  '/api/validate': typeof ApiValidateRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
@@ -172,6 +188,8 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/hesabim': typeof AuthenticatedHesabimRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
+  '/api/activate': typeof ApiActivateRoute
+  '/api/validate': typeof ApiValidateRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/_authenticated/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
@@ -193,6 +211,8 @@ export interface FileRouteTypes {
     | '/admin'
     | '/hesabim'
     | '/aktivasyon/$token'
+    | '/api/activate'
+    | '/api/validate'
     | '/odeme/$orderId'
     | '/urun/$slug'
     | '/admin/ayarlar'
@@ -211,6 +231,8 @@ export interface FileRouteTypes {
     | '/urunler'
     | '/hesabim'
     | '/aktivasyon/$token'
+    | '/api/activate'
+    | '/api/validate'
     | '/odeme/$orderId'
     | '/urun/$slug'
     | '/admin/ayarlar'
@@ -231,6 +253,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/hesabim'
     | '/aktivasyon/$token'
+    | '/api/activate'
+    | '/api/validate'
     | '/odeme/$orderId'
     | '/urun/$slug'
     | '/_authenticated/admin/ayarlar'
@@ -250,6 +274,8 @@ export interface RootRouteChildren {
   SssRoute: typeof SssRoute
   UrunlerRoute: typeof UrunlerRoute
   AktivasyonTokenRoute: typeof AktivasyonTokenRoute
+  ApiActivateRoute: typeof ApiActivateRoute
+  ApiValidateRoute: typeof ApiValidateRoute
   OdemeOrderIdRoute: typeof OdemeOrderIdRoute
   UrunSlugRoute: typeof UrunSlugRoute
 }
@@ -317,6 +343,20 @@ declare module '@tanstack/react-router' {
       path: '/odeme/$orderId'
       fullPath: '/odeme/$orderId'
       preLoaderRoute: typeof OdemeOrderIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/validate': {
+      id: '/api/validate'
+      path: '/api/validate'
+      fullPath: '/api/validate'
+      preLoaderRoute: typeof ApiValidateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/activate': {
+      id: '/api/activate'
+      path: '/api/activate'
+      fullPath: '/api/activate'
+      preLoaderRoute: typeof ApiActivateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/aktivasyon/$token': {
@@ -431,6 +471,8 @@ const rootRouteChildren: RootRouteChildren = {
   SssRoute: SssRoute,
   UrunlerRoute: UrunlerRoute,
   AktivasyonTokenRoute: AktivasyonTokenRoute,
+  ApiActivateRoute: ApiActivateRoute,
+  ApiValidateRoute: ApiValidateRoute,
   OdemeOrderIdRoute: OdemeOrderIdRoute,
   UrunSlugRoute: UrunSlugRoute,
 }
