@@ -133,17 +133,22 @@ function ProductsPage() {
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((p) => {
                   const manual = !!p.manual_fulfillment;
+                  const unlimited = !!p.unlimited_stock;
                   const liveStock = (p.license_keys ?? []).filter((k) => k.status === "available").length;
                   const stock = liveStock > 0 ? liveStock : (p.stock_hint ?? 0);
-                  const soldOut = !manual && stock === 0;
-                  const stockLabel = manual
+                  const soldOut = !manual && !unlimited && stock === 0;
+                  const stockLabel = unlimited
+                    ? "stok: ∞"
+                    : manual
                     ? "sipariş sonrası"
                     : soldOut
                     ? "tükendi"
                     : stock < 3
                     ? `son ${stock}`
                     : `stok: ${stock}`;
-                  const stockCls = manual
+                  const stockCls = unlimited
+                    ? "text-cyan border-cyan/40 bg-cyan/10"
+                    : manual
                     ? "text-cyan border-cyan/40 bg-cyan/10"
                     : soldOut
                     ? "text-destructive border-destructive/40 bg-destructive/10"
