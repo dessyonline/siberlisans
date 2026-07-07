@@ -44,7 +44,7 @@ function SettingsAdmin() {
 
   return (
     <div>
-      <h1 className="font-mono text-2xl neon-text">Ayarlar — Banka Bilgileri</h1>
+      <h1 className="font-mono text-xl sm:text-2xl neon-text break-words">Ayarlar — Banka Bilgileri</h1>
       <p className="mt-1 font-mono text-xs text-muted-foreground">
         Sadece <span className="text-primary">aktif</span> banka hesabı müşterilere gösterilir.
       </p>
