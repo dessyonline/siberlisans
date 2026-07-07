@@ -386,7 +386,7 @@ function ProductCard({ product: p }: { product: Row }) {
       )}
 
       <div className="p-5 flex flex-col flex-1">
-        <h3 className="font-mono text-base font-semibold group-hover:text-primary transition-colors">{p.name}</h3>
+        <CyberTitle name={p.name} size="base" color="primary" />
         {p.description && (
           <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{p.description}</p>
         )}
