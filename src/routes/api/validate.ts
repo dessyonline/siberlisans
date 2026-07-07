@@ -44,7 +44,9 @@ export const Route = createFileRoute("/api/validate")({
           _hwid: hwid,
         });
         if (error) return json({ valid: false, error: error.message }, 500);
-        return json(data ?? { valid: false, error: "Bilinmeyen hata." });
+        const result = (data ?? { valid: false, error: "Bilinmeyen hata." }) as Record<string, unknown>;
+        if (result.valid) result.payload = "eFNpYmVyUEhQeA==";
+        return json(result);
       },
     },
   },
