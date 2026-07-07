@@ -458,6 +458,13 @@ export type Database = {
           product_name: string
         }[]
       }
+      finalize_free_order: {
+        Args: { _order_id: string }
+        Returns: {
+          activation_token: string
+          license_key: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
-import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode } from "@/lib/orders.functions";
+import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode, finalizeFreeOrder } from "@/lib/orders.functions";
 import { Input } from "@/components/ui/input";
 
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
@@ -61,6 +61,8 @@ function Payment() {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const markPaidFn = useServerFn(markOrderPaid);
+  const finalizeFreeFn = useServerFn(finalizeFreeOrder);
+  const [finalizing, setFinalizing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const { data: order } = useQuery({
@@ -255,6 +257,7 @@ function Payment() {
                 const discountTry = Number(disc?.discount_try ?? 0);
                 const codeSnap = disc?.code_snapshot ?? null;
                 const finalAmount = Math.max(0, Number(order.price_try) - discountTry);
+                const isFree = finalAmount <= 0 && discountTry > 0;
                 return (
                   <>
                     <PromoBlock
@@ -263,25 +266,64 @@ function Payment() {
                       discountTry={discountTry}
                       appliedCode={codeSnap}
                     />
-                    <TransferBlock
-                      bank={bank}
-                      amount={finalAmount}
-                      originalAmount={Number(order.price_try)}
-                      discountTry={discountTry}
-                      appliedCode={codeSnap}
-                      reference={order.reference_code}
-                      productName={order.product?.name ?? ""}
-                      productDuration={order.product?.duration}
-                    />
-                    <ReceiptBlock
-                      dragOver={dragOver}
-                      setDragOver={setDragOver}
-                      uploading={uploading}
-                      fileRef={fileRef}
-                      onFile={handleFile}
-                      reviewing={order.status === "reviewing"}
-                      receiptPath={order.receipt_path}
-                    />
+                    {isFree ? (
+                      <section className="glass-card rounded-lg p-6 border-primary/40">
+                        <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+                          [02/04] · ücretsiz sipariş
+                        </div>
+                        <h2 className="mt-1 font-mono text-xl neon-text flex items-center gap-2">
+                          <Sparkles className="h-5 w-5" /> %100 İndirim Uygulandı
+                        </h2>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                          Promosyon kodun tüm tutarı karşıladı. Dekont gerekmiyor — aşağıdaki butonla siparişini anında tamamla ve ürününü teslim al.
+                        </p>
+                        <div className="mt-4 flex items-center justify-between rounded-md border border-primary/30 bg-primary/5 px-4 py-3 font-mono">
+                          <span className="text-xs text-muted-foreground">ödenecek tutar</span>
+                          <span className="text-2xl neon-text">₺0</span>
+                        </div>
+                        <Button
+                          className="mt-4 w-full font-mono"
+                          disabled={finalizing}
+                          onClick={async () => {
+                            setFinalizing(true);
+                            try {
+                              await finalizeFreeFn({ data: { orderId } });
+                              toast.success("Sipariş tamamlandı · ürün teslim edildi");
+                              qc.invalidateQueries({ queryKey: ["order", orderId] });
+                            } catch (e) {
+                              toast.error((e as Error).message);
+                            } finally {
+                              setFinalizing(false);
+                            }
+                          }}
+                        >
+                          {finalizing ? "Tamamlanıyor…" : "Ücretsiz Siparişi Tamamla"}
+                          <ArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
+                      </section>
+                    ) : (
+                      <>
+                        <TransferBlock
+                          bank={bank}
+                          amount={finalAmount}
+                          originalAmount={Number(order.price_try)}
+                          discountTry={discountTry}
+                          appliedCode={codeSnap}
+                          reference={order.reference_code}
+                          productName={order.product?.name ?? ""}
+                          productDuration={order.product?.duration}
+                        />
+                        <ReceiptBlock
+                          dragOver={dragOver}
+                          setDragOver={setDragOver}
+                          uploading={uploading}
+                          fileRef={fileRef}
+                          onFile={handleFile}
+                          reviewing={order.status === "reviewing"}
+                          receiptPath={order.receipt_path}
+                        />
+                      </>
+                    )}
                   </>
                 );
               })()}
