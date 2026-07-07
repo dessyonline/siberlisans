@@ -441,7 +441,7 @@ function HotCard({ product: p }: { product: Row }) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-mono text-sm font-semibold truncate group-hover:text-warn transition-colors">{p.name}</h3>
+            <CyberTitle name={p.name} size="sm" color="warn" />
             {isNew && <span className="rounded border border-cyan/50 bg-cyan/20 px-1.5 py-0 text-[9px] text-cyan">YENİ</span>}
           </div>
           <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{p.description ?? p.category}</p>
