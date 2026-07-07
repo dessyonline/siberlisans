@@ -182,6 +182,16 @@ function Payment() {
             />
           )}
 
+          {isManual && (order.status === "reviewing" || order.status === "approved") && (
+            <ManualContactBlock
+              orderId={orderId}
+              reference={order.reference_code}
+              product={order.product?.name ?? ""}
+              status={order.status}
+              existingNote={order.user_note ?? ""}
+            />
+          )}
+
           {order.status === "rejected" && (
             <div className="glass-card rounded-lg p-6 border-destructive/40">
               <div className="flex items-center gap-2 font-mono text-destructive">
