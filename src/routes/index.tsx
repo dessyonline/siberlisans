@@ -46,11 +46,32 @@ const DURATION_LABEL: Record<string, string> = {
 // Category → icon + accent color (oklch tokens) for cyber recent-items
 const CAT_VISUAL: Record<string, { Icon: typeof KeyRound; hue: string; ring: string; grad: string }> = {
   Windows:         { Icon: MonitorSmartphone, hue: "oklch(0.75 0.13 210)", ring: "oklch(0.75 0.13 210 / 0.4)", grad: "from-[oklch(0.75_0.13_210/0.25)] to-transparent" },
+  "Windows 10/11": { Icon: MonitorSmartphone, hue: "oklch(0.75 0.13 210)", ring: "oklch(0.75 0.13 210 / 0.4)", grad: "from-[oklch(0.75_0.13_210/0.25)] to-transparent" },
+  "Windows Server":{ Icon: MonitorSmartphone, hue: "oklch(0.75 0.13 210)", ring: "oklch(0.75 0.13 210 / 0.4)", grad: "from-[oklch(0.75_0.13_210/0.25)] to-transparent" },
   "Görsel & Tasarım": { Icon: Palette,       hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  Adobe:           { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  Canva:           { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  CorelDRAW:       { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  "Envato Elements":{ Icon: Palette,          hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  Flaticon:        { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  Freepik:         { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  "Motion Array":  { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  Vecteezy:        { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  "Nano Banana":   { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  Autodesk:        { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
   "Yapay Zeka":    { Icon: Brain,             hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
+  ChatGPT:         { Icon: Brain,             hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
+  "Google Gemini": { Icon: Brain,             hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
+  Ideogram:        { Icon: Brain,             hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
+  Midjourney:      { Icon: Brain,             hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
   "Microsoft Office": { Icon: FileText,       hue: "oklch(0.65 0.20 25)",  ring: "oklch(0.65 0.20 25 / 0.4)",  grad: "from-[oklch(0.65_0.20_25/0.25)] to-transparent" },
+  "Office 365":    { Icon: FileText,          hue: "oklch(0.65 0.20 25)",  ring: "oklch(0.65 0.20 25 / 0.4)",  grad: "from-[oklch(0.65_0.20_25/0.25)] to-transparent" },
+  "Office (Ömürlük)": { Icon: FileText,       hue: "oklch(0.65 0.20 25)",  ring: "oklch(0.65 0.20 25 / 0.4)",  grad: "from-[oklch(0.65_0.20_25/0.25)] to-transparent" },
   Oyunlar:         { Icon: Gamepad2,          hue: "oklch(0.68 0.22 340)", ring: "oklch(0.68 0.22 340 / 0.4)", grad: "from-[oklch(0.68_0.22_340/0.25)] to-transparent" },
+  "Steam Oyunları":{ Icon: Gamepad2,          hue: "oklch(0.68 0.22 340)", ring: "oklch(0.68 0.22 340 / 0.4)", grad: "from-[oklch(0.68_0.22_340/0.25)] to-transparent" },
   "E-posta":       { Icon: Mail,              hue: "oklch(0.78 0.16 220)", ring: "oklch(0.78 0.16 220 / 0.4)", grad: "from-[oklch(0.78_0.16_220/0.25)] to-transparent" },
+  "Email Hesapları": { Icon: Mail,            hue: "oklch(0.78 0.16 220)", ring: "oklch(0.78 0.16 220 / 0.4)", grad: "from-[oklch(0.78_0.16_220/0.25)] to-transparent" },
+  Diğer:           { Icon: Cpu,               hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
 };
 const catVisual = (cat: string | null) =>
   (cat && CAT_VISUAL[cat]) || { Icon: Cpu, hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" };
