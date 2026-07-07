@@ -113,7 +113,7 @@ function Dashboard() {
     <div className="space-y-8">
       <div>
         <div className="font-mono text-xs text-muted-foreground">./admin/overview</div>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">Kontrol Merkezi</h1>
+        <h1 className="mt-1 text-2xl sm:text-3xl font-semibold tracking-tight">Kontrol Merkezi</h1>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
