@@ -10,7 +10,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Eye, Check, X, ImageIcon } from "lucide-react";
+import { Eye, Check, X, ImageIcon, Link2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/siparisler")({
   component: OrdersAdmin,
