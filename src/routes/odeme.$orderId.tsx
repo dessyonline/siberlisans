@@ -617,3 +617,123 @@ function SecurityChecklist() {
     </div>
   );
 }
+
+/* ============================ MANUAL CONTACT ============================ */
+
+function ManualContactBlock({
+  orderId,
+  reference,
+  product,
+  status,
+  existingNote,
+}: {
+  orderId: string;
+  reference: string;
+  product: string;
+  status: string;
+  existingNote: string;
+}) {
+  const qc = useQueryClient();
+  const [note, setNote] = useState(existingNote);
+  const [saving, setSaving] = useState(false);
+  const noteFn = useServerFn(setOrderUserNote);
+  const saved = existingNote.length > 0 && note === existingNote;
+
+  const sendNote = async () => {
+    if (!note.trim()) return toast.error("Mesaj boş olamaz");
+    setSaving(true);
+    try {
+      await noteFn({ data: { orderId, note: note.trim() } });
+      toast.success("Mesajın admine iletildi");
+      qc.invalidateQueries({ queryKey: ["order", orderId] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const igText = encodeURIComponent(
+    `Merhaba, ${product} siparişim için destek istiyorum. Referans: ${reference}`
+  );
+  const igDM = `https://ig.me/m/siber.php`;
+  const igProfile = `https://instagram.com/siber.php`;
+
+  return (
+    <section className="glass-card rounded-lg p-6 border-cyan/30">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+            [manual_delivery] · human_handoff
+          </div>
+          <h2 className="mt-1 font-mono text-xl neon-text">Manuel Teslimat</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Bu ürün elden hazırlanır. {status === "approved"
+              ? "Onay verildi — teslim bilgilerin için aşağıdaki kanallardan iletişime geç."
+              : "Ödemen doğrulandıktan sonra hesap/erişim bilgileri buradan ulaştırılır."}
+          </p>
+        </div>
+        <MessageCircle className="h-8 w-8 text-cyan opacity-80" />
+      </div>
+
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <a
+          href={igDM}
+          target="_blank"
+          rel="noreferrer"
+          className="group flex items-center gap-3 rounded-lg border border-cyan/40 bg-cyan/5 p-4 hover:bg-cyan/10 hover:neon-glow transition"
+        >
+          <Instagram className="h-6 w-6 text-cyan" />
+          <div className="flex-1">
+            <div className="font-mono text-sm neon-text">Instagram DM</div>
+            <div className="text-xs text-muted-foreground">@siber.php · anlık yanıt</div>
+          </div>
+          <ArrowRight className="h-4 w-4 text-cyan opacity-70 group-hover:opacity-100" />
+        </a>
+        <a
+          href={igProfile}
+          target="_blank"
+          rel="noreferrer"
+          className="group flex items-center gap-3 rounded-lg border border-border/60 p-4 hover:border-primary/40 hover:bg-primary/5 transition"
+        >
+          <Instagram className="h-6 w-6 text-primary" />
+          <div className="flex-1">
+            <div className="font-mono text-sm">instagram.com/siber.php</div>
+            <div className="text-xs text-muted-foreground">profili aç</div>
+          </div>
+          <ArrowRight className="h-4 w-4 text-muted-foreground opacity-70 group-hover:opacity-100" />
+        </a>
+      </div>
+
+      <div className="mt-5">
+        <div className="mb-2 font-mono text-[10px] tracking-widest text-muted-foreground">
+          $ echo "mesajın" &gt;&gt; admin_inbox
+        </div>
+        <Textarea
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="İsteğe bağlı: teslim için ek bilgi (mail adresi, telefon, tercih ettiğin plan vs.)"
+          className="font-mono min-h-[100px] bg-black/30"
+          maxLength={1000}
+        />
+        <div className="mt-2 flex items-center justify-between gap-2">
+          <span className="font-mono text-[10px] text-muted-foreground">
+            {saved ? "✓ admine iletildi · yeniden düzenleyebilirsin" : `${note.length}/1000`}
+          </span>
+          <Button
+            onClick={sendNote}
+            disabled={saving || !note.trim() || saved}
+            size="sm"
+            className="font-mono"
+          >
+            <Send className="mr-2 h-4 w-4" />
+            {saving ? "gönderiliyor…" : saved ? "gönderildi" : "admine gönder"}
+          </Button>
+        </div>
+        <p className="mt-2 font-mono text-[10px] text-muted-foreground">
+          referans: <span className="text-primary">{reference}</span> · Instagram'dan yazarken bu kodu belirt.
+        </p>
+      </div>
+    </section>
+  );
+}
