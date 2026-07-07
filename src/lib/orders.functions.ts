@@ -107,6 +107,25 @@ export const rejectOrder = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const finalizeFreeInput = z.object({ orderId: z.string().uuid() });
+
+export const finalizeFreeOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => finalizeFreeInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase.rpc("finalize_free_order", {
+      _order_id: data.orderId,
+    });
+    if (error) throw new Error(error.message);
+    const row = Array.isArray(rows) ? rows[0] : rows;
+    return {
+      ok: true,
+      licenseKey: row?.license_key ?? null,
+      activationToken: row?.activation_token ?? null,
+    };
+  });
+
 const importKeysInput = z.object({
   productId: z.string().uuid(),
   keys: z.array(z.string().min(4).max(200)).min(1).max(2000),
