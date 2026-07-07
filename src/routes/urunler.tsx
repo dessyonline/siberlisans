@@ -186,6 +186,12 @@ function ProductsPage() {
         ))}
       </div>
 
+      {visible.length === 0 && search && (
+        <div className="glass-card rounded-lg p-8 text-center font-mono text-sm text-muted-foreground">
+          "{search}" için sonuç bulunamadı.
+        </div>
+      )}
+
       <div className="space-y-12">
         {visible.map(([cat, items]) => {
           const cover = items.find((p) => p.image_url)?.image_url ?? null;
