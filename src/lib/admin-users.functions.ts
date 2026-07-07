@@ -65,7 +65,7 @@ export const listUsers = createServerFn({ method: "GET" })
 
 const setRoleInput = z.object({
   userId: z.string().uuid(),
-  role: z.enum(["admin", "moderator", "user"]),
+  role: z.enum(["admin", "user"]),
   grant: z.boolean(),
 });
 
