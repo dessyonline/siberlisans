@@ -295,13 +295,16 @@ function TransferBlock({
         </dl>
 
         {/* QR — Enpara */}
-        <div className="flex flex-col items-center justify-start rounded-lg border border-border/60 bg-transparent min-w-[220px]">
-          <img
-            src={enparaQr}
-            alt="Enpara Havale QR"
-            width={200}
-            className="mt-2"
-          />
+        <div className="flex flex-col items-center justify-start min-w-[220px]">
+          <div className="rounded-lg bg-white p-3 shadow-lg">
+            <img
+              src={enparaQr}
+              alt="Enpara Havale QR"
+              width={200}
+              height={212}
+              className="block"
+            />
+          </div>
           <p className="mt-2 text-center text-[10px] text-muted-foreground font-mono">
             Enpara uygulamasında QR ile aktar
           </p>
