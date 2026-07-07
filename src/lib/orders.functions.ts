@@ -123,6 +123,10 @@ const productInput = z.object({
   delivery_type: z.enum(["key", "account", "link", "link_token"]).default("key"),
   price_try: z.number().min(0).max(1000000),
   active: z.boolean(),
+  category: z.string().max(80).optional().nullable(),
+  manual_fulfillment: z.boolean().optional(),
+  stock_hint: z.number().int().min(0).max(100000).optional().nullable(),
+  featured: z.boolean().optional(),
 });
 
 export const upsertProduct = createServerFn({ method: "POST" })
@@ -139,6 +143,20 @@ export const upsertProduct = createServerFn({ method: "POST" })
       const { error } = await supabase.from("products").insert(data);
       if (error) throw new Error(error.message);
     }
+    return { ok: true };
+  });
+
+const deleteProductInput = z.object({ id: z.string().uuid() });
+
+export const deleteProduct = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => deleteProductInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Yetkisiz.");
+    const { error } = await supabase.from("products").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
     return { ok: true };
   });
 
