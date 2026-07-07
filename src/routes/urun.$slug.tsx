@@ -142,7 +142,7 @@ function ProductDetail() {
     .filter(Boolean);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-10">
+    <div className="mx-auto max-w-2xl px-4 py-10 pb-32 md:pb-10">
       <div className="mb-6 flex items-center justify-between">
         <Link to="/urunler" className="font-mono text-sm text-muted-foreground hover:text-primary">
           ← tüm lisanslar
@@ -185,6 +185,21 @@ function ProductDetail() {
             </span>
           </div>
 
+          {!manual && !unlimited && stock > 0 && stock <= 10 && (
+            <div className="mt-4">
+              <div className="flex items-center justify-between font-mono text-[10px] text-muted-foreground mb-1">
+                <span>stok durumu</span>
+                <span className={stock <= 3 ? "text-warn" : "text-primary"}>{stock} / 10</span>
+              </div>
+              <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
+                <div
+                  className={`h-full transition-all ${stock <= 3 ? "bg-warn" : "bg-primary"}`}
+                  style={{ width: `${Math.min(100, stock * 10)}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           <div className="mt-6 font-mono text-4xl neon-text">
             ₺{Number(product.price_try).toLocaleString("tr-TR")}
           </div>
@@ -219,7 +234,7 @@ function ProductDetail() {
           <Button
             disabled={loading || soldOut}
             onClick={handleBuy}
-            className="mt-8 w-full font-mono neon-glow"
+            className="mt-8 w-full font-mono neon-glow hidden md:inline-flex"
             size="lg"
           >
             {loading
@@ -228,9 +243,29 @@ function ProductDetail() {
               ? "stok tükendi"
               : "> satın al"}
           </Button>
-          <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center">
+          <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center hidden md:block">
             kredi kartı KABUL EDİLMEZ · sadece banka transferi
           </p>
+        </div>
+      </div>
+
+      {/* Sticky mobile buy bar */}
+      <div className="fixed bottom-0 inset-x-0 z-40 md:hidden border-t border-border/60 bg-background/95 backdrop-blur-md p-3 shadow-[0_-4px_20px_rgba(0,0,0,0.3)]">
+        <div className="mx-auto max-w-2xl flex items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="font-mono text-[10px] text-muted-foreground truncate">{product.name}</div>
+            <div className="font-mono text-lg neon-text leading-none">
+              ₺{Number(product.price_try).toLocaleString("tr-TR")}
+            </div>
+          </div>
+          <Button
+            disabled={loading || soldOut}
+            onClick={handleBuy}
+            className="font-mono neon-glow shrink-0"
+            size="lg"
+          >
+            {loading ? "…" : soldOut ? "tükendi" : "> satın al"}
+          </Button>
         </div>
       </div>
     </div>

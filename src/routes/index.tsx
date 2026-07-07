@@ -407,6 +407,7 @@ function ProductCard({
     price_try: number;
     image_url?: string | null;
     category?: string | null;
+    created_at?: string;
     manual_fulfillment?: boolean | null;
     stock_hint?: number | null;
     unlimited_stock?: boolean | null;
@@ -419,8 +420,17 @@ function ProductCard({
   const liveStock = (p.license_keys ?? []).filter((k) => k.status === "available").length;
   const stock = liveStock > 0 ? liveStock : (p.stock_hint ?? 0);
   const soldOut = !manual && !unlimited && stock === 0;
+  const isNew = p.created_at
+    ? (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7
+    : false;
+  const showStockBar = !manual && !unlimited && stock > 0 && stock <= 10;
   return (
-    <div className={`glass-card rounded-xl p-5 flex flex-col group transition-all hover:-translate-y-0.5 hover:border-primary/40 ${featured ? "border-warn/30" : ""}`}>
+    <div className={`glass-card rounded-xl p-5 flex flex-col group transition-all hover:-translate-y-0.5 hover:border-primary/40 relative ${featured ? "border-warn/30" : ""}`}>
+      {isNew && (
+        <span className="absolute -top-2 -right-2 rounded-full px-2 py-0.5 font-mono text-[10px] border border-cyan/50 bg-cyan/20 text-cyan animate-pulse shadow-lg">
+          ✦ YENİ
+        </span>
+      )}
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-[11px] text-muted-foreground font-mono flex items-center gap-1.5 uppercase tracking-wider">
@@ -436,10 +446,20 @@ function ProductCard({
         <span className="rounded-md bg-muted/40 text-muted-foreground border border-border px-2 py-0.5">
           {DURATION_LABEL[p.duration] ?? p.duration}
         </span>
-        <span className={`rounded-md px-2 py-0.5 border ${unlimited || manual ? "text-cyan border-cyan/40 bg-cyan/5" : soldOut ? "text-destructive border-destructive/40 bg-destructive/5" : "text-primary border-primary/40 bg-primary/5"}`}>
-          {unlimited ? "stok: ∞" : manual ? "sipariş sonrası" : soldOut ? "tükendi" : `stok: ${stock}`}
+        <span className={`rounded-md px-2 py-0.5 border ${unlimited || manual ? "text-cyan border-cyan/40 bg-cyan/5" : soldOut ? "text-destructive border-destructive/40 bg-destructive/5" : stock <= 3 ? "text-warn border-warn/40 bg-warn/5" : "text-primary border-primary/40 bg-primary/5"}`}>
+          {unlimited ? "stok: ∞" : manual ? "sipariş sonrası" : soldOut ? "tükendi" : stock <= 3 ? `son ${stock}` : `stok: ${stock}`}
         </span>
       </div>
+      {showStockBar && (
+        <div className="mt-3">
+          <div className="h-1 rounded-full bg-muted/40 overflow-hidden">
+            <div
+              className={`h-full transition-all ${stock <= 3 ? "bg-warn" : "bg-primary"}`}
+              style={{ width: `${Math.min(100, stock * 10)}%` }}
+            />
+          </div>
+        </div>
+      )}
       <div className="mt-auto pt-5 flex items-end justify-between">
         <div>
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">fiyat</div>
