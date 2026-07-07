@@ -245,6 +245,8 @@ function Payment() {
                 bank={bank}
                 amount={Number(order.price_try)}
                 reference={order.reference_code}
+                productName={order.product?.name ?? ""}
+                productDuration={order.product?.duration}
               />
               <ReceiptBlock
                 dragOver={dragOver}
