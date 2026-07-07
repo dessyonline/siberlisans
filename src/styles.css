@@ -244,6 +244,29 @@
   100% { opacity: 1; background-color: transparent; }
 }
 @utility feed-in { animation: feed-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+
+/* Progress bar shimmer sweep */
+@keyframes bar-shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+@utility bar-shimmer { animation: bar-shimmer 2.2s ease-in-out infinite; }
+
+/* Indeterminate scanning strip for manual/order-on-demand */
+@keyframes bar-scan {
+  0%   { left: -30%; }
+  100% { left: 100%; }
+}
+@utility bar-scan { animation: bar-scan 1.6s ease-in-out infinite; }
+
+/* Segmented cell flicker for near-empty */
+@keyframes cell-flicker {
+  0%, 100% { opacity: 1; }
+  47%      { opacity: 0.55; }
+  50%      { opacity: 0.9; }
+  53%      { opacity: 0.55; }
+}
+@utility cell-flicker { animation: cell-flicker 1.6s ease-in-out infinite; }
 @utility scan-line {
   position: relative;
   &::before {
