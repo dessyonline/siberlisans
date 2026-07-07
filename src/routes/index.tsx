@@ -517,7 +517,7 @@ function Index() {
               </div>
               <Link
                 to="/urunler"
-                className="group inline-flex items-center gap-1 font-mono text-xs text-primary hover:text-neon transition-colors"
+                className="group inline-flex items-center gap-1 font-mono text-xs text-primary hover:neon-text transition-colors"
               >
                 tümünü listele
                 <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
