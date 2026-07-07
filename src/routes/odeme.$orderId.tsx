@@ -326,12 +326,9 @@ function Payment() {
                   </>
                 );
               })()}
-            </>
-          )}
-
-
-          <OrderTimeline order={order} />
-        </div>
+          </>
+        )}
+      </div>
 
 
         {/* SIDE: live monitor */}
