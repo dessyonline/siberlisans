@@ -95,6 +95,26 @@ function Payment() {
     return "transfer";
   }, [order]);
 
+  // 3 dk ödeme penceresi (pending durumu için)
+  const createdMs = order?.created_at ? new Date(order.created_at).getTime() : null;
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const secondsLeft = createdMs
+    ? Math.max(0, PAYMENT_WINDOW_SEC - Math.floor((nowMs - createdMs) / 1000))
+    : PAYMENT_WINDOW_SEC;
+  const expired = order?.status === "pending" && secondsLeft <= 0;
+
+  useEffect(() => {
+    if (expired) {
+      toast.error("Süre doldu — ödeme yapılmadı, siparişin iptal edildi", { duration: 5000 });
+      const t = setTimeout(() => navigate({ to: "/urunler" }), 400);
+      return () => clearTimeout(t);
+    }
+  }, [expired, navigate]);
+
   const handleFile = async (file: File) => {
     if (!user) return;
     if (file.size > 5 * 1024 * 1024) return toast.error("Dosya 5MB'ı aşamaz");
