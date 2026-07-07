@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
 import { markOrderPaid } from "@/lib/orders.functions";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
+import enparaQr from "@/assets/enpara-qr.png.asset.json";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
@@ -233,10 +234,6 @@ function TransferBlock({
     navigator.clipboard.writeText(v);
     toast.success(`${label} kopyalandı`);
   };
-  const qrPayload = `IBAN:${bank?.iban ?? ""}|AMOUNT:${amount}|REF:${reference}`;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&bgcolor=0e1520&color=6effb8&margin=6&data=${encodeURIComponent(
-    qrPayload
-  )}`;
   const iban = bank?.iban ?? "—";
 
   return (
@@ -283,20 +280,20 @@ function TransferBlock({
           </div>
         </dl>
 
-        {/* QR */}
-        <div className="flex flex-col items-center justify-start rounded-lg border border-border/60 bg-background/40 p-4 min-w-[200px]">
-          <div className="flex items-center gap-1.5 font-mono text-[10px] tracking-widest text-muted-foreground">
-            <QrCode className="h-3 w-3" /> quick_scan
+        {/* QR — Enpara */}
+        <div className="flex flex-col items-center justify-start rounded-lg border border-border/60 bg-white p-4 min-w-[220px]">
+          <div className="flex items-center gap-1.5 font-mono text-[10px] tracking-widest text-muted-foreground bg-background/80 rounded px-2 py-0.5">
+            <QrCode className="h-3 w-3" /> enpara_qr
           </div>
           <img
-            src={qrUrl}
-            alt="Havale QR"
-            width={180}
-            height={180}
-            className="mt-2 rounded-md border border-primary/20"
+            src={enparaQr.url}
+            alt="Enpara Havale QR — Melih Kuşkaya"
+            width={200}
+            height={220}
+            className="mt-2 rounded-md"
           />
-          <p className="mt-2 text-center text-[10px] text-muted-foreground font-mono">
-            mobil bankacılıkta<br />QR ile aktar
+          <p className="mt-2 text-center text-[10px] text-muted-foreground font-mono bg-background/80 rounded px-2 py-1">
+            Enpara uygulamasında<br />QR ile aktar
           </p>
         </div>
       </div>
