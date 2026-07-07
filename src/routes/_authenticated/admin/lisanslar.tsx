@@ -14,7 +14,7 @@ function genKey(): string {
   const abc = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const seg = (n: number) =>
     Array.from({ length: n }, () => abc[Math.floor(Math.random() * abc.length)]).join("");
-  return `LVBL-${seg(4)}-${seg(4)}-${seg(4)}-${seg(4)}`;
+  return `SIBER-${seg(4)}-${seg(4)}-${seg(4)}`;
 }
 
 function buildUserscript(licenseKey: string): string {
