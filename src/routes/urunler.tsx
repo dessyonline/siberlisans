@@ -44,6 +44,94 @@ export const Route = createFileRoute("/urunler")({
 
 const DUR: Record<string, string> = { monthly: "aylık", yearly: "yıllık", lifetime: "ömürlük" };
 
+// Cyber "stock load" progress — segmented cells + shimmer, state-aware
+function CyberStockLoader({
+  stock, manual, unlimited, soldOut, cells = 18,
+}: { stock: number; manual: boolean; unlimited: boolean; soldOut: boolean; cells?: number }) {
+  const mode = soldOut ? "offline" : unlimited ? "infinite" : manual ? "queue" : "stock";
+  const cap = mode === "stock" ? Math.min(20, Math.max(3, stock * 2)) : cells;
+  const filled =
+    mode === "infinite" ? cells :
+    mode === "queue"    ? Math.round(cells * 0.35) :
+    mode === "offline"  ? 0 :
+    Math.min(cells, Math.max(1, Math.round((stock / cap) * cells)));
+  const pct =
+    mode === "infinite" ? 100 :
+    mode === "offline"  ? 0 :
+    mode === "queue"    ? null :
+    Math.round((filled / cells) * 100);
+  const color =
+    mode === "offline"  ? "text-destructive" :
+    mode === "infinite" ? "text-cyan" :
+    mode === "queue"    ? "text-cyan" :
+    stock <= 3 ? "text-warn" : "text-primary";
+  const bar =
+    mode === "offline"  ? "bg-destructive" :
+    mode === "infinite" ? "bg-cyan" :
+    mode === "queue"    ? "bg-cyan" :
+    stock <= 3 ? "bg-warn" : "bg-primary";
+  const label =
+    mode === "offline"  ? "OFFLINE" :
+    mode === "infinite" ? "READY" :
+    mode === "queue"    ? "QUEUE" :
+    stock <= 3 ? "LOW" : "OK";
+
+  return (
+    <div className="mt-3 font-mono select-none">
+      <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.22em] mb-1">
+        <span className="text-muted-foreground/80">
+          <span className="text-primary/60">$</span> stock.load
+        </span>
+        <span className={`inline-flex items-center gap-1.5 ${color}`}>
+          <span className={`h-1 w-1 rounded-full ${bar} ${mode === "offline" ? "" : "animate-pulse"} shadow-[0_0_6px_currentColor]`} />
+          {label}
+          {pct !== null && <span className="text-muted-foreground/60">· {pct}%</span>}
+        </span>
+      </div>
+      <div className="relative flex gap-[2px] h-2 rounded-sm bg-background/60 border border-border/50 p-[2px] overflow-hidden">
+        {Array.from({ length: cells }).map((_, i) => {
+          const isFilled = i < filled;
+          const isEdge = mode === "stock" && i === filled - 1 && stock <= 3;
+          return (
+            <span
+              key={i}
+              className={`flex-1 rounded-[1px] transition-colors ${
+                isFilled ? `${bar} ${isEdge ? "cell-flicker" : ""} shadow-[0_0_4px_currentColor]` : "bg-muted/25"
+              }`}
+            />
+          );
+        })}
+        {mode !== "offline" && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 w-1/3 bar-shimmer opacity-70"
+            style={{ background: "linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 0.35) 50%, transparent 100%)" }}
+          />
+        )}
+        {mode === "queue" && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute top-0 bottom-0 w-[30%] bar-scan"
+            style={{ background: "linear-gradient(90deg, transparent, oklch(0.78 0.16 220 / 0.55), transparent)" }}
+          />
+        )}
+      </div>
+      <div className="mt-1 flex items-center justify-between text-[9px] text-muted-foreground/70">
+        <span>
+          {mode === "offline" && "// havuzda anahtar yok"}
+          {mode === "infinite" && "// anlık teslim · sınırsız kaynak"}
+          {mode === "queue" && "// sipariş sonrası tedarik"}
+          {mode === "stock" && `// havuzda ${stock} anahtar hazır`}
+        </span>
+        <span className="text-muted-foreground/50 hidden sm:inline">
+          [{filled.toString().padStart(2, "0")}/{cells}]
+        </span>
+      </div>
+    </div>
+  );
+}
+
+
 // Cyber-styled product title — terminal prompt + hover caret + glitch
 function CyberTitle({
   name,
@@ -357,7 +445,7 @@ function ProductCard({ product: p }: { product: Row }) {
     ? "text-warn border-warn/40 bg-warn/10 animate-pulse"
     : "text-primary border-primary/30 bg-primary/10";
   const isNew = (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7;
-  const showStockBar = !manual && !unlimited && stock > 0 && stock <= 10;
+  
 
   return (
     <div className="group relative glass-card rounded-xl overflow-hidden flex flex-col glass-card-hover border border-border/60">
@@ -440,16 +528,7 @@ function ProductCard({ product: p }: { product: Row }) {
           </span>
           <span className={`rounded px-2 py-0.5 border ${stockCls}`}>● {stockLabel}</span>
         </div>
-        {showStockBar && (
-          <div className="mt-3">
-            <div className="h-1 rounded-full bg-muted/40 overflow-hidden">
-              <div
-                className={`h-full transition-all ${stock <= 3 ? "bg-warn" : "bg-primary"}`}
-                style={{ width: `${Math.min(100, stock * 10)}%` }}
-              />
-            </div>
-          </div>
-        )}
+        <CyberStockLoader stock={stock} manual={manual} unlimited={unlimited} soldOut={soldOut} />
         <div className="mt-auto pt-4">
           <div className="mb-3 font-mono text-2xl neon-text">
             ₺{Number(p.price_try).toLocaleString("tr-TR")}
