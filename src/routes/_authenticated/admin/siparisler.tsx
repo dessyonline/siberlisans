@@ -150,6 +150,17 @@ function OrdersAdmin() {
                 )}
               </div>
             </div>
+            {o.product?.manual_fulfillment && (
+              <div className="mt-2 text-[10px] font-mono rounded border border-cyan/40 bg-cyan/10 px-2 py-1 text-cyan inline-block">
+                manuel teslimat
+              </div>
+            )}
+            {o.user_note && (
+              <div className="mt-2 rounded border border-cyan/30 bg-cyan/5 p-2 text-xs">
+                <span className="text-cyan font-semibold">müşteri mesajı:</span>{" "}
+                <span className="text-foreground/90 whitespace-pre-wrap">{o.user_note}</span>
+              </div>
+            )}
             {o.admin_note && (
               <div className="mt-2 text-xs text-destructive">not: {o.admin_note}</div>
             )}
