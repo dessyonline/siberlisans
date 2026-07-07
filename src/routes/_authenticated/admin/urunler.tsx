@@ -39,6 +39,7 @@ type Product = {
   manual_fulfillment: boolean;
   stock_hint: number | null;
   featured: boolean;
+  unlimited_stock: boolean;
 };
 
 function ProductsAdmin() {
