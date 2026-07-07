@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line } from "recharts";
 import {
   TrendingUp,
   ShoppingBag,
@@ -22,7 +22,7 @@ function Dashboard() {
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
-      const [ordersRes, pendingRes, keysRes, lowStockRes, messagesRes, recentRes] =
+      const [ordersRes, pendingRes, keysRes, lowStockRes, messagesRes, recentRes, topProductsRes] =
         await Promise.all([
           supabase.from("orders").select("id, price_try, status, created_at"),
           supabase
@@ -49,6 +49,10 @@ function Dashboard() {
             .select("id, status, price_try, reference_code, created_at, product:products(name)")
             .order("created_at", { ascending: false })
             .limit(6),
+          supabase
+            .from("orders")
+            .select("price_try, product:products(name)")
+            .eq("status", "approved"),
         ]);
 
       const all = ordersRes.data ?? [];
@@ -94,6 +98,19 @@ function Dashboard() {
         .filter((p) => !p.unlimited && !p.manual && p.avail < 3)
         .sort((a, b) => a.avail - b.avail);
 
+      const productAgg = new Map<string, { name: string; revenue: number; count: number }>();
+      for (const row of (topProductsRes.data ?? []) as { price_try: number; product: { name: string } | null }[]) {
+        const name = row.product?.name ?? "—";
+        const cur = productAgg.get(name) ?? { name, revenue: 0, count: 0 };
+        cur.revenue += Number(row.price_try);
+        cur.count += 1;
+        productAgg.set(name, cur);
+      }
+      const topProducts = Array.from(productAgg.values())
+        .sort((a, b) => b.revenue - a.revenue)
+        .slice(0, 6)
+        .map((p) => ({ ...p, name: p.name.length > 18 ? p.name.slice(0, 17) + "…" : p.name }));
+
       return {
         totalRev,
         todayRev,
@@ -104,6 +121,7 @@ function Dashboard() {
         lowStock,
         messages: messagesRes.data ?? [],
         recent: recentRes.data ?? [],
+        topProducts,
       };
     },
     refetchInterval: 15000,
