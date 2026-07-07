@@ -233,6 +233,7 @@ function ProductsAdmin() {
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
+                </div>
               </div>
             </div>
           );
