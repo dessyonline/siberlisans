@@ -265,8 +265,13 @@ function LicensesAdmin() {
     <div>
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="font-mono text-xl sm:text-2xl neon-text">Lovable Lisans Yönetimi</h1>
-        <div className="font-mono text-[11px] text-muted-foreground">
-          HWID kilidi · süre · iptal · userscript
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" className="h-8 font-mono text-[11px] text-destructive border-destructive/40 hover:bg-destructive/10" onClick={purgeUnused}>
+            <Eraser className="h-3 w-3 mr-1" /> kullanılmamışları temizle
+          </Button>
+          <div className="font-mono text-[11px] text-muted-foreground hidden sm:block">
+            HWID · süre · iptal · sil
+          </div>
         </div>
       </div>
 
