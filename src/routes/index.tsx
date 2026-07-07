@@ -294,7 +294,7 @@ function Index() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, image_url, category, featured, manual_fulfillment, stock_hint, unlimited_stock, created_at, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, image_url, category, featured, manual_fulfillment, stock_hint, unlimited_stock, created_at, sort_order, tier, license_keys(status)")
         .eq("active", true)
         .order("price_try");
       if (error) throw error;
@@ -302,7 +302,29 @@ function Index() {
     },
   });
 
-  const featured = (products ?? []).filter((p) => p.featured);
+  // AI ürünlerini üstte gösterme sırası
+  const AI_ORDER = ["chatgpt", "gemini", "lovable", "claude", "midjourney", "nano banana", "ideogram"];
+  const aiRank = (cat?: string | null) => {
+    const c = (cat ?? "").toLowerCase();
+    const i = AI_ORDER.findIndex((k) => c.includes(k));
+    return i === -1 ? 99 : i;
+  };
+  const featured = useMemo(() => {
+    return [...(products ?? [])]
+      .filter((p) => (p as { featured: boolean }).featured)
+      .sort((a, b) => {
+        const ra = aiRank((a as { category?: string | null }).category);
+        const rb = aiRank((b as { category?: string | null }).category);
+        if (ra !== rb) return ra - rb;
+        const ea = ((a as { tier?: string }).tier === "epic") ? 0 : 1;
+        const eb = ((b as { tier?: string }).tier === "epic") ? 0 : 1;
+        if (ea !== eb) return ea - eb;
+        const sa = (a as { sort_order?: number }).sort_order ?? 0;
+        const sb = (b as { sort_order?: number }).sort_order ?? 0;
+        if (sa !== sb) return sb - sa;
+        return 0;
+      });
+  }, [products]);
 
   const recent = useMemo(() => {
     return [...(products ?? [])]
