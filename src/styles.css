@@ -226,6 +226,24 @@
 /* Terminal char reveal */
 @keyframes type-in { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
 @utility type-in { animation: type-in 1.2s steps(40, end) both; }
+
+/* Infinite marquee (right → left) */
+@keyframes marquee-x {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@utility marquee-track {
+  animation: marquee-x 45s linear infinite;
+  will-change: transform;
+}
+
+/* Feed row entry: slide down + fade */
+@keyframes feed-in {
+  0%   { opacity: 0; transform: translateY(-8px); background-color: oklch(0.82 0.20 145 / 0.14); }
+  60%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 1; background-color: transparent; }
+}
+@utility feed-in { animation: feed-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
 @utility scan-line {
   position: relative;
   &::before {
