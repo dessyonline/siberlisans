@@ -245,6 +245,8 @@ function Payment() {
                 bank={bank}
                 amount={Number(order.price_try)}
                 reference={order.reference_code}
+                productName={order.product?.name ?? ""}
+                productDuration={order.product?.duration}
               />
               <ReceiptBlock
                 dragOver={dragOver}
@@ -278,16 +280,28 @@ function TransferBlock({
   bank,
   amount,
   reference,
+  productName,
+  productDuration,
 }: {
   bank: { bank_name?: string; holder_name?: string; iban?: string } | null | undefined;
   amount: number;
   reference: string;
+  productName: string;
+  productDuration?: string;
 }) {
   const copy = (v: string, label: string) => {
     navigator.clipboard.writeText(v);
     toast.success(`${label} kopyalandı`);
   };
   const iban = bank?.iban ?? "—";
+  const durLabel =
+    productDuration === "monthly"
+      ? "Aylık"
+      : productDuration === "yearly"
+      ? "Yıllık"
+      : productDuration === "lifetime"
+      ? "Ömür Boyu"
+      : null;
 
   return (
     <section className="glass-card rounded-lg p-6">
@@ -300,6 +314,33 @@ function TransferBlock({
         </div>
         <div className="hidden sm:flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-1.5 font-mono text-xs text-primary">
           <Lock className="h-3.5 w-3.5" /> güvenli kanal
+        </div>
+      </div>
+
+      {/* Satın alınan ürün özeti */}
+      <div className="mt-4 rounded-md border border-primary/30 bg-primary/[0.04] p-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <div className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+              satın alınan ürün
+            </div>
+            <div className="mt-1 font-mono text-base text-primary neon-text break-words">
+              {productName || "—"}
+            </div>
+            {durLabel && (
+              <div className="mt-1 inline-flex items-center gap-1 rounded border border-primary/30 bg-primary/10 px-2 py-0.5 font-mono text-[10px] text-primary">
+                {durLabel}
+              </div>
+            )}
+          </div>
+          <div className="text-right shrink-0">
+            <div className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+              tutar
+            </div>
+            <div className="mt-1 font-mono text-lg neon-text">
+              ₺{amount.toLocaleString("tr-TR")}
+            </div>
+          </div>
         </div>
       </div>
 
