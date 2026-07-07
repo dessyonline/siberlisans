@@ -187,15 +187,46 @@ function ProductsAdmin() {
           const total = (p.license_keys ?? []).length;
           const stockShown = avail > 0 ? avail : (p.stock_hint ?? 0);
           return (
-            <div key={p.id} className="glass-card rounded-lg p-4 font-mono text-sm flex items-start sm:items-center justify-between gap-3 flex-wrap">
-              <div className="min-w-0 w-full sm:w-auto sm:flex-1">
-                <div className="font-semibold flex items-center gap-2 flex-wrap">
-                  {p.featured && <Star className="h-3 w-3 text-warn fill-warn shrink-0" />}
-                  <span className="break-all">{p.name}</span> <span className="text-xs text-muted-foreground break-all">/{p.slug}</span>
+            <div key={p.id} className="glass-card rounded-lg p-3 sm:p-4 font-mono text-sm">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <div className="font-semibold flex items-center gap-2 flex-wrap">
+                    {p.featured && <Star className="h-3 w-3 text-warn fill-warn shrink-0" />}
+                    <span className="break-all">{p.name}</span>
+                    <span className="text-xs text-muted-foreground break-all">/{p.slug}</span>
+                  </div>
+                  <div className="text-xs text-muted-foreground break-words mt-0.5">
+                    {p.category ?? "—"} · {p.duration} · ₺{Number(p.price_try).toLocaleString("tr-TR")}
+                  </div>
                 </div>
-                <div className="text-xs text-muted-foreground break-words">{p.category ?? "—"} · {p.duration} · ₺{Number(p.price_try).toLocaleString("tr-TR")}</div>
+                <div className="flex gap-1 shrink-0 self-end sm:self-center">
+                  <Button size="sm" variant="outline" onClick={() => setEditing(p)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="sm" variant="outline" className="text-destructive hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="font-mono">Ürünü sil?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          <b>{p.name}</b> ve bağlı tüm key'leri kalıcı olarak silinecek. Bu işlem geri alınamaz.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel className="font-mono">vazgeç</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => remove(p.id)} className="font-mono bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          sil
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               </div>
-              <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+              <div className="mt-3 flex items-center gap-2 flex-wrap text-xs">
                 <div className="text-[10px] rounded border border-primary/30 bg-primary/5 px-2 py-1 text-primary">
                   {DELIVERY_LABELS[(p.delivery_type ?? "key") as DeliveryType]}
                 </div>
@@ -208,34 +239,9 @@ function ProductsAdmin() {
                 <div className={`text-xs ${p.active ? "text-primary" : "text-muted-foreground"}`}>
                   {p.active ? "aktif" : "pasif"}
                 </div>
-                <div className="flex gap-1 ml-auto">
-                  <Button size="sm" variant="outline" onClick={() => setEditing(p)}>
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button size="sm" variant="outline" className="text-destructive hover:text-destructive">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="font-mono">Ürünü sil?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        <b>{p.name}</b> ve bağlı tüm key'leri kalıcı olarak silinecek. Bu işlem geri alınamaz.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel className="font-mono">vazgeç</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => remove(p.id)} className="font-mono bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                        sil
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-                </div>
               </div>
             </div>
+
           );
         })}
       </div>
