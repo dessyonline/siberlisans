@@ -17,12 +17,21 @@ export const Route = createFileRoute("/_authenticated/admin/urunler")({
   component: ProductsAdmin,
 });
 
+type DeliveryType = "key" | "account" | "link" | "link_token";
+const DELIVERY_LABELS: Record<DeliveryType, string> = {
+  key: "text key",
+  account: "mail hesabı (email:şifre)",
+  link: "hazır link",
+  link_token: "aktivasyon linki (token)",
+};
+
 type Product = {
   id: string;
   name: string;
   slug: string;
   description: string | null;
   duration: "monthly" | "yearly" | "lifetime";
+  delivery_type: DeliveryType;
   price_try: number;
   active: boolean;
 };
