@@ -45,7 +45,7 @@ function ActivationPage() {
     );
   }
 
-  const dt = (data.product?.delivery_type ?? "key") as DeliveryType;
+  const dt = (data.delivery_type ?? "key") as DeliveryType;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
@@ -66,7 +66,8 @@ function ActivationPage() {
               secure_channel · verified
             </div>
             <h1 className="mt-1 font-mono text-2xl neon-text">Aktivasyon</h1>
-            <p className="mt-1 font-mono text-xs text-muted-foreground">{data.product?.name}</p>
+            <p className="mt-1 font-mono text-xs text-muted-foreground">{data.product_name}</p>
+
           </div>
           <CheckCircle2 className="h-10 w-10 text-primary" />
         </div>
