@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { approveOrder, rejectOrder } from "@/lib/orders.functions";
@@ -10,7 +10,9 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Eye, Check, X, ImageIcon, Link2 } from "lucide-react";
+import {
+  Eye, Check, X, ImageIcon, Link2, Search, MessageCircle, Send, Instagram, Copy,
+} from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/siparisler")({
   component: OrdersAdmin,
@@ -23,9 +25,21 @@ const STATUS: Record<string, string> = {
   rejected: "reddedildi",
 };
 
+const STATUS_CLS: Record<string, string> = {
+  pending: "text-muted-foreground border-border bg-muted/30",
+  reviewing: "text-cyan border-cyan/40 bg-cyan/10",
+  approved: "text-primary border-primary/40 bg-primary/10",
+  rejected: "text-destructive border-destructive/40 bg-destructive/10",
+};
+
+type Range = "today" | "7d" | "30d" | "all";
+
 function OrdersAdmin() {
   const qc = useQueryClient();
   const [filter, setFilter] = useState<"reviewing" | "pending" | "approved" | "rejected" | "all">("reviewing");
+  const [range, setRange] = useState<Range>("all");
+  const [query, setQuery] = useState("");
+  const [onlyWithMessage, setOnlyWithMessage] = useState(false);
   const approveFn = useServerFn(approveOrder);
   const rejectFn = useServerFn(rejectOrder);
   const [note, setNote] = useState("");
@@ -44,6 +58,26 @@ function OrdersAdmin() {
     },
     refetchInterval: 10000,
   });
+
+  const filtered = useMemo(() => {
+    const now = Date.now();
+    const cutoff =
+      range === "today" ? now - 864e5 :
+      range === "7d" ? now - 7 * 864e5 :
+      range === "30d" ? now - 30 * 864e5 : 0;
+    const qlc = query.trim().toLowerCase();
+    return (orders ?? []).filter((o) => {
+      if (cutoff && new Date(o.created_at).getTime() < cutoff) return false;
+      if (onlyWithMessage && !o.user_note) return false;
+      if (qlc) {
+        const hay = `${o.reference_code} ${o.product?.name ?? ""} ${o.user_note ?? ""}`.toLowerCase();
+        if (!hay.includes(qlc)) return false;
+      }
+      return true;
+    });
+  }, [orders, range, query, onlyWithMessage]);
+
+  const messageCount = (orders ?? []).filter((o) => !!o.user_note).length;
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const openReceipt = async (path: string) => {
@@ -67,69 +101,176 @@ function OrdersAdmin() {
     } catch (e) { toast.error((e as Error).message); }
   };
 
+  const copyRef = (ref: string) => {
+    navigator.clipboard.writeText(ref);
+    toast.success(`${ref} kopyalandı`);
+  };
+
   return (
-    <div>
-      <div className="flex items-center justify-between">
-        <h1 className="font-mono text-2xl neon-text">Siparişler</h1>
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value as typeof filter)}
-          className="rounded border border-border bg-input px-3 py-1 font-mono text-sm"
-        >
-          <option value="reviewing">inceleniyor</option>
-          <option value="pending">bekliyor</option>
-          <option value="approved">onaylı</option>
-          <option value="rejected">reddedildi</option>
-          <option value="all">tümü</option>
-        </select>
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <div className="font-mono text-xs text-muted-foreground">./admin/orders</div>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight">Siparişler</h1>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as typeof filter)}
+            className="rounded-md border border-border bg-input px-3 py-2 font-mono text-xs"
+          >
+            <option value="reviewing">inceleniyor</option>
+            <option value="pending">bekliyor</option>
+            <option value="approved">onaylı</option>
+            <option value="rejected">reddedildi</option>
+            <option value="all">tüm durumlar</option>
+          </select>
+          <select
+            value={range}
+            onChange={(e) => setRange(e.target.value as Range)}
+            className="rounded-md border border-border bg-input px-3 py-2 font-mono text-xs"
+          >
+            <option value="today">bugün</option>
+            <option value="7d">son 7 gün</option>
+            <option value="30d">son 30 gün</option>
+            <option value="all">tüm zamanlar</option>
+          </select>
+        </div>
       </div>
 
-      <div className="mt-6 space-y-3">
-        {(orders ?? []).length === 0 && (
-          <div className="glass-card rounded-lg p-8 text-center font-mono text-muted-foreground">
+      <div className="glass-card rounded-xl p-4 flex flex-wrap items-center gap-3">
+        <div className="relative flex-1 min-w-[220px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="referans, ürün, mesaj ara…"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="pl-9 font-mono text-sm"
+          />
+        </div>
+        <button
+          onClick={() => setOnlyWithMessage((v) => !v)}
+          className={`flex items-center gap-2 rounded-md border px-3 py-2 text-xs font-mono transition ${
+            onlyWithMessage
+              ? "border-cyan/60 bg-cyan/10 text-cyan"
+              : "border-border hover:border-primary/40"
+          }`}
+        >
+          <MessageCircle className="h-3.5 w-3.5" />
+          mesajlı ({messageCount})
+        </button>
+        <div className="text-xs text-muted-foreground font-mono ml-auto">
+          {filtered.length} sonuç
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {filtered.length === 0 && (
+          <div className="glass-card rounded-xl p-12 text-center text-muted-foreground">
             bu filtrede sipariş yok
           </div>
         )}
-        {(orders ?? []).map((o) => (
-          <div key={o.id} className="glass-card rounded-lg p-4 font-mono text-sm">
-            <div className="flex flex-wrap items-center gap-3 justify-between">
-              <div>
-                <div className="font-semibold">{o.product?.name}</div>
-                <div className="text-xs text-muted-foreground">ref: {o.reference_code} · {new Date(o.created_at).toLocaleString("tr-TR")}</div>
-              </div>
-              <div className="text-xs uppercase text-cyan">{STATUS[o.status]}</div>
-              <div className="neon-text">₺{Number(o.price_try).toLocaleString("tr-TR")}</div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  title="ödeme sayfası linkini kopyala"
-                  onClick={() => {
-                    const url = `${window.location.origin}/odeme/${o.id}`;
-                    navigator.clipboard.writeText(url);
-                    toast.success("ödeme linki kopyalandı");
-                  }}
-                >
-                  <Link2 className="h-4 w-4 mr-1" />ödeme linki
-                </Button>
-                {o.receipt_path ? (
-                  <Button size="sm" variant="outline" onClick={() => openReceipt(o.receipt_path!)}>
-                    <Eye className="h-4 w-4 mr-1" />dekont
-                  </Button>
-                ) : (
-                  <span className="text-xs text-muted-foreground flex items-center gap-1">
-                    <ImageIcon className="h-3.5 w-3.5" /> dekont yok
+        {filtered.map((o) => (
+          <div key={o.id} className="glass-card rounded-xl p-5">
+            <div className="flex flex-wrap items-start gap-4 justify-between">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold text-base">{o.product?.name}</span>
+                  <span className={`text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md border ${STATUS_CLS[o.status]}`}>
+                    {STATUS[o.status]}
                   </span>
-                )}
-                {(o.status === "reviewing" || o.status === "pending") && (
-                  <>
+                  {o.product?.manual_fulfillment && (
+                    <span className="text-[10px] font-mono rounded-md border border-cyan/40 bg-cyan/10 px-2 py-0.5 text-cyan">
+                      manuel
+                    </span>
+                  )}
+                  {o.user_note && (
+                    <span className="text-[10px] font-mono rounded-md border border-warn/40 bg-warn/10 px-2 py-0.5 text-warn flex items-center gap-1">
+                      <MessageCircle className="h-2.5 w-2.5" /> mesaj
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => copyRef(o.reference_code)}
+                  className="mt-1 text-xs text-muted-foreground font-mono hover:text-primary flex items-center gap-1"
+                >
+                  <Copy className="h-3 w-3" /> {o.reference_code}
+                  <span className="mx-1">·</span>
+                  {new Date(o.created_at).toLocaleString("tr-TR")}
+                </button>
+              </div>
+              <div className="text-right">
+                <div className="text-xl font-semibold text-primary font-mono">
+                  ₺{Number(o.price_try).toLocaleString("tr-TR")}
+                </div>
+              </div>
+            </div>
+
+            {o.user_note && (
+              <div className="mt-3 rounded-lg border border-cyan/30 bg-cyan/5 p-3 text-sm">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-cyan mb-1 flex items-center gap-1">
+                  <MessageCircle className="h-3 w-3" /> müşteri mesajı
+                </div>
+                <div className="text-foreground/90 whitespace-pre-wrap">{o.user_note}</div>
+              </div>
+            )}
+            {o.admin_note && (
+              <div className="mt-2 text-xs text-destructive font-mono">
+                red notu: {o.admin_note}
+              </div>
+            )}
+
+            <div className="mt-4 flex items-center gap-2 flex-wrap">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  const url = `${window.location.origin}/odeme/${o.id}`;
+                  navigator.clipboard.writeText(url);
+                  toast.success("ödeme linki kopyalandı");
+                }}
+              >
+                <Link2 className="h-4 w-4 mr-1" />
+                ödeme linki
+              </Button>
+              {o.receipt_path ? (
+                <Button size="sm" variant="outline" onClick={() => openReceipt(o.receipt_path!)}>
+                  <Eye className="h-4 w-4 mr-1" />
+                  dekont
+                </Button>
+              ) : (
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  <ImageIcon className="h-3.5 w-3.5" /> dekont yok
+                </span>
+              )}
+              <a
+                href="https://t.me/dessyoffical"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-xs rounded-md border border-primary/40 bg-primary/5 px-2.5 py-1.5 hover:bg-primary/10 text-primary transition"
+              >
+                <Send className="h-3.5 w-3.5" /> Telegram
+              </a>
+              <a
+                href="https://ig.me/m/siber.php"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-xs rounded-md border border-cyan/40 bg-cyan/5 px-2.5 py-1.5 hover:bg-cyan/10 text-cyan transition"
+              >
+                <Instagram className="h-3.5 w-3.5" /> Instagram
+              </a>
+              {(o.status === "reviewing" || o.status === "pending") && (
+                <>
+                  <div className="ml-auto flex gap-2">
                     <Button size="sm" onClick={() => handleApprove(o.id)}>
-                      <Check className="h-4 w-4 mr-1" />onayla
+                      <Check className="h-4 w-4 mr-1" />
+                      onayla
                     </Button>
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button size="sm" variant="destructive">
-                          <X className="h-4 w-4 mr-1" />reddet
+                          <X className="h-4 w-4 mr-1" />
+                          reddet
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
@@ -137,33 +278,21 @@ function OrdersAdmin() {
                           <DialogTitle>Siparişi reddet</DialogTitle>
                         </DialogHeader>
                         <Input
-                          placeholder="not (opsiyonel)"
+                          placeholder="müşteriye gösterilecek not (opsiyonel)"
                           value={note}
                           onChange={(e) => setNote(e.target.value)}
                         />
                         <DialogFooter>
-                          <Button variant="destructive" onClick={() => handleReject(o.id)}>reddet</Button>
+                          <Button variant="destructive" onClick={() => handleReject(o.id)}>
+                            reddet
+                          </Button>
                         </DialogFooter>
                       </DialogContent>
                     </Dialog>
-                  </>
-                )}
-              </div>
+                  </div>
+                </>
+              )}
             </div>
-            {o.product?.manual_fulfillment && (
-              <div className="mt-2 text-[10px] font-mono rounded border border-cyan/40 bg-cyan/10 px-2 py-1 text-cyan inline-block">
-                manuel teslimat
-              </div>
-            )}
-            {o.user_note && (
-              <div className="mt-2 rounded border border-cyan/30 bg-cyan/5 p-2 text-xs">
-                <span className="text-cyan font-semibold">müşteri mesajı:</span>{" "}
-                <span className="text-foreground/90 whitespace-pre-wrap">{o.user_note}</span>
-              </div>
-            )}
-            {o.admin_note && (
-              <div className="mt-2 text-xs text-destructive">not: {o.admin_note}</div>
-            )}
           </div>
         ))}
       </div>

@@ -49,64 +49,90 @@ function Index() {
   return (
     <div>
       {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="mx-auto max-w-6xl px-4 pt-20 pb-16 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full glass-card px-4 py-1 font-mono text-xs">
-            <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-muted-foreground">SYSTEM_ONLINE</span>
-            <span className="text-primary">·</span>
-            <span>anlık teslimat aktif</span>
-          </div>
-          <h1 className="mt-8 font-mono text-4xl sm:text-6xl font-bold leading-tight glitch">
-            Lisansını <span className="neon-text">Sanal</span> Değil,
-            <br />
-            <span className="cyan-text">Siber Güvenle</span> Al
-            <span className="terminal-caret" />
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-base sm:text-lg text-muted-foreground">
-            SiberPHP, yazılım lisans anahtarlarını{" "}
-            <span className="text-primary font-mono">havale/EFT</span> ile satın alıp
-            saniyeler içinde teslim alabileceğin şifreli bir dağıtım katmanıdır.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Button asChild size="lg" className="font-mono neon-glow">
-              <Link to="/urunler">{"> "}lisansları gör</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="font-mono">
-              <Link to="/nasil-calisir">./nasıl-çalışır</Link>
-            </Button>
-          </div>
-          <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto font-mono text-xs">
-            {[
-              { icon: Lock, label: "AES-256" },
-              { icon: ShieldCheck, label: "SSL/TLS 1.3" },
-              { icon: Zap, label: "Anlık Teslim" },
-              { icon: Cpu, label: "RLS Korumalı" },
-            ].map((b) => (
-              <div key={b.label} className="glass-card rounded-md p-3 flex items-center justify-center gap-2">
-                <b.icon className="h-4 w-4 text-primary" />
-                <span>{b.label}</span>
+      <section className="relative overflow-hidden border-b border-border/40">
+        <div className="mx-auto max-w-6xl px-4 pt-24 pb-20">
+          <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr] items-center">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 font-mono text-[11px]">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                <span className="text-muted-foreground">system_online</span>
+                <span className="text-primary">·</span>
+                <span className="text-primary">anlık teslim aktif</span>
               </div>
-            ))}
+              <h1 className="mt-6 text-4xl sm:text-6xl font-semibold tracking-tight leading-[1.05]">
+                Yazılım lisansları<br />
+                <span className="text-primary">güvenli</span> ve <span className="text-primary">anında</span>.
+              </h1>
+              <p className="mt-6 max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
+                Havale / EFT ile öde, referans kodunla eşleştir, anahtarını saniyeler
+                içinde teslim al. Tüm süreç uçtan uca şifrelidir.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Button asChild size="lg" className="font-medium">
+                  <Link to="/urunler">Lisansları keşfet</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="font-medium">
+                  <Link to="/nasil-calisir">Nasıl çalışır</Link>
+                </Button>
+              </div>
+              <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-[11px]">
+                {[
+                  { icon: Lock, label: "AES-256" },
+                  { icon: ShieldCheck, label: "TLS 1.3" },
+                  { icon: Zap, label: "Anlık" },
+                  { icon: Cpu, label: "RLS" },
+                ].map((b) => (
+                  <div key={b.label} className="rounded-md border border-border/60 bg-card/40 p-2.5 flex items-center justify-center gap-2">
+                    <b.icon className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-muted-foreground">{b.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Hero side panel: featured preview / terminal */}
+            <div className="hidden lg:block">
+              <div className="glass-card rounded-2xl p-1 neon-glow">
+                <div className="rounded-xl border border-border/40 bg-background/60 p-5 font-mono text-xs">
+                  <div className="flex items-center gap-2 pb-3 border-b border-border/40">
+                    <span className="h-2 w-2 rounded-full bg-destructive/70" />
+                    <span className="h-2 w-2 rounded-full bg-warn/70" />
+                    <span className="h-2 w-2 rounded-full bg-primary/70" />
+                    <span className="ml-2 text-muted-foreground">siberphp@secure</span>
+                  </div>
+                  <div className="mt-3 space-y-1.5 text-muted-foreground">
+                    <div><span className="text-primary">$</span> connect --secure</div>
+                    <div className="text-primary">[✓] TLS 1.3 handshake OK</div>
+                    <div className="text-primary">[✓] session encrypted</div>
+                    <div><span className="text-primary">$</span> order --list</div>
+                    <div className="text-foreground">→ {featured.length} öne çıkan ürün</div>
+                    <div className="text-foreground">→ {(products?.length ?? 0)} aktif lisans</div>
+                    <div><span className="text-primary">$</span> _<span className="terminal-caret" /></div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* FEATURED */}
       {featured.length > 0 && (
-        <section className="mx-auto max-w-6xl px-4 pt-16 pb-4">
-          <div className="mb-8 font-mono flex items-center justify-between">
+        <section className="mx-auto max-w-6xl px-4 pt-20 pb-4">
+          <div className="mb-8 flex items-end justify-between gap-4">
             <div>
-              <div className="text-xs text-muted-foreground flex items-center gap-2">
-                <Star className="h-3 w-3 text-warn fill-warn" />$ grep featured
+              <div className="text-xs text-muted-foreground font-mono flex items-center gap-2">
+                <Star className="h-3 w-3 text-warn fill-warn" /> öne çıkan
               </div>
-              <h2 className="mt-2 text-2xl sm:text-3xl neon-text">Öne Çıkanlar</h2>
+              <h2 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">
+                Popüler Lisanslar
+              </h2>
             </div>
-            <Button asChild variant="outline" size="sm" className="font-mono">
-              <Link to="/urunler">tümü →</Link>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/urunler">Tümünü gör →</Link>
             </Button>
           </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {featured.slice(0, 6).map((p) => (
               <ProductCard key={p.id} p={p} featured />
             ))}
@@ -272,36 +298,36 @@ function ProductCard({
   const stock = liveStock > 0 ? liveStock : (p.stock_hint ?? 0);
   const soldOut = !manual && !unlimited && stock === 0;
   return (
-    <div className={`glass-card rounded-lg p-5 flex flex-col group hover:neon-glow transition-shadow ${featured ? "border-warn/40" : ""}`}>
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="font-mono text-xs text-muted-foreground flex items-center gap-1">
+    <div className={`glass-card rounded-xl p-5 flex flex-col group transition-all hover:-translate-y-0.5 hover:border-primary/40 ${featured ? "border-warn/30" : ""}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[11px] text-muted-foreground font-mono flex items-center gap-1.5 uppercase tracking-wider">
             {featured && <Star className="h-3 w-3 text-warn fill-warn" />}
-            {p.category ?? "./license"}
+            {p.category ?? "license"}
           </div>
-          <h3 className="mt-1 font-mono text-lg font-semibold">{p.name}</h3>
+          <h3 className="mt-1.5 text-lg font-semibold tracking-tight truncate">{p.name}</h3>
         </div>
-        <KeyRound className="h-5 w-5 text-primary opacity-70" />
+        <KeyRound className="h-5 w-5 text-primary opacity-60 shrink-0" />
       </div>
-      <p className="mt-2 text-sm text-muted-foreground line-clamp-3">{p.description}</p>
-      <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-xs">
-        <span className="rounded bg-primary/10 text-primary border border-primary/30 px-2 py-0.5">
+      <p className="mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed">{p.description}</p>
+      <div className="mt-4 flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
+        <span className="rounded-md bg-muted/40 text-muted-foreground border border-border px-2 py-0.5">
           {DURATION_LABEL[p.duration] ?? p.duration}
         </span>
-        <span className={`rounded px-2 py-0.5 border ${unlimited ? "text-cyan border-cyan/40 bg-cyan/10" : manual ? "text-cyan border-cyan/40 bg-cyan/10" : soldOut ? "text-destructive border-destructive/40 bg-destructive/10" : "text-primary border-primary/30 bg-primary/10"}`}>
+        <span className={`rounded-md px-2 py-0.5 border ${unlimited || manual ? "text-cyan border-cyan/40 bg-cyan/5" : soldOut ? "text-destructive border-destructive/40 bg-destructive/5" : "text-primary border-primary/40 bg-primary/5"}`}>
           {unlimited ? "stok: ∞" : manual ? "sipariş sonrası" : soldOut ? "tükendi" : `stok: ${stock}`}
         </span>
       </div>
       <div className="mt-auto pt-5 flex items-end justify-between">
         <div>
-          <div className="font-mono text-xs text-muted-foreground">fiyat</div>
-          <div className="font-mono text-2xl neon-text">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">fiyat</div>
+          <div className="font-mono text-2xl font-semibold text-primary">
             ₺{Number(p.price_try).toLocaleString("tr-TR")}
           </div>
         </div>
-        <Button asChild size="sm" className="font-mono" disabled={soldOut}>
+        <Button asChild size="sm" disabled={soldOut}>
           <Link to="/urun/$slug" params={{ slug: p.slug }}>
-            {soldOut ? "tükendi" : "satın al →"}
+            {soldOut ? "tükendi" : "Satın al →"}
           </Link>
         </Button>
       </div>
