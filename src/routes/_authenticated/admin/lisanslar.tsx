@@ -126,13 +126,18 @@ function LicensesAdmin() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "revoked" | "expired" | "unactivated">("all");
+  const [qty, setQty] = useState(1);
+  const [days, setDays] = useState(30);
+  const [busy, setBusy] = useState(false);
+  const [lastGenerated, setLastGenerated] = useState<string[]>([]);
 
   const { data: rows } = useQuery({
-    queryKey: ["licenses-manage"],
+    queryKey: ["licenses-manage-lovable"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("license_keys")
         .select("id, key_value, status, hwid, activated_at, expires_at, duration_days, revoked, last_validated_at, product:products(name, slug)")
+        .eq("product_id", LOVABLE_PRODUCT_ID)
         .order("created_at", { ascending: false })
         .limit(500);
       if (error) throw error;
@@ -140,6 +145,40 @@ function LicensesAdmin() {
     },
     refetchInterval: 20000,
   });
+
+  const generate = async () => {
+    if (qty < 1 || qty > 200) return toast.error("Miktar 1-200 arası olmalı");
+    setBusy(true);
+    try {
+      const keys = Array.from({ length: qty }, () => genKey());
+      const rows = keys.map((k) => ({
+        product_id: LOVABLE_PRODUCT_ID,
+        key_value: k,
+        duration_days: days > 0 ? days : null,
+        status: "available" as const,
+      }));
+      const { error } = await supabase.from("license_keys").insert(rows);
+      if (error) throw error;
+      setLastGenerated(keys);
+      toast.success(`${qty} anahtar üretildi`);
+      qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const downloadScript = (key: string) => {
+    const blob = new Blob([buildUserscript(key)], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `siberlisans-lovable-${key.slice(-8)}.user.js`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
