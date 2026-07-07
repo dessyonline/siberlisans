@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Copy, KeyRound, Mail, Link as LinkIcon, ExternalLink, Lock } from "lucide-react";
+import { Copy, KeyRound, Mail, Link as LinkIcon, ExternalLink, Lock, Download } from "lucide-react";
 import { toast } from "sonner";
 
 export type DeliveryType = "key" | "account" | "link" | "link_token";
