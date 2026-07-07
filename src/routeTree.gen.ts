@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UrunlerRouteImport } from './routes/urunler'
+import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
@@ -18,6 +19,11 @@ import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
 const UrunlerRoute = UrunlerRouteImport.update({
   id: '/urunler',
   path: '/urunler',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NasilCalisirRoute = NasilCalisirRouteImport.update({
+  id: '/nasil-calisir',
+  path: '/nasil-calisir',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -44,6 +50,7 @@ const OdemeOrderIdRoute = OdemeOrderIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/nasil-calisir': typeof NasilCalisirRoute
   '/urunler': typeof UrunlerRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/nasil-calisir': typeof NasilCalisirRoute
   '/urunler': typeof UrunlerRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
@@ -59,19 +67,33 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/nasil-calisir': typeof NasilCalisirRoute
   '/urunler': typeof UrunlerRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/urunler' | '/odeme/$orderId' | '/urun/$slug'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/nasil-calisir'
+    | '/urunler'
+    | '/odeme/$orderId'
+    | '/urun/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/urunler' | '/odeme/$orderId' | '/urun/$slug'
+  to:
+    | '/'
+    | '/auth'
+    | '/nasil-calisir'
+    | '/urunler'
+    | '/odeme/$orderId'
+    | '/urun/$slug'
   id:
     | '__root__'
     | '/'
     | '/auth'
+    | '/nasil-calisir'
     | '/urunler'
     | '/odeme/$orderId'
     | '/urun/$slug'
@@ -80,6 +102,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
+  NasilCalisirRoute: typeof NasilCalisirRoute
   UrunlerRoute: typeof UrunlerRoute
   OdemeOrderIdRoute: typeof OdemeOrderIdRoute
   UrunSlugRoute: typeof UrunSlugRoute
@@ -92,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/urunler'
       fullPath: '/urunler'
       preLoaderRoute: typeof UrunlerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nasil-calisir': {
+      id: '/nasil-calisir'
+      path: '/nasil-calisir'
+      fullPath: '/nasil-calisir'
+      preLoaderRoute: typeof NasilCalisirRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -128,6 +158,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
+  NasilCalisirRoute: NasilCalisirRoute,
   UrunlerRoute: UrunlerRoute,
   OdemeOrderIdRoute: OdemeOrderIdRoute,
   UrunSlugRoute: UrunSlugRoute,
