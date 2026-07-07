@@ -120,3 +120,25 @@ function ProductDetail() {
     </div>
   );
 }
+
+function StockBadge({ stock }: { stock: number }) {
+  if (stock === 0) {
+    return (
+      <div className="flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 font-mono text-xs text-destructive">
+        <span className="h-2 w-2 rounded-full bg-destructive" /> stok tükendi
+      </div>
+    );
+  }
+  if (stock < 3) {
+    return (
+      <div className="flex items-center gap-2 rounded-md border border-warn/40 bg-warn/10 px-3 py-2 font-mono text-xs text-warn animate-pulse">
+        <span className="h-2 w-2 rounded-full bg-warn" /> son {stock} lisans
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 font-mono text-xs text-primary">
+      <span className="h-2 w-2 rounded-full bg-primary animate-pulse" /> stokta · {stock}+ hazır
+    </div>
+  );
+}
