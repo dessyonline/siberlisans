@@ -74,12 +74,12 @@ function LicensesAdmin() {
   }, [rows, search, filter]);
 
   const call = async (id: string, action: string, valueInt?: number | null) => {
-    const { error } = await supabase.rpc("admin_set_license", {
+    const args: { _id: string; _action: string; _value_int?: number; _value_ts?: string } = {
       _id: id,
       _action: action,
-      _value_int: valueInt ?? null,
-      _value_ts: null,
-    });
+    };
+    if (valueInt !== null && valueInt !== undefined) args._value_int = valueInt;
+    const { error } = await supabase.rpc("admin_set_license", args);
     if (error) return toast.error(error.message);
     toast.success("Güncellendi");
     qc.invalidateQueries({ queryKey: ["licenses-manage"] });
