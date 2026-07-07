@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,60 @@ const DURATION_LABEL: Record<string, string> = {
   yearly: "yıllık",
   lifetime: "ömürlük",
 };
+
+// Cyber word rotator — types a word, blinks caret, deletes, next word
+const HERO_WORDS = ["güvenli.", "anında.", "otomatik.", "şifreli.", "orijinal."];
+function CyberRotator() {
+  const [i, setI] = useState(0);
+  const [text, setText] = useState("");
+  const [phase, setPhase] = useState<"type" | "hold" | "erase">("type");
+
+  useEffect(() => {
+    const word = HERO_WORDS[i];
+    let t: ReturnType<typeof setTimeout>;
+    if (phase === "type") {
+      if (text.length < word.length) {
+        t = setTimeout(() => setText(word.slice(0, text.length + 1)), 70);
+      } else {
+        t = setTimeout(() => setPhase("hold"), 1400);
+      }
+    } else if (phase === "hold") {
+      t = setTimeout(() => setPhase("erase"), 900);
+    } else {
+      if (text.length > 0) {
+        t = setTimeout(() => setText(word.slice(0, text.length - 1)), 35);
+      } else {
+        t = setTimeout(() => {
+          setI((n) => (n + 1) % HERO_WORDS.length);
+          setPhase("type");
+        }, 200);
+      }
+    }
+    return () => clearTimeout(t);
+  }, [text, phase, i]);
+
+  return (
+    <span className="inline-flex items-baseline">
+      <span className="neon-sweep">{text}</span>
+      <span
+        aria-hidden
+        className="caret-blink ml-1 inline-block w-[3px] h-[0.9em] translate-y-[0.05em] bg-primary shadow-[0_0_12px_oklch(0.85_0.24_145/0.9)]"
+      />
+    </span>
+  );
+}
+
+// Typed line — reveals characters left→right, one-shot
+function TypedLine({ text, delay = 0, className = "" }: { text: string; delay?: number; className?: string }) {
+  return (
+    <span
+      className={`inline-block type-in ${className}`}
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      {text}
+    </span>
+  );
+}
 
 function Index() {
   const navigate = useNavigate();
@@ -102,15 +156,26 @@ function Index() {
                 <span className="text-primary/60">·</span>
                 <span className="text-primary">anlık teslim aktif</span>
               </div>
-              <h1 className="mt-7 text-5xl sm:text-7xl font-semibold tracking-tight leading-[0.98]">
-                Yazılım lisansları<br />
-                <span className="neon-text-glow">güvenli</span>
-                <span className="text-muted-foreground/70"> · </span>
-                <span className="neon-text-glow">anında</span>.
+              <h1 className="mt-7 font-mono text-4xl sm:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.02]">
+                <span className="block text-muted-foreground/70 text-sm sm:text-base font-normal tracking-[0.35em] uppercase mb-3">
+                  <span className="text-primary">$</span> siberlisans --init
+                </span>
+                <span className="block">
+                  <span className="text-muted-foreground/80">&gt;</span>{" "}
+                  <span className="text-foreground">lisans</span>
+                  <span className="text-primary">.</span>
+                  <CyberRotator />
+                </span>
               </h1>
               <p className="mt-6 max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
-                Havale / EFT ile öde, referans kodunla eşleştir, anahtarını saniyeler
-                içinde teslim al. Tüm süreç uçtan uca <span className="text-primary">şifrelidir</span>.
+                <span className="text-primary font-mono">//</span>{" "}
+                <TypedLine text="Havale/EFT ile öde. Referans kodunla eşleş." delay={300} />
+                <br />
+                <span className="text-primary font-mono">//</span>{" "}
+                <TypedLine
+                  text="Anahtarın panelinde — dakikalar içinde, uçtan uca şifreli."
+                  delay={1600}
+                />
               </p>
               <div className="mt-9 flex flex-wrap gap-3">
                 <Button asChild size="lg" className="font-medium neon-glow-strong">
