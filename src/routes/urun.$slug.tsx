@@ -27,7 +27,7 @@ function ProductDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, active")
+        .select("id, name, slug, description, duration, price_try, active, license_keys(status)")
         .eq("slug", slug)
         .single();
       if (error) throw error;
