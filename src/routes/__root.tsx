@@ -17,6 +17,7 @@ import { AuthProvider, useAuth } from "../lib/auth-context";
 import { Button } from "../components/ui/button";
 import { Toaster } from "../components/ui/sonner";
 import { supabase } from "../integrations/supabase/client";
+import { RecentAdditionsBubble } from "../components/RecentAdditionsBubble";
 
 function NotFoundComponent() {
   return (
@@ -209,6 +210,7 @@ function RootComponent() {
           </main>
           <SiteFooter />
         </div>
+        <RecentAdditionsBubble />
         <Toaster />
       </AuthProvider>
     </QueryClientProvider>
