@@ -205,7 +205,7 @@ function LicensesAdmin() {
     const { error } = await supabase.rpc("admin_set_license", args);
     if (error) return toast.error(error.message);
     toast.success("Güncellendi");
-    qc.invalidateQueries({ queryKey: ["licenses-manage"] });
+    qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
   };
 
   const setDuration = (id: string) => {
@@ -219,10 +219,66 @@ function LicensesAdmin() {
   return (
     <div>
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <h1 className="font-mono text-xl sm:text-2xl neon-text">Lisans Yönetimi</h1>
+        <h1 className="font-mono text-xl sm:text-2xl neon-text">Lovable Lisans Yönetimi</h1>
         <div className="font-mono text-[11px] text-muted-foreground">
-          HWID kilidi · süre · iptal · sunucu doğrulama
+          HWID kilidi · süre · iptal · userscript
         </div>
+      </div>
+
+      {/* Üretici */}
+      <div className="mt-4 glass-card rounded-lg p-4">
+        <div className="flex items-center gap-2 font-mono text-sm neon-text">
+          <Sparkles className="h-4 w-4" /> anahtar üret
+        </div>
+        <div className="mt-3 grid gap-3 sm:grid-cols-[120px,140px,1fr] sm:items-end">
+          <div>
+            <Label className="font-mono text-[11px]">miktar</Label>
+            <Input type="number" min={1} max={200} value={qty}
+              onChange={(e) => setQty(parseInt(e.target.value) || 1)}
+              className="h-8 font-mono text-sm" />
+          </div>
+          <div>
+            <Label className="font-mono text-[11px]">süre (gün, 0=süresiz)</Label>
+            <Input type="number" min={0} value={days}
+              onChange={(e) => setDays(parseInt(e.target.value) || 0)}
+              className="h-8 font-mono text-sm" />
+          </div>
+          <Button disabled={busy} onClick={generate} className="h-8 font-mono">
+            <Sparkles className="h-3.5 w-3.5 mr-1" /> üret
+          </Button>
+        </div>
+
+        {lastGenerated.length > 0 && (
+          <div className="mt-4 rounded border border-primary/30 bg-primary/5 p-3">
+            <div className="font-mono text-[11px] text-muted-foreground mb-2">
+              son üretilenler ({lastGenerated.length}):
+            </div>
+            <div className="space-y-1 max-h-48 overflow-auto">
+              {lastGenerated.map((k) => (
+                <div key={k} className="flex items-center justify-between gap-2 font-mono text-xs">
+                  <code className="break-all">{k}</code>
+                  <div className="flex gap-1 shrink-0">
+                    <Button size="sm" variant="outline" className="h-6 px-2 font-mono text-[10px]"
+                      onClick={() => { navigator.clipboard.writeText(k); toast.success("kopyalandı"); }}>
+                      <Copy className="h-3 w-3" />
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-6 px-2 font-mono text-[10px]"
+                      onClick={() => downloadScript(k)}>
+                      <Download className="h-3 w-3 mr-1" /> .user.js
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Button size="sm" variant="outline" className="mt-2 h-7 font-mono text-[11px]"
+              onClick={() => {
+                navigator.clipboard.writeText(lastGenerated.join("\n"));
+                toast.success("tümü kopyalandı");
+              }}>
+              <Copy className="h-3 w-3 mr-1" /> tümünü kopyala
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* API bilgi kutusu */}
@@ -233,6 +289,7 @@ function LicensesAdmin() {
           <div><span className="text-cyan">POST</span> https://siberlisans.lovable.app<span className="text-primary">/api/validate</span> — {"{ license_key, hwid }"}</div>
         </div>
       </div>
+
 
       {/* Filtre */}
       <div className="mt-4 flex flex-wrap items-center gap-2">
