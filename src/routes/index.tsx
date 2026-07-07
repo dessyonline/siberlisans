@@ -427,6 +427,8 @@ function Index() {
         </div>
       </section>
 
+      {/* LIVE SALES STREAM */}
+      <LiveSalesStream products={(products ?? []) as SaleProd[]} />
 
       {/* ARAMA + SON EKLENENLER */}
       <section className="mx-auto max-w-6xl px-4 pt-12">
