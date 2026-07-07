@@ -77,11 +77,13 @@ function ProductsAdmin() {
           manual_fulfillment: editing.manual_fulfillment ?? false,
           stock_hint: editing.stock_hint == null ? null : Number(editing.stock_hint),
           featured: editing.featured ?? false,
+          unlimited_stock: editing.unlimited_stock ?? false,
         },
       });
       toast.success("Kaydedildi");
       setEditing(null);
       qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
     } catch (e) { toast.error((e as Error).message); }
   };
 
@@ -90,6 +92,7 @@ function ProductsAdmin() {
       await deleteFn({ data: { id } });
       toast.success("Silindi");
       qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
     } catch (e) { toast.error((e as Error).message); }
   };
 
