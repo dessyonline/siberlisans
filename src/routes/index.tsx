@@ -35,13 +35,15 @@ function Index() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try")
+        .select("id, name, slug, description, duration, price_try, image_url, category, featured, manual_fulfillment, stock_hint, license_keys(status)")
         .eq("active", true)
         .order("price_try");
       if (error) throw error;
       return data;
     },
   });
+
+  const featured = (products ?? []).filter((p) => p.featured);
 
   return (
     <div>
