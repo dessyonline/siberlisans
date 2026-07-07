@@ -156,15 +156,26 @@ function Index() {
                 <span className="text-primary/60">·</span>
                 <span className="text-primary">anlık teslim aktif</span>
               </div>
-              <h1 className="mt-7 text-5xl sm:text-7xl font-semibold tracking-tight leading-[0.98]">
-                Yazılım lisansları<br />
-                <span className="neon-text-glow">güvenli</span>
-                <span className="text-muted-foreground/70"> · </span>
-                <span className="neon-text-glow">anında</span>.
+              <h1 className="mt-7 font-mono text-4xl sm:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.02]">
+                <span className="block text-muted-foreground/70 text-sm sm:text-base font-normal tracking-[0.35em] uppercase mb-3">
+                  <span className="text-primary">$</span> siberlisans --init
+                </span>
+                <span className="block">
+                  <span className="text-muted-foreground/80">&gt;</span>{" "}
+                  <span className="text-foreground">lisans</span>
+                  <span className="text-primary">.</span>
+                  <CyberRotator />
+                </span>
               </h1>
               <p className="mt-6 max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
-                Havale / EFT ile öde, referans kodunla eşleştir, anahtarını saniyeler
-                içinde teslim al. Tüm süreç uçtan uca <span className="text-primary">şifrelidir</span>.
+                <span className="text-primary font-mono">//</span>{" "}
+                <TypedLine text="Havale/EFT ile öde. Referans kodunla eşleş." delay={300} />
+                <br />
+                <span className="text-primary font-mono">//</span>{" "}
+                <TypedLine
+                  text="Anahtarın panelinde — dakikalar içinde, uçtan uca şifreli."
+                  delay={1600}
+                />
               </p>
               <div className="mt-9 flex flex-wrap gap-3">
                 <Button asChild size="lg" className="font-medium neon-glow-strong">
