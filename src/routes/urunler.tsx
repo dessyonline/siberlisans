@@ -183,15 +183,20 @@ function ProductsPage() {
                           </span>
                           <span className={`rounded px-2 py-0.5 border ${stockCls}`}>● {stockLabel}</span>
                         </div>
-                        <div className="mt-auto pt-4 flex items-end justify-between">
-                          <div className="font-mono text-xl neon-text">
+                        <div className="mt-auto pt-4">
+                          <div className="mb-3 font-mono text-xl neon-text">
                             ₺{Number(p.price_try).toLocaleString("tr-TR")}
                           </div>
-                          <Button asChild size="sm" className="font-mono" disabled={soldOut}>
-                            <Link to="/urun/$slug" params={{ slug: p.slug }}>
-                              {soldOut ? "tükendi" : "al →"}
-                            </Link>
-                          </Button>
+                          <div className="flex items-center justify-between gap-2">
+                            <Button asChild variant="outline" size="sm" className="font-mono flex-1">
+                              <Link to="/urun/$slug" params={{ slug: p.slug }}>İncele</Link>
+                            </Button>
+                            <Button asChild size="sm" className="font-mono flex-1" disabled={soldOut}>
+                              <Link to="/urun/$slug" params={{ slug: p.slug }}>
+                                {soldOut ? "tükendi" : "Satın Al"}
+                              </Link>
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     </div>

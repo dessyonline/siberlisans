@@ -7,7 +7,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { createOrder } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { KeyRound, ShieldCheck, Zap, CheckCircle2 } from "lucide-react";
+import { Info, ShieldCheck, Zap, CheckCircle2, X } from "lucide-react";
 
 export const Route = createFileRoute("/urun/$slug")({
   component: ProductDetail,
@@ -27,7 +27,7 @@ function ProductDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, active, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, active, category, image_url, manual_fulfillment, license_keys(status)")
         .eq("slug", slug)
         .single();
       if (error) throw error;
@@ -56,89 +56,130 @@ function ProductDetail() {
   if (isLoading) return <div className="p-12 font-mono text-center">yükleniyor…</div>;
   if (!product) return <div className="p-12 font-mono text-center">ürün bulunamadı</div>;
 
+  const liveStock = (product.license_keys ?? []).filter((k: { status: string }) => k.status === "available").length;
+  const manual = !!product.manual_fulfillment;
+  const soldOut = !manual && liveStock === 0;
+  const bullets = (product.description ?? "")
+    .split("|")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12">
-      <Link to="/urunler" className="font-mono text-sm text-muted-foreground hover:text-primary">
-        ← tüm lisanslar
-      </Link>
-      <div className="mt-4 grid gap-6 md:grid-cols-[1fr,320px]">
-        <div className="glass-card rounded-lg p-6 scan-line">
-          <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
-            <KeyRound className="h-4 w-4 text-primary" /> ./license/{product.slug}
-          </div>
-          <h1 className="mt-2 font-mono text-3xl neon-text">{product.name}</h1>
-          <p className="mt-4 text-muted-foreground">{product.description}</p>
-          <div className="mt-6 grid grid-cols-3 gap-3 font-mono text-xs">
-            {[
-              { i: Zap, t: "anlık teslim" },
-              { i: ShieldCheck, t: "orijinal key" },
-              { i: CheckCircle2, t: "değişim garantisi" },
-            ].map((b) => (
-              <div key={b.t} className="rounded-md border border-border/60 p-3 flex items-center gap-2">
-                <b.i className="h-4 w-4 text-primary" />
-                <span>{b.t}</span>
-              </div>
-            ))}
+    <div className="mx-auto max-w-5xl px-4 py-10">
+      <div className="mb-6 flex items-center justify-between">
+        <Link to="/urunler" className="font-mono text-sm text-muted-foreground hover:text-primary">
+          ← tüm lisanslar
+        </Link>
+        <Link to="/urunler" className="rounded-full border border-border/60 p-2 text-muted-foreground hover:text-primary hover:border-primary/40">
+          <X className="h-4 w-4" />
+        </Link>
+      </div>
+
+      <div className="glass-card rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between border-b border-border/60 px-6 py-4">
+          <div className="flex items-center gap-2 font-mono text-sm text-muted-foreground">
+            <Info className="h-4 w-4 text-primary" />
+            Ürün Bilgisi
           </div>
         </div>
-        <div className="glass-card rounded-lg p-6 h-fit">
-          <StockBadge
-            stock={
-              (product.license_keys ?? []).filter((k: { status: string }) => k.status === "available")
-                .length
-            }
-          />
-          <div className="mt-4 font-mono text-xs text-muted-foreground">süre</div>
-          <div className="font-mono text-lg">{DUR[product.duration]}</div>
-          <div className="mt-4 font-mono text-xs text-muted-foreground">fiyat</div>
-          <div className="font-mono text-4xl neon-text">
-            ₺{Number(product.price_try).toLocaleString("tr-TR")}
+
+        <div className="grid gap-0 md:grid-cols-[420px,1fr]">
+          {product.image_url && (
+            <div className="relative h-64 md:h-auto overflow-hidden border-b md:border-b-0 md:border-r border-border/60 bg-black/20">
+              <img
+                src={product.image_url}
+                alt={product.name}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          )}
+
+          <div className="p-6 md:p-8">
+            <h1 className="font-mono text-2xl md:text-3xl font-semibold neon-text">{product.name}</h1>
+
+            <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-xs">
+              <StockBadge stock={liveStock} manual={manual} />
+              {product.category && (
+                <span className="rounded-full border border-border/60 bg-background px-3 py-1 text-muted-foreground">
+                  {product.category}
+                </span>
+              )}
+              <span className="rounded-full border border-border/60 bg-background px-3 py-1 text-muted-foreground">
+                {manual ? "Manuel Teslimat" : "Otomatik Teslimat"}
+              </span>
+            </div>
+
+            <div className="mt-6 font-mono text-4xl neon-text">
+              ₺{Number(product.price_try).toLocaleString("tr-TR")}
+            </div>
+            <div className="mt-1 font-mono text-xs text-muted-foreground">KDV dahil · Havale/EFT</div>
+
+            <div className="mt-6">
+              <div className="mb-2 font-mono text-sm font-semibold">Ürün Açıklaması:</div>
+              {bullets.length > 1 ? (
+                <ul className="list-disc space-y-1 pl-5 text-sm text-muted-foreground">
+                  {bullets.map((b, i) => (
+                    <li key={i}>{b}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-muted-foreground">{product.description || "Açıklama bulunmuyor."}</p>
+              )}
+            </div>
+
+            <div className="mt-6 grid grid-cols-3 gap-3 font-mono text-xs">
+              {[
+                { i: Zap, t: "anlık teslim" },
+                { i: ShieldCheck, t: "orijinal key" },
+                { i: CheckCircle2, t: "değişim garantisi" },
+              ].map((b) => (
+                <div key={b.t} className="rounded-md border border-border/60 p-3 flex items-center gap-2">
+                  <b.i className="h-4 w-4 text-primary" />
+                  <span>{b.t}</span>
+                </div>
+              ))}
+            </div>
+
+            <Button
+              disabled={loading || soldOut}
+              onClick={handleBuy}
+              className="mt-8 w-full font-mono neon-glow"
+              size="lg"
+            >
+              {loading
+                ? "işleniyor…"
+                : soldOut
+                ? "stok tükendi"
+                : "> satın al"}
+            </Button>
+            <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center">
+              kredi kartı KABUL EDİLMEZ · sadece banka transferi
+            </p>
           </div>
-          <div className="mt-1 font-mono text-xs text-muted-foreground">KDV dahil · Havale/EFT</div>
-          <Button
-            disabled={
-              loading ||
-              (product.license_keys ?? []).filter((k: { status: string }) => k.status === "available")
-                .length === 0
-            }
-            onClick={handleBuy}
-            className="mt-6 w-full font-mono neon-glow"
-            size="lg"
-          >
-            {loading
-              ? "işleniyor…"
-              : (product.license_keys ?? []).filter((k: { status: string }) => k.status === "available")
-                  .length === 0
-              ? "stok tükendi"
-              : "> satın al"}
-          </Button>
-          <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center">
-            kredi kartı KABUL EDİLMEZ · sadece banka transferi
-          </p>
         </div>
       </div>
     </div>
   );
 }
 
-function StockBadge({ stock }: { stock: number }) {
-  if (stock === 0) {
+function StockBadge({ stock, manual }: { stock: number; manual: boolean }) {
+  if (manual) {
     return (
-      <div className="flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 font-mono text-xs text-destructive">
-        <span className="h-2 w-2 rounded-full bg-destructive" /> stok tükendi
+      <div className="flex items-center gap-2 rounded-full border border-warn/40 bg-warn/10 px-3 py-1 font-mono text-xs text-warn">
+        <span className="h-2 w-2 rounded-full bg-warn" /> Sipariş Sonrası
       </div>
     );
   }
-  if (stock < 3) {
+  if (stock === 0) {
     return (
-      <div className="flex items-center gap-2 rounded-md border border-warn/40 bg-warn/10 px-3 py-2 font-mono text-xs text-warn animate-pulse">
-        <span className="h-2 w-2 rounded-full bg-warn" /> son {stock} lisans
+      <div className="flex items-center gap-2 rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1 font-mono text-xs text-destructive">
+        <span className="h-2 w-2 rounded-full bg-destructive" /> Stok Tükendi
       </div>
     );
   }
   return (
-    <div className="flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-2 font-mono text-xs text-primary">
-      <span className="h-2 w-2 rounded-full bg-primary animate-pulse" /> stokta · {stock}+ hazır
+    <div className="flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 font-mono text-xs text-emerald-500">
+      <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Mevcut Stok
     </div>
   );
 }
