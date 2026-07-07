@@ -835,6 +835,7 @@ function ProductCard({
     manual_fulfillment?: boolean | null;
     stock_hint?: number | null;
     unlimited_stock?: boolean | null;
+    tier?: string | null;
     license_keys?: { status: string }[] | null;
   };
   featured?: boolean;
@@ -848,27 +849,48 @@ function ProductCard({
     ? (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7
     : false;
   const showStockBar = !manual && !unlimited && stock > 0 && stock <= 10;
+  const epic = p.tier === "epic";
   return (
-    <div className={`glass-card glass-card-hover rounded-xl p-5 flex flex-col group relative overflow-hidden ${featured ? "border-warn/30" : ""}`}>
+    <div
+      className={`glass-card glass-card-hover rounded-xl p-5 flex flex-col group relative overflow-hidden ${
+        epic
+          ? "epic-card border-transparent"
+          : featured
+          ? "border-warn/30"
+          : ""
+      }`}
+    >
+      {/* epic ambient glow */}
+      {epic && (
+        <>
+          <div className="pointer-events-none absolute inset-0 opacity-70 bg-[radial-gradient(circle_at_20%_10%,rgba(217,166,52,0.18),transparent_55%),radial-gradient(circle_at_85%_90%,rgba(155,89,255,0.16),transparent_55%)]" aria-hidden />
+          <div className="pointer-events-none absolute inset-0 epic-shimmer" aria-hidden />
+        </>
+      )}
       {/* corner shine on hover */}
       <div className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" aria-hidden />
-      {isNew && (
+      {epic && (
+        <span className="absolute -top-2 -left-2 rounded-full px-2 py-0.5 font-mono text-[10px] border border-[oklch(0.78_0.16_75)] bg-[oklch(0.78_0.16_75/0.15)] text-[oklch(0.85_0.15_75)] shadow-[0_0_18px_oklch(0.78_0.16_75/0.45)] uppercase tracking-widest">
+          ★ EPIC
+        </span>
+      )}
+      {isNew && !epic && (
         <span className="absolute -top-2 -right-2 rounded-full px-2 py-0.5 font-mono text-[10px] border border-cyan/50 bg-cyan/20 text-cyan animate-pulse shadow-lg">
           ✦ YENİ
         </span>
       )}
-      <div className="flex items-start justify-between gap-3">
+      <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[11px] text-muted-foreground font-mono flex items-center gap-1.5 uppercase tracking-wider">
-            {featured && <Star className="h-3 w-3 text-warn fill-warn" />}
+          <div className={`text-[11px] font-mono flex items-center gap-1.5 uppercase tracking-wider ${epic ? "text-[oklch(0.85_0.15_75)]" : "text-muted-foreground"}`}>
+            {epic ? <Star className="h-3 w-3 fill-current" /> : featured && <Star className="h-3 w-3 text-warn fill-warn" />}
             {p.category ?? "license"}
           </div>
-          <h3 className="mt-1.5 text-lg font-semibold tracking-tight truncate">{p.name}</h3>
+          <h3 className={`mt-1.5 text-lg font-semibold tracking-tight truncate ${epic ? "epic-text-glow" : ""}`}>{p.name}</h3>
         </div>
-        <KeyRound className="h-5 w-5 text-primary opacity-60 shrink-0" />
+        <KeyRound className={`h-5 w-5 shrink-0 ${epic ? "text-[oklch(0.85_0.15_75)]" : "text-primary opacity-60"}`} />
       </div>
-      <p className="mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed">{p.description}</p>
-      <div className="mt-4 flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
+      <p className="relative mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed">{p.description}</p>
+      <div className="relative mt-4 flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
         <span className="rounded-md bg-muted/40 text-muted-foreground border border-border px-2 py-0.5">
           {DURATION_LABEL[p.duration] ?? p.duration}
         </span>
@@ -877,7 +899,7 @@ function ProductCard({
         </span>
       </div>
       {showStockBar && (
-        <div className="mt-3">
+        <div className="relative mt-3">
           <div className="h-1 rounded-full bg-muted/40 overflow-hidden">
             <div
               className={`h-full transition-all ${stock <= 3 ? "bg-warn" : "bg-primary"}`}
@@ -886,14 +908,14 @@ function ProductCard({
           </div>
         </div>
       )}
-      <div className="mt-auto pt-5 flex items-end justify-between">
+      <div className="relative mt-auto pt-5 flex items-end justify-between">
         <div>
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">fiyat</div>
-          <div className="font-mono text-2xl font-semibold text-primary">
+          <div className={`font-mono text-2xl font-semibold ${epic ? "text-[oklch(0.88_0.15_75)] epic-text-glow" : "text-primary"}`}>
             ₺{Number(p.price_try).toLocaleString("tr-TR")}
           </div>
         </div>
-        <Button asChild size="sm" disabled={soldOut}>
+        <Button asChild size="sm" disabled={soldOut} className={epic ? "bg-[oklch(0.78_0.16_75)] hover:bg-[oklch(0.72_0.16_75)] text-black" : ""}>
           <Link to="/urun/$slug" params={{ slug: p.slug }}>
             {soldOut ? "tükendi" : "Satın al →"}
           </Link>
