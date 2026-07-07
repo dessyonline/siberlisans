@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
-import { markOrderPaid } from "@/lib/orders.functions";
+import { markOrderPaid, setOrderUserNote } from "@/lib/orders.functions";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import enparaQr from "@/assets/enpara-qr.png";
 import { Button } from "@/components/ui/button";
