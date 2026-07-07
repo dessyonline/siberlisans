@@ -1035,3 +1035,95 @@ function OrderTimeline({
   );
 }
 
+/* ============================ PROMO ============================ */
+
+function PromoBlock({
+  orderId,
+  originalPrice,
+  discountTry,
+  appliedCode,
+}: {
+  orderId: string;
+  originalPrice: number;
+  discountTry: number;
+  appliedCode: string | null;
+}) {
+  const qc = useQueryClient();
+  const applyFn = useServerFn(applyPromoCode);
+  const removeFn = useServerFn(removePromoCode);
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const hasDiscount = discountTry > 0 && !!appliedCode;
+  const finalPrice = Math.max(0, originalPrice - discountTry);
+
+  const apply = async () => {
+    if (!code.trim()) return;
+    setBusy(true);
+    try {
+      const res = await applyFn({ data: { orderId, code: code.trim() } });
+      toast.success(`Kod uygulandı: −₺${res.discountTry.toLocaleString("tr-TR")}`);
+      setCode("");
+      qc.invalidateQueries({ queryKey: ["order", orderId] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async () => {
+    setBusy(true);
+    try {
+      await removeFn({ data: { orderId } });
+      toast.success("Kod kaldırıldı");
+      qc.invalidateQueries({ queryKey: ["order", orderId] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <section className="glass-card rounded-lg p-5">
+      <div className="flex items-center gap-2 font-mono text-sm">
+        <Ticket className="h-4 w-4 text-primary" />
+        <span className="neon-text">Promosyon Kodu</span>
+      </div>
+      {hasDiscount ? (
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <div className="flex-1 min-w-0">
+            <div className="font-mono text-lg text-primary neon-text flex items-center gap-2">
+              <Tag className="h-4 w-4" /> {appliedCode}
+            </div>
+            <div className="mt-1 text-xs font-mono text-muted-foreground">
+              <span className="line-through">₺{originalPrice.toLocaleString("tr-TR")}</span>{" "}
+              → <span className="text-primary">₺{finalPrice.toLocaleString("tr-TR")}</span>{" "}
+              <span className="text-warn">(−₺{discountTry.toLocaleString("tr-TR")})</span>
+            </div>
+          </div>
+          <Button size="sm" variant="outline" onClick={remove} disabled={busy}>
+            kaldır
+          </Button>
+        </div>
+      ) : (
+        <div className="mt-3 flex gap-2">
+          <Input
+            value={code}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
+            placeholder="KODUNUZ"
+            className="font-mono uppercase"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") apply();
+            }}
+          />
+          <Button onClick={apply} disabled={busy || !code.trim()}>
+            uygula
+          </Button>
+        </div>
+      )}
+    </section>
+  );
+}
+
+
