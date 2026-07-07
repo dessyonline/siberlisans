@@ -664,6 +664,7 @@ function ManualContactBlock({
   );
   const igDM = `https://ig.me/m/siber.php`;
   const igProfile = `https://instagram.com/siber.php`;
+  const tgDM = `https://t.me/dessyoffical`;
 
   return (
     <section className="glass-card rounded-lg p-6 border-cyan/30">
@@ -682,17 +683,30 @@ function ManualContactBlock({
         <MessageCircle className="h-8 w-8 text-cyan opacity-80" />
       </div>
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <a
+          href={tgDM}
+          target="_blank"
+          rel="noreferrer"
+          className="group flex items-center gap-3 rounded-lg border border-primary/50 bg-primary/10 p-4 hover:bg-primary/20 hover:neon-glow transition"
+        >
+          <Send className="h-6 w-6 text-primary rotate-[-20deg]" />
+          <div className="flex-1 min-w-0">
+            <div className="font-mono text-sm neon-text">Telegram</div>
+            <div className="text-xs text-muted-foreground truncate">@dessyoffical · önerilen</div>
+          </div>
+          <ArrowRight className="h-4 w-4 text-primary opacity-70 group-hover:opacity-100" />
+        </a>
         <a
           href={igDM}
           target="_blank"
           rel="noreferrer"
-          className="group flex items-center gap-3 rounded-lg border border-cyan/40 bg-cyan/5 p-4 hover:bg-cyan/10 hover:neon-glow transition"
+          className="group flex items-center gap-3 rounded-lg border border-cyan/40 bg-cyan/5 p-4 hover:bg-cyan/10 transition"
         >
           <Instagram className="h-6 w-6 text-cyan" />
-          <div className="flex-1">
-            <div className="font-mono text-sm neon-text">Instagram DM</div>
-            <div className="text-xs text-muted-foreground">@siber.php · anlık yanıt</div>
+          <div className="flex-1 min-w-0">
+            <div className="font-mono text-sm text-cyan">Instagram DM</div>
+            <div className="text-xs text-muted-foreground truncate">@siber.php</div>
           </div>
           <ArrowRight className="h-4 w-4 text-cyan opacity-70 group-hover:opacity-100" />
         </a>
@@ -702,10 +716,10 @@ function ManualContactBlock({
           rel="noreferrer"
           className="group flex items-center gap-3 rounded-lg border border-border/60 p-4 hover:border-primary/40 hover:bg-primary/5 transition"
         >
-          <Instagram className="h-6 w-6 text-primary" />
-          <div className="flex-1">
-            <div className="font-mono text-sm">instagram.com/siber.php</div>
-            <div className="text-xs text-muted-foreground">profili aç</div>
+          <Instagram className="h-6 w-6 text-muted-foreground" />
+          <div className="flex-1 min-w-0">
+            <div className="font-mono text-sm">IG Profil</div>
+            <div className="text-xs text-muted-foreground truncate">instagram.com/siber.php</div>
           </div>
           <ArrowRight className="h-4 w-4 text-muted-foreground opacity-70 group-hover:opacity-100" />
         </a>
