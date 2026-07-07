@@ -445,7 +445,7 @@ function ProductCard({ product: p }: { product: Row }) {
     ? "text-warn border-warn/40 bg-warn/10 animate-pulse"
     : "text-primary border-primary/30 bg-primary/10";
   const isNew = (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7;
-  const showStockBar = !manual && !unlimited && stock > 0 && stock <= 10;
+  
 
   return (
     <div className="group relative glass-card rounded-xl overflow-hidden flex flex-col glass-card-hover border border-border/60">
