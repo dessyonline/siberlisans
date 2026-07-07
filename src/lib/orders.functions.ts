@@ -1,0 +1,163 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+const createOrderInput = z.object({ productId: z.string().uuid() });
+
+function genRef() {
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  let out = "SBR-";
+  for (let i = 0; i < 8; i++) out += chars[Math.floor(Math.random() * chars.length)];
+  return out;
+}
+
+export const createOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => createOrderInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: product, error: pErr } = await supabase
+      .from("products")
+      .select("id, price_try, active")
+      .eq("id", data.productId)
+      .single();
+    if (pErr || !product || !product.active) throw new Error("Ürün bulunamadı.");
+
+    const referenceCode = genRef();
+    const { data: order, error } = await supabase
+      .from("orders")
+      .insert({
+        user_id: userId,
+        product_id: product.id,
+        price_try: product.price_try,
+        reference_code: referenceCode,
+        status: "pending",
+      })
+      .select("id, reference_code")
+      .single();
+    if (error) throw new Error(error.message);
+    return { orderId: order.id, referenceCode: order.reference_code };
+  });
+
+const markPaidInput = z.object({ orderId: z.string().uuid(), receiptPath: z.string().min(1) });
+
+export const markOrderPaid = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => markPaidInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { error } = await supabase
+      .from("orders")
+      .update({ receipt_path: data.receiptPath, status: "reviewing" })
+      .eq("id", data.orderId)
+      .eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+const approveInput = z.object({ orderId: z.string().uuid() });
+
+export const approveOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => approveInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Yetkisiz.");
+    const { data: result, error } = await supabase.rpc("approve_order", { _order_id: data.orderId });
+    if (error) throw new Error(error.message);
+    const licenseKey = Array.isArray(result) && result[0]?.license_key;
+    return { ok: true, licenseKey };
+  });
+
+const rejectInput = z.object({ orderId: z.string().uuid(), note: z.string().max(500).optional() });
+
+export const rejectOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => rejectInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Yetkisiz.");
+    const { error } = await supabase
+      .from("orders")
+      .update({ status: "rejected", admin_note: data.note ?? null })
+      .eq("id", data.orderId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+const importKeysInput = z.object({
+  productId: z.string().uuid(),
+  keys: z.array(z.string().min(4).max(200)).min(1).max(2000),
+});
+
+export const importLicenseKeys = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => importKeysInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Yetkisiz.");
+    const rows = [...new Set(data.keys.map((k) => k.trim()).filter(Boolean))].map((key_value) => ({
+      product_id: data.productId,
+      key_value,
+    }));
+    const { error, count } = await supabase
+      .from("license_keys")
+      .upsert(rows, { onConflict: "key_value", ignoreDuplicates: true, count: "exact" });
+    if (error) throw new Error(error.message);
+    return { inserted: count ?? rows.length };
+  });
+
+const productInput = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().min(2).max(120),
+  slug: z.string().min(2).max(120).regex(/^[a-z0-9-]+$/),
+  description: z.string().max(1000).optional(),
+  duration: z.enum(["monthly", "yearly", "lifetime"]),
+  price_try: z.number().min(0).max(1000000),
+  active: z.boolean(),
+});
+
+export const upsertProduct = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => productInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Yetkisiz.");
+    if (data.id) {
+      const { error } = await supabase.from("products").update(data).eq("id", data.id);
+      if (error) throw new Error(error.message);
+    } else {
+      const { error } = await supabase.from("products").insert(data);
+      if (error) throw new Error(error.message);
+    }
+    return { ok: true };
+  });
+
+const bankInput = z.object({
+  id: z.string().uuid().optional(),
+  bank_name: z.string().min(2).max(120),
+  iban: z.string().min(10).max(64),
+  holder_name: z.string().min(2).max(120),
+  active: z.boolean(),
+});
+
+export const upsertBankAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => bankInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+    if (!isAdmin) throw new Error("Yetkisiz.");
+    if (data.id) {
+      const { error } = await supabase.from("bank_accounts").update(data).eq("id", data.id);
+      if (error) throw new Error(error.message);
+    } else {
+      const { error } = await supabase.from("bank_accounts").insert(data);
+      if (error) throw new Error(error.message);
+    }
+    return { ok: true };
+  });

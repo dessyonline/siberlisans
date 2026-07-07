@@ -1,0 +1,28 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
+const FAQS = [
+  { q: "Kredi kartı ile ödeme yapabilir miyim?", a: "Hayır. SiberPHP güvenlik politikası gereği yalnızca banka havalesi / EFT kabul eder." },
+  { q: "Ödeme sonrası anahtarı ne kadar sürede alırım?", a: "Dekont onayından sonra saniyeler içinde. Ortalama onay 5-15 dakika." },
+  { q: "Anahtarım çalışmazsa?", a: "24 saat içinde destek ile iletişime geçerseniz yeni bir key ile değiştiririz." },
+  { q: "Faturamı alabilir miyim?", a: "Evet, kurumsal müşteriler için e-arşiv fatura düzenlenir." },
+  { q: "Kişisel verilerim güvende mi?", a: "Tüm veriler AES-256 ile şifrelenir; KVKK uyumluluğu sağlanır." },
+];
+
+export const Route = createFileRoute("/sss")({
+  component: () => (
+    <div className="mx-auto max-w-3xl px-4 py-16">
+      <div className="font-mono text-xs text-muted-foreground">$ cat FAQ.md</div>
+      <h1 className="mt-2 font-mono text-3xl neon-text">Sık Sorulan Sorular</h1>
+      <Accordion type="single" collapsible className="glass-card mt-6 rounded-lg px-6">
+        {FAQS.map((f, i) => (
+          <AccordionItem key={i} value={`i${i}`}>
+            <AccordionTrigger className="font-mono text-left">{f.q}</AccordionTrigger>
+            <AccordionContent className="text-muted-foreground">{f.a}</AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
+    </div>
+  ),
+  head: () => ({ meta: [{ title: "SSS — SiberPHP" }] }),
+});
