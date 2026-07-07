@@ -127,16 +127,24 @@ function LicensesAdmin() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "revoked" | "expired" | "unactivated">("all");
   const [qty, setQty] = useState(1);
-  const [days, setDays] = useState(30);
+  const [amount, setAmount] = useState(30);
+  const [unit, setUnit] = useState<"minute" | "hour" | "day" | "month">("day");
   const [busy, setBusy] = useState(false);
   const [lastGenerated, setLastGenerated] = useState<string[]>([]);
+
+  const unitToMinutes = (v: number, u: typeof unit): number => {
+    if (u === "minute") return v;
+    if (u === "hour") return v * 60;
+    if (u === "day") return v * 1440;
+    return v * 43200; // month = 30d
+  };
 
   const { data: rows } = useQuery({
     queryKey: ["licenses-manage-lovable"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("license_keys")
-        .select("id, key_value, status, hwid, activated_at, expires_at, duration_days, revoked, last_validated_at, product:products(name, slug)")
+        .select("id, key_value, status, hwid, activated_at, expires_at, duration_days, duration_minutes, revoked, last_validated_at, product:products(name, slug)")
         .eq("product_id", LOVABLE_PRODUCT_ID)
         .order("created_at", { ascending: false })
         .limit(500);
@@ -148,13 +156,16 @@ function LicensesAdmin() {
 
   const generate = async () => {
     if (qty < 1 || qty > 200) return toast.error("Miktar 1-200 arası olmalı");
+    if (amount < 0) return toast.error("Süre negatif olamaz");
     setBusy(true);
     try {
+      const minutes = amount > 0 ? unitToMinutes(amount, unit) : null;
       const keys = Array.from({ length: qty }, () => genKey());
       const rows = keys.map((k) => ({
         product_id: LOVABLE_PRODUCT_ID,
         key_value: k,
-        duration_days: days > 0 ? days : null,
+        duration_minutes: minutes,
+        duration_days: minutes ? Math.max(1, Math.round(minutes / 1440)) : null,
         status: "available" as const,
       }));
       const { error } = await supabase.from("license_keys").insert(rows);
@@ -168,6 +179,7 @@ function LicensesAdmin() {
       setBusy(false);
     }
   };
+
 
   const downloadScript = (key: string) => {
     const blob = new Blob([buildUserscript(key)], { type: "text/plain;charset=utf-8" });
