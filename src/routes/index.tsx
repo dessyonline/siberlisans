@@ -23,6 +23,13 @@ import {
   Search,
   X,
   Sparkles,
+  MonitorSmartphone,
+  Palette,
+  Brain,
+  FileText,
+  Gamepad2,
+  Mail,
+  ArrowRight,
 } from "lucide-react";
 import { ProductCardSkeleton } from "@/components/Skeleton";
 
@@ -36,7 +43,38 @@ const DURATION_LABEL: Record<string, string> = {
   lifetime: "ömürlük",
 };
 
-// Cyber word rotator — types a word, blinks caret, deletes, next word
+// Category → icon + accent color (oklch tokens) for cyber recent-items
+const CAT_VISUAL: Record<string, { Icon: typeof KeyRound; hue: string; ring: string; grad: string }> = {
+  Windows:         { Icon: MonitorSmartphone, hue: "oklch(0.75 0.13 210)", ring: "oklch(0.75 0.13 210 / 0.4)", grad: "from-[oklch(0.75_0.13_210/0.25)] to-transparent" },
+  "Windows 10/11": { Icon: MonitorSmartphone, hue: "oklch(0.75 0.13 210)", ring: "oklch(0.75 0.13 210 / 0.4)", grad: "from-[oklch(0.75_0.13_210/0.25)] to-transparent" },
+  "Windows Server":{ Icon: MonitorSmartphone, hue: "oklch(0.75 0.13 210)", ring: "oklch(0.75 0.13 210 / 0.4)", grad: "from-[oklch(0.75_0.13_210/0.25)] to-transparent" },
+  "Görsel & Tasarım": { Icon: Palette,       hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  Adobe:           { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  Canva:           { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  CorelDRAW:       { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  "Envato Elements":{ Icon: Palette,          hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  Flaticon:        { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  Freepik:         { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  "Motion Array":  { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  Vecteezy:        { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  "Nano Banana":   { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  Autodesk:        { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
+  "Yapay Zeka":    { Icon: Brain,             hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
+  ChatGPT:         { Icon: Brain,             hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
+  "Google Gemini": { Icon: Brain,             hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
+  Ideogram:        { Icon: Brain,             hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
+  Midjourney:      { Icon: Brain,             hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
+  "Microsoft Office": { Icon: FileText,       hue: "oklch(0.65 0.20 25)",  ring: "oklch(0.65 0.20 25 / 0.4)",  grad: "from-[oklch(0.65_0.20_25/0.25)] to-transparent" },
+  "Office 365":    { Icon: FileText,          hue: "oklch(0.65 0.20 25)",  ring: "oklch(0.65 0.20 25 / 0.4)",  grad: "from-[oklch(0.65_0.20_25/0.25)] to-transparent" },
+  "Office (Ömürlük)": { Icon: FileText,       hue: "oklch(0.65 0.20 25)",  ring: "oklch(0.65 0.20 25 / 0.4)",  grad: "from-[oklch(0.65_0.20_25/0.25)] to-transparent" },
+  Oyunlar:         { Icon: Gamepad2,          hue: "oklch(0.68 0.22 340)", ring: "oklch(0.68 0.22 340 / 0.4)", grad: "from-[oklch(0.68_0.22_340/0.25)] to-transparent" },
+  "Steam Oyunları":{ Icon: Gamepad2,          hue: "oklch(0.68 0.22 340)", ring: "oklch(0.68 0.22 340 / 0.4)", grad: "from-[oklch(0.68_0.22_340/0.25)] to-transparent" },
+  "E-posta":       { Icon: Mail,              hue: "oklch(0.78 0.16 220)", ring: "oklch(0.78 0.16 220 / 0.4)", grad: "from-[oklch(0.78_0.16_220/0.25)] to-transparent" },
+  "Email Hesapları": { Icon: Mail,            hue: "oklch(0.78 0.16 220)", ring: "oklch(0.78 0.16 220 / 0.4)", grad: "from-[oklch(0.78_0.16_220/0.25)] to-transparent" },
+  Diğer:           { Icon: Cpu,               hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
+};
+const catVisual = (cat: string | null) =>
+  (cat && CAT_VISUAL[cat]) || { Icon: Cpu, hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" };
 const HERO_WORDS = ["güvenli.", "anında.", "otomatik.", "şifreli.", "orijinal."];
 function CyberRotator() {
   const [i, setI] = useState(0);
@@ -487,40 +525,100 @@ function Index() {
         </div>
 
         {recent.length > 0 && (
-          <div className="mt-8 glass-card rounded-lg p-4 border border-primary/30">
-            <div className="mb-3 flex items-center justify-between gap-2">
+          <div className="mt-10 glass-card rounded-xl border border-primary/30 neon-glow overflow-hidden">
+            {/* terminal header */}
+            <div className="relative flex items-center justify-between border-b border-border/60 bg-background/60 px-4 py-3 scan-line">
               <div className="flex items-center gap-2 font-mono text-xs">
-                <Sparkles className="h-3.5 w-3.5 text-primary" />
-                <span className="neon-text">son eklenen lisanslar</span>
-                <span className="text-muted-foreground">· güncel</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-75" />
+                  <span className="relative h-2 w-2 rounded-full bg-primary" />
+                </span>
+                <span className="neon-text">son eklenenler</span>
+                <span className="text-muted-foreground/80">· /var/log/siberphp/new arrivals</span>
               </div>
-              <Link to="/urunler" className="font-mono text-xs text-primary hover:underline">
-                tümü →
+              <Link
+                to="/urunler"
+                className="group inline-flex items-center gap-1 font-mono text-xs text-primary hover:neon-text transition-colors"
+              >
+                tümünü listele
+                <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
-            <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-              {recent.map((p) => (
-                <Link
-                  key={p.id}
-                  to="/urun/$slug"
-                  params={{ slug: p.slug }}
-                  className="flex items-center justify-between gap-2 rounded border border-border/40 bg-background/40 px-3 py-2 hover:border-primary/50 hover:bg-primary/5 transition"
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="font-mono text-xs truncate">{p.name}</div>
-                    <div className="text-[10px] text-muted-foreground">
-                      {p.category ?? "lisans"} ·{" "}
-                      {new Date((p as { created_at: string }).created_at).toLocaleDateString("tr-TR", {
-                        day: "2-digit",
-                        month: "2-digit",
-                      })}
-                    </div>
-                  </div>
-                  <span className="font-mono text-xs text-primary shrink-0">
-                    ₺{Number(p.price_try).toLocaleString("tr-TR")}
-                  </span>
-                </Link>
-              ))}
+
+            {/* cyber grid of recent arrivals */}
+            <div className="relative p-4">
+              <div className="pointer-events-none absolute inset-0 cyber-grid opacity-30" aria-hidden />
+              <div className="relative grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                {recent.map((p) => {
+                  const cv = catVisual(p.category ?? null);
+                  const Icon = cv.Icon;
+                  const isNew =
+                    (Date.now() - new Date((p as { created_at: string }).created_at).getTime()) /
+                      86400000 <
+                    3;
+                  return (
+                    <Link
+                      key={p.id}
+                      to="/urun/$slug"
+                      params={{ slug: p.slug }}
+                      className="group relative flex flex-col gap-3 rounded-lg border border-border/60 bg-background/50 p-3 hover:border-primary/60 hover:bg-primary/[0.03] transition-all duration-300"
+                    >
+                      {/* ambient top gradient */}
+                      <div
+                        className={`pointer-events-none absolute inset-x-0 top-0 h-16 rounded-t-lg bg-gradient-to-b ${cv.grad} opacity-60`}
+                        aria-hidden
+                      />
+                      {/* icon */}
+                      <div className="relative flex items-center justify-between">
+                        <div
+                          className="flex h-10 w-10 items-center justify-center rounded-lg border bg-background/70 backdrop-blur"
+                          style={{ borderColor: cv.ring, filter: `drop-shadow(0 0 10px ${cv.ring})` }}
+                        >
+                          <Icon className="h-5 w-5" style={{ color: cv.hue }} />
+                        </div>
+                        {isNew && (
+                          <span className="rounded-full border border-cyan/50 bg-cyan/15 px-2 py-0.5 font-mono text-[10px] text-cyan animate-pulse shadow-[0_0_10px_oklch(0.75_0.13_210/0.4)]">
+                            NEW
+                          </span>
+                        )}
+                      </div>
+                      {/* body */}
+                      <div className="relative min-w-0">
+                        <div className="text-[10px] uppercase tracking-wider text-muted-foreground/80 font-mono">
+                          {p.category ?? "lisans"}
+                        </div>
+                        <div className="mt-0.5 font-semibold text-sm leading-tight truncate group-hover:neon-text transition-colors">
+                          {p.name}
+                        </div>
+                        <p className="mt-1.5 text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                          {p.description ?? "Orijinal lisans anahtarı · anında teslim."}
+                        </p>
+                      </div>
+                      {/* footer */}
+                      <div className="relative mt-auto flex items-center justify-between border-t border-border/40 pt-2.5">
+                        <span className="font-mono text-[10px] text-muted-foreground/70">
+                          {new Date((p as { created_at: string }).created_at).toLocaleDateString("tr-TR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                          })}
+                        </span>
+                        <span className="font-mono text-sm font-semibold" style={{ color: cv.hue }}>
+                          ₺{Number(p.price_try).toLocaleString("tr-TR")}
+                        </span>
+                      </div>
+                      {/* hover sweep */}
+                      <span
+                        aria-hidden
+                        className="pointer-events-none absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                        style={{
+                          background:
+                            "linear-gradient(105deg, transparent 40%, oklch(1 0 0 / 0.04) 50%, transparent 60%)",
+                        }}
+                      />
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
