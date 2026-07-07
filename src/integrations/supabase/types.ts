@@ -288,6 +288,16 @@ export type Database = {
           license_key: string
         }[]
       }
+      claim_license_by_token: {
+        Args: { _token: string }
+        Returns: {
+          activation_token: string
+          claimed_at: string
+          delivery_type: Database["public"]["Enums"]["delivery_type"]
+          key_value: string
+          product_name: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
