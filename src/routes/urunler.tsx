@@ -366,39 +366,68 @@ function ProductCard({ product: p }: { product: Row }) {
         <div className="absolute -left-20 -bottom-20 h-40 w-40 rounded-full bg-cyan/10 blur-[60px]" />
       </div>
 
-      {p.image_url ? (
-        <div className="relative h-36 overflow-hidden border-b border-border/60">
-          <img
-            src={p.image_url}
-            alt={p.name}
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
-          <KeyRound className="absolute right-3 top-3 h-5 w-5 text-primary drop-shadow-[0_0_8px_oklch(0.82_0.20_145/0.6)]" />
-          <span
-            className={`absolute left-3 top-3 rounded px-2 py-0.5 font-mono text-[10px] border ${
-              manual
-                ? "border-warn/50 bg-warn/15 text-warn"
-                : "border-primary/40 bg-primary/15 text-primary"
-            }`}
+      {(() => {
+        const cv = catVisual(p.category);
+        const CIcon = cv.Icon;
+        return (
+          <div
+            className="relative h-40 overflow-hidden border-b border-border/60"
+            style={{ background: `radial-gradient(circle at 30% 30%, ${cv.hue.replace(")", " / 0.18)")}, transparent 65%), oklch(0.13 0.02 145)` }}
           >
-            {manual ? "manuel teslimat" : "otomatik teslimat"}
-          </span>
-          {isNew && (
-            <span className="absolute right-3 bottom-3 rounded px-2 py-0.5 font-mono text-[10px] border border-cyan/50 bg-cyan/20 text-cyan animate-pulse">
-              ✦ YENİ
+            {/* cyber grid backdrop */}
+            <div className="pointer-events-none absolute inset-0 cyber-grid opacity-40" aria-hidden />
+            <div className="pointer-events-none absolute inset-0 scan-line opacity-30" aria-hidden />
+
+            {p.image_url ? (
+              <img
+                src={p.image_url}
+                alt={p.name}
+                loading="lazy"
+                className="relative h-full w-full object-contain p-4 transition-transform duration-500 group-hover:scale-[1.06]"
+                style={{ filter: `drop-shadow(0 0 22px ${cv.ring})` }}
+              />
+            ) : (
+              <div className="relative h-full w-full flex flex-col items-center justify-center gap-2">
+                <CIcon
+                  className="h-14 w-14 transition-transform duration-500 group-hover:scale-110"
+                  style={{ color: cv.hue, filter: `drop-shadow(0 0 18px ${cv.ring})` }}
+                />
+                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+                  {p.category ?? "lisans"}
+                </span>
+              </div>
+            )}
+
+            {/* corner brackets */}
+            <span className="pointer-events-none absolute top-2 left-2 h-3 w-3 border-l border-t border-primary/50" />
+            <span className="pointer-events-none absolute top-2 right-2 h-3 w-3 border-r border-t border-primary/50" />
+            <span className="pointer-events-none absolute bottom-2 left-2 h-3 w-3 border-l border-b border-primary/50" />
+            <span className="pointer-events-none absolute bottom-2 right-2 h-3 w-3 border-r border-b border-primary/50" />
+
+            {/* soft bottom fade for legibility */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-background/95 to-transparent" />
+
+            {/* meta chips */}
+            <span
+              className={`absolute left-3 top-3 rounded px-2 py-0.5 font-mono text-[10px] border backdrop-blur-sm ${
+                manual
+                  ? "border-warn/50 bg-warn/15 text-warn"
+                  : "border-primary/40 bg-primary/15 text-primary"
+              }`}
+            >
+              {manual ? "manuel teslim" : "otomatik teslim"}
             </span>
-          )}
-        </div>
-      ) : (
-        <div className="relative h-24 border-b border-border/60 bg-primary/5">
-          <KeyRound className="absolute right-3 top-3 h-5 w-5 text-primary/60" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="font-mono text-xs text-muted-foreground">{p.category ?? "lisans"}</span>
+            <KeyRound
+              className="absolute right-3 top-3 h-4 w-4 text-primary drop-shadow-[0_0_8px_oklch(0.82_0.20_145/0.7)]"
+            />
+            {isNew && (
+              <span className="absolute right-3 bottom-3 rounded px-2 py-0.5 font-mono text-[10px] border border-cyan/50 bg-cyan/20 text-cyan animate-pulse">
+                ✦ YENİ
+              </span>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       <div className="p-5 flex flex-col flex-1">
         <CyberTitle name={p.name} size="base" color="primary" />
