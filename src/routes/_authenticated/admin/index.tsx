@@ -251,6 +251,48 @@ function Dashboard() {
         </div>
       </div>
 
+      <div className="glass-card rounded-xl p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="text-xs text-muted-foreground font-mono">Toplam ciroya göre</div>
+            <div className="text-lg font-semibold">En Çok Satan Ürünler</div>
+          </div>
+          <div className="text-xs text-muted-foreground font-mono">
+            {stats?.topProducts?.length ?? 0} ürün
+          </div>
+        </div>
+        <div className="h-72">
+          {(stats?.topProducts ?? []).length === 0 ? (
+            <div className="h-full flex items-center justify-center text-sm text-muted-foreground font-mono">
+              henüz onaylanmış sipariş yok
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={stats?.topProducts ?? []} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.24 0.02 220 / 0.5)" horizontal={false} />
+                <XAxis type="number" stroke="oklch(0.60 0.02 200)" style={{ fontFamily: "JetBrains Mono Variable", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `₺${(v / 1000).toFixed(0)}k`} />
+                <YAxis dataKey="name" type="category" width={120} stroke="oklch(0.60 0.02 200)" style={{ fontFamily: "JetBrains Mono Variable", fontSize: 10 }} tickLine={false} axisLine={false} />
+                <Tooltip
+                  cursor={{ fill: "oklch(0.20 0.015 240 / 0.5)" }}
+                  contentStyle={{
+                    background: "oklch(0.17 0.015 240)",
+                    border: "1px solid oklch(0.28 0.02 220)",
+                    borderRadius: 8,
+                    fontFamily: "Inter",
+                    fontSize: 12,
+                  }}
+                  formatter={(v: number, k: string) =>
+                    k === "revenue" ? [`₺${v.toLocaleString("tr-TR")}`, "ciro"] : [v, "adet"]
+                  }
+                />
+                <Bar dataKey="revenue" fill="oklch(0.75 0.18 200)" radius={[0, 6, 6, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </div>
+      </div>
+
+
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="glass-card rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">
