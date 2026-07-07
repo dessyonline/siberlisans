@@ -202,7 +202,7 @@ function ProductsAdmin() {
                   </div>
                 </div>
                 <div className="flex gap-1 shrink-0 self-end sm:self-center">
-                  <Button size="sm" variant="outline" onClick={() => setEditing(p)}>
+                  <Button size="sm" variant="outline" onClick={() => setEditing(p as unknown as Product)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <AlertDialog>
