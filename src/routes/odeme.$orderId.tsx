@@ -308,12 +308,18 @@ function Payment() {
 function TransferBlock({
   bank,
   amount,
+  originalAmount,
+  discountTry,
+  appliedCode,
   reference,
   productName,
   productDuration,
 }: {
   bank: { bank_name?: string; holder_name?: string; iban?: string } | null | undefined;
   amount: number;
+  originalAmount?: number;
+  discountTry?: number;
+  appliedCode?: string | null;
   reference: string;
   productName: string;
   productDuration?: string;
@@ -331,6 +337,7 @@ function TransferBlock({
       : productDuration === "lifetime"
       ? "Ömür Boyu"
       : null;
+  const hasDiscount = (discountTry ?? 0) > 0;
 
   return (
     <section className="glass-card rounded-lg p-6">
@@ -366,12 +373,23 @@ function TransferBlock({
             <div className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
               tutar
             </div>
+            {hasDiscount && originalAmount !== undefined && (
+              <div className="mt-1 font-mono text-xs text-muted-foreground line-through">
+                ₺{originalAmount.toLocaleString("tr-TR")}
+              </div>
+            )}
             <div className="mt-1 font-mono text-lg neon-text">
               ₺{amount.toLocaleString("tr-TR")}
             </div>
+            {hasDiscount && appliedCode && (
+              <div className="mt-1 inline-flex items-center gap-1 rounded border border-warn/40 bg-warn/10 px-2 py-0.5 font-mono text-[10px] text-warn">
+                <Tag className="h-3 w-3" /> {appliedCode} · −₺{(discountTry ?? 0).toLocaleString("tr-TR")}
+              </div>
+            )}
           </div>
         </div>
       </div>
+
 
       <div className="mt-5 grid gap-5 md:grid-cols-[1fr_auto]">
         {/* Bank fields */}
