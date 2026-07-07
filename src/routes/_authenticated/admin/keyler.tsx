@@ -5,10 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { importLicenseKeys } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Upload, AlertTriangle, CheckCircle2, Database, Package } from "lucide-react";
+import { Upload, AlertTriangle, CheckCircle2, Database, Package, Search, X } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/keyler")({
   component: KeysAdmin,
@@ -76,20 +77,43 @@ function KeysAdmin() {
     return { avail, assigned, total };
   }, [pool]);
 
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | "available" | "assigned" | "revoked">("all");
+
   const { data: keys } = useQuery({
-    queryKey: ["license-keys", productId],
-    enabled: !!productId,
+    queryKey: ["license-keys-recent"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("license_keys")
-        .select("id, key_value, status, created_at")
-        .eq("product_id", productId)
+        .select("id, key_value, status, created_at, product_id, product:products(name, slug)")
         .order("created_at", { ascending: false })
-        .limit(200);
+        .limit(500);
       if (error) throw error;
-      return data;
+      return data as Array<{
+        id: string;
+        key_value: string;
+        status: string;
+        created_at: string;
+        product_id: string;
+        product: { name: string; slug: string } | null;
+      }>;
     },
+    refetchInterval: 15000,
   });
+
+  const filteredKeys = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return (keys ?? []).filter((k) => {
+      if (productId && k.product_id !== productId) return false;
+      if (statusFilter !== "all" && k.status !== statusFilter) return false;
+      if (!q) return true;
+      return (
+        k.key_value.toLowerCase().includes(q) ||
+        (k.product?.name ?? "").toLowerCase().includes(q) ||
+        (k.product?.slug ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [keys, search, statusFilter, productId]);
 
   const doImport = async () => {
     if (!productId) return toast.error("Ürün seçin");
@@ -100,7 +124,8 @@ function KeysAdmin() {
       const r = await importFn({ data: { productId, keys: list } });
       toast.success(`${r.inserted} key eklendi`);
       setRaw("");
-      qc.invalidateQueries({ queryKey: ["license-keys"] });
+      qc.invalidateQueries({ queryKey: ["license-keys-recent"] });
+      qc.invalidateQueries({ queryKey: ["admin-pool"] });
     } catch (e) { toast.error((e as Error).message); }
     finally { setBusy(false); }
   };
@@ -210,30 +235,100 @@ function KeysAdmin() {
         </div>
       </div>
 
-      {productId && (
-        <div className="mt-6 glass-card rounded-lg p-4">
-          <div className="font-mono text-xs text-muted-foreground mb-2">
-            $ tail -200 license_keys.log
+      <div className="mt-6 glass-card rounded-lg p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div className="font-mono text-sm">
+            <span className="text-muted-foreground">$ </span>
+            <span className="neon-text">son eklenen lisanslar</span>
+            <span className="ml-2 text-xs text-muted-foreground">
+              ({filteredKeys.length}/{(keys ?? []).length})
+            </span>
           </div>
-          <div className="space-y-1 max-h-[500px] overflow-auto">
-            {(keys ?? []).map((k) => (
-              <div key={k.id} className="flex items-center justify-between font-mono text-xs border-b border-border/40 py-1.5">
-                <code className="break-all">{k.key_value}</code>
-                <span className={
-                  k.status === "available" ? "text-primary"
-                  : k.status === "assigned" ? "text-muted-foreground"
-                  : "text-destructive"
-                }>
-                  {k.status}
-                </span>
-              </div>
-            ))}
-            {(keys ?? []).length === 0 && (
-              <div className="text-center text-muted-foreground font-mono py-4">bu ürün için key yok</div>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative">
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="key veya ürün ara…"
+                className="pl-7 pr-7 h-8 w-56 font-mono text-xs"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
+              className="h-8 rounded border border-border bg-input px-2 font-mono text-xs"
+            >
+              <option value="all">tümü</option>
+              <option value="available">müsait</option>
+              <option value="assigned">atanmış</option>
+              <option value="revoked">iptal</option>
+            </select>
+            {productId && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8 font-mono text-xs"
+                onClick={() => setProductId("")}
+              >
+                <X className="h-3 w-3 mr-1" />ürün filtresi
+              </Button>
             )}
           </div>
         </div>
-      )}
+
+        <div className="space-y-1 max-h-[500px] overflow-auto">
+          {filteredKeys.map((k) => (
+            <div
+              key={k.id}
+              className="flex items-center justify-between gap-3 font-mono text-xs border-b border-border/40 py-1.5"
+            >
+              <div className="min-w-0 flex-1">
+                <code className="break-all">{k.key_value}</code>
+                <div className="text-[10px] text-muted-foreground mt-0.5">
+                  {k.product?.name ?? "—"} ·{" "}
+                  {new Date(k.created_at).toLocaleString("tr-TR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
+              </div>
+              <span
+                className={
+                  k.status === "available"
+                    ? "text-primary shrink-0"
+                    : k.status === "assigned"
+                    ? "text-muted-foreground shrink-0"
+                    : "text-destructive shrink-0"
+                }
+              >
+                {k.status === "available"
+                  ? "müsait"
+                  : k.status === "assigned"
+                  ? "atanmış"
+                  : "iptal"}
+              </span>
+            </div>
+          ))}
+          {filteredKeys.length === 0 && (
+            <div className="text-center text-muted-foreground font-mono py-6">
+              {search || statusFilter !== "all" || productId
+                ? "eşleşen key yok"
+                : "henüz eklenmiş key yok"}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
