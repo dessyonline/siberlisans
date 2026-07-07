@@ -94,7 +94,73 @@ function KeysAdmin() {
 
   return (
     <div>
-      <h1 className="font-mono text-2xl neon-text">Key Havuzu</h1>
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <h1 className="font-mono text-2xl neon-text">Key Havuzu</h1>
+        <div className="flex items-center gap-2 font-mono text-xs">
+          <span className="rounded border border-primary/30 bg-primary/5 px-2 py-1 text-primary">
+            <CheckCircle2 className="inline h-3 w-3 mr-1" />müsait {totals.avail}
+          </span>
+          <span className="rounded border border-border/60 bg-muted/20 px-2 py-1 text-muted-foreground">
+            atanmış {totals.assigned}
+          </span>
+          <span className="rounded border border-cyan/30 bg-cyan/5 px-2 py-1 text-cyan">
+            <Database className="inline h-3 w-3 mr-1" />toplam {totals.total}
+          </span>
+        </div>
+      </div>
+
+      {/* POOL OVERVIEW */}
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {(pool ?? []).map((p) => {
+          const avail = p.license_keys.filter((k) => k.status === "available").length;
+          const assigned = p.license_keys.filter((k) => k.status === "assigned").length;
+          const total = p.license_keys.length;
+          const pct = total ? Math.round((avail / total) * 100) : 0;
+          const low = avail === 0 ? "empty" : avail < 3 ? "low" : "ok";
+          return (
+            <button
+              key={p.id}
+              onClick={() => setProductId(p.id)}
+              className={`text-left glass-card rounded-lg p-4 transition-all hover:border-primary/60 hover:neon-glow ${
+                productId === p.id ? "border-primary/60 neon-glow" : ""
+              } ${low === "empty" ? "border-destructive/40" : low === "low" ? "border-warn/40" : ""}`}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 font-mono">
+                  <Package className="h-4 w-4 text-primary" />
+                  <span className="font-semibold text-sm">{p.name}</span>
+                </div>
+                {low === "empty" && <AlertTriangle className="h-4 w-4 text-destructive" />}
+                {low === "low" && <AlertTriangle className="h-4 w-4 text-warn" />}
+              </div>
+              <div className="mt-3 flex items-end gap-3 font-mono">
+                <div>
+                  <div className={`text-3xl ${low === "empty" ? "text-destructive" : low === "low" ? "text-warn" : "neon-text"}`}>
+                    {avail}
+                  </div>
+                  <div className="text-[10px] tracking-widest text-muted-foreground">müsait</div>
+                </div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  / {total} · <span className="text-cyan">{assigned}</span> satılmış
+                </div>
+              </div>
+              <div className="mt-3 h-1.5 rounded-full bg-muted/40 overflow-hidden">
+                <div
+                  className={`h-full transition-all ${
+                    low === "empty" ? "bg-destructive" : low === "low" ? "bg-warn" : "bg-primary"
+                  }`}
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <div className="mt-2 flex items-center justify-between font-mono text-[10px] text-muted-foreground">
+                <span>/{p.slug}</span>
+                <span>{p.active ? "aktif" : "pasif"}</span>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
 
       <div className="mt-6 glass-card rounded-lg p-4">
         <div className="font-mono text-xs text-muted-foreground">$ ./import --keys</div>
