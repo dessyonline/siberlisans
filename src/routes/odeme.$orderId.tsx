@@ -151,7 +151,7 @@ function Payment() {
   const isManual = !!order.product?.manual_fulfillment;
   const isUnlimited = !!(order.product as { unlimited_stock?: boolean } | null)?.unlimited_stock;
   const needsManualContact =
-    isManual || isUnlimited || (order.status === "approved" && !deliveredKey);
+    order.status === "approved" && !deliveredKey && (isManual || isUnlimited);
   const stepIndex = STEPS.findIndex((s) => s.key === currentStep);
 
   return (
