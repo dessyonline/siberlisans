@@ -1,0 +1,1 @@
+INSERT INTO public.products (name, slug, description, duration, price_try, category, manual_fulfillment, stock_hint) VALUES ('ChatGPT Plus 1 Aylık', 'chatgpt-plus-1-ay', 'ChatGPT Plus 1 aylık üyelik', 'monthly', 500.00, 'ChatGPT', true, NULL);

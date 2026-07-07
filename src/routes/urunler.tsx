@@ -38,7 +38,7 @@ const GROUPS: { key: string; label: string; cats: string[] }[] = [
     label: "Görsel & Tasarım",
     cats: ["Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array", "CorelDRAW", "Autodesk"],
   },
-  { key: "ai", label: "Yapay Zeka", cats: ["Google Gemini", "Nano Banana", "Midjourney", "Ideogram"] },
+  { key: "ai", label: "Yapay Zeka", cats: ["ChatGPT", "Google Gemini", "Nano Banana", "Midjourney", "Ideogram"] },
   { key: "office", label: "Microsoft Office", cats: ["Office (Ömürlük)", "Office 365"] },
   { key: "oyun", label: "Oyunlar", cats: ["Steam Oyunları"] },
   { key: "email", label: "E-posta", cats: ["Email Hesapları"] },
