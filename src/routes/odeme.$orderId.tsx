@@ -8,6 +8,7 @@ import { markOrderPaid, setOrderUserNote } from "@/lib/orders.functions";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import enparaQr from "@/assets/enpara-qr.png";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
   Copy,
@@ -21,6 +22,9 @@ import {
   UploadCloud,
   ArrowRight,
   Lock,
+  Instagram,
+  Send,
+  MessageCircle,
 } from "lucide-react";
 
 export const Route = createFileRoute("/odeme/$orderId")({
