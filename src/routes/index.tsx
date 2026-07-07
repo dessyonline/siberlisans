@@ -298,36 +298,36 @@ function ProductCard({
   const stock = liveStock > 0 ? liveStock : (p.stock_hint ?? 0);
   const soldOut = !manual && !unlimited && stock === 0;
   return (
-    <div className={`glass-card rounded-lg p-5 flex flex-col group hover:neon-glow transition-shadow ${featured ? "border-warn/40" : ""}`}>
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="font-mono text-xs text-muted-foreground flex items-center gap-1">
+    <div className={`glass-card rounded-xl p-5 flex flex-col group transition-all hover:-translate-y-0.5 hover:border-primary/40 ${featured ? "border-warn/30" : ""}`}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="text-[11px] text-muted-foreground font-mono flex items-center gap-1.5 uppercase tracking-wider">
             {featured && <Star className="h-3 w-3 text-warn fill-warn" />}
-            {p.category ?? "./license"}
+            {p.category ?? "license"}
           </div>
-          <h3 className="mt-1 font-mono text-lg font-semibold">{p.name}</h3>
+          <h3 className="mt-1.5 text-lg font-semibold tracking-tight truncate">{p.name}</h3>
         </div>
-        <KeyRound className="h-5 w-5 text-primary opacity-70" />
+        <KeyRound className="h-5 w-5 text-primary opacity-60 shrink-0" />
       </div>
-      <p className="mt-2 text-sm text-muted-foreground line-clamp-3">{p.description}</p>
-      <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-xs">
-        <span className="rounded bg-primary/10 text-primary border border-primary/30 px-2 py-0.5">
+      <p className="mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed">{p.description}</p>
+      <div className="mt-4 flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
+        <span className="rounded-md bg-muted/40 text-muted-foreground border border-border px-2 py-0.5">
           {DURATION_LABEL[p.duration] ?? p.duration}
         </span>
-        <span className={`rounded px-2 py-0.5 border ${unlimited ? "text-cyan border-cyan/40 bg-cyan/10" : manual ? "text-cyan border-cyan/40 bg-cyan/10" : soldOut ? "text-destructive border-destructive/40 bg-destructive/10" : "text-primary border-primary/30 bg-primary/10"}`}>
+        <span className={`rounded-md px-2 py-0.5 border ${unlimited || manual ? "text-cyan border-cyan/40 bg-cyan/5" : soldOut ? "text-destructive border-destructive/40 bg-destructive/5" : "text-primary border-primary/40 bg-primary/5"}`}>
           {unlimited ? "stok: ∞" : manual ? "sipariş sonrası" : soldOut ? "tükendi" : `stok: ${stock}`}
         </span>
       </div>
       <div className="mt-auto pt-5 flex items-end justify-between">
         <div>
-          <div className="font-mono text-xs text-muted-foreground">fiyat</div>
-          <div className="font-mono text-2xl neon-text">
+          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">fiyat</div>
+          <div className="font-mono text-2xl font-semibold text-primary">
             ₺{Number(p.price_try).toLocaleString("tr-TR")}
           </div>
         </div>
-        <Button asChild size="sm" className="font-mono" disabled={soldOut}>
+        <Button asChild size="sm" disabled={soldOut}>
           <Link to="/urun/$slug" params={{ slug: p.slug }}>
-            {soldOut ? "tükendi" : "satın al →"}
+            {soldOut ? "tükendi" : "Satın al →"}
           </Link>
         </Button>
       </div>
