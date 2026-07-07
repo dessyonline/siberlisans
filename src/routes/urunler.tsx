@@ -561,7 +561,12 @@ function ProductCard({ product: p }: { product: Row }) {
             <KeyRound
               className="absolute right-3 top-3 h-4 w-4 text-primary drop-shadow-[0_0_8px_oklch(0.82_0.20_145/0.7)]"
             />
-            {isNew && (
+            {epic && (
+              <span className="absolute left-3 bottom-3 rounded px-2 py-0.5 font-mono text-[10px] border border-[oklch(0.78_0.16_75)] bg-[oklch(0.78_0.16_75/0.15)] text-[oklch(0.88_0.16_75)] shadow-[0_0_14px_oklch(0.78_0.16_75/0.45)] uppercase tracking-widest">
+                ★ EPIC
+              </span>
+            )}
+            {isNew && !epic && (
               <span className="absolute right-3 bottom-3 rounded px-2 py-0.5 font-mono text-[10px] border border-cyan/50 bg-cyan/20 text-cyan animate-pulse">
                 ✦ YENİ
               </span>
