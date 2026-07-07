@@ -398,7 +398,7 @@ function LicensesAdmin() {
                       )}
                     </div>
                     <div className="text-muted-foreground">
-                      Süre: <span className="text-foreground">{r.duration_days ?? "süresiz"}</span>
+                      Süre: <span className="text-foreground">{fmtDuration(r.duration_minutes ?? (r.duration_days ? r.duration_days * 1440 : null))}</span>
                     </div>
                     <div className="text-muted-foreground">
                       Son doğrulama: <span className="text-foreground">{fmt(r.last_validated_at)}</span>
