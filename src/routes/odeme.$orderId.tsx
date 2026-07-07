@@ -112,6 +112,8 @@ function Payment() {
   if (!order) return <div className="p-12 font-mono text-center">yükleniyor…</div>;
 
   const deliveredKey = order.keys?.[0]?.license_key?.key_value;
+  const deliveredToken = order.keys?.[0]?.license_key?.activation_token ?? null;
+  const deliveryType = (order.product?.delivery_type ?? "key") as DeliveryType;
   const stepIndex = STEPS.findIndex((s) => s.key === currentStep);
 
   return (
