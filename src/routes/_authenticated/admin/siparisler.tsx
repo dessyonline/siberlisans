@@ -99,7 +99,6 @@ function OrdersAdmin() {
               </div>
               <div className="text-xs uppercase text-cyan">{STATUS[o.status]}</div>
               <div className="neon-text">₺{Number(o.price_try).toLocaleString("tr-TR")}</div>
-              <div className="flex items-center gap-2">
               <div className="flex items-center gap-2 flex-wrap">
                 <Button
                   size="sm"
