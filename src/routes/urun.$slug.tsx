@@ -162,7 +162,14 @@ function ProductDetail() {
   );
 }
 
-function StockBadge({ stock, manual }: { stock: number; manual: boolean }) {
+function StockBadge({ stock, manual, unlimited }: { stock: number; manual: boolean; unlimited?: boolean }) {
+  if (unlimited) {
+    return (
+      <div className="flex items-center gap-2 rounded-full border border-cyan/40 bg-cyan/10 px-3 py-1 font-mono text-xs text-cyan">
+        <span className="h-2 w-2 rounded-full bg-cyan animate-pulse" /> Sınırsız Stok ∞
+      </div>
+    );
+  }
   if (manual) {
     return (
       <div className="flex items-center gap-2 rounded-full border border-warn/40 bg-warn/10 px-3 py-1 font-mono text-xs text-warn">
