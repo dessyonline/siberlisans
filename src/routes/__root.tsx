@@ -88,6 +88,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "SiberPHP — Güvenli Lisans Dağıtım Sistemi" },
+      { name: "description", content: "SiberPHP: yazılım lisans anahtarlarınızı havale/EFT ile güvenle, anında satın alın. Şifreli teslimat, kesintisiz destek." },
+      { property: "og:description", content: "SiberPHP: yazılım lisans anahtarlarınızı havale/EFT ile güvenle, anında satın alın. Şifreli teslimat, kesintisiz destek." },
+      { name: "twitter:description", content: "SiberPHP: yazılım lisans anahtarlarınızı havale/EFT ile güvenle, anında satın alın. Şifreli teslimat, kesintisiz destek." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0bef75a8-be96-4d40-8e4c-9cd418f39f67/id-preview-c86211f9--52e254a6-918f-43c4-9617-e74771d5be97.lovable.app-1783438289922.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/0bef75a8-be96-4d40-8e4c-9cd418f39f67/id-preview-c86211f9--52e254a6-918f-43c4-9617-e74771d5be97.lovable.app-1783438289922.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
