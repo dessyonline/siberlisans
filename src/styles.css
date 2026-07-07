@@ -330,12 +330,10 @@ body > a[class*="lovable"],
   animation: epic-border 8s ease-in-out infinite;
 }
 @utility epic-shimmer {
-  overflow: hidden;
-}
-@utility epic-shimmer::after {
-  content: "";
   position: absolute;
   inset: 0;
+  overflow: hidden;
+  pointer-events: none;
   background: linear-gradient(
     115deg,
     transparent 30%,
@@ -344,8 +342,8 @@ body > a[class*="lovable"],
     oklch(0.95 0.10 85 / 0.14) 52%,
     transparent 70%
   );
+  background-size: 220% 100%;
   animation: epic-shimmer-sweep 3.5s ease-in-out infinite;
-  pointer-events: none;
 }
 @utility epic-text-glow {
   text-shadow:
