@@ -614,6 +614,16 @@ function ProductDetail() {
             </div>
           </div>
           <Button
+            disabled={soldOut}
+            onClick={handleAddToCart}
+            variant="outline"
+            size="lg"
+            className="font-mono shrink-0 border-primary/40 hover:bg-primary/10 hover:text-primary h-11 px-3"
+            aria-label="Sepete ekle"
+          >
+            <ShoppingCart className="h-4 w-4" />
+          </Button>
+          <Button
             disabled={loading || soldOut}
             onClick={handleBuy}
             className="group relative overflow-hidden font-mono bg-primary text-primary-foreground border border-primary/50 hover:bg-primary/90 shadow-[0_0_20px_oklch(0.82_0.20_145/0.35)] hover:shadow-[0_0_30px_oklch(0.82_0.20_145/0.5)] transition-all duration-300 shrink-0"
