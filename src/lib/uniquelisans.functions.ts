@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { resolveLogoUrl } from "@/lib/logo-resolver";
 
 const DEFAULT_URL = "https://bayi.uniquelisans.com/api";
 // Varsayılan markup (admin isterse import ederken override eder)
@@ -148,6 +149,7 @@ export const ulImportProduct = createServerFn({ method: "POST" })
       external_id: String(detail.id),
       required_fields: (detail.required_fields ?? []) as never,
       stock_hint: detail.stock_count ?? null,
+      image_url: resolveLogoUrl(detail.name),
     };
 
     if (existing) {
