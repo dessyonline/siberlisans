@@ -101,6 +101,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
     scripts: [
+      { src: "https://telegram.org/js/telegram-web-app.js", async: true },
       {
         type: "application/ld+json",
         children: JSON.stringify({
