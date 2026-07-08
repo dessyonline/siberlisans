@@ -60,15 +60,18 @@ function AdminWallet() {
     return Array.from(set);
   }, [topups, wallets]);
 
+  const listUsersFn = useServerFn(listUsers);
   const { data: emails } = useQuery({
-    queryKey: ["admin-emails", userIds.sort().join(",")],
-    enabled: userIds.length > 0,
+    queryKey: ["admin-user-emails"],
     queryFn: async () => {
-      const { data } = await supabase.rpc("get_users_bulk", { _user_ids: userIds });
+      const users = await listUsersFn();
       const map: Record<string, string> = {};
-      (data as { user_id: string; email: string }[] | null)?.forEach((r) => { map[r.user_id] = r.email; });
+      (users as { id: string; email: string | null }[] | undefined)?.forEach((u) => {
+        if (u.email) map[u.id] = u.email;
+      });
       return map;
     },
+    staleTime: 60_000,
   });
 
   async function openReceipt(path: string) {
