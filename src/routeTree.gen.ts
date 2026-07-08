@@ -13,6 +13,11 @@ import { Route as UrunlerRouteImport } from './routes/urunler'
 import { Route as SssRouteImport } from './routes/sss'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
+import { Route as KvkkRouteImport } from './routes/kvkk'
+import { Route as KosullarRouteImport } from './routes/kosullar'
+import { Route as IletisimRouteImport } from './routes/iletisim'
+import { Route as IadeRouteImport } from './routes/iade'
+import { Route as GizlilikRouteImport } from './routes/gizlilik'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -57,6 +62,31 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const NasilCalisirRoute = NasilCalisirRouteImport.update({
   id: '/nasil-calisir',
   path: '/nasil-calisir',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KvkkRoute = KvkkRouteImport.update({
+  id: '/kvkk',
+  path: '/kvkk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KosullarRoute = KosullarRouteImport.update({
+  id: '/kosullar',
+  path: '/kosullar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IletisimRoute = IletisimRouteImport.update({
+  id: '/iletisim',
+  path: '/iletisim',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IadeRoute = IadeRouteImport.update({
+  id: '/iade',
+  path: '/iade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GizlilikRoute = GizlilikRouteImport.update({
+  id: '/gizlilik',
+  path: '/gizlilik',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -198,6 +228,11 @@ const ApiPublicHooksCampaignTickRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/gizlilik': typeof GizlilikRoute
+  '/iade': typeof IadeRoute
+  '/iletisim': typeof IletisimRoute
+  '/kosullar': typeof KosullarRoute
+  '/kvkk': typeof KvkkRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
@@ -228,6 +263,11 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/gizlilik': typeof GizlilikRoute
+  '/iade': typeof IadeRoute
+  '/iletisim': typeof IletisimRoute
+  '/kosullar': typeof KosullarRoute
+  '/kvkk': typeof KvkkRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
@@ -259,6 +299,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/gizlilik': typeof GizlilikRoute
+  '/iade': typeof IadeRoute
+  '/iletisim': typeof IletisimRoute
+  '/kosullar': typeof KosullarRoute
+  '/kvkk': typeof KvkkRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
@@ -291,6 +336,11 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/gizlilik'
+    | '/iade'
+    | '/iletisim'
+    | '/kosullar'
+    | '/kvkk'
     | '/nasil-calisir'
     | '/sitemap.xml'
     | '/sss'
@@ -321,6 +371,11 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/gizlilik'
+    | '/iade'
+    | '/iletisim'
+    | '/kosullar'
+    | '/kvkk'
     | '/nasil-calisir'
     | '/sitemap.xml'
     | '/sss'
@@ -351,6 +406,11 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/gizlilik'
+    | '/iade'
+    | '/iletisim'
+    | '/kosullar'
+    | '/kvkk'
     | '/nasil-calisir'
     | '/sitemap.xml'
     | '/sss'
@@ -383,6 +443,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  GizlilikRoute: typeof GizlilikRoute
+  IadeRoute: typeof IadeRoute
+  IletisimRoute: typeof IletisimRoute
+  KosullarRoute: typeof KosullarRoute
+  KvkkRoute: typeof KvkkRoute
   NasilCalisirRoute: typeof NasilCalisirRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SssRoute: typeof SssRoute
@@ -425,6 +490,41 @@ declare module '@tanstack/react-router' {
       path: '/nasil-calisir'
       fullPath: '/nasil-calisir'
       preLoaderRoute: typeof NasilCalisirRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kvkk': {
+      id: '/kvkk'
+      path: '/kvkk'
+      fullPath: '/kvkk'
+      preLoaderRoute: typeof KvkkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kosullar': {
+      id: '/kosullar'
+      path: '/kosullar'
+      fullPath: '/kosullar'
+      preLoaderRoute: typeof KosullarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/iletisim': {
+      id: '/iletisim'
+      path: '/iletisim'
+      fullPath: '/iletisim'
+      preLoaderRoute: typeof IletisimRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/iade': {
+      id: '/iade'
+      path: '/iade'
+      fullPath: '/iade'
+      preLoaderRoute: typeof IadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gizlilik': {
+      id: '/gizlilik'
+      path: '/gizlilik'
+      fullPath: '/gizlilik'
+      preLoaderRoute: typeof GizlilikRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -658,6 +758,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  GizlilikRoute: GizlilikRoute,
+  IadeRoute: IadeRoute,
+  IletisimRoute: IletisimRoute,
+  KosullarRoute: KosullarRoute,
+  KvkkRoute: KvkkRoute,
   NasilCalisirRoute: NasilCalisirRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SssRoute: SssRoute,
