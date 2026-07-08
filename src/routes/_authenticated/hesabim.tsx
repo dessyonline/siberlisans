@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { toast } from "sonner";
-import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell } from "lucide-react";
+import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck } from "lucide-react";
 import { TierCard } from "@/components/TierCard";
 import { AVATARS, UserAvatar } from "@/components/UserAvatar";
 
