@@ -4,7 +4,7 @@ export const SITE = {
   legalName: "SiberPHP",
   url: "https://siberlisans.lovable.app",
   email: "destek@siberphp.com",
-  supportTelegram: "https://t.me/siberphp_destek", // TODO: gerçek kullanıcı adını yaz
-  supportWhatsapp: "", // TODO: örn "https://wa.me/905XXXXXXXXX" — boşsa gizlenir
+  supportTelegram: "https://t.me/Dessyoffical",
+  supportWhatsapp: "", // örn "https://wa.me/905XXXXXXXXX" — boşsa gizlenir
   address: "Türkiye",
 } as const;
