@@ -1315,6 +1315,7 @@ export type Database = {
         Returns: string
       }
       refund_order_to_wallet: { Args: { _order_id: string }; Returns: number }
+      refund_points_discount: { Args: { _order_id: string }; Returns: number }
       reject_topup: {
         Args: { _note: string; _topup_id: string }
         Returns: undefined
