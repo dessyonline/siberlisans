@@ -201,6 +201,7 @@ function ProductsAdmin() {
     active: true, duration: "monthly", delivery_type: "key",
     price_try: 0, manual_fulfillment: false, featured: false,
     unlimited_stock: false, sort_order: 0, tier: "standard",
+    low_stock_threshold: 5,
   });
 
   return (
