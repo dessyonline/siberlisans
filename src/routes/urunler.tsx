@@ -461,34 +461,8 @@ function ProductCard({ product: p }: { product: Row }) {
   const liveStock = (p.license_keys ?? []).filter((k) => k.status === "available").length;
   const stock = liveStock > 0 ? liveStock : (p.stock_hint ?? 0);
   const soldOut = !manual && !unlimited && stock === 0;
-  const stockLabel = unlimited
-    ? "stok: ∞"
-    : manual
-    ? "sipariş sonrası"
-    : soldOut
-    ? "tükendi"
-    : stock < 3
-    ? `son ${stock}`
-    : `stok: ${stock}`;
-  const stockBarPct = unlimited || manual
-    ? 100
-    : soldOut
-    ? 0
-    : Math.max(6, Math.min(100, Math.round((stock / 20) * 100)));
-  const stockBarCls = unlimited || manual
-    ? "bg-cyan shadow-[0_0_10px_oklch(0.78_0.15_200/0.6)]"
-    : soldOut
-    ? "bg-destructive"
-    : stock < 3
-    ? "bg-warn shadow-[0_0_10px_oklch(0.75_0.18_80/0.6)] animate-pulse"
-    : "bg-primary shadow-[0_0_10px_oklch(0.82_0.20_145/0.6)]";
-  const stockTextCls = unlimited || manual
-    ? "text-cyan"
-    : soldOut
-    ? "text-destructive"
-    : stock < 3
-    ? "text-warn"
-    : "text-primary";
+
+
 
   const isNew = (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7;
   const epic = p.tier === "epic";
