@@ -158,14 +158,25 @@ function Payment() {
   const deliveryType = (order.product?.delivery_type ?? "key") as DeliveryType;
   const isManual = !!order.product?.manual_fulfillment;
   const isUnlimited = !!(order.product as { unlimited_stock?: boolean } | null)?.unlimited_stock;
+  const isEpic = ((order.product as { tier?: string } | null)?.tier ?? "standard") === "epic";
   const needsManualContact =
     order.status === "approved" && !deliveredKey && (isManual || isUnlimited);
   const stepIndex = STEPS.findIndex((s) => s.key === currentStep);
 
   return (
     <div className="mx-auto max-w-6xl px-3 sm:px-4 py-6 sm:py-10">
+      {isEpic && (
+        <div className="relative mb-3 overflow-hidden rounded-lg epic-card">
+          <div className="epic-shimmer" aria-hidden />
+          <div className="relative flex items-center justify-center gap-2 py-2 font-mono text-[11px] uppercase tracking-[0.4em] text-[oklch(0.92_0.14_85)] epic-text-glow">
+            <Crown className="h-3.5 w-3.5" />
+            destansı sipariş · epic tier
+            <Sparkles className="h-3.5 w-3.5" />
+          </div>
+        </div>
+      )}
       {/* Header bar — terminal window */}
-      <div className="glass-card rounded-t-lg border-b-0 px-3 py-2 flex items-center gap-2 font-mono text-xs">
+      <div className={`rounded-t-lg border-b-0 px-3 py-2 flex items-center gap-2 font-mono text-xs ${isEpic ? "epic-card" : "glass-card"}`}>
         <span className="h-2.5 w-2.5 rounded-full bg-destructive/80 shrink-0" />
         <span className="h-2.5 w-2.5 rounded-full bg-warn/80 shrink-0" />
         <span className="h-2.5 w-2.5 rounded-full bg-primary/80 shrink-0" />
