@@ -399,27 +399,29 @@ function ProductCard({ product: p }: { product: Row }) {
 
       <div className="relative p-4 flex flex-col flex-1">
         {/* Top row: category + badges */}
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 font-mono text-[10px] text-primary uppercase tracking-wider">
-            <Star className="h-3 w-3 fill-primary" />
-            {p.category ?? "lisans"}
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="inline-flex min-w-0 items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 font-mono text-[10px] text-primary uppercase tracking-wider">
+            <Star className="h-3 w-3 shrink-0 fill-primary" />
+            <span className="truncate">{p.category ?? "lisans"}</span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {epic && (
               <span className="inline-flex items-center gap-1 rounded-full border border-[oklch(0.78_0.16_75)] bg-[oklch(0.78_0.16_75/0.15)] px-2 py-0.5 font-mono text-[9px] text-[oklch(0.88_0.16_75)] uppercase tracking-wider shadow-[0_0_14px_oklch(0.78_0.16_75/0.45)]">
-                <Crown className="h-3 w-3" /> epic
+                <Crown className="h-3 w-3 shrink-0" /> epic
               </span>
             )}
             {isNew && !epic && (
               <span className="inline-flex items-center gap-1 rounded-full border border-cyan/50 bg-cyan/15 px-2 py-0.5 font-mono text-[9px] text-cyan uppercase tracking-wider">
-                <Sparkles className="h-3 w-3" /> yeni
+                <Sparkles className="h-3 w-3 shrink-0" /> yeni
               </span>
             )}
           </div>
         </div>
 
         {/* Title */}
-        <CyberTitle name={p.name} size="base" color={epic ? "warn" : "primary"} />
+        <h3 className={`font-mono text-base font-semibold tracking-tight truncate ${epic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "text-foreground"}`}>
+          {p.name}
+        </h3>
 
         {/* Description */}
         {p.description && (
