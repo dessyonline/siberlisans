@@ -59,16 +59,9 @@ export const createOrder = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
-    // Fire-and-forget Telegram notification
-    try {
-      const { notifyTelegram, orderCreatedMessage } = await import("@/lib/telegram.server");
-      await notifyTelegram(orderCreatedMessage({
-        reference: order.reference_code,
-        productName: product.name,
-        priceTry: Number(product.price_try),
-        userEmail: (claims as { email?: string } | null)?.email ?? null,
-      }));
-    } catch (e) { console.error("[notify] createOrder", (e as Error).message); }
+    // Telegram bildirimi burada gönderilmiyor — sadece dekont yüklendiğinde
+    // veya ödeme onaylandığında gönderiliyor (spam'ı önlemek için).
+
 
     return { orderId: order.id, referenceCode: order.reference_code };
   });
