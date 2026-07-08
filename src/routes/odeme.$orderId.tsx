@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
 import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode, finalizeFreeOrder } from "@/lib/orders.functions";
+import { payOrderWithWallet } from "@/lib/wallet.functions";
 import { Input } from "@/components/ui/input";
 
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
@@ -62,6 +63,8 @@ function Payment() {
   const [dragOver, setDragOver] = useState(false);
   const markPaidFn = useServerFn(markOrderPaid);
   const finalizeFreeFn = useServerFn(finalizeFreeOrder);
+  const payWithWalletFn = useServerFn(payOrderWithWallet);
+  const [payingWallet, setPayingWallet] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -93,6 +96,20 @@ function Payment() {
         .maybeSingle();
       return data;
     },
+  });
+
+  const { data: wallet } = useQuery({
+    queryKey: ["wallet", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("wallets")
+        .select("balance_try")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return data ?? { balance_try: 0 };
+    },
+    refetchInterval: 6000,
   });
 
   const currentStep: StepKey = useMemo(() => {
@@ -314,6 +331,24 @@ function Payment() {
                       </section>
                     ) : (
                       <>
+                        <WalletPayBlock
+                          balance={Number(wallet?.balance_try ?? 0)}
+                          amount={finalAmount}
+                          paying={payingWallet}
+                          onPay={async () => {
+                            setPayingWallet(true);
+                            try {
+                              await payWithWalletFn({ data: { orderId } });
+                              toast.success("Ödeme başarılı · ürün teslim edildi");
+                              qc.invalidateQueries({ queryKey: ["order", orderId] });
+                              qc.invalidateQueries({ queryKey: ["wallet", user?.id] });
+                            } catch (e) {
+                              toast.error((e as Error).message);
+                            } finally {
+                              setPayingWallet(false);
+                            }
+                          }}
+                        />
                         <TransferBlock
                           bank={bank}
                           amount={finalAmount}
@@ -1062,4 +1097,66 @@ function PromoBlock({
   );
 }
 
+/* ============================ WALLET PAY ============================ */
+function WalletPayBlock({
+  balance,
+  amount,
+  paying,
+  onPay,
+}: {
+  balance: number;
+  amount: number;
+  paying: boolean;
+  onPay: () => void;
+}) {
+  const enough = balance >= amount;
+  return (
+    <section className={`glass-card rounded-lg p-5 md:p-6 ${enough ? "border-primary/40 neon-glow" : ""}`}>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+            [ödeme yöntemi] · cüzdan
+          </div>
+          <h2 className="mt-1 font-mono text-lg neon-text flex items-center gap-2">
+            <Sparkles className="h-4 w-4" /> Bakiyemle Öde
+          </h2>
+        </div>
+        <div className="text-right">
+          <div className="text-[10px] font-mono text-muted-foreground">mevcut bakiye</div>
+          <div className={`font-mono text-lg font-bold ${enough ? "text-primary" : "text-muted-foreground"}`}>
+            {balance.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL
+          </div>
+        </div>
+      </div>
+
+      {enough ? (
+        <>
+          <div className="mt-3 flex items-center justify-between rounded-md border border-primary/30 bg-primary/5 px-4 py-2.5 font-mono">
+            <span className="text-xs text-muted-foreground">bu siparişten düşecek</span>
+            <span className="text-xl neon-text">{amount} TL</span>
+          </div>
+          <Button className="mt-3 w-full font-mono" disabled={paying} onClick={onPay}>
+            {paying ? "Ödeniyor…" : "Bakiyemle Öde ve Teslim Al"}
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+          <div className="mt-2 text-[11px] text-muted-foreground font-mono">
+            ödeme onaylıyorsa ürün anında teslim edilir · dekont gerekmez
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="mt-3 text-sm text-muted-foreground">
+            Bu sipariş için <b className="text-foreground">{amount} TL</b> bakiye gerekiyor. Havale ile aşağıdan devam edebilir veya cüzdanına yükleme yapabilirsin.
+          </div>
+          <Link
+            to="/cuzdan"
+            className="mt-3 inline-flex items-center gap-1 font-mono text-sm text-primary hover:underline"
+          >
+            cüzdana yükleme yap <ArrowRight className="h-3 w-3" />
+          </Link>
+        </>
+      )}
+    </section>
+  );
+}
 

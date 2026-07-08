@@ -129,12 +129,27 @@ export const rejectOrder = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
     if (!isAdmin) throw new Error("Yetkisiz.");
+
+    const { data: ord } = await supabase
+      .from("orders")
+      .select("paid_with, status")
+      .eq("id", data.orderId)
+      .single();
+    let refunded = false;
+    if (ord?.paid_with === "wallet" && ord.status !== "rejected") {
+      const { error: refErr } = await supabase.rpc("refund_order_to_wallet", {
+        _order_id: data.orderId,
+      });
+      if (refErr) throw new Error("İade başarısız: " + refErr.message);
+      refunded = true;
+    }
+
     const { error } = await supabase
       .from("orders")
       .update({ status: "rejected", admin_note: data.note ?? null })
       .eq("id", data.orderId);
     if (error) throw new Error(error.message);
-    return { ok: true };
+    return { ok: true, refunded };
   });
 
 const finalizeFreeInput = z.object({ orderId: z.string().uuid() });

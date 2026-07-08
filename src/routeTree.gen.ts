@@ -18,10 +18,12 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
 import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
+import { Route as BakiyeYukleTopupIdRouteImport } from './routes/bakiye-yukle.$topupId'
 import { Route as ApiValidateRouteImport } from './routes/api/validate'
 import { Route as ApiActivateRouteImport } from './routes/api/activate'
 import { Route as AktivasyonTokenRouteImport } from './routes/aktivasyon.$token'
 import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
+import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated/cuzdan'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
@@ -31,6 +33,7 @@ import { Route as AuthenticatedAdminLisanslarRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminKullanicilarRouteImport } from './routes/_authenticated/admin/kullanicilar'
 import { Route as AuthenticatedAdminKeylerRouteImport } from './routes/_authenticated/admin/keyler'
 import { Route as AuthenticatedAdminKampanyalarRouteImport } from './routes/_authenticated/admin/kampanyalar'
+import { Route as AuthenticatedAdminCuzdanRouteImport } from './routes/_authenticated/admin/cuzdan'
 import { Route as AuthenticatedAdminAyarlarRouteImport } from './routes/_authenticated/admin/ayarlar'
 import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
 
@@ -78,6 +81,11 @@ const OdemeOrderIdRoute = OdemeOrderIdRouteImport.update({
   path: '/odeme/$orderId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BakiyeYukleTopupIdRoute = BakiyeYukleTopupIdRouteImport.update({
+  id: '/bakiye-yukle/$topupId',
+  path: '/bakiye-yukle/$topupId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiValidateRoute = ApiValidateRouteImport.update({
   id: '/api/validate',
   path: '/api/validate',
@@ -96,6 +104,11 @@ const AktivasyonTokenRoute = AktivasyonTokenRouteImport.update({
 const AuthenticatedHesabimRoute = AuthenticatedHesabimRouteImport.update({
   id: '/hesabim',
   path: '/hesabim',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCuzdanRoute = AuthenticatedCuzdanRouteImport.update({
+  id: '/cuzdan',
+  path: '/cuzdan',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
@@ -150,6 +163,12 @@ const AuthenticatedAdminKampanyalarRoute =
     path: '/kampanyalar',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminCuzdanRoute =
+  AuthenticatedAdminCuzdanRouteImport.update({
+    id: '/cuzdan',
+    path: '/cuzdan',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminAyarlarRoute =
   AuthenticatedAdminAyarlarRouteImport.update({
     id: '/ayarlar',
@@ -171,13 +190,16 @@ export interface FileRoutesByFullPath {
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
   '/api/validate': typeof ApiValidateRoute
+  '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
+  '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
@@ -195,13 +217,16 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
+  '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
   '/api/validate': typeof ApiValidateRoute
+  '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
+  '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
@@ -222,13 +247,16 @@ export interface FileRoutesById {
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/_authenticated/cuzdan': typeof AuthenticatedCuzdanRoute
   '/_authenticated/hesabim': typeof AuthenticatedHesabimRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
   '/api/validate': typeof ApiValidateRoute
+  '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/_authenticated/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
+  '/_authenticated/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
   '/_authenticated/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/_authenticated/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/_authenticated/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
@@ -249,13 +277,16 @@ export interface FileRouteTypes {
     | '/sss'
     | '/urunler'
     | '/admin'
+    | '/cuzdan'
     | '/hesabim'
     | '/aktivasyon/$token'
     | '/api/activate'
     | '/api/validate'
+    | '/bakiye-yukle/$topupId'
     | '/odeme/$orderId'
     | '/urun/$slug'
     | '/admin/ayarlar'
+    | '/admin/cuzdan'
     | '/admin/kampanyalar'
     | '/admin/keyler'
     | '/admin/kullanicilar'
@@ -273,13 +304,16 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sss'
     | '/urunler'
+    | '/cuzdan'
     | '/hesabim'
     | '/aktivasyon/$token'
     | '/api/activate'
     | '/api/validate'
+    | '/bakiye-yukle/$topupId'
     | '/odeme/$orderId'
     | '/urun/$slug'
     | '/admin/ayarlar'
+    | '/admin/cuzdan'
     | '/admin/kampanyalar'
     | '/admin/keyler'
     | '/admin/kullanicilar'
@@ -299,13 +333,16 @@ export interface FileRouteTypes {
     | '/sss'
     | '/urunler'
     | '/_authenticated/admin'
+    | '/_authenticated/cuzdan'
     | '/_authenticated/hesabim'
     | '/aktivasyon/$token'
     | '/api/activate'
     | '/api/validate'
+    | '/bakiye-yukle/$topupId'
     | '/odeme/$orderId'
     | '/urun/$slug'
     | '/_authenticated/admin/ayarlar'
+    | '/_authenticated/admin/cuzdan'
     | '/_authenticated/admin/kampanyalar'
     | '/_authenticated/admin/keyler'
     | '/_authenticated/admin/kullanicilar'
@@ -328,6 +365,7 @@ export interface RootRouteChildren {
   AktivasyonTokenRoute: typeof AktivasyonTokenRoute
   ApiActivateRoute: typeof ApiActivateRoute
   ApiValidateRoute: typeof ApiValidateRoute
+  BakiyeYukleTopupIdRoute: typeof BakiyeYukleTopupIdRoute
   OdemeOrderIdRoute: typeof OdemeOrderIdRoute
   UrunSlugRoute: typeof UrunSlugRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
@@ -398,6 +436,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OdemeOrderIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bakiye-yukle/$topupId': {
+      id: '/bakiye-yukle/$topupId'
+      path: '/bakiye-yukle/$topupId'
+      fullPath: '/bakiye-yukle/$topupId'
+      preLoaderRoute: typeof BakiyeYukleTopupIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/validate': {
       id: '/api/validate'
       path: '/api/validate'
@@ -424,6 +469,13 @@ declare module '@tanstack/react-router' {
       path: '/hesabim'
       fullPath: '/hesabim'
       preLoaderRoute: typeof AuthenticatedHesabimRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cuzdan': {
+      id: '/_authenticated/cuzdan'
+      path: '/cuzdan'
+      fullPath: '/cuzdan'
+      preLoaderRoute: typeof AuthenticatedCuzdanRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin': {
@@ -489,6 +541,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminKampanyalarRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/cuzdan': {
+      id: '/_authenticated/admin/cuzdan'
+      path: '/cuzdan'
+      fullPath: '/admin/cuzdan'
+      preLoaderRoute: typeof AuthenticatedAdminCuzdanRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/ayarlar': {
       id: '/_authenticated/admin/ayarlar'
       path: '/ayarlar'
@@ -508,6 +567,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAyarlarRoute: typeof AuthenticatedAdminAyarlarRoute
+  AuthenticatedAdminCuzdanRoute: typeof AuthenticatedAdminCuzdanRoute
   AuthenticatedAdminKampanyalarRoute: typeof AuthenticatedAdminKampanyalarRoute
   AuthenticatedAdminKeylerRoute: typeof AuthenticatedAdminKeylerRoute
   AuthenticatedAdminKullanicilarRoute: typeof AuthenticatedAdminKullanicilarRoute
@@ -521,6 +581,7 @@ interface AuthenticatedAdminRouteRouteChildren {
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
     AuthenticatedAdminAyarlarRoute: AuthenticatedAdminAyarlarRoute,
+    AuthenticatedAdminCuzdanRoute: AuthenticatedAdminCuzdanRoute,
     AuthenticatedAdminKampanyalarRoute: AuthenticatedAdminKampanyalarRoute,
     AuthenticatedAdminKeylerRoute: AuthenticatedAdminKeylerRoute,
     AuthenticatedAdminKullanicilarRoute: AuthenticatedAdminKullanicilarRoute,
@@ -538,11 +599,13 @@ const AuthenticatedAdminRouteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
+  AuthenticatedCuzdanRoute: typeof AuthenticatedCuzdanRoute
   AuthenticatedHesabimRoute: typeof AuthenticatedHesabimRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
+  AuthenticatedCuzdanRoute: AuthenticatedCuzdanRoute,
   AuthenticatedHesabimRoute: AuthenticatedHesabimRoute,
 }
 
@@ -560,6 +623,7 @@ const rootRouteChildren: RootRouteChildren = {
   AktivasyonTokenRoute: AktivasyonTokenRoute,
   ApiActivateRoute: ApiActivateRoute,
   ApiValidateRoute: ApiValidateRoute,
+  BakiyeYukleTopupIdRoute: BakiyeYukleTopupIdRoute,
   OdemeOrderIdRoute: OdemeOrderIdRoute,
   UrunSlugRoute: UrunSlugRoute,
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,
