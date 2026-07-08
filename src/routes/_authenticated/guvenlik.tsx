@@ -173,7 +173,22 @@ function SecurityPage() {
           </div>
         )}
 
-        {enabled && mode === "idle" && (
+        {mode === "step-up" && enabled && (
+          <div className="border-t border-border/40 pt-4">
+            <MfaChallenge
+              factorId={factors[0]?.id}
+              title="oturum doğrulama"
+              onCancel={() => setMode("idle")}
+              onSuccess={async () => {
+                setMode("idle");
+                await refresh();
+                toast.success("[✓] doğrulandı — admin paneline yönlendiriliyorsun");
+                if (isAdmin) navigate({ to: "/admin" });
+              }}
+            />
+          </div>
+        )}
+
           <div className="border-t border-border/40 pt-3 space-y-2">
             {factors.map((f) => (
               <div
