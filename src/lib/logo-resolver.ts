@@ -1,6 +1,6 @@
-// Ürün adından marka domainini tahmin edip Clearbit logo URL'i üretir.
-// Clearbit Logo API key gerektirmez ve transparan PNG döner.
-// Bulamazsa Google favicon (sz=256) fallback URL üretir.
+// Ürün adından marka domainini tahmin edip güvenilir logo URL'leri üretir.
+// Clearbit logo servisi artık tutarsız/DNS hatalı dönebildiği için görselde
+// Google favicon endpoint'i ana kaynak olarak kullanılır.
 
 const BRAND_MAP: Record<string, string> = {
   netflix: "netflix.com",
@@ -109,6 +109,26 @@ const BRAND_MAP: Record<string, string> = {
   turkcell: "turkcell.com.tr",
   vodafone: "vodafone.com.tr",
   ttnet: "turktelekom.com.tr",
+  crocoblock: "crocoblock.com",
+  seoptimer: "seoptimer.com",
+  ubbersuggest: "ubersuggest.com",
+  ubersuggest: "ubersuggest.com",
+  seobility: "seobility.net",
+  betterdocs: "betterdocs.co",
+  wpvivid: "wpvivid.com",
+  "wp rocket": "wp-rocket.me",
+  wprocket: "wp-rocket.me",
+  imagify: "imagify.io",
+  perfmatters: "perfmatters.io",
+  elementor: "elementor.com",
+  jetformbuilder: "jetformbuilder.com",
+  embedpress: "embedpress.com",
+  "essential blocks": "essential-blocks.com",
+  "essential addons": "essential-addons.com",
+  notificationx: "notificationx.com",
+  "screaming frog": "screamingfrog.co.uk",
+  screaming: "screamingfrog.co.uk",
+  semrush: "semrush.com",
 };
 
 // Ürün adından anlamsız kelimeleri temizler.
@@ -124,6 +144,8 @@ const STOPWORDS = new Set([
 function normalize(s: string): string {
   return s
     .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/ı/g, "i").replace(/ç/g, "c").replace(/ğ/g, "g")
     .replace(/ö/g, "o").replace(/ş/g, "s").replace(/ü/g, "u")
     .replace(/[^a-z0-9+\s]/g, " ")
@@ -152,16 +174,21 @@ export function guessBrandDomain(name: string): string | null {
   return `${first}.com`;
 }
 
-/** Marka logosu için tercih edilen URL (Clearbit). */
+/** Eski/bozuk Clearbit URL'lerini ekranda doğrudan kullanma. */
+export function isLegacyClearbitLogo(url?: string | null): boolean {
+  return !!url && /\/\/logo\.clearbit\.com\//i.test(url);
+}
+
+/** Marka logosu için tercih edilen URL (Google favicon, 256px). */
 export function resolveLogoUrl(name: string): string | null {
   const domain = guessBrandDomain(name);
   if (!domain) return null;
-  return `https://logo.clearbit.com/${domain}`;
+  return `https://www.google.com/s2/favicons?domain=${domain}&sz=256`;
 }
 
-/** Clearbit yüklenmezse fallback (Google favicon 256px). */
+/** Google yüklenmezse ikinci fallback. */
 export function fallbackLogoUrl(name: string): string | null {
   const domain = guessBrandDomain(name);
   if (!domain) return null;
-  return `https://www.google.com/s2/favicons?domain=${domain}&sz=256`;
+  return `https://icons.duckduckgo.com/ip3/${domain}.ico`;
 }

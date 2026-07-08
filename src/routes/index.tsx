@@ -32,7 +32,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { ProductCardSkeleton } from "@/components/Skeleton";
-import { fallbackLogoUrl } from "@/lib/logo-resolver";
+import { ProductLogo } from "@/components/ProductLogo";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -789,28 +789,12 @@ function ProductCard({
               ✦ YENİ
             </span>
           )}
-          {p.image_url ? (
-            <div className="h-10 w-10 shrink-0 rounded-md border border-border/50 bg-black/40 overflow-hidden flex items-center justify-center">
-              <img
-                src={p.image_url}
-                alt={p.name}
-                loading="lazy"
-                className="h-full w-full object-contain p-1"
-                onError={(e) => {
-                  const img = e.currentTarget;
-                  const fb = fallbackLogoUrl(p.name);
-                  if (fb && img.dataset.fb !== "1") {
-                    img.dataset.fb = "1";
-                    img.src = fb;
-                  } else {
-                    img.style.display = "none";
-                  }
-                }}
-              />
-            </div>
-          ) : (
-            <KeyRound className={`h-5 w-5 shrink-0 ${epic ? "text-[oklch(0.85_0.15_75)]" : "text-primary opacity-60"}`} />
-          )}
+          <ProductLogo
+            name={p.name}
+            src={p.image_url}
+            className="h-10 w-10 rounded-md border border-border/50 bg-background/70"
+            fallback={<KeyRound className={`h-5 w-5 ${epic ? "text-[oklch(0.85_0.15_75)]" : "text-primary opacity-60"}`} />}
+          />
         </div>
       </div>
 

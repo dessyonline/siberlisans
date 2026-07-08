@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ProductLogo } from "@/components/ProductLogo";
 import {
   Search, X, Sparkles, TrendingUp, Zap, ShieldCheck, ArrowRight, Package, Star, Crown,
 } from "lucide-react";
@@ -428,9 +429,12 @@ function ProductsPage() {
               <section key={cat}>
                 <div className="mb-5 flex items-center gap-4 border-b border-border/60 pb-3">
                   {cover && (
-                    <div className="h-16 w-28 shrink-0 overflow-hidden rounded-md border border-border/60 corner-cut">
-                      <img src={cover} alt={cat} loading="lazy" className="h-full w-full object-cover" />
-                    </div>
+                    <ProductLogo
+                      name={cat}
+                      src={cover}
+                      className="h-16 w-28 rounded-md border border-border/60 bg-background/60 corner-cut"
+                      imgClassName="h-full w-full object-contain p-2"
+                    />
                   )}
                   <div className="font-mono">
                     <div className="text-[10px] text-muted-foreground">./{cat.toLowerCase().replace(/\s+/g, "-")}</div>
@@ -490,6 +494,11 @@ function ProductCard({ product: p }: { product: Row }) {
                 <Sparkles className="h-3 w-3 shrink-0" /> yeni
               </span>
             )}
+            <ProductLogo
+              name={p.name}
+              src={p.image_url}
+              className="h-10 w-10 rounded-md border border-border/50 bg-background/70"
+            />
           </div>
         </div>
 
@@ -542,9 +551,12 @@ function HotCard({ product: p }: { product: Row }) {
       className="group relative overflow-hidden rounded-xl border border-warn/30 bg-gradient-to-br from-warn/10 to-background/80 p-4 transition-all hover:border-warn/60 hover:shadow-[0_0_40px_oklch(0.75_0.18_80/0.15)]"
     >
       <div className="flex items-start gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg border border-warn/40 bg-warn/15">
-          <TrendingUp className="h-6 w-6 text-warn" />
-        </div>
+        <ProductLogo
+          name={p.name}
+          src={p.image_url}
+          className="h-12 w-12 rounded-lg border border-warn/40 bg-warn/15"
+          fallback={<TrendingUp className="h-6 w-6 text-warn" />}
+        />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <CyberTitle name={p.name} size="sm" color="warn" />
