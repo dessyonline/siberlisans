@@ -1,0 +1,1 @@
+CREATE POLICY "notifications own delete" ON public.notifications FOR DELETE TO authenticated USING (auth.uid() = user_id);

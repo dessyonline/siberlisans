@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { Bell, Check } from "lucide-react";
+import { Bell, Check, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -67,6 +67,22 @@ export function NotificationBell() {
     setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)));
   };
 
+  const clearAll = async () => {
+    if (!items.length) return;
+    const ids = items.map((n) => n.id);
+    setItems([]);
+    // biome-ignore lint/suspicious/noExplicitAny: new table
+    await supabase.from("notifications" as any).delete().in("id", ids);
+  };
+
+  const deleteOne = async (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setItems((prev) => prev.filter((n) => n.id !== id));
+    // biome-ignore lint/suspicious/noExplicitAny: new table
+    await supabase.from("notifications" as any).delete().eq("id", id);
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -83,16 +99,30 @@ export function NotificationBell() {
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0 max-h-[70vh] overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between border-b border-border/60 px-3 py-2">
-          <div className="font-mono text-xs text-muted-foreground">
+        <div className="flex items-center justify-between border-b border-border/60 px-3 py-2 gap-2">
+          <div className="font-mono text-xs text-muted-foreground truncate">
             $ ./bildirimler ({unread} okunmamış)
           </div>
-          {unread > 0 && (
-            <Button size="sm" variant="ghost" className="h-6 text-[10px] font-mono" onClick={markAllRead}>
-              <Check className="h-3 w-3 mr-1" /> tümü okundu
-            </Button>
-          )}
+          <div className="flex items-center gap-1 shrink-0">
+            {unread > 0 && (
+              <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] font-mono" onClick={markAllRead}>
+                <Check className="h-3 w-3 mr-1" /> okundu
+              </Button>
+            )}
+            {items.length > 0 && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 px-2 text-[10px] font-mono text-destructive hover:text-destructive"
+                onClick={clearAll}
+                title="Tüm bildirimleri sil"
+              >
+                <Trash2 className="h-3 w-3 mr-1" /> temizle
+              </Button>
+            )}
+          </div>
         </div>
+
         <div className="overflow-y-auto flex-1">
           {items.length === 0 && (
             <div className="py-10 text-center text-xs font-mono text-muted-foreground">
@@ -102,7 +132,7 @@ export function NotificationBell() {
           {items.map((n) => {
             const inner = (
               <div
-                className={`px-3 py-2.5 border-b border-border/40 hover:bg-primary/5 transition ${
+                className={`group px-3 py-2.5 border-b border-border/40 hover:bg-primary/5 transition ${
                   n.read_at ? "opacity-60" : ""
                 }`}
               >
@@ -124,9 +154,18 @@ export function NotificationBell() {
                       })}
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    aria-label="Bildirimi sil"
+                    onClick={(e) => deleteOne(n.id, e)}
+                    className="shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition h-6 w-6 inline-flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               </div>
             );
+
             return n.link ? (
               <Link
                 key={n.id}
