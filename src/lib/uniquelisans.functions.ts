@@ -30,8 +30,12 @@ async function ul(path: string, params: Record<string, string | number> = {}) {
   return body as Record<string, unknown>;
 }
 
-async function assertAdmin(supabase: { rpc: (fn: never, args: never) => Promise<{ data: unknown }> }, userId: string) {
-  const { data } = await supabase.rpc("has_role" as never, { _user_id: userId, _role: "admin" } as never);
+type SB = { rpc: (...args: never[]) => { data: unknown } | Promise<{ data: unknown }> };
+async function assertAdmin(supabase: unknown, userId: string) {
+  const { data } = await (supabase as SB).rpc(
+    "has_role" as never,
+    { _user_id: userId, _role: "admin" } as never,
+  );
   if (!data) throw new Error("Yetkisiz.");
 }
 
