@@ -18,10 +18,32 @@ export const createOrder = createServerFn({ method: "POST" })
     const { supabase, userId, claims } = context;
     const { data: product, error: pErr } = await supabase
       .from("products")
-      .select("id, name, price_try, active")
+      .select("id, name, price_try, active, manual_fulfillment, unlimited_stock")
       .eq("id", data.productId)
       .single();
     if (pErr || !product || !product.active) throw new Error("Ürün bulunamadı.");
+
+    // Stok ön-kontrolü: manuel değil ve sınırsız değilse, havuzda kullanılabilir key var mı?
+    if (!product.manual_fulfillment && !product.unlimited_stock) {
+      const { count } = await supabase
+        .from("license_keys")
+        .select("id", { count: "exact", head: true })
+        .eq("product_id", product.id)
+        .eq("status", "available");
+      if (!count || count === 0) {
+        // Admin'e "stok tükendi, alıcı bekliyor" uyarısı gönder (fire-and-forget)
+        try {
+          const { notifyTelegram, outOfStockAlertMessage } = await import("@/lib/telegram.server");
+          await notifyTelegram(outOfStockAlertMessage({
+            productName: product.name,
+            userEmail: (claims as { email?: string } | null)?.email ?? null,
+          }));
+        } catch (e) { console.error("[notify] outOfStock", (e as Error).message); }
+        throw new Error(
+          `"${product.name}" şu an stokta yok. Yöneticiye bildirim gönderildi — kısa süre içinde yeniden stoklanacak. Havale ile ön sipariş için destekle iletişime geçebilirsin.`
+        );
+      }
+    }
 
     const referenceCode = genRef();
     const { data: order, error } = await supabase
@@ -50,6 +72,7 @@ export const createOrder = createServerFn({ method: "POST" })
 
     return { orderId: order.id, referenceCode: order.reference_code };
   });
+
 
 const markPaidInput = z.object({ orderId: z.string().uuid(), receiptPath: z.string().min(1) });
 
