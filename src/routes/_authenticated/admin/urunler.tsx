@@ -507,6 +507,18 @@ function ProductsAdmin() {
                     </p>
                   </div>
                 </div>
+                <div className="mt-3">
+                  <Label className="font-mono text-xs">shopier_url (bu ürünün Shopier ödeme sayfası)</Label>
+                  <Input
+                    value={editing.shopier_url ?? ""}
+                    onChange={(e) => setEditing((p) => ({ ...p!, shopier_url: e.target.value }))}
+                    className="font-mono text-xs"
+                    placeholder="https://www.shopier.com/…"
+                  />
+                  <p className="mt-1 font-mono text-[10px] text-muted-foreground">
+                    Doluysa ödeme sayfasında "Shopier ile Öde" butonu görünür. Ödeme tamamlanınca webhook siparişi otomatik onaylar.
+                  </p>
+                </div>
               </Section>
 
 
