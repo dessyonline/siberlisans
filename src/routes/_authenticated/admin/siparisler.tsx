@@ -108,6 +108,31 @@ function OrdersAdmin() {
     } catch (e) { toast.error((e as Error).message); }
   };
 
+  const handleSyncOne = async (id: string) => {
+    setSyncing(id);
+    try {
+      const res = await syncOneFn({ data: { orderId: id } });
+      if (res.result === "delivered") toast.success(`${res.ref} teslim edildi`);
+      else if (res.result === "still_pending") toast.info(`${res.ref} hâlâ pending`);
+      else if (res.result === "error") toast.error(`${res.ref}: ${res.message}`);
+      else toast.message(`${res.ref}: ${res.reason}`);
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setSyncing(null); }
+  };
+  const handleSyncAll = async () => {
+    setSyncingAll(true);
+    try {
+      const res = await syncAllFn({});
+      const delivered = res.outcomes.filter((o) => o.result === "delivered").length;
+      const pending = res.outcomes.filter((o) => o.result === "still_pending").length;
+      const errors = res.outcomes.filter((o) => o.result === "error").length;
+      toast.success(`Senkron: ${res.scanned} tarandı · ${delivered} teslim · ${pending} pending · ${errors} hata`);
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setSyncingAll(false); }
+  };
+
   const copyRef = (ref: string) => {
     navigator.clipboard.writeText(ref);
     toast.success(`${ref} kopyalandı`);
