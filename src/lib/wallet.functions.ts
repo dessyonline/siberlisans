@@ -136,6 +136,10 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
       return { ok: false as const, error: friendly, licenseKey: null, activationToken: null, balanceAfter: 0 };
     }
     const row = Array.isArray(rows) ? rows[0] : rows;
+    try {
+      const { notifyLowStockForOrder } = await import("@/lib/orders.functions");
+      await notifyLowStockForOrder(supabase, data.orderId);
+    } catch (e) { console.error("[notify] lowStock wallet", (e as Error).message); }
     return {
       ok: true as const,
       error: null,

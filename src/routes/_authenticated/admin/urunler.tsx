@@ -38,6 +38,7 @@ type Product = {
   category: string | null;
   manual_fulfillment: boolean;
   stock_hint: number | null;
+  low_stock_threshold: number;
   featured: boolean;
   unlimited_stock: boolean;
   sort_order: number;
@@ -134,6 +135,7 @@ function ProductsAdmin() {
           category: editing.category ?? null,
           manual_fulfillment: editing.manual_fulfillment ?? false,
           stock_hint: editing.stock_hint == null ? null : Number(editing.stock_hint),
+          low_stock_threshold: Number(editing.low_stock_threshold ?? 5),
           featured: editing.featured ?? false,
           unlimited_stock: editing.unlimited_stock ?? false,
           sort_order: Number(editing.sort_order ?? 0),
@@ -172,6 +174,7 @@ function ProductsAdmin() {
           category: p.category ?? null,
           manual_fulfillment: p.manual_fulfillment,
           stock_hint: p.stock_hint,
+          low_stock_threshold: p.low_stock_threshold ?? 5,
           featured: patch.featured ?? p.featured,
           unlimited_stock: p.unlimited_stock,
           sort_order: Number(p.sort_order ?? 0),
@@ -198,6 +201,7 @@ function ProductsAdmin() {
     active: true, duration: "monthly", delivery_type: "key",
     price_try: 0, manual_fulfillment: false, featured: false,
     unlimited_stock: false, sort_order: 0, tier: "standard",
+    low_stock_threshold: 5,
   });
 
   return (
@@ -490,11 +494,17 @@ function ProductsAdmin() {
 
               {/* SECTION: STOCK & VISIBILITY */}
               <Section title="stok & görünürlük">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Field
                     label="stok ipucu (havuz boşsa/manuelde gösterilir)"
                     value={editing.stock_hint == null ? "" : String(editing.stock_hint)}
                     onChange={(v) => setEditing((p) => ({ ...p!, stock_hint: v === "" ? null : Number(v) }))}
+                    type="number"
+                  />
+                  <Field
+                    label="düşük stok eşiği (uyarı için)"
+                    value={String(editing.low_stock_threshold ?? 5)}
+                    onChange={(v) => setEditing((p) => ({ ...p!, low_stock_threshold: v === "" ? 0 : Number(v) }))}
                     type="number"
                   />
                   <Field

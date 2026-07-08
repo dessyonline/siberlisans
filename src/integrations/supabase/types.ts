@@ -172,6 +172,32 @@ export type Database = {
           },
         ]
       }
+      low_stock_alerts: {
+        Row: {
+          last_available: number
+          last_sent_at: string
+          product_id: string
+        }
+        Insert: {
+          last_available?: number
+          last_sent_at?: string
+          product_id: string
+        }
+        Update: {
+          last_available?: number
+          last_sent_at?: string
+          product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "low_stock_alerts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: true
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_discounts: {
         Row: {
           code_snapshot: string
@@ -363,6 +389,7 @@ export type Database = {
           featured: boolean
           id: string
           image_url: string | null
+          low_stock_threshold: number
           manual_fulfillment: boolean
           name: string
           price_try: number
@@ -384,6 +411,7 @@ export type Database = {
           featured?: boolean
           id?: string
           image_url?: string | null
+          low_stock_threshold?: number
           manual_fulfillment?: boolean
           name: string
           price_try: number
@@ -405,6 +433,7 @@ export type Database = {
           featured?: boolean
           id?: string
           image_url?: string | null
+          low_stock_threshold?: number
           manual_fulfillment?: boolean
           name?: string
           price_try?: number
@@ -650,6 +679,16 @@ export type Database = {
         Returns: number
       }
       admin_force_delete_license: { Args: { _id: string }; Returns: boolean }
+      admin_low_stock_products: {
+        Args: never
+        Returns: {
+          available: number
+          name: string
+          product_id: string
+          slug: string
+          threshold: number
+        }[]
+      }
       admin_set_license: {
         Args: {
           _action: string
@@ -698,6 +737,15 @@ export type Database = {
         }[]
       }
       approve_topup: { Args: { _topup_id: string }; Returns: number }
+      check_low_stock_after_assign: {
+        Args: { _product_id: string }
+        Returns: {
+          available: number
+          product_name: string
+          should_alert: boolean
+          threshold: number
+        }[]
+      }
       claim_license_by_token: {
         Args: { _token: string }
         Returns: {

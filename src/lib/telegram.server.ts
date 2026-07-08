@@ -171,6 +171,23 @@ export function outOfStockAlertMessage(o: {
   ].filter(Boolean).join("\n");
 }
 
+export function lowStockAlertMessage(o: {
+  productName: string;
+  available: number;
+  threshold: number;
+}): string {
+  const emoji = o.available === 0 ? "🚨" : "⚠️";
+  const label = o.available === 0 ? "STOK TÜKENDİ" : "DÜŞÜK STOK UYARISI";
+  return [
+    `${emoji} <b>${label}</b>`,
+    `📦 Ürün: <b>${esc(o.productName)}</b>`,
+    `🔑 Kalan anahtar: <b>${o.available}</b> (eşik: ${o.threshold})`,
+    o.available === 0
+      ? "🛑 Havuzda anahtar kalmadı — yeni satışlar durabilir."
+      : "🔔 Havuz azalıyor, yeni key eklemeyi unutmayın.",
+  ].join("\n");
+}
+
 /* ============ Channel post builders ============ */
 
 export function productAnnouncement(p: {
