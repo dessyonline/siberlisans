@@ -134,8 +134,8 @@
   color: var(--color-cyan);
 }
 @utility glass-card {
-  background: oklch(0.17 0.015 240 / 0.7);
-  backdrop-filter: blur(16px) saturate(140%);
+  background: oklch(0.17 0.015 240 / 0.78);
+  backdrop-filter: blur(8px);
   border: 1px solid oklch(0.28 0.02 220 / 0.8);
 }
 @utility glass-card-hover {
@@ -145,6 +145,17 @@
     border-color: oklch(0.82 0.20 145 / 0.5);
     box-shadow: 0 0 0 1px oklch(0.82 0.20 145 / 0.3),
                 0 20px 50px oklch(0.82 0.20 145 / 0.15);
+  }
+}
+@utility cv-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 460px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
   }
 }
 @utility terminal-caret {

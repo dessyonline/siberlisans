@@ -513,11 +513,7 @@ function ProductCard({ product: p }: { product: Row }) {
 
 
   return (
-    <div className={`group relative rounded-xl overflow-hidden flex flex-col glass-card-hover ${epic ? "epic-card border border-transparent" : "glass-card border border-border/60"}`}>
-      <div className="absolute inset-0 -z-10 opacity-0 transition-opacity duration-500 group-hover:opacity-100 pointer-events-none">
-        <div className="absolute -right-20 -top-20 h-40 w-40 rounded-full bg-primary/15 blur-[60px]" />
-        <div className="absolute -left-20 -bottom-20 h-40 w-40 rounded-full bg-cyan/10 blur-[60px]" />
-      </div>
+    <div className={`group relative rounded-xl overflow-hidden flex flex-col cv-auto glass-card-hover ${epic ? "epic-card border border-transparent" : "glass-card border border-border/60"}`}>
       {epic && <div className="pointer-events-none absolute inset-0 epic-shimmer" aria-hidden />}
 
       {(() => {
@@ -534,7 +530,7 @@ function ProductCard({ product: p }: { product: Row }) {
           >
             {/* cyber grid backdrop */}
             <div className="pointer-events-none absolute inset-0 cyber-grid opacity-40" aria-hidden />
-            <div className="pointer-events-none absolute inset-0 scan-line opacity-30" aria-hidden />
+
 
             {p.image_url ? (
               <img
