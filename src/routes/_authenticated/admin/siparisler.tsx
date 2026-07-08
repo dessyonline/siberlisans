@@ -51,7 +51,7 @@ function OrdersAdmin() {
     queryFn: async () => {
       let q = supabase
         .from("orders")
-        .select("id, status, price_try, reference_code, receipt_path, admin_note, user_note, created_at, product:products(name, manual_fulfillment), user_id")
+        .select("id, status, price_try, reference_code, receipt_path, admin_note, user_note, checkout_fields, external_order_id, external_delivery_data, external_status, created_at, product:products(name, manual_fulfillment, source), user_id")
         .order("created_at", { ascending: false });
       if (filter !== "all") q = q.eq("status", filter);
       const { data, error } = await q;
