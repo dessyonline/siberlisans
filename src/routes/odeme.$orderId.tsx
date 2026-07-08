@@ -181,8 +181,6 @@ function Payment() {
   const deliveredKeys = (order.keys ?? [])
     .map((k) => k.license_key)
     .filter((k): k is NonNullable<typeof k> => !!k?.key_value);
-  const firstKey = deliveredKeys[0];
-  void firstKey;
   // Effective delivery flags: cart order → derive from items
   const effectiveProduct = order.product ?? (isCartOrder ? orderItems[0].product : null);
   const deliveryType = (effectiveProduct?.delivery_type ?? "key") as DeliveryType;
