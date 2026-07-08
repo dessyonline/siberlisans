@@ -325,12 +325,35 @@ export const upsertPromoCode = createServerFn({ method: "POST" })
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
     if (!isAdmin) throw new Error("Yetkisiz.");
     const payload = { ...data, code: data.code.toUpperCase().trim() };
+    const isNew = !data.id;
     if (data.id) {
       const { error } = await supabase.from("promo_codes").update(payload).eq("id", data.id);
       if (error) throw new Error(error.message);
     } else {
       const { error } = await supabase.from("promo_codes").insert(payload);
       if (error) throw new Error(error.message);
+    }
+    if (isNew && data.active) {
+      try {
+        let productName: string | null = null;
+        let productSlug: string | null = null;
+        if (data.product_id) {
+          const { data: p } = await supabase.from("products").select("name,slug").eq("id", data.product_id).single();
+          productName = p?.name ?? null;
+          productSlug = p?.slug ?? null;
+        }
+        const tg = await import("@/lib/telegram.server");
+        await tg.postToChannel(tg.promoAnnouncement({
+          code: payload.code,
+          discountType: data.discount_type,
+          discountValue: Number(data.discount_value),
+          productName,
+          productSlug,
+          minAmount: data.min_amount ?? 0,
+          expiresAt: data.expires_at ?? null,
+          maxUses: data.max_uses ?? null,
+        }));
+      } catch (e) { console.error("[notify] newPromo", (e as Error).message); }
     }
     return { ok: true };
   });
