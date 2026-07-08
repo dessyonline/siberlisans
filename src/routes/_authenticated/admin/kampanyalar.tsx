@@ -211,6 +211,56 @@ function CampaignsAdmin() {
         </Dialog>
       </div>
 
+      <div className="glass-card rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Radio className="h-4 w-4 text-primary" />
+            <span className="font-mono text-sm">telegram bağlantı testi</span>
+          </div>
+          <Button size="sm" variant="outline" onClick={runTest} disabled={testing}>
+            {testing ? "test ediliyor…" : "test et"}
+          </Button>
+        </div>
+        {testResult && (
+          <div className="font-mono text-xs space-y-1 border-t border-border pt-3">
+            {"botUsername" in testResult && testResult.botUsername && (
+              <div>bot: <span className="text-primary">@{testResult.botUsername}</span></div>
+            )}
+            <div>secret (TELEGRAM_CHANNEL_ID): <span className="text-foreground">{testResult.channelIdConfigured ?? "—"}</span></div>
+            {testResult.ok ? (
+              <>
+                <div>kanal başlığı: <span className="text-foreground">{testResult.chatTitle}</span></div>
+                <div>kanal username: <span className="text-foreground">{testResult.chatUsername ?? "—"}</span></div>
+                <div>kanal tipi: <span className="text-foreground">{testResult.chatType}</span></div>
+                <div>
+                  bot statüsü:{" "}
+                  <span className={testResult.memberStatus === "administrator" || testResult.memberStatus === "creator" ? "text-primary" : "text-red-400"}>
+                    {testResult.memberStatus}
+                  </span>
+                </div>
+                {testResult.memberError && <div className="text-red-400">member hata: {testResult.memberError}</div>}
+                {(testResult.memberStatus === "administrator" || testResult.memberStatus === "creator") ? (
+                  <div className="text-primary">✓ Bot bu kanalda admin. Gönderim çalışmalı.</div>
+                ) : (
+                  <div className="text-red-400">
+                    ✗ Bot bu kanalda admin değil. @{testResult.botUsername} kullanıcısını <b>{testResult.chatUsername ?? testResult.chatTitle}</b> kanalına admin olarak ekle (Post Messages yetkisiyle).
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="text-red-400">✗ [{testResult.step}] {testResult.error}</div>
+                {"hint" in testResult && testResult.hint && (
+                  <div className="text-yellow-400">ipucu: {testResult.hint}</div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+
+
       <div className="space-y-3">
         {(campaigns ?? []).length === 0 && (
           <div className="glass-card rounded-xl p-12 text-center text-muted-foreground">
