@@ -298,11 +298,16 @@ function ProductDetail() {
               </div>
               <h1 className="mt-2 font-mono text-2xl md:text-[28px] font-semibold tracking-tight leading-tight flex items-baseline gap-2">
                 <span className="text-muted-foreground/60 select-none">&gt;</span>
-                <span className="neon-sweep">{product.name}</span>
+                <span className={isEpic ? "epic-text-glow text-[oklch(0.92_0.14_85)]" : "neon-sweep"}>{product.name}</span>
                 <span aria-hidden className="caret-blink inline-block w-[2px] h-[0.9em] translate-y-[0.05em] bg-primary shadow-[0_0_10px_oklch(0.82_0.20_145/0.9)]" />
               </h1>
 
               <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-[11px]">
+                {isEpic && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[oklch(0.78_0.16_75/0.5)] bg-[oklch(0.14_0.03_75/0.6)] px-2.5 py-1 text-[oklch(0.92_0.14_85)] epic-text-glow uppercase tracking-[0.24em] text-[10px]">
+                    <Crown className="h-3 w-3" /> destansı
+                  </span>
+                )}
                 <StockBadge stock={stock} manual={manual} unlimited={unlimited} />
                 {product.category && (
                   <span className="rounded-full border border-border/60 bg-background/60 backdrop-blur px-2.5 py-1 text-muted-foreground">
