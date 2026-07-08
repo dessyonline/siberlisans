@@ -119,6 +119,8 @@ function ProductDetail() {
     },
   });
 
+  const flashSale = useActiveFlashSale(product?.id);
+
   const handleBuy = async () => {
     if (!user) {
       toast("Devam etmek için giriş yap");
@@ -359,6 +361,8 @@ function ProductDetail() {
                   <span className="rounded-full border border-border/60 bg-background/60 backdrop-blur px-2.5 py-1 text-muted-foreground">
                     <span className="text-primary/60">#</span> {product.category}
                   </span>
+                )}
+                <FlashSaleBadge sale={flashSale} />
                 )}
                 <span className="rounded-full border border-border/60 bg-background/60 backdrop-blur px-2.5 py-1 text-muted-foreground">
                   <Cpu className="mr-1 inline h-3 w-3 text-primary" />
