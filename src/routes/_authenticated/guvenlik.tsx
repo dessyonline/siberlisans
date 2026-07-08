@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ShieldCheck, ShieldAlert, Trash2, ArrowLeft, Terminal } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Trash2, ArrowLeft, Terminal, MonitorSmartphone } from "lucide-react";
 import { MfaEnroll } from "@/components/security/MfaEnroll";
 import { MfaChallenge } from "@/components/security/MfaChallenge";
+import { trustedDeviceExpiry, untrustDevice, TRUSTED_DEVICE_TTL_DAYS } from "@/lib/trusted-device";
 
 export const Route = createFileRoute("/_authenticated/guvenlik")({
   component: SecurityPage,
