@@ -7,8 +7,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { createOrder } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Info, ShieldCheck, Zap, CheckCircle2, X, KeyRound, Lock, ArrowLeft, Terminal, Cpu, Wifi, Crown, Sparkles, Landmark, Package, RefreshCw, HelpCircle, Users, Clock } from "lucide-react";
+import { Info, ShieldCheck, Zap, CheckCircle2, X, KeyRound, Lock, ArrowLeft, Terminal, Cpu, Wifi, Crown, Sparkles, Landmark, Package, RefreshCw, HelpCircle, Users, Clock, ShoppingCart } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useCart } from "@/lib/cart-store";
 
 const productMetaQuery = (slug: string) => ({
   queryKey: ["product-meta", slug],
@@ -84,6 +85,8 @@ function ProductDetail() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const createOrderFn = useServerFn(createOrder);
+  const addToCart = useCart((s) => s.addItem);
+
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", slug],
@@ -130,6 +133,19 @@ function ProductDetail() {
       setLoading(false);
     }
   };
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    addToCart({
+      productId: product.id,
+      slug: product.slug,
+      name: product.name,
+      priceTry: Number(product.price_try),
+      imageUrl: product.image_url ?? null,
+    });
+    toast.success("Sepete eklendi");
+  };
+
 
   if (isLoading)
     return (
