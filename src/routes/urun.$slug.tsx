@@ -283,6 +283,16 @@ function ProductDetail() {
                     </div>
                   </div>
 
+                  {/* price strip */}
+                  <div className="mt-2.5 flex items-center justify-between border-t border-primary/15 pt-2">
+                    <div className="font-mono text-[9px] uppercase tracking-[0.28em] text-primary/70">
+                      final_price
+                    </div>
+                    <div className="font-mono text-sm sm:text-base text-primary neon-text-glow">
+                      ₺{Number(product.price_try).toLocaleString("tr-TR")}
+                    </div>
+                  </div>
+
                   {/* MRZ-like footer */}
                   <div className="mt-2 font-mono text-[9px] text-primary/70 tracking-[0.15em] break-all border-t border-primary/15 pt-1.5">
                     &lt;LIC&lt;{(product.slug ?? "").toUpperCase().padEnd(12, "<").slice(0, 12)}&lt;&lt;{String(product.duration ?? "std").toUpperCase().slice(0, 4)}&lt;&lt;{(product.id ?? "").replace(/-/g, "").slice(0, 10).toUpperCase()}
