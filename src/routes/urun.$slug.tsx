@@ -195,12 +195,13 @@ function ProductDetail() {
 
           <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
             {/* Left: digital ID card */}
-            <div className="relative order-2 md:order-1 border-t md:border-t-0 md:border-r border-border/60 bg-black/40 p-3 sm:p-6 flex items-center justify-center">
+            <div className="relative order-2 md:order-1 border-t md:border-t-0 md:border-r border-border/60 bg-black/40 p-2 sm:p-6 flex items-center justify-center">
+
 
               <div className="pointer-events-none absolute inset-0 cyber-grid opacity-30" aria-hidden />
 
               {/* ID CARD */}
-              <div className={`relative w-full max-w-[320px] sm:max-w-[380px] mx-auto rounded-xl overflow-hidden ${isEpic ? "epic-card" : "border border-primary/40 bg-gradient-to-br from-[oklch(0.16_0.03_145)] via-[oklch(0.13_0.02_180)] to-[oklch(0.14_0.04_270)] shadow-[0_0_30px_oklch(0.82_0.20_145/0.25),inset_0_0_0_1px_oklch(0.82_0.20_145/0.15)]"}`}>
+              <div className={`relative w-full max-w-[240px] sm:max-w-[320px] md:max-w-[380px] mx-auto rounded-xl overflow-hidden ${isEpic ? "epic-card" : "border border-primary/40 bg-gradient-to-br from-[oklch(0.16_0.03_145)] via-[oklch(0.13_0.02_180)] to-[oklch(0.14_0.04_270)] shadow-[0_0_30px_oklch(0.82_0.20_145/0.25),inset_0_0_0_1px_oklch(0.82_0.20_145/0.15)]"}`}>
                 {isEpic && <div className="epic-shimmer" aria-hidden />}
                 {/* holographic sheen */}
                 <div
