@@ -501,9 +501,46 @@ function ProfileTab({ userId, email, onSignOut }: { userId: string; email: strin
   return (
     <div className="space-y-4">
       <div className="glass-card rounded-lg p-5">
-        <div className="font-mono text-xs text-muted-foreground">$ id --user</div>
-        <div className="mt-1 font-mono text-sm break-all">{email}</div>
+        <div className="flex items-center gap-3">
+          <UserAvatar id={currentAvatarId} size={48} />
+          <div className="min-w-0">
+            <div className="font-mono text-xs text-muted-foreground">$ id --user</div>
+            <div className="font-mono text-sm break-all">{email}</div>
+          </div>
+        </div>
       </div>
+
+      <div className="glass-card rounded-lg p-5">
+        <div className="font-mono text-sm font-semibold">Avatar Seç</div>
+        <div className="mt-1 font-mono text-[11px] text-muted-foreground">
+          hacker temalı hazır avatarlardan birini seç · seçim anında kaydedilir
+        </div>
+        <div className="mt-3 grid grid-cols-6 sm:grid-cols-8 gap-2">
+          {AVATARS.map((a) => {
+            const selected = currentAvatarId === a.id;
+            return (
+              <button
+                key={a.id}
+                type="button"
+                disabled={avatarSaving}
+                onClick={() => pickAvatar(a.id)}
+                className={`group flex flex-col items-center gap-1 rounded-md border p-1.5 transition ${
+                  selected
+                    ? "border-primary bg-primary/10"
+                    : "border-border/50 hover:border-primary/50 hover:bg-primary/5"
+                } ${avatarSaving ? "opacity-60 cursor-wait" : ""}`}
+                title={a.label}
+              >
+                <UserAvatar id={a.id} size={36} />
+                <span className="font-mono text-[9px] text-muted-foreground truncate w-full text-center">
+                  {a.label.toLowerCase()}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
 
       <div className="glass-card rounded-lg p-5">
         <div className="font-mono text-sm font-semibold">Şifre Değiştir</div>
