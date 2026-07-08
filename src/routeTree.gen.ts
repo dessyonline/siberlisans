@@ -34,6 +34,7 @@ import { Route as AktivasyonTokenRouteImport } from './routes/aktivasyon.$token'
 import { Route as AuthenticatedKriptoYukleRouteImport } from './routes/_authenticated/kripto-yukle'
 import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
 import { Route as AuthenticatedFavorilerimRouteImport } from './routes/_authenticated/favorilerim'
+import { Route as AuthenticatedDestekRouteImport } from './routes/_authenticated/destek'
 import { Route as AuthenticatedDavetRouteImport } from './routes/_authenticated/davet'
 import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated/cuzdan'
 import { Route as AuthenticatedBildirimlerRouteImport } from './routes/_authenticated/bildirimler'
@@ -186,6 +187,11 @@ const AuthenticatedFavorilerimRoute =
     path: '/favorilerim',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDestekRoute = AuthenticatedDestekRouteImport.update({
+  id: '/destek',
+  path: '/destek',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDavetRoute = AuthenticatedDavetRouteImport.update({
   id: '/davet',
   path: '/davet',
@@ -346,6 +352,7 @@ export interface FileRoutesByFullPath {
   '/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/davet': typeof AuthenticatedDavetRoute
+  '/destek': typeof AuthenticatedDestekRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
@@ -396,6 +403,7 @@ export interface FileRoutesByTo {
   '/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/davet': typeof AuthenticatedDavetRoute
+  '/destek': typeof AuthenticatedDestekRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
@@ -449,6 +457,7 @@ export interface FileRoutesById {
   '/_authenticated/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/_authenticated/cuzdan': typeof AuthenticatedCuzdanRoute
   '/_authenticated/davet': typeof AuthenticatedDavetRoute
+  '/_authenticated/destek': typeof AuthenticatedDestekRoute
   '/_authenticated/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/_authenticated/hesabim': typeof AuthenticatedHesabimRoute
   '/_authenticated/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
@@ -502,6 +511,7 @@ export interface FileRouteTypes {
     | '/bildirimler'
     | '/cuzdan'
     | '/davet'
+    | '/destek'
     | '/favorilerim'
     | '/hesabim'
     | '/kripto-yukle'
@@ -552,6 +562,7 @@ export interface FileRouteTypes {
     | '/bildirimler'
     | '/cuzdan'
     | '/davet'
+    | '/destek'
     | '/favorilerim'
     | '/hesabim'
     | '/kripto-yukle'
@@ -604,6 +615,7 @@ export interface FileRouteTypes {
     | '/_authenticated/bildirimler'
     | '/_authenticated/cuzdan'
     | '/_authenticated/davet'
+    | '/_authenticated/destek'
     | '/_authenticated/favorilerim'
     | '/_authenticated/hesabim'
     | '/_authenticated/kripto-yukle'
@@ -846,6 +858,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFavorilerimRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/destek': {
+      id: '/_authenticated/destek'
+      path: '/destek'
+      fullPath: '/destek'
+      preLoaderRoute: typeof AuthenticatedDestekRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/davet': {
       id: '/_authenticated/davet'
       path: '/davet'
@@ -1075,6 +1094,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBildirimlerRoute: typeof AuthenticatedBildirimlerRoute
   AuthenticatedCuzdanRoute: typeof AuthenticatedCuzdanRoute
   AuthenticatedDavetRoute: typeof AuthenticatedDavetRoute
+  AuthenticatedDestekRoute: typeof AuthenticatedDestekRoute
   AuthenticatedFavorilerimRoute: typeof AuthenticatedFavorilerimRoute
   AuthenticatedHesabimRoute: typeof AuthenticatedHesabimRoute
   AuthenticatedKriptoYukleRoute: typeof AuthenticatedKriptoYukleRoute
@@ -1085,6 +1105,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBildirimlerRoute: AuthenticatedBildirimlerRoute,
   AuthenticatedCuzdanRoute: AuthenticatedCuzdanRoute,
   AuthenticatedDavetRoute: AuthenticatedDavetRoute,
+  AuthenticatedDestekRoute: AuthenticatedDestekRoute,
   AuthenticatedFavorilerimRoute: AuthenticatedFavorilerimRoute,
   AuthenticatedHesabimRoute: AuthenticatedHesabimRoute,
   AuthenticatedKriptoYukleRoute: AuthenticatedKriptoYukleRoute,
