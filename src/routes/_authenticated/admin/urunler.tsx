@@ -135,6 +135,7 @@ function ProductsAdmin() {
           category: editing.category ?? null,
           manual_fulfillment: editing.manual_fulfillment ?? false,
           stock_hint: editing.stock_hint == null ? null : Number(editing.stock_hint),
+          low_stock_threshold: Number(editing.low_stock_threshold ?? 5),
           featured: editing.featured ?? false,
           unlimited_stock: editing.unlimited_stock ?? false,
           sort_order: Number(editing.sort_order ?? 0),
