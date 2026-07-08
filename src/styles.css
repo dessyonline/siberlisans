@@ -309,15 +309,9 @@ body > a[class*="lovable"],
 }
 
 /* ============ EPIC TIER (destansı) — altın/mor cyber tema ============ */
-@keyframes epic-border {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
 @keyframes epic-shimmer-sweep {
-  0%   { background-position: 200% 0; opacity: 0.4; }
-  50%  { opacity: 1; }
-  100% { background-position: -100% 0; opacity: 0.4; }
+  0%   { background-position: 200% 0; }
+  100% { background-position: -100% 0; }
 }
 @utility epic-card {
   position: relative;
@@ -326,35 +320,34 @@ body > a[class*="lovable"],
     linear-gradient(
       135deg,
       oklch(0.78 0.16 75) 0%,
-      oklch(0.90 0.18 90) 20%,
-      oklch(0.65 0.20 300) 45%,
-      oklch(0.55 0.22 320) 65%,
-      oklch(0.82 0.20 145) 85%,
-      oklch(0.78 0.16 75) 100%
+      oklch(0.90 0.18 90) 25%,
+      oklch(0.65 0.20 300) 55%,
+      oklch(0.82 0.20 145) 100%
     ) border-box;
-  background-size: 100% 100%, 300% 300%;
   border: 1.5px solid transparent;
   box-shadow:
-    0 0 0 1px oklch(0.78 0.16 75 / 0.15),
-    0 0 24px oklch(0.78 0.16 75 / 0.25),
-    0 0 60px oklch(0.65 0.20 300 / 0.15);
-  animation: epic-border 8s ease-in-out infinite;
+    0 0 0 1px oklch(0.78 0.16 75 / 0.18),
+    0 8px 24px oklch(0.65 0.20 300 / 0.12);
 }
 @utility epic-shimmer {
   position: absolute;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
+  opacity: 0;
   background: linear-gradient(
     115deg,
-    transparent 30%,
-    oklch(0.95 0.10 85 / 0.14) 48%,
-    oklch(0.95 0.10 85 / 0.22) 50%,
-    oklch(0.95 0.10 85 / 0.14) 52%,
-    transparent 70%
+    transparent 35%,
+    oklch(0.95 0.10 85 / 0.18) 50%,
+    transparent 65%
   );
   background-size: 220% 100%;
-  animation: epic-shimmer-sweep 3.5s ease-in-out infinite;
+  transition: opacity 220ms ease;
+}
+.group:hover > .epic-shimmer,
+.epic-card:hover > .epic-shimmer {
+  opacity: 1;
+  animation: epic-shimmer-sweep 1.6s ease-out;
 }
 @utility epic-text-glow {
   text-shadow:
