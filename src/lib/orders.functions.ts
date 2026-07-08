@@ -96,20 +96,9 @@ export const createCartOrder = createServerFn({ method: "POST" })
     const row = Array.isArray(rows) ? rows[0] : rows;
     if (!row?.order_id) throw new Error("Sipariş oluşturulamadı.");
 
-    try {
-      const { notifyTelegram, orderCreatedMessage } = await import("@/lib/telegram.server");
-      const totalItems = data.items.reduce((s, i) => s + i.quantity, 0);
-      await notifyTelegram(
-        orderCreatedMessage({
-          reference: row.reference_code,
-          productName: `Sepet siparişi (${totalItems} ürün)`,
-          priceTry: Number(row.total_try),
-          userEmail: (claims as { email?: string } | null)?.email ?? null,
-        }),
-      );
-    } catch (e) {
-      console.error("[notify] createCartOrder", (e as Error).message);
-    }
+    // Telegram bildirimi burada gönderilmiyor — sadece dekont yüklendiğinde
+    // veya ödeme onaylandığında gönderiliyor (spam'ı önlemek için).
+
 
     return {
       orderId: row.order_id as string,
