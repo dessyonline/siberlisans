@@ -34,6 +34,8 @@ import { SupportFab } from "../components/SupportFab";
 import { CartButton } from "../components/CartButton";
 import { CartDrawer } from "../components/CartDrawer";
 import { NotificationBell } from "../components/NotificationBell";
+import { UserAvatar } from "../components/UserAvatar";
+import { useQuery } from "@tanstack/react-query";
 
 function NotFoundComponent() {
   return (
