@@ -3,14 +3,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { listCampaigns, upsertCampaign, deleteCampaign, sendCampaignNow } from "@/lib/campaigns.functions";
+import { listCampaigns, upsertCampaign, deleteCampaign, sendCampaignNow, testTelegramChannel } from "@/lib/campaigns.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Megaphone, Plus, Send, Trash2, Pencil, Clock, CheckCircle2, AlertTriangle, FileText } from "lucide-react";
+import { Megaphone, Plus, Send, Trash2, Pencil, Clock, CheckCircle2, AlertTriangle, FileText, Radio } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/kampanyalar")({
   component: CampaignsAdmin,
@@ -50,7 +50,22 @@ function CampaignsAdmin() {
   const upsertFn = useServerFn(upsertCampaign);
   const deleteFn = useServerFn(deleteCampaign);
   const sendFn = useServerFn(sendCampaignNow);
+  const testFn = useServerFn(testTelegramChannel);
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [testResult, setTestResult] = useState<Awaited<ReturnType<typeof testTelegramChannel>> | null>(null);
+  const [testing, setTesting] = useState(false);
+
+  const runTest = async () => {
+    setTesting(true);
+    try {
+      const r = await testFn();
+      setTestResult(r);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setTesting(false);
+    }
+  };
 
   const { data: campaigns } = useQuery({
     queryKey: ["admin-campaigns"],
@@ -195,6 +210,56 @@ function CampaignsAdmin() {
           </DialogContent>
         </Dialog>
       </div>
+
+      <div className="glass-card rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-2">
+            <Radio className="h-4 w-4 text-primary" />
+            <span className="font-mono text-sm">telegram bağlantı testi</span>
+          </div>
+          <Button size="sm" variant="outline" onClick={runTest} disabled={testing}>
+            {testing ? "test ediliyor…" : "test et"}
+          </Button>
+        </div>
+        {testResult && (
+          <div className="font-mono text-xs space-y-1 border-t border-border pt-3">
+            {"botUsername" in testResult && testResult.botUsername && (
+              <div>bot: <span className="text-primary">@{testResult.botUsername}</span></div>
+            )}
+            <div>secret (TELEGRAM_CHANNEL_ID): <span className="text-foreground">{testResult.channelIdConfigured ?? "—"}</span></div>
+            {testResult.ok ? (
+              <>
+                <div>kanal başlığı: <span className="text-foreground">{testResult.chatTitle}</span></div>
+                <div>kanal username: <span className="text-foreground">{testResult.chatUsername ?? "—"}</span></div>
+                <div>kanal tipi: <span className="text-foreground">{testResult.chatType}</span></div>
+                <div>
+                  bot statüsü:{" "}
+                  <span className={testResult.memberStatus === "administrator" || testResult.memberStatus === "creator" ? "text-primary" : "text-red-400"}>
+                    {testResult.memberStatus}
+                  </span>
+                </div>
+                {testResult.memberError && <div className="text-red-400">member hata: {testResult.memberError}</div>}
+                {(testResult.memberStatus === "administrator" || testResult.memberStatus === "creator") ? (
+                  <div className="text-primary">✓ Bot bu kanalda admin. Gönderim çalışmalı.</div>
+                ) : (
+                  <div className="text-red-400">
+                    ✗ Bot bu kanalda admin değil. @{testResult.botUsername} kullanıcısını <b>{testResult.chatUsername ?? testResult.chatTitle}</b> kanalına admin olarak ekle (Post Messages yetkisiyle).
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <div className="text-red-400">✗ [{testResult.step}] {testResult.error}</div>
+                {"hint" in testResult && testResult.hint && (
+                  <div className="text-yellow-400">ipucu: {testResult.hint}</div>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </div>
+
+
 
       <div className="space-y-3">
         {(campaigns ?? []).length === 0 && (

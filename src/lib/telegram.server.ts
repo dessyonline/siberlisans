@@ -81,7 +81,9 @@ export async function notifyTelegram(text: string): Promise<void> {
 export async function postToChannel(p: Omit<SendPayload, "chatId">): Promise<SendResult> {
   const chatId = process.env.TELEGRAM_CHANNEL_ID;
   if (!chatId) return { ok: false, error: "TELEGRAM_CHANNEL_ID yok" };
-  return sendTelegram({ ...p, chatId });
+  const r = await sendTelegram({ ...p, chatId });
+  if (!r.ok) return { ...r, error: `${r.error} (chat_id=${chatId})` };
+  return r;
 }
 
 /* ============ helpers ============ */
