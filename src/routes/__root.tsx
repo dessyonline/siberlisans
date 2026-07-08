@@ -249,7 +249,7 @@ function SiteHeader() {
       >
         {/* Backdrop */}
         <div
-          className="absolute inset-0 bg-background/95 backdrop-blur-2xl"
+          className="absolute inset-0 bg-background backdrop-blur-2xl"
           onClick={close}
         />
         {/* Grid overlay */}
