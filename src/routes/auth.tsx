@@ -61,6 +61,7 @@ function AuthPage() {
   const [captcha, setCaptcha] = useState(() => newCaptcha());
   const [captchaInput, setCaptchaInput] = useState("");
   const [signupSent, setSignupSent] = useState<string | null>(null);
+  const [mfaMode, setMfaMode] = useState(false);
   const refCode = search.ref?.toUpperCase() ?? "";
 
   useEffect(() => {
