@@ -1238,3 +1238,74 @@ function WalletPayBlock({
   );
 }
 
+type CheckoutField = { name: string; el_type?: string; input_type?: string; required?: boolean };
+
+function CheckoutFieldsCard({
+  orderId,
+  fields,
+  initial,
+  saved,
+  onSave,
+}: {
+  orderId: string;
+  fields: CheckoutField[];
+  initial: Record<string, string>;
+  saved: boolean;
+  onSave: (values: Record<string, string>) => Promise<void>;
+}) {
+  const [values, setValues] = useState<Record<string, string>>(initial);
+  const [busy, setBusy] = useState(false);
+  const labelize = (n: string) => n.replace(/_/g, " ");
+  const missing = fields.filter((f) => f.required !== false && !((values[f.name] ?? "").trim()));
+  return (
+    <section className={`mt-4 glass-card rounded-xl p-4 sm:p-5 ${saved ? "border-primary/40" : "border-cyan/40"}`}>
+      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-cyan">
+        <KeyRound className="h-3.5 w-3.5" /> ürün bilgileri · ref: {orderId.slice(0, 8)}
+      </div>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Bu ürün otomatik tedarik edilir. Aşağıdaki bilgileri girmen gerekiyor — bunlar
+        onay sonrası tedarikçiye iletilir ve teslim buna göre yapılır.
+      </p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {fields.map((f) => (
+          <label key={f.name} className="text-xs font-mono">
+            <span className="block mb-1 text-muted-foreground">
+              {labelize(f.name)}{f.required !== false && <span className="text-destructive"> *</span>}
+            </span>
+            {(f.el_type === "textarea" || f.input_type === "textarea") ? (
+              <Textarea
+                value={values[f.name] ?? ""}
+                onChange={(e) => setValues((v) => ({ ...v, [f.name]: e.target.value }))}
+                rows={3}
+              />
+            ) : (
+              <Input
+                type={(f.input_type === "password" ? "password" : f.input_type === "email" ? "email" : "text")}
+                value={values[f.name] ?? ""}
+                onChange={(e) => setValues((v) => ({ ...v, [f.name]: e.target.value }))}
+              />
+            )}
+          </label>
+        ))}
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
+        <div className="text-[11px] font-mono text-muted-foreground">
+          {saved ? "kayıtlı — düzenleyip tekrar kaydedebilirsin" : "onaylamadan önce bilgileri kaydet"}
+        </div>
+        <Button
+          size="sm"
+          disabled={busy || missing.length > 0}
+          onClick={async () => {
+            setBusy(true);
+            try { await onSave(values); } catch (e) { toast.error((e as Error).message); }
+            finally { setBusy(false); }
+          }}
+        >
+          {busy ? "kaydediliyor…" : "bilgileri kaydet"}
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+
