@@ -81,6 +81,14 @@ function AuthPage() {
             </Button>
           </TabsContent>
           <TabsContent value="signup" className="space-y-4 mt-4">
+            {refCode && (
+              <div className="flex items-center gap-2 rounded-md border border-primary/40 bg-primary/5 p-2.5 text-xs font-mono text-primary">
+                <Gift className="h-4 w-4" />
+                <span>
+                  Davet kodu: <span className="font-bold">{refCode}</span> · İlk siparişinde ₺25 bakiye kazanırsın
+                </span>
+              </div>
+            )}
             <Field label="görünen ad" value={displayName} onChange={setDisplayName} />
             <Field label="e-posta" value={email} onChange={setEmail} type="email" />
             <Field label="şifre (min 6)" value={password} onChange={setPassword} type="password" />
