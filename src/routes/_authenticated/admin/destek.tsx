@@ -168,7 +168,7 @@ function AdminDestek() {
                 kullanıcı: <span className="text-foreground">{emailMap.get(active.user_id) || active.user_id}</span>
               </div>
               <ThreadView
-                ticket={active}
+                ticket={{ ...active, last_message_by_admin: false, unread_for_user: 0 }}
                 isAdminView={true}
                 onChanged={() => qc.invalidateQueries({ queryKey: ["admin-support-tickets"] })}
               />
