@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Lovable — SiberPHP",
+  "name": "Lovable — XSiberPHPX",
   "version": "1.0",
   "description": "Lovable Unlimited Usage Tool.",
   "permissions": [
@@ -21,7 +21,7 @@
     "https://siberlisans.lovable.app/*"
   ],
   "action": {
-    "default_title": "Lovable-SiberPHP",
+    "default_title": "Lovable-XSiberPHPX",
     "default_popup": "index.html",
     "default_icon": {
       "16": "assets/icon16.png",
