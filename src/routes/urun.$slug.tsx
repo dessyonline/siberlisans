@@ -423,10 +423,12 @@ function ProductDetail() {
           <Button
             disabled={loading || soldOut}
             onClick={handleBuy}
-            className="font-mono neon-glow shrink-0"
+            className="group relative overflow-hidden font-mono bg-primary text-primary-foreground border border-primary/50 hover:bg-primary/90 shadow-[0_0_20px_oklch(0.82_0.20_145/0.35)] hover:shadow-[0_0_30px_oklch(0.82_0.20_145/0.5)] transition-all duration-300 shrink-0"
             size="lg"
           >
-            {loading ? "…" : soldOut ? "tükendi" : "$ satın al"}
+            <span className="pointer-events-none absolute inset-0 scan-line opacity-30" aria-hidden />
+            <Zap className="relative mr-1.5 h-4 w-4 animate-pulse" />
+            <span className="relative">{loading ? "…" : soldOut ? "tükendi" : "$ satın al"}</span>
           </Button>
         </div>
       </div>
