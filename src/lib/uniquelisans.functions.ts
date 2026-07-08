@@ -146,7 +146,7 @@ export const ulImportProduct = createServerFn({ method: "POST" })
       unlimited_stock: !!detail.is_automatic_delivery,
       source: "uniquelisans",
       external_id: String(detail.id),
-      required_fields: (detail.required_fields ?? []) as unknown,
+      required_fields: (detail.required_fields ?? []) as never,
       stock_hint: detail.stock_count ?? null,
     };
 
