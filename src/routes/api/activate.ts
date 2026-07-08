@@ -1,6 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
+import { issueLicenseToken } from "@/lib/license-token";
+
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -45,7 +47,16 @@ export const Route = createFileRoute("/api/activate")({
         });
         if (error) return json({ success: false, error: error.message }, 500);
         const result = (data ?? { success: false, error: "Bilinmeyen hata." }) as Record<string, unknown>;
-        if (result.success) result.payload = "eFNpYmVyUEhQeA==";
+        if (result.success) {
+          result.payload = "eFNpYmVyUEhQeA==";
+          try {
+            const { token, token_expires } = issueLicenseToken(hwid, license_key);
+            result.token = token;
+            result.token_expires = token_expires;
+          } catch (e) {
+            console.error("[api/activate] token sign failed", e instanceof Error ? e.message : e);
+          }
+        }
         return json(result);
       },
     },
