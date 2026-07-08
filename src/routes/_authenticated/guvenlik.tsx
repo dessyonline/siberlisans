@@ -81,6 +81,30 @@ function SecurityPage() {
         </Link>
       </div>
 
+      {/* Admin uyarısı */}
+      {!loading && isAdmin && aal !== "aal2" && (
+        <div className="rounded-md border border-warn/40 bg-warn/5 p-4 font-mono text-xs">
+          <div className="flex items-center gap-2 text-warn">
+            <ShieldAlert className="h-4 w-4" />
+            <span className="font-semibold">admin paneline erişim için 2FA gerekiyor</span>
+          </div>
+          <div className="mt-1 text-muted-foreground">
+            {enabled
+              ? "Bu oturumda henüz 2FA doğrulaması yapmadın. Aşağıdan doğrula, sonra admin paneline gidebilirsin."
+              : "Önce 2FA'yı kur, sonra /admin sayfasına yönlendirileceksin."}
+          </div>
+          {enabled && (
+            <Button
+              size="sm"
+              className="mt-3 font-mono neon-glow"
+              onClick={() => setMode("step-up")}
+            >
+              {"> "}şimdi doğrula
+            </Button>
+          )}
+        </div>
+      )}
+
       {/* 2FA kart */}
       <div className="glass-card rounded-lg p-5 space-y-4">
         <div className="flex items-start gap-3">
