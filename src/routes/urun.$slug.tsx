@@ -98,6 +98,21 @@ function ProductDetail() {
     },
   });
 
+  const { data: relatedProducts } = useQuery({
+    queryKey: ["related-products", product?.category, product?.id],
+    enabled: !!product?.category,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("id, name, slug, price_try, image_url, category, tier")
+        .eq("active", true)
+        .eq("category", product!.category!)
+        .neq("id", product!.id)
+        .limit(4);
+      return data ?? [];
+    },
+  });
+
   const handleBuy = async () => {
     if (!user) {
       toast("Devam etmek için giriş yap");
