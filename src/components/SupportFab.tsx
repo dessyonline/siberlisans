@@ -33,6 +33,16 @@ export function SupportFab() {
             Sorunuz mu var? En hızlı yanıt için Telegram destek hattı:
           </div>
           <div className="flex flex-col gap-2">
+            {user && (
+              <Link
+                to="/destek"
+                onClick={() => setOpen(false)}
+                className="flex items-center gap-2 rounded-md border border-primary/40 bg-primary/10 hover:bg-primary/20 px-3 py-2 text-primary transition-colors"
+              >
+                <Ticket className="h-4 w-4" />
+                <span>Bilet aç / mesajlarım</span>
+              </Link>
+            )}
             <a
               href={SITE.supportTelegram}
               target="_blank"
