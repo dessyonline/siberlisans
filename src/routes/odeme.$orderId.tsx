@@ -77,7 +77,7 @@ function Payment() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, status, price_try, reference_code, receipt_path, user_note, checkout_fields, created_at, updated_at, approved_at, product:products(name, slug, duration, delivery_type, manual_fulfillment, unlimited_stock, tier, source, required_fields), items:order_items(id, quantity, unit_price_try, product_name_snapshot, product:products(name, slug, delivery_type, manual_fulfillment, unlimited_stock)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, delivery_type))), discount:order_discounts(discount_try, code_snapshot)"
+          "id, status, price_try, reference_code, receipt_path, user_note, checkout_fields, created_at, updated_at, approved_at, product:products(name, slug, duration, delivery_type, manual_fulfillment, unlimited_stock, tier, source, required_fields, shopier_url), items:order_items(id, quantity, unit_price_try, product_name_snapshot, product:products(name, slug, delivery_type, manual_fulfillment, unlimited_stock, shopier_url)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, delivery_type))), discount:order_discounts(discount_try, code_snapshot)"
         )
         .eq("id", orderId)
         .single();
@@ -417,6 +417,21 @@ function Payment() {
                       </section>
                     ) : (
                       <>
+                        {(() => {
+                          const singleUrl = (order.product as { shopier_url?: string | null } | null)?.shopier_url ?? null;
+                          const cartUrls = orderItems
+                            .map((i) => (i.product as { shopier_url?: string | null } | null)?.shopier_url)
+                            .filter(Boolean);
+                          const shopierUrl = singleUrl ?? (cartUrls.length === 1 ? cartUrls[0] : null);
+                          if (!shopierUrl) return null;
+                          return (
+                            <ShopierPayBlock
+                              url={shopierUrl}
+                              amount={finalAmount}
+                              reference={order.reference_code}
+                            />
+                          );
+                        })()}
                         <WalletPayBlock
                           balance={Number(wallet?.balance_try ?? 0)}
                           amount={finalAmount}
@@ -478,7 +493,54 @@ function Payment() {
   );
 }
 
+/* ============================ SHOPIER ============================ */
+
+function ShopierPayBlock({
+  url,
+  amount,
+  reference,
+}: {
+  url: string;
+  amount: number;
+  reference: string;
+}) {
+  return (
+    <section className="glass-card rounded-lg p-5 border-primary/40">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+            [02/04] · kart / havale · shopier
+          </div>
+          <h2 className="mt-1 font-mono text-xl neon-text">Shopier ile Öde</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Kart · Havale · BKM Express — Shopier güvencesiyle. Ödeme onaylanınca ürün otomatik teslim edilir.
+          </p>
+        </div>
+        <div className="font-mono text-lg neon-text shrink-0">
+          ₺{amount.toLocaleString("tr-TR")}
+        </div>
+      </div>
+      <div className="mt-3 rounded-md border border-warn/40 bg-warn/5 p-3 font-mono text-[11px] text-warn">
+        ⚠ Shopier'de hesabına kayıtlı e‑postayı kullan — ödeme senin siparişinle bu e‑postayla eşleşir.
+      </div>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 font-mono text-primary-foreground neon-glow hover:opacity-90 transition"
+      >
+        Shopier'e Git · ₺{amount.toLocaleString("tr-TR")}
+        <ArrowRight className="h-4 w-4" />
+      </a>
+      <p className="mt-2 text-center text-[10px] text-muted-foreground font-mono">
+        ref: {reference} · ödeme sonrası bu sayfa otomatik güncellenir
+      </p>
+    </section>
+  );
+}
+
 /* ============================ TRANSFER ============================ */
+
 
 function TransferBlock({
   bank,

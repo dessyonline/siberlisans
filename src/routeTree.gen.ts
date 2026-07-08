@@ -42,6 +42,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
 import { Route as AuthenticatedAdminUniquelisansRouteImport } from './routes/_authenticated/admin/uniquelisans'
 import { Route as AuthenticatedAdminSiparislerRouteImport } from './routes/_authenticated/admin/siparisler'
+import { Route as AuthenticatedAdminShopierRouteImport } from './routes/_authenticated/admin/shopier'
 import { Route as AuthenticatedAdminPromosyonlarRouteImport } from './routes/_authenticated/admin/promosyonlar'
 import { Route as AuthenticatedAdminPopulerRouteImport } from './routes/_authenticated/admin/populer'
 import { Route as AuthenticatedAdminLisanslarRouteImport } from './routes/_authenticated/admin/lisanslar'
@@ -55,6 +56,7 @@ import { Route as AuthenticatedAdminCuzdanRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin/blog'
 import { Route as AuthenticatedAdminAyarlarRouteImport } from './routes/_authenticated/admin/ayarlar'
 import { Route as ApiPublicHooksSyncUniquelisansRouteImport } from './routes/api/public/hooks/sync-uniquelisans'
+import { Route as ApiPublicHooksShopierRouteImport } from './routes/api/public/hooks/shopier'
 import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
 import { Route as ApiPublicHooksAbandonmentReminderRouteImport } from './routes/api/public/hooks/abandonment-reminder'
 
@@ -228,6 +230,12 @@ const AuthenticatedAdminSiparislerRoute =
     path: '/siparisler',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminShopierRoute =
+  AuthenticatedAdminShopierRouteImport.update({
+    id: '/shopier',
+    path: '/shopier',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminPromosyonlarRoute =
   AuthenticatedAdminPromosyonlarRouteImport.update({
     id: '/promosyonlar',
@@ -304,6 +312,11 @@ const ApiPublicHooksSyncUniquelisansRoute =
     path: '/api/public/hooks/sync-uniquelisans',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksShopierRoute = ApiPublicHooksShopierRouteImport.update({
+  id: '/api/public/hooks/shopier',
+  path: '/api/public/hooks/shopier',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksCampaignTickRoute =
   ApiPublicHooksCampaignTickRouteImport.update({
     id: '/api/public/hooks/campaign-tick',
@@ -358,12 +371,14 @@ export interface FileRoutesByFullPath {
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
   '/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
+  '/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
 }
 export interface FileRoutesByTo {
@@ -406,12 +421,14 @@ export interface FileRoutesByTo {
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
   '/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
+  '/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
 }
 export interface FileRoutesById {
@@ -457,12 +474,14 @@ export interface FileRoutesById {
   '/_authenticated/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
   '/_authenticated/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/_authenticated/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
+  '/_authenticated/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/_authenticated/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
   '/_authenticated/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/_authenticated/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
 }
 export interface FileRouteTypes {
@@ -508,12 +527,14 @@ export interface FileRouteTypes {
     | '/admin/lisanslar'
     | '/admin/populer'
     | '/admin/promosyonlar'
+    | '/admin/shopier'
     | '/admin/siparisler'
     | '/admin/uniquelisans'
     | '/admin/urunler'
     | '/admin/'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/shopier'
     | '/api/public/hooks/sync-uniquelisans'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -556,12 +577,14 @@ export interface FileRouteTypes {
     | '/admin/lisanslar'
     | '/admin/populer'
     | '/admin/promosyonlar'
+    | '/admin/shopier'
     | '/admin/siparisler'
     | '/admin/uniquelisans'
     | '/admin/urunler'
     | '/admin'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/shopier'
     | '/api/public/hooks/sync-uniquelisans'
   id:
     | '__root__'
@@ -606,12 +629,14 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/lisanslar'
     | '/_authenticated/admin/populer'
     | '/_authenticated/admin/promosyonlar'
+    | '/_authenticated/admin/shopier'
     | '/_authenticated/admin/siparisler'
     | '/_authenticated/admin/uniquelisans'
     | '/_authenticated/admin/urunler'
     | '/_authenticated/admin/'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/shopier'
     | '/api/public/hooks/sync-uniquelisans'
   fileRoutesById: FileRoutesById
 }
@@ -640,6 +665,7 @@ export interface RootRouteChildren {
   BlogIndexRoute: typeof BlogIndexRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
+  ApiPublicHooksShopierRoute: typeof ApiPublicHooksShopierRoute
   ApiPublicHooksSyncUniquelisansRoute: typeof ApiPublicHooksSyncUniquelisansRoute
 }
 
@@ -876,6 +902,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSiparislerRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/shopier': {
+      id: '/_authenticated/admin/shopier'
+      path: '/shopier'
+      fullPath: '/admin/shopier'
+      preLoaderRoute: typeof AuthenticatedAdminShopierRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/promosyonlar': {
       id: '/_authenticated/admin/promosyonlar'
       path: '/promosyonlar'
@@ -967,6 +1000,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksSyncUniquelisansRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/shopier': {
+      id: '/api/public/hooks/shopier'
+      path: '/api/public/hooks/shopier'
+      fullPath: '/api/public/hooks/shopier'
+      preLoaderRoute: typeof ApiPublicHooksShopierRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/campaign-tick': {
       id: '/api/public/hooks/campaign-tick'
       path: '/api/public/hooks/campaign-tick'
@@ -997,6 +1037,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminLisanslarRoute: typeof AuthenticatedAdminLisanslarRoute
   AuthenticatedAdminPopulerRoute: typeof AuthenticatedAdminPopulerRoute
   AuthenticatedAdminPromosyonlarRoute: typeof AuthenticatedAdminPromosyonlarRoute
+  AuthenticatedAdminShopierRoute: typeof AuthenticatedAdminShopierRoute
   AuthenticatedAdminSiparislerRoute: typeof AuthenticatedAdminSiparislerRoute
   AuthenticatedAdminUniquelisansRoute: typeof AuthenticatedAdminUniquelisansRoute
   AuthenticatedAdminUrunlerRoute: typeof AuthenticatedAdminUrunlerRoute
@@ -1017,6 +1058,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminLisanslarRoute: AuthenticatedAdminLisanslarRoute,
     AuthenticatedAdminPopulerRoute: AuthenticatedAdminPopulerRoute,
     AuthenticatedAdminPromosyonlarRoute: AuthenticatedAdminPromosyonlarRoute,
+    AuthenticatedAdminShopierRoute: AuthenticatedAdminShopierRoute,
     AuthenticatedAdminSiparislerRoute: AuthenticatedAdminSiparislerRoute,
     AuthenticatedAdminUniquelisansRoute: AuthenticatedAdminUniquelisansRoute,
     AuthenticatedAdminUrunlerRoute: AuthenticatedAdminUrunlerRoute,
@@ -1077,18 +1119,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksAbandonmentReminderRoute:
     ApiPublicHooksAbandonmentReminderRoute,
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,
+  ApiPublicHooksShopierRoute: ApiPublicHooksShopierRoute,
   ApiPublicHooksSyncUniquelisansRoute: ApiPublicHooksSyncUniquelisansRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
