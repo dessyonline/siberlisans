@@ -16,7 +16,6 @@ type Review = {
   rating: number;
   comment: string | null;
   created_at: string;
-  profiles?: { display_name: string | null; email: string | null } | null;
 };
 
 export function ReviewsSection({ productId }: { productId: string }) {
