@@ -84,6 +84,18 @@ function MyAccount() {
           <h1 className="mt-2 font-mono text-2xl md:text-3xl neon-text">Hesabım</h1>
         </div>
         <div className="flex items-center gap-4 font-mono text-xs">
+          <Link
+            to="/cuzdan"
+            className="glass-card corner-cut px-3 py-2 rounded-md hover:neon-glow transition flex items-center gap-2"
+          >
+            <Wallet className="h-3.5 w-3.5 text-primary" />
+            <div>
+              <div className="text-muted-foreground text-[10px]">cüzdan</div>
+              <div className="text-primary text-sm font-bold">
+                <WalletBalance />
+              </div>
+            </div>
+          </Link>
           <div className="text-right">
             <div className="text-muted-foreground">toplam sipariş</div>
             <div className="text-lg neon-text">{orders?.length ?? 0}</div>
@@ -94,6 +106,7 @@ function MyAccount() {
           </div>
         </div>
       </div>
+
 
       <Tabs defaultValue="orders" className="mt-8">
         <TabsList className="grid w-full grid-cols-3 font-mono">
