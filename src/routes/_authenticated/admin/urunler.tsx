@@ -12,7 +12,8 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Star, Search, X, Package, AlertTriangle, Crown, Copy, ImageIcon, EyeOff, Eye } from "lucide-react";
+import { Plus, Pencil, Trash2, Star, Search, X, Package, AlertTriangle, Crown, Copy, ImageIcon, EyeOff, Eye, Wand2, Sparkles } from "lucide-react";
+import { resolveLogoUrl, fallbackLogoUrl } from "@/lib/logo-resolver";
 
 export const Route = createFileRoute("/_authenticated/admin/urunler")({
   component: ProductsAdmin,
@@ -417,8 +418,11 @@ function ProductsAdmin() {
                     name: v,
                     // auto-slug only when creating and slug is empty or was auto-derived
                     slug: !p!.id && (!p!.slug || p!.slug === slugify(p!.name ?? "")) ? slugify(v) : p!.slug,
+                    // yeni ürün + image_url boşsa marka logosunu tahmin edip doldur
+                    image_url: !p!.id && !p!.image_url ? (resolveLogoUrl(v) ?? p!.image_url ?? null) : p!.image_url,
                   }))}
                 />
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Field label="slug (a-z, 0-9, -)" value={editing.slug ?? ""} onChange={(v) => setEditing((p) => ({ ...p!, slug: slugify(v) }))} />
                   <Field label="kategori" value={editing.category ?? ""} onChange={(v) => setEditing((p) => ({ ...p!, category: v }))} />
@@ -434,23 +438,57 @@ function ProductsAdmin() {
                 <div className="flex gap-3 items-start">
                   <div className="shrink-0 h-20 w-20 rounded-md border border-border/60 bg-black/40 overflow-hidden flex items-center justify-center">
                     {editing.image_url ? (
-                      <img src={editing.image_url} alt="" className="h-full w-full object-cover" />
+                      <img
+                        src={editing.image_url}
+                        alt=""
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          const img = e.currentTarget;
+                          const fb = fallbackLogoUrl(editing?.name ?? "");
+                          if (fb && img.dataset.fb !== "1") {
+                            img.dataset.fb = "1";
+                            img.src = fb;
+                          }
+                        }}
+                      />
                     ) : (
                       <ImageIcon className="h-6 w-6 text-muted-foreground/50" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <Label className="font-mono text-xs">image_url (https://… veya /products/…jpg)</Label>
-                    <Input
-                      value={editing.image_url ?? ""}
-                      onChange={(e) => setEditing((p) => ({ ...p!, image_url: e.target.value }))}
-                      className="font-mono text-xs"
-                      placeholder="https://…"
-                    />
-                    <p className="mt-1 font-mono text-[10px] text-muted-foreground">boş bırakılırsa varsayılan anahtar ikonu gösterilir</p>
+                    <div className="flex gap-2">
+                      <Input
+                        value={editing.image_url ?? ""}
+                        onChange={(e) => setEditing((p) => ({ ...p!, image_url: e.target.value }))}
+                        className="font-mono text-xs"
+                        placeholder="https://…"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="font-mono text-xs shrink-0"
+                        onClick={() => {
+                          const url = resolveLogoUrl(editing.name ?? "");
+                          if (!url) {
+                            toast.error("Marka tahmin edilemedi — önce ürün adını gir.");
+                            return;
+                          }
+                          setEditing((p) => ({ ...p!, image_url: url }));
+                          toast.success("Logo bulundu.");
+                        }}
+                      >
+                        <Wand2 className="h-3.5 w-3.5 mr-1" />logo bul
+                      </Button>
+                    </div>
+                    <p className="mt-1 font-mono text-[10px] text-muted-foreground">
+                      ad girildiğinde marka logosu otomatik doldurulur (Clearbit). yüklenmezse Google favicon'a düşer.
+                    </p>
                   </div>
                 </div>
               </Section>
+
 
               {/* SECTION: PRICING & DELIVERY */}
               <Section title="fiyat & teslim">
