@@ -153,7 +153,11 @@ export const ulImportProduct = createServerFn({ method: "POST" })
     };
 
     if (existing) {
-      const { error } = await supabase.from("products").update(payload).eq("id", existing.id);
+      // Mevcut kayıtta admin manuel logo koyduysa üzerine yazma
+      const { data: cur } = await supabase.from("products").select("image_url").eq("id", existing.id).maybeSingle();
+      const updatePayload = { ...payload };
+      if (cur?.image_url) delete (updatePayload as Partial<typeof payload>).image_url;
+      const { error } = await supabase.from("products").update(updatePayload).eq("id", existing.id);
       if (error) throw new Error(error.message);
       return { ok: true as const, productId: existing.id, updated: true };
     } else {
