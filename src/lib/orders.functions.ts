@@ -176,6 +176,37 @@ export const setOrderUserNote = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const checkoutFieldsInput = z.object({
+  orderId: z.string().uuid(),
+  fields: z.record(z.string(), z.string().max(2000)),
+});
+
+/**
+ * Müşteri, Uniquelisans kaynaklı ürünlerde ödeme sayfasında gereken bilgileri
+ * (email/link/wordpress vs.) buradan gönderir. Admin onayında API'ye iletilir.
+ */
+export const setOrderCheckoutFields = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => checkoutFieldsInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const clean: Record<string, string> = {};
+    for (const [k, v] of Object.entries(data.fields)) {
+      const key = String(k).trim().slice(0, 64);
+      const val = String(v ?? "").trim().slice(0, 2000);
+      if (key && val) clean[key] = val;
+    }
+    const { error } = await supabase
+      .from("orders")
+      .update({ checkout_fields: clean })
+      .eq("id", data.orderId)
+      .eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+
+
 /**
  * After key assignment, check whether any product in the order dropped below
  * its low_stock_threshold and notify the admin via Telegram (throttled server-side).
