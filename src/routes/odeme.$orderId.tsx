@@ -372,9 +372,11 @@ function Payment() {
             </div>
           )}
 
-          {order.status === "pending" && (
+          {/* Ödeme süresi sayacı geçici olarak kaldırıldı */}
+          {false && order.status === "pending" && (
             <CountdownBanner secondsLeft={secondsLeft} totalSec={PAYMENT_WINDOW_SEC} />
           )}
+
 
           {(order.status === "pending" || order.status === "reviewing") && (
             <>
