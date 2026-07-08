@@ -146,8 +146,8 @@ function ProductDetail() {
     <div className="relative overflow-hidden">
       {/* cyber backdrop */}
       <div className="pointer-events-none absolute inset-0 cyber-grid grid-drift opacity-60" aria-hidden />
-      <div className="hero-orb h-[380px] w-[380px] left-[-120px] top-[-60px]" style={{ background: "oklch(0.82 0.20 145 / 0.35)" }} aria-hidden />
-      <div className="hero-orb h-[300px] w-[300px] right-[-80px] top-[40%]" style={{ background: "oklch(0.65 0.20 300 / 0.25)", animationDelay: "3s" }} aria-hidden />
+      <div className="hero-orb h-[380px] w-[380px] left-[-120px] top-[-60px]" style={{ background: isEpic ? "oklch(0.80 0.18 85 / 0.42)" : "oklch(0.82 0.20 145 / 0.35)" }} aria-hidden />
+      <div className="hero-orb h-[300px] w-[300px] right-[-80px] top-[40%]" style={{ background: isEpic ? "oklch(0.60 0.22 310 / 0.35)" : "oklch(0.65 0.20 300 / 0.25)", animationDelay: "3s" }} aria-hidden />
       <div className="pointer-events-none absolute inset-0 scan-line opacity-30" aria-hidden />
 
       <div className="relative mx-auto max-w-5xl px-4 py-10 pb-32 md:pb-14">
