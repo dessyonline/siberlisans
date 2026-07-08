@@ -1114,8 +1114,11 @@ function PromoBlock({
   const removeFn = useServerFn(removePromoCode);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const isPointsCode = (appliedCode ?? "").startsWith("PUAN-");
+  if (isPointsCode) return null;
   const hasDiscount = discountTry > 0 && !!appliedCode;
   const finalPrice = Math.max(0, originalPrice - discountTry);
+
 
   const apply = async () => {
     if (!code.trim()) return;
