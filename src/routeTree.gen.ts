@@ -30,6 +30,7 @@ import { Route as ApiValidateRouteImport } from './routes/api/validate'
 import { Route as ApiRevokeRouteImport } from './routes/api/revoke'
 import { Route as ApiActivateRouteImport } from './routes/api/activate'
 import { Route as AktivasyonTokenRouteImport } from './routes/aktivasyon.$token'
+import { Route as AuthenticatedKriptoYukleRouteImport } from './routes/_authenticated/kripto-yukle'
 import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
 import { Route as AuthenticatedFavorilerimRouteImport } from './routes/_authenticated/favorilerim'
 import { Route as AuthenticatedDavetRouteImport } from './routes/_authenticated/davet'
@@ -155,6 +156,12 @@ const AktivasyonTokenRoute = AktivasyonTokenRouteImport.update({
   path: '/aktivasyon/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedKriptoYukleRoute =
+  AuthenticatedKriptoYukleRouteImport.update({
+    id: '/kripto-yukle',
+    path: '/kripto-yukle',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHesabimRoute = AuthenticatedHesabimRouteImport.update({
   id: '/hesabim',
   path: '/hesabim',
@@ -286,6 +293,7 @@ export interface FileRoutesByFullPath {
   '/davet': typeof AuthenticatedDavetRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
+  '/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
   '/api/revoke': typeof ApiRevokeRoute
@@ -327,6 +335,7 @@ export interface FileRoutesByTo {
   '/davet': typeof AuthenticatedDavetRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
+  '/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
   '/api/revoke': typeof ApiRevokeRoute
@@ -371,6 +380,7 @@ export interface FileRoutesById {
   '/_authenticated/davet': typeof AuthenticatedDavetRoute
   '/_authenticated/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/_authenticated/hesabim': typeof AuthenticatedHesabimRoute
+  '/_authenticated/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
   '/api/revoke': typeof ApiRevokeRoute
@@ -415,6 +425,7 @@ export interface FileRouteTypes {
     | '/davet'
     | '/favorilerim'
     | '/hesabim'
+    | '/kripto-yukle'
     | '/aktivasyon/$token'
     | '/api/activate'
     | '/api/revoke'
@@ -456,6 +467,7 @@ export interface FileRouteTypes {
     | '/davet'
     | '/favorilerim'
     | '/hesabim'
+    | '/kripto-yukle'
     | '/aktivasyon/$token'
     | '/api/activate'
     | '/api/revoke'
@@ -499,6 +511,7 @@ export interface FileRouteTypes {
     | '/_authenticated/davet'
     | '/_authenticated/favorilerim'
     | '/_authenticated/hesabim'
+    | '/_authenticated/kripto-yukle'
     | '/aktivasyon/$token'
     | '/api/activate'
     | '/api/revoke'
@@ -699,6 +712,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AktivasyonTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/kripto-yukle': {
+      id: '/_authenticated/kripto-yukle'
+      path: '/kripto-yukle'
+      fullPath: '/kripto-yukle'
+      preLoaderRoute: typeof AuthenticatedKriptoYukleRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hesabim': {
       id: '/_authenticated/hesabim'
       path: '/hesabim'
@@ -888,6 +908,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDavetRoute: typeof AuthenticatedDavetRoute
   AuthenticatedFavorilerimRoute: typeof AuthenticatedFavorilerimRoute
   AuthenticatedHesabimRoute: typeof AuthenticatedHesabimRoute
+  AuthenticatedKriptoYukleRoute: typeof AuthenticatedKriptoYukleRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -896,6 +917,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDavetRoute: AuthenticatedDavetRoute,
   AuthenticatedFavorilerimRoute: AuthenticatedFavorilerimRoute,
   AuthenticatedHesabimRoute: AuthenticatedHesabimRoute,
+  AuthenticatedKriptoYukleRoute: AuthenticatedKriptoYukleRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
