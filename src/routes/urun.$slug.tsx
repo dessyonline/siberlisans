@@ -195,11 +195,12 @@ function ProductDetail() {
 
           <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
             {/* Left: digital ID card */}
-            <div className="relative border-b md:border-b-0 md:border-r border-border/60 bg-black/40 p-4 sm:p-6 flex items-center justify-center">
+            <div className="relative order-2 md:order-1 border-t md:border-t-0 md:border-r border-border/60 bg-black/40 p-3 sm:p-6 flex items-center justify-center">
+
               <div className="pointer-events-none absolute inset-0 cyber-grid opacity-30" aria-hidden />
 
               {/* ID CARD */}
-              <div className={`relative w-full max-w-[420px] mx-auto rounded-xl overflow-hidden ${isEpic ? "epic-card" : "border border-primary/40 bg-gradient-to-br from-[oklch(0.16_0.03_145)] via-[oklch(0.13_0.02_180)] to-[oklch(0.14_0.04_270)] shadow-[0_0_30px_oklch(0.82_0.20_145/0.25),inset_0_0_0_1px_oklch(0.82_0.20_145/0.15)]"}`}>
+              <div className={`relative w-full max-w-[320px] sm:max-w-[380px] mx-auto rounded-xl overflow-hidden ${isEpic ? "epic-card" : "border border-primary/40 bg-gradient-to-br from-[oklch(0.16_0.03_145)] via-[oklch(0.13_0.02_180)] to-[oklch(0.14_0.04_270)] shadow-[0_0_30px_oklch(0.82_0.20_145/0.25),inset_0_0_0_1px_oklch(0.82_0.20_145/0.15)]"}`}>
                 {isEpic && <div className="epic-shimmer" aria-hidden />}
                 {/* holographic sheen */}
                 <div
@@ -227,8 +228,9 @@ function ProductDetail() {
                   </div>
                 </div>
 
-                {/* image window (16:10) */}
-                <div className="relative aspect-[16/10] w-full bg-black/50 overflow-hidden">
+                {/* image window */}
+                <div className="relative aspect-[3/2] w-full bg-black/50 overflow-hidden">
+
                   {/* corner brackets */}
                   <span className="pointer-events-none absolute top-2 left-2 h-3 w-3 border-l border-t border-primary/60" />
                   <span className="pointer-events-none absolute top-2 right-2 h-3 w-3 border-r border-t border-primary/60" />
@@ -290,7 +292,7 @@ function ProductDetail() {
             </div>
 
             {/* Right: info */}
-            <div className="p-6 md:p-8">
+            <div className="order-1 md:order-2 p-4 sm:p-6 md:p-8">
               <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-primary/80 flex items-center gap-2">
                 <Info className="h-3 w-3" /> product_manifest
               </div>
