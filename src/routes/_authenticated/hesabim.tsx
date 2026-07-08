@@ -487,6 +487,13 @@ function ProfileTab({ userId, email, onSignOut }: { userId: string; email: strin
   const changePw = async () => {
     if (pw.length < 6) return toast.error("[!] şifre en az 6 karakter olmalı");
     if (pw !== pw2) return toast.error("[!] şifreler eşleşmiyor");
+    // 2FA aktifse hassas işlem — aal2 zorunlu
+    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalData?.nextLevel === "aal2" && aalData.currentLevel === "aal1") {
+      toast.error("[!] şifre değişikliği için önce 2FA doğrulaması gerekli");
+      window.location.href = "/guvenlik";
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.auth.updateUser({ password: pw });
     setSaving(false);
