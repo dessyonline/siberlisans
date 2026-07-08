@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Upload, AlertTriangle, CheckCircle2, Database, Package, Search, X } from "lucide-react";
+import { Upload, AlertTriangle, CheckCircle2, Database, Package, Search, X, FileUp } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/keyler")({
   component: KeysAdmin,
