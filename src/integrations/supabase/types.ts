@@ -639,6 +639,7 @@ export type Database = {
           admin_note: string | null
           approved_at: string | null
           created_at: string
+          custom_fields: Json | null
           id: string
           item_count: number
           paid_with: string
@@ -655,6 +656,7 @@ export type Database = {
           admin_note?: string | null
           approved_at?: string | null
           created_at?: string
+          custom_fields?: Json | null
           id?: string
           item_count?: number
           paid_with?: string
@@ -671,6 +673,7 @@ export type Database = {
           admin_note?: string | null
           approved_at?: string | null
           created_at?: string
+          custom_fields?: Json | null
           id?: string
           item_count?: number
           paid_with?: string
@@ -741,6 +744,8 @@ export type Database = {
           delivery_type: Database["public"]["Enums"]["delivery_type"]
           description: string | null
           duration: Database["public"]["Enums"]["duration_type"]
+          external_id: string | null
+          external_price: number | null
           featured: boolean
           id: string
           image_url: string | null
@@ -749,9 +754,11 @@ export type Database = {
           name: string
           orders_count: number
           price_try: number
+          required_fields: Json | null
           review_count: number
           slug: string
           sort_order: number
+          source: string
           stock_hint: number | null
           tier: string
           unlimited_stock: boolean
@@ -766,6 +773,8 @@ export type Database = {
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           duration?: Database["public"]["Enums"]["duration_type"]
+          external_id?: string | null
+          external_price?: number | null
           featured?: boolean
           id?: string
           image_url?: string | null
@@ -774,9 +783,11 @@ export type Database = {
           name: string
           orders_count?: number
           price_try: number
+          required_fields?: Json | null
           review_count?: number
           slug: string
           sort_order?: number
+          source?: string
           stock_hint?: number | null
           tier?: string
           unlimited_stock?: boolean
@@ -791,6 +802,8 @@ export type Database = {
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           duration?: Database["public"]["Enums"]["duration_type"]
+          external_id?: string | null
+          external_price?: number | null
           featured?: boolean
           id?: string
           image_url?: string | null
@@ -799,9 +812,11 @@ export type Database = {
           name?: string
           orders_count?: number
           price_try?: number
+          required_fields?: Json | null
           review_count?: number
           slug?: string
           sort_order?: number
+          source?: string
           stock_hint?: number | null
           tier?: string
           unlimited_stock?: boolean
