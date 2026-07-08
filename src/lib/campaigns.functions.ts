@@ -13,7 +13,8 @@ const upsertInput = z.object({
   status: z.enum(["draft", "scheduled"]).default("draft"),
 });
 
-async function assertAdmin(supabase: NonNullable<Parameters<typeof upsertCampaign>[0]>["context"]["supabase"], userId: string) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function assertAdmin(supabase: any, userId: string) {
   const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
   if (!data) throw new Error("Yetkisiz.");
 }
