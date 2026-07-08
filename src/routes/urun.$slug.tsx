@@ -346,25 +346,6 @@ function ProductDetail() {
                 </div>
               )}
 
-              {/* Price block */}
-              <div className="mt-6 rounded-lg border border-primary/30 bg-primary/5 backdrop-blur p-4 relative overflow-hidden">
-                <div className="pointer-events-none absolute inset-0 scan-line opacity-40" aria-hidden />
-                <div className="relative flex items-end justify-between gap-4">
-                  <div>
-                    <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground">final_price</div>
-                    <div className="mt-1 font-mono text-4xl md:text-5xl neon-text-glow leading-none">
-                      ₺{Number(product.price_try).toLocaleString("tr-TR")}
-                    </div>
-                    <div className="mt-2 font-mono text-[10px] text-muted-foreground">
-                      KDV dahil <span className="text-primary/60">·</span> Havale / EFT
-                    </div>
-                  </div>
-                  <div className="hidden sm:flex flex-col items-end gap-1 font-mono text-[10px] text-muted-foreground">
-                    <span className="text-primary">✓ anında teslim</span>
-                    <span>7/24 destek</span>
-                  </div>
-                </div>
-              </div>
 
               {/* Description */}
               <div className="mt-6">
