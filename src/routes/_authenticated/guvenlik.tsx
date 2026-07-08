@@ -20,20 +20,25 @@ export const Route = createFileRoute("/_authenticated/guvenlik")({
 type Factor = { id: string; friendly_name?: string | null; status: string; created_at: string };
 
 function SecurityPage() {
+  const navigate = useNavigate();
   const [factors, setFactors] = useState<Factor[]>([]);
   const [aal, setAal] = useState<"aal1" | "aal2" | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [mode, setMode] = useState<"idle" | "enroll" | "verify-remove">("idle");
+  const [mode, setMode] = useState<"idle" | "enroll" | "verify-remove" | "step-up">("idle");
   const [removeTarget, setRemoveTarget] = useState<string | null>(null);
 
   const refresh = async () => {
     setLoading(true);
-    const [{ data: f }, { data: a }] = await Promise.all([
+    const { data: u } = await supabase.auth.getUser();
+    const [{ data: f }, { data: a }, roleRes] = await Promise.all([
       supabase.auth.mfa.listFactors(),
       supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
+      u.user ? supabase.rpc("has_role", { _user_id: u.user.id, _role: "admin" }) : Promise.resolve({ data: false }),
     ]);
     setFactors(((f?.totp as Factor[]) ?? []).filter((x) => x.status === "verified"));
     setAal((a?.currentLevel as "aal1" | "aal2" | null) ?? null);
+    setIsAdmin(Boolean(roleRes.data));
     setLoading(false);
   };
 
