@@ -388,14 +388,18 @@ function ProductDetail() {
               <Button
                 disabled={loading || soldOut}
                 onClick={handleBuy}
-                className="mt-7 w-full font-mono neon-glow-strong hidden md:inline-flex"
+                className="mt-7 w-full group relative overflow-hidden font-mono bg-primary text-primary-foreground border border-primary/50 hover:bg-primary/90 shadow-[0_0_25px_oklch(0.82_0.20_145/0.35)] hover:shadow-[0_0_40px_oklch(0.82_0.20_145/0.55)] transition-all duration-300 hidden md:inline-flex"
                 size="lg"
               >
-                {loading
-                  ? "$ processing…"
-                  : soldOut
-                  ? "$ out_of_stock"
-                  : "$ satın al --now"}
+                <span className="pointer-events-none absolute inset-0 scan-line opacity-30" aria-hidden />
+                <Zap className="relative mr-2 h-4 w-4 animate-pulse" />
+                <span className="relative">
+                  {loading
+                    ? "$ processing…"
+                    : soldOut
+                    ? "$ out_of_stock"
+                    : "$ satın al --now"}
+                </span>
               </Button>
               <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center hidden md:block">
                 <span className="text-primary/60">//</span> kredi kartı KABUL EDİLMEZ · sadece banka transferi
