@@ -43,9 +43,13 @@ function OrdersAdmin() {
   const [onlyWithMessage, setOnlyWithMessage] = useState(false);
   const approveFn = useServerFn(approveOrder);
   const rejectFn = useServerFn(rejectOrder);
+  const syncOneFn = useServerFn(syncUniquelisansOrder);
+  const syncAllFn = useServerFn(syncAllPendingUniquelisans);
   const [note, setNote] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [syncing, setSyncing] = useState<string | null>(null);
+  const [syncingAll, setSyncingAll] = useState(false);
 
   const { data: orders } = useQuery({
     queryKey: ["admin-orders", filter],
