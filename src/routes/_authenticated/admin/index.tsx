@@ -93,9 +93,10 @@ function Dashboard() {
             unlimited: !!p.unlimited_stock,
             manual: !!p.manual_fulfillment,
             hint: p.stock_hint,
+            threshold: (p as { low_stock_threshold?: number }).low_stock_threshold ?? 5,
           };
         })
-        .filter((p) => !p.unlimited && !p.manual && p.avail < 3)
+        .filter((p) => !p.unlimited && !p.manual && p.avail < p.threshold)
         .sort((a, b) => a.avail - b.avail);
 
       const productAgg = new Map<string, { name: string; revenue: number; count: number }>();
