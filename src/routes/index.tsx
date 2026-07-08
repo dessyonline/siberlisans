@@ -804,10 +804,9 @@ function ProductCard({
       <CyberStockLoader stock={stock} manual={manual} unlimited={unlimited} soldOut={soldOut} />
 
       <div className="relative mt-auto pt-5 flex items-end justify-between">
-
-        <div>
-          <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">fiyat</div>
-          <div className={`font-mono text-2xl font-semibold ${epic ? "text-[oklch(0.88_0.15_75)] epic-text-glow" : "text-primary"}`}>
+        <div className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 shadow-[0_0_20px_oklch(0.82_0.20_145/0.18)]">
+          <div className="text-[9px] uppercase tracking-[0.25em] text-primary/70 font-mono mb-0.5">fiyat</div>
+          <div className={`font-mono text-3xl font-bold tracking-tight neon-text ${epic ? "text-[oklch(0.88_0.15_75)] epic-text-glow" : "text-primary"}`}>
             ₺{Number(p.price_try).toLocaleString("tr-TR")}
           </div>
         </div>

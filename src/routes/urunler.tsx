@@ -516,9 +516,9 @@ function ProductCard({ product: p }: { product: Row }) {
 
         {/* Price + CTA */}
         <div className="mt-auto pt-4 flex items-end justify-between gap-3">
-          <div>
-            <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground mb-0.5">fiyat</div>
-            <div className={`font-mono text-2xl leading-none ${epic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "neon-text"}`}>
+          <div className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 shadow-[0_0_20px_oklch(0.82_0.20_145/0.18)]">
+            <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-primary/70 mb-0.5">fiyat</div>
+            <div className={`font-mono text-3xl leading-none font-bold tracking-tight neon-text ${epic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "text-primary"}`}>
               ₺{Number(p.price_try).toLocaleString("tr-TR")}
             </div>
           </div>
