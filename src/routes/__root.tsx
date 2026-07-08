@@ -236,8 +236,8 @@ function SiteHeader() {
                 </Button>
               )}
               <Button asChild size="sm" variant="ghost" className="font-mono px-2 sm:px-3">
-                <Link to="/hesabim" aria-label="Hesabım">
-                  <UserIcon className="h-4 w-4 sm:mr-1" />
+                <Link to="/hesabim" aria-label="Hesabım" className="flex items-center gap-1.5">
+                  <HeaderUserBadge userId={user.id} />
                   <span className="hidden sm:inline">hesabım</span>
                 </Link>
               </Button>
