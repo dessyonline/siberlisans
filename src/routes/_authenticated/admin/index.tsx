@@ -164,7 +164,7 @@ function Dashboard() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="glass-card rounded-xl p-5 lg:col-span-2">
+        <div className="glass-card rounded-xl p-5 lg:col-span-2 min-w-0 overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <div>
               <div className="text-xs text-muted-foreground font-mono">Son 14 gün</div>
@@ -208,7 +208,7 @@ function Dashboard() {
           </div>
         </div>
 
-        <div className="glass-card rounded-xl p-5">
+        <div className="glass-card rounded-xl p-5 min-w-0 overflow-hidden">
           <div className="flex items-center justify-between mb-3">
             <div>
               <div className="text-xs text-muted-foreground font-mono flex items-center gap-1">
@@ -251,7 +251,7 @@ function Dashboard() {
         </div>
       </div>
 
-      <div className="glass-card rounded-xl p-5">
+      <div className="glass-card rounded-xl p-5 min-w-0 overflow-hidden">
         <div className="flex items-center justify-between mb-4">
           <div>
             <div className="text-xs text-muted-foreground font-mono">Toplam ciroya göre</div>
@@ -294,7 +294,7 @@ function Dashboard() {
 
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="glass-card rounded-xl p-5">
+        <div className="glass-card rounded-xl p-5 min-w-0 overflow-hidden">
           <div className="flex items-center justify-between mb-3">
             <div>
               <div className="text-xs text-muted-foreground font-mono flex items-center gap-1">
@@ -341,7 +341,7 @@ function Dashboard() {
 
         </div>
 
-        <div className="glass-card rounded-xl p-5">
+        <div className="glass-card rounded-xl p-5 min-w-0 overflow-hidden">
           <div className="flex items-center justify-between mb-3">
             <div>
               <div className="text-xs text-muted-foreground font-mono flex items-center gap-1">
