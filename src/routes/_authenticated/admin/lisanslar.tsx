@@ -238,11 +238,16 @@ function LicensesAdmin() {
   };
 
   const deleteOne = async (id: string, key: string) => {
-    if (!confirm(`"${key}" anahtarını kalıcı olarak sil? Bu işlem geri alınamaz.`)) return;
+    if (!confirm(`"${key}" anahtarını kalıcı olarak sil? Siparişe bağlıysa bağlantı da kaldırılır. Geri alınamaz.`)) return;
     const { error } = await supabase.from("license_keys").delete().eq("id", id);
     if (error) {
-      if (error.message.toLowerCase().includes("foreign") || error.code === "23503") {
-        return toast.error("Bu anahtar bir siparişe bağlı. Önce iptal et, silinemiyor.");
+      const foreign = error.message.toLowerCase().includes("foreign") || error.code === "23503";
+      if (foreign) {
+        const { error: fErr } = await supabase.rpc("admin_force_delete_license", { _id: id });
+        if (fErr) return toast.error(fErr.message);
+        toast.success("Silindi (siparişten koparıldı)");
+        qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
+        return;
       }
       return toast.error(error.message);
     }
