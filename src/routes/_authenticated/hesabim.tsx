@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { toast } from "sonner";
-import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter } from "lucide-react";
+import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/hesabim")({
   component: MyAccount,
