@@ -42,6 +42,8 @@ function SecurityPage() {
     setFactors(((f?.totp as Factor[]) ?? []).filter((x) => x.status === "verified"));
     setAal((a?.currentLevel as "aal1" | "aal2" | null) ?? null);
     setIsAdmin(Boolean(roleRes.data));
+    setUserId(u.user?.id ?? null);
+    setTrustedUntil(trustedDeviceExpiry(u.user?.id ?? null));
     setLoading(false);
   };
 
