@@ -410,7 +410,7 @@ function Payment() {
                           discountTry={discountTry}
                           appliedCode={codeSnap}
                           reference={order.reference_code}
-                          productName={order.product?.name ?? ""}
+                          productName={orderTitle}
                           productDuration={order.product?.duration}
                         />
                         <ReceiptBlock
