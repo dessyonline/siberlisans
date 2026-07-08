@@ -72,8 +72,17 @@ function AuthPage() {
   const signIn = async () => {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error) {
+      setLoading(false);
+      return toast.error(error.message);
+    }
+    // 2FA gerekli mi?
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (aal?.nextLevel === "aal2" && aal.currentLevel === "aal1") {
+      setMfaMode(true);
+      return;
+    }
     toast.success("Giriş başarılı");
     navigate({ to: "/hesabim" });
   };
