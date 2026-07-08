@@ -1,4 +1,4 @@
-/* SiberPHP — License API + storage */
+/* XSiberPHPX — License API + storage */
 (function () {
   "use strict";
   const API = "https://siberlisans.lovable.app";
