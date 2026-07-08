@@ -12,6 +12,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { useCart } from "@/lib/cart-store";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ReviewsSection } from "@/components/ReviewsSection";
+import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
 
 const productMetaQuery = (slug: string) => ({
   queryKey: ["product-meta", slug],
