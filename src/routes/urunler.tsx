@@ -511,110 +511,63 @@ function ProductCard({ product: p }: { product: Row }) {
   const isNew = (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7;
   const epic = p.tier === "epic";
 
-
   return (
-    <div className={`group relative rounded-xl overflow-hidden flex flex-col cv-auto glass-card-hover ${epic ? "epic-card border border-transparent" : "glass-card border border-border/60"}`}>
+    <div className={`group relative rounded-xl overflow-hidden flex flex-col glass-card-hover ${epic ? "epic-card border border-transparent" : "glass-card border border-border/60"}`}>
       {epic && <div className="pointer-events-none absolute inset-0 epic-shimmer" aria-hidden />}
+      <div className="pointer-events-none absolute inset-0 cyber-grid opacity-20" aria-hidden />
 
-      {(() => {
-        const cv = catVisual(p.category);
-        const CIcon = cv.Icon;
-        return (
-          <div
-            className="relative h-40 overflow-hidden border-b border-border/60"
-            style={{
-              background: epic
-                ? "radial-gradient(circle at 30% 30%, oklch(0.78 0.16 75 / 0.28), transparent 60%), radial-gradient(circle at 80% 80%, oklch(0.65 0.20 300 / 0.20), transparent 55%), oklch(0.13 0.02 145)"
-                : `radial-gradient(circle at 30% 30%, ${cv.hue.replace(")", " / 0.18)")}, transparent 65%), oklch(0.13 0.02 145)`,
-            }}
-          >
-            {/* cyber grid backdrop */}
-            <div className="pointer-events-none absolute inset-0 cyber-grid opacity-40" aria-hidden />
-
-
-            {p.image_url ? (
-              <img
-                src={p.image_url}
-                alt={p.name}
-                loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.06]"
-                style={{ filter: `drop-shadow(0 0 22px ${cv.ring})` }}
-              />
-            ) : (
-              <div className="relative h-full w-full flex flex-col items-center justify-center gap-2">
-                <CIcon
-                  className="h-14 w-14 transition-transform duration-500 group-hover:scale-110"
-                  style={{ color: cv.hue, filter: `drop-shadow(0 0 18px ${cv.ring})` }}
-                />
-                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-                  {p.category ?? "lisans"}
-                </span>
-              </div>
-            )}
-
-            {/* corner brackets */}
-            <span className="pointer-events-none absolute top-2 left-2 h-3 w-3 border-l border-t border-primary/50" />
-            <span className="pointer-events-none absolute top-2 right-2 h-3 w-3 border-r border-t border-primary/50" />
-            <span className="pointer-events-none absolute bottom-2 left-2 h-3 w-3 border-l border-b border-primary/50" />
-            <span className="pointer-events-none absolute bottom-2 right-2 h-3 w-3 border-r border-b border-primary/50" />
-
-            {/* soft bottom fade for legibility */}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-background/95 to-transparent" />
-
-            {/* meta chips */}
-            <span
-              className={`absolute left-3 top-3 rounded px-2 py-0.5 font-mono text-[10px] border backdrop-blur-sm ${
-                manual
-                  ? "border-warn/50 bg-warn/15 text-warn"
-                  : "border-primary/40 bg-primary/15 text-primary"
-              }`}
-            >
-              {manual ? "manuel teslim" : "otomatik teslim"}
-            </span>
-            <KeyRound
-              className="absolute right-3 top-3 h-4 w-4 text-primary drop-shadow-[0_0_8px_oklch(0.82_0.20_145/0.7)]"
-            />
+      <div className="relative p-4 flex flex-col flex-1">
+        {/* Top row: category + badges */}
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 font-mono text-[10px] text-primary uppercase tracking-wider">
+            <Star className="h-3 w-3 fill-primary" />
+            {p.category ?? "lisans"}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
             {epic && (
-              <span className="absolute left-3 bottom-3 rounded px-2 py-0.5 font-mono text-[10px] border border-[oklch(0.78_0.16_75)] bg-[oklch(0.78_0.16_75/0.15)] text-[oklch(0.88_0.16_75)] shadow-[0_0_14px_oklch(0.78_0.16_75/0.45)] uppercase tracking-widest">
-                ★ EPIC
+              <span className="inline-flex items-center gap-1 rounded-full border border-[oklch(0.78_0.16_75)] bg-[oklch(0.78_0.16_75/0.15)] px-2 py-0.5 font-mono text-[9px] text-[oklch(0.88_0.16_75)] uppercase tracking-wider shadow-[0_0_14px_oklch(0.78_0.16_75/0.45)]">
+                <Crown className="h-3 w-3" /> epic
               </span>
             )}
             {isNew && !epic && (
-              <span className="absolute right-3 bottom-3 rounded px-2 py-0.5 font-mono text-[10px] border border-cyan/50 bg-cyan/20 text-cyan animate-pulse">
-                ✦ YENİ
+              <span className="inline-flex items-center gap-1 rounded-full border border-cyan/50 bg-cyan/15 px-2 py-0.5 font-mono text-[9px] text-cyan uppercase tracking-wider">
+                <Sparkles className="h-3 w-3" /> yeni
               </span>
             )}
           </div>
-        );
-      })()}
+        </div>
 
-      <div className="p-5 flex flex-col flex-1">
-        <CyberTitle name={p.name} size="base" color="primary" />
+        {/* Title */}
+        <CyberTitle name={p.name} size="base" color={epic ? "warn" : "primary"} />
+
+        {/* Description */}
         {p.description && (
           <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{p.description}</p>
         )}
+
+        {/* Badges */}
         <div className="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px]">
-          <span className="rounded bg-primary/10 text-primary border border-primary/30 px-2 py-0.5">
+          <span className="rounded-full bg-primary/10 text-primary border border-primary/30 px-2.5 py-1">
             {DUR[p.duration] ?? p.duration}
           </span>
-          <span className={`rounded px-2 py-0.5 border ${stockCls}`}>● {stockLabel}</span>
+          <span className={`rounded-full px-2.5 py-1 border ${stockCls}`}>
+            {stockLabel}
+          </span>
         </div>
-        <CyberStockLoader stock={stock} manual={manual} unlimited={unlimited} soldOut={soldOut} />
-        <div className="mt-auto pt-4">
-          <div className="mb-3 font-mono text-2xl neon-text">
-            ₺{Number(p.price_try).toLocaleString("tr-TR")}
+
+        {/* Price + CTA */}
+        <div className="mt-auto pt-4 flex items-end justify-between gap-3">
+          <div>
+            <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground mb-0.5">fiyat</div>
+            <div className={`font-mono text-2xl leading-none ${epic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "neon-text"}`}>
+              ₺{Number(p.price_try).toLocaleString("tr-TR")}
+            </div>
           </div>
-          <div className="flex items-center justify-between gap-2">
-            <Button asChild variant="outline" size="sm" className="font-mono flex-1 border-primary/30 hover:bg-primary/10 hover:text-primary">
-              <Link to="/urun/$slug" params={{ slug: p.slug }}>İncele</Link>
-            </Button>
-            <Button asChild size="sm" className="font-mono flex-1 group/btn" disabled={soldOut}>
-              <Link to="/urun/$slug" params={{ slug: p.slug }} className="flex items-center justify-center gap-1">
-                {soldOut ? "tükendi" : "Satın Al"}
-                {!soldOut && <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover/btn:translate-x-0.5" />}
-              </Link>
-            </Button>
-          </div>
+          <Button asChild size="sm" className="font-mono bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_oklch(0.82_0.20_145/0.35)] transition-all">
+            <Link to="/urun/$slug" params={{ slug: p.slug }} className="flex items-center gap-1">
+              Satın al <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </Button>
         </div>
       </div>
     </div>
