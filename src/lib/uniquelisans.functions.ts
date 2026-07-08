@@ -160,12 +160,18 @@ export const ulImportProduct = createServerFn({ method: "POST" })
 
     if (existing) {
       // Mevcut kayıtta admin manuel logo koyduysa üzerine yazma
-      const { data: cur } = await supabase.from("products").select("image_url").eq("id", existing.id).maybeSingle();
+      const { data: cur } = await supabase.from("products").select("image_url, active").eq("id", existing.id).maybeSingle();
       const updatePayload = { ...payload };
       if (cur?.image_url) delete (updatePayload as Partial<typeof payload>).image_url;
+      // Aktif durumu: stok yoksa zorla pasif; stok varsa admin'in mevcut seçimini bozma
+      if (outOfStock) {
+        updatePayload.active = false;
+      } else if (cur) {
+        updatePayload.active = cur.active;
+      }
       const { error } = await supabase.from("products").update(updatePayload).eq("id", existing.id);
       if (error) throw new Error(error.message);
-      return { ok: true as const, productId: existing.id, updated: true };
+      return { ok: true as const, productId: existing.id, updated: true, outOfStock };
     } else {
       const { data: row, error } = await supabase
         .from("products")
