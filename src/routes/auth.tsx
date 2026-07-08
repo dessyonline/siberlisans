@@ -73,7 +73,7 @@ function AuthPage() {
 
   const signIn = async () => {
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    const { data: signInData, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (error) {
       setLoading(false);
       return toast.error(error.message);
@@ -82,12 +82,20 @@ function AuthPage() {
     const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     setLoading(false);
     if (aal?.nextLevel === "aal2" && aal.currentLevel === "aal1") {
+      // Kullanıcı bu tarayıcıyı daha önce "hatırla" olarak işaretlemişse challenge'ı atla
+      const { isDeviceTrusted } = await import("@/lib/trusted-device");
+      if (isDeviceTrusted(signInData.user?.id)) {
+        toast.success("Giriş başarılı · güvenilir cihaz");
+        navigate({ to: "/hesabim" });
+        return;
+      }
       setMfaMode(true);
       return;
     }
     toast.success("Giriş başarılı");
     navigate({ to: "/hesabim" });
   };
+
 
   const signUp = async () => {
     const em = email.trim().toLowerCase();
