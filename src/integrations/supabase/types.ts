@@ -537,6 +537,7 @@ export type Database = {
           license_key: string
         }[]
       }
+      gen_random_bytes: { Args: { len: number }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
