@@ -33,7 +33,7 @@ export function ReviewsSection({ productId }: { productId: string }) {
       const { data, error } = await supabase
         // biome-ignore lint/suspicious/noExplicitAny: table not in generated types
         .from("product_reviews" as any)
-        .select("id, user_id, rating, comment, created_at, profiles(display_name, email)")
+        .select("id, user_id, rating, comment, created_at")
         .eq("product_id", productId)
         .order("created_at", { ascending: false });
       if (error) throw error;
