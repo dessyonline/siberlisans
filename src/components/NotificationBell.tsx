@@ -132,7 +132,7 @@ export function NotificationBell() {
           {items.map((n) => {
             const inner = (
               <div
-                className={`px-3 py-2.5 border-b border-border/40 hover:bg-primary/5 transition ${
+                className={`group px-3 py-2.5 border-b border-border/40 hover:bg-primary/5 transition ${
                   n.read_at ? "opacity-60" : ""
                 }`}
               >
@@ -154,9 +154,18 @@ export function NotificationBell() {
                       })}
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    aria-label="Bildirimi sil"
+                    onClick={(e) => deleteOne(n.id, e)}
+                    className="shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100 transition h-6 w-6 inline-flex items-center justify-center rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
                 </div>
               </div>
             );
+
             return n.link ? (
               <Link
                 key={n.id}
