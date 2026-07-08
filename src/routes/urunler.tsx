@@ -380,15 +380,26 @@ function ProductCard({ product: p }: { product: Row }) {
     : stock < 3
     ? `son ${stock}`
     : `stok: ${stock}`;
-  const stockCls = unlimited
-    ? "text-cyan border-cyan/40 bg-cyan/10"
-    : manual
-    ? "text-cyan border-cyan/40 bg-cyan/10"
+  const stockBarPct = unlimited || manual
+    ? 100
     : soldOut
-    ? "text-destructive border-destructive/40 bg-destructive/10"
+    ? 0
+    : Math.max(6, Math.min(100, Math.round((stock / 20) * 100)));
+  const stockBarCls = unlimited || manual
+    ? "bg-cyan shadow-[0_0_10px_oklch(0.78_0.15_200/0.6)]"
+    : soldOut
+    ? "bg-destructive"
     : stock < 3
-    ? "text-warn border-warn/40 bg-warn/10 animate-pulse"
-    : "text-primary border-primary/30 bg-primary/10";
+    ? "bg-warn shadow-[0_0_10px_oklch(0.75_0.18_80/0.6)] animate-pulse"
+    : "bg-primary shadow-[0_0_10px_oklch(0.82_0.20_145/0.6)]";
+  const stockTextCls = unlimited || manual
+    ? "text-cyan"
+    : soldOut
+    ? "text-destructive"
+    : stock < 3
+    ? "text-warn"
+    : "text-primary";
+
   const isNew = (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7;
   const epic = p.tier === "epic";
 
