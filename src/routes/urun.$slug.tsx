@@ -441,6 +441,8 @@ function ProductDetail() {
                   <ShoppingCart className="h-4 w-4" />
                   <span className="ml-1.5 hidden lg:inline">sepete ekle</span>
                 </Button>
+                <FavoriteButton productId={product.id} />
+
               </div>
               <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center hidden md:block">
                 <span className="text-primary/60">//</span> kredi kartı KABUL EDİLMEZ · sadece banka transferi
