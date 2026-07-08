@@ -86,6 +86,7 @@ const cartOrderInput = z.object({
     )
     .min(1)
     .max(20),
+  couponCode: z.string().trim().min(1).max(50).optional().nullable(),
 });
 
 export const createCartOrder = createServerFn({ method: "POST" })
@@ -95,7 +96,9 @@ export const createCartOrder = createServerFn({ method: "POST" })
     const { supabase, claims } = context;
     const { data: rows, error } = await supabase.rpc("create_cart_order", {
       _items: data.items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
-    });
+      // biome-ignore lint/suspicious/noExplicitAny: rpc signature updated
+      _coupon_code: (data.couponCode ?? null) as any,
+    } as never);
     if (error) throw new Error(error.message);
     const row = Array.isArray(rows) ? rows[0] : rows;
     if (!row?.order_id) throw new Error("Sipariş oluşturulamadı.");
