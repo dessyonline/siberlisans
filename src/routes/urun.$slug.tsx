@@ -201,7 +201,7 @@ function ProductDetail() {
               <div className="pointer-events-none absolute inset-0 cyber-grid opacity-30" aria-hidden />
 
               {/* ID CARD */}
-              <div className={`relative w-full max-w-[320px] sm:max-w-[380px] mx-auto rounded-xl overflow-hidden ${isEpic ? "epic-card" : "border border-primary/40 bg-gradient-to-br from-[oklch(0.16_0.03_145)] via-[oklch(0.13_0.02_180)] to-[oklch(0.14_0.04_270)] shadow-[0_0_30px_oklch(0.82_0.20_145/0.25),inset_0_0_0_1px_oklch(0.82_0.20_145/0.15)]"}`}>
+              <div className={`relative w-full max-w-[240px] sm:max-w-[320px] md:max-w-[380px] mx-auto rounded-xl overflow-hidden ${isEpic ? "epic-card" : "border border-primary/40 bg-gradient-to-br from-[oklch(0.16_0.03_145)] via-[oklch(0.13_0.02_180)] to-[oklch(0.14_0.04_270)] shadow-[0_0_30px_oklch(0.82_0.20_145/0.25),inset_0_0_0_1px_oklch(0.82_0.20_145/0.15)]"}`}>
                 {isEpic && <div className="epic-shimmer" aria-hidden />}
                 {/* holographic sheen */}
                 <div
