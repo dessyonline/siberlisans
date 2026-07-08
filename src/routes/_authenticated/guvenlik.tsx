@@ -28,6 +28,8 @@ function SecurityPage() {
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<"idle" | "enroll" | "verify-remove" | "step-up">("idle");
   const [removeTarget, setRemoveTarget] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [trustedUntil, setTrustedUntil] = useState<Date | null>(null);
 
   const refresh = async () => {
     setLoading(true);
