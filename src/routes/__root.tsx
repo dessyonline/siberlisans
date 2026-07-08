@@ -7,8 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
-import { Terminal, ShieldCheck, LogIn, LayoutDashboard, User as UserIcon } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { Terminal, ShieldCheck, LogIn, LayoutDashboard, User as UserIcon, Menu, X } from "lucide-react";
+
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
