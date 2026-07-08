@@ -15,7 +15,25 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  MailCheck,
+  MailX,
 } from "lucide-react";
+
+type SortKey = "recent_signup" | "recent_login" | "top_spender" | "most_orders";
+
+function timeAgo(iso: string | null): string {
+  if (!iso) return "hiç";
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "az önce";
+  if (m < 60) return `${m}dk önce`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}sa önce`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d}g önce`;
+  const mo = Math.floor(d / 30);
+  return `${mo}ay önce`;
+}
 
 export const Route = createFileRoute("/_authenticated/admin/kullanicilar")({
   component: UsersAdmin,
