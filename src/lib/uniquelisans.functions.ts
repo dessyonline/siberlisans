@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { resolveLogoUrl } from "@/lib/logo-resolver";
 
 const DEFAULT_URL = "https://bayi.uniquelisans.com/api";
 // Varsayılan markup (admin isterse import ederken override eder)
@@ -148,10 +149,15 @@ export const ulImportProduct = createServerFn({ method: "POST" })
       external_id: String(detail.id),
       required_fields: (detail.required_fields ?? []) as never,
       stock_hint: detail.stock_count ?? null,
+      image_url: resolveLogoUrl(detail.name),
     };
 
     if (existing) {
-      const { error } = await supabase.from("products").update(payload).eq("id", existing.id);
+      // Mevcut kayıtta admin manuel logo koyduysa üzerine yazma
+      const { data: cur } = await supabase.from("products").select("image_url").eq("id", existing.id).maybeSingle();
+      const updatePayload = { ...payload };
+      if (cur?.image_url) delete (updatePayload as Partial<typeof payload>).image_url;
+      const { error } = await supabase.from("products").update(updatePayload).eq("id", existing.id);
       if (error) throw new Error(error.message);
       return { ok: true as const, productId: existing.id, updated: true };
     } else {
