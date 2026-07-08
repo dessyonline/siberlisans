@@ -10,6 +10,9 @@ import { toast } from "sonner";
 import { Info, ShieldCheck, Zap, CheckCircle2, X, KeyRound, Lock, ArrowLeft, Terminal, Cpu, Wifi, Crown, Sparkles, Landmark, Package, RefreshCw, HelpCircle, Users, Clock, ShoppingCart } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useCart } from "@/lib/cart-store";
+import { FavoriteButton } from "@/components/FavoriteButton";
+import { ReviewsSection } from "@/components/ReviewsSection";
+import { StarRating } from "@/components/StarRating";
 
 const productMetaQuery = (slug: string) => ({
   queryKey: ["product-meta", slug],
