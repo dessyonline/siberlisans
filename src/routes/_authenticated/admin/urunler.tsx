@@ -220,9 +220,36 @@ function ProductsAdmin() {
             {stats.empty > 0 && <Stat label="tükendi" value={stats.empty} tone="destructive" icon={<AlertTriangle className="h-3 w-3" />} />}
           </div>
         </div>
-        <Button onClick={openNew} className="font-mono" size="sm">
-          <Plus className="h-4 w-4 mr-1" />yeni ürün
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="font-mono"
+            onClick={async () => {
+              const list = (products ?? []) as Array<{ id: string; name: string; image_url: string | null }>;
+              const missing = list.filter((p) => !p.image_url || p.image_url.trim() === "");
+              if (missing.length === 0) {
+                toast.info("Tüm ürünlerde logo mevcut.");
+                return;
+              }
+              let filled = 0;
+              for (const p of missing) {
+                const url = resolveLogoUrl(p.name);
+                if (!url) continue;
+                const { error } = await supabase.from("products").update({ image_url: url }).eq("id", p.id);
+                if (!error) filled++;
+              }
+              await qc.invalidateQueries({ queryKey: ["admin-products"] });
+              toast.success(`${filled}/${missing.length} ürüne logo eklendi.`);
+            }}
+          >
+            <Sparkles className="h-4 w-4 mr-1" />eksik logoları doldur
+          </Button>
+          <Button onClick={openNew} className="font-mono" size="sm">
+            <Plus className="h-4 w-4 mr-1" />yeni ürün
+          </Button>
+        </div>
+
       </div>
 
       {/* SEARCH + FILTERS */}
@@ -293,11 +320,25 @@ function ProductsAdmin() {
                 {/* thumbnail */}
                 <div className="shrink-0 h-14 w-14 sm:h-16 sm:w-16 rounded-md border border-border/50 bg-black/40 overflow-hidden flex items-center justify-center">
                   {p.image_url ? (
-                    <img src={p.image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+                    <img
+                      src={p.image_url}
+                      alt=""
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                      onError={(e) => {
+                        const img = e.currentTarget;
+                        const fb = fallbackLogoUrl(p.name);
+                        if (fb && img.dataset.fb !== "1") {
+                          img.dataset.fb = "1";
+                          img.src = fb;
+                        }
+                      }}
+                    />
                   ) : (
                     <ImageIcon className="h-5 w-5 text-muted-foreground/50" />
                   )}
                 </div>
+
 
                 {/* main */}
                 <div className="min-w-0 flex-1">
