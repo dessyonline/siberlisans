@@ -20,6 +20,7 @@ import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
 import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
 import { Route as BakiyeYukleTopupIdRouteImport } from './routes/bakiye-yukle.$topupId'
 import { Route as ApiValidateRouteImport } from './routes/api/validate'
+import { Route as ApiRevokeRouteImport } from './routes/api/revoke'
 import { Route as ApiActivateRouteImport } from './routes/api/activate'
 import { Route as AktivasyonTokenRouteImport } from './routes/aktivasyon.$token'
 import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
@@ -89,6 +90,11 @@ const BakiyeYukleTopupIdRoute = BakiyeYukleTopupIdRouteImport.update({
 const ApiValidateRoute = ApiValidateRouteImport.update({
   id: '/api/validate',
   path: '/api/validate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRevokeRoute = ApiRevokeRouteImport.update({
+  id: '/api/revoke',
+  path: '/api/revoke',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiActivateRoute = ApiActivateRouteImport.update({
@@ -194,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
+  '/api/revoke': typeof ApiRevokeRoute
   '/api/validate': typeof ApiValidateRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
@@ -221,6 +228,7 @@ export interface FileRoutesByTo {
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
+  '/api/revoke': typeof ApiRevokeRoute
   '/api/validate': typeof ApiValidateRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
@@ -251,6 +259,7 @@ export interface FileRoutesById {
   '/_authenticated/hesabim': typeof AuthenticatedHesabimRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
+  '/api/revoke': typeof ApiRevokeRoute
   '/api/validate': typeof ApiValidateRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
@@ -281,6 +290,7 @@ export interface FileRouteTypes {
     | '/hesabim'
     | '/aktivasyon/$token'
     | '/api/activate'
+    | '/api/revoke'
     | '/api/validate'
     | '/bakiye-yukle/$topupId'
     | '/odeme/$orderId'
@@ -308,6 +318,7 @@ export interface FileRouteTypes {
     | '/hesabim'
     | '/aktivasyon/$token'
     | '/api/activate'
+    | '/api/revoke'
     | '/api/validate'
     | '/bakiye-yukle/$topupId'
     | '/odeme/$orderId'
@@ -337,6 +348,7 @@ export interface FileRouteTypes {
     | '/_authenticated/hesabim'
     | '/aktivasyon/$token'
     | '/api/activate'
+    | '/api/revoke'
     | '/api/validate'
     | '/bakiye-yukle/$topupId'
     | '/odeme/$orderId'
@@ -364,6 +376,7 @@ export interface RootRouteChildren {
   UrunlerRoute: typeof UrunlerRoute
   AktivasyonTokenRoute: typeof AktivasyonTokenRoute
   ApiActivateRoute: typeof ApiActivateRoute
+  ApiRevokeRoute: typeof ApiRevokeRoute
   ApiValidateRoute: typeof ApiValidateRoute
   BakiyeYukleTopupIdRoute: typeof BakiyeYukleTopupIdRoute
   OdemeOrderIdRoute: typeof OdemeOrderIdRoute
@@ -448,6 +461,13 @@ declare module '@tanstack/react-router' {
       path: '/api/validate'
       fullPath: '/api/validate'
       preLoaderRoute: typeof ApiValidateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/revoke': {
+      id: '/api/revoke'
+      path: '/api/revoke'
+      fullPath: '/api/revoke'
+      preLoaderRoute: typeof ApiRevokeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/activate': {
@@ -622,6 +642,7 @@ const rootRouteChildren: RootRouteChildren = {
   UrunlerRoute: UrunlerRoute,
   AktivasyonTokenRoute: AktivasyonTokenRoute,
   ApiActivateRoute: ApiActivateRoute,
+  ApiRevokeRoute: ApiRevokeRoute,
   ApiValidateRoute: ApiValidateRoute,
   BakiyeYukleTopupIdRoute: BakiyeYukleTopupIdRoute,
   OdemeOrderIdRoute: OdemeOrderIdRoute,
