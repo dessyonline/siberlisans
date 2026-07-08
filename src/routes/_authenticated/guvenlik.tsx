@@ -189,6 +189,7 @@ function SecurityPage() {
           </div>
         )}
 
+        {enabled && mode === "idle" && (
           <div className="border-t border-border/40 pt-3 space-y-2">
             {factors.map((f) => (
               <div
