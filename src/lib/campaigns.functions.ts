@@ -98,3 +98,64 @@ export const sendCampaignNow = createServerFn({ method: "POST" })
     if (!r.ok) throw new Error(r.error ?? "Gönderim başarısız");
     return { ok: true, messageId: r.messageId };
   });
+
+export const testTelegramChannel = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const channelId = process.env.TELEGRAM_CHANNEL_ID;
+    if (!token) return { ok: false, step: "env", error: "TELEGRAM_BOT_TOKEN yok" };
+    if (!channelId) return { ok: false, step: "env", error: "TELEGRAM_CHANNEL_ID yok" };
+
+    const api = (m: string) => `https://api.telegram.org/bot${token}/${m}`;
+    const call = async (m: string, body: Record<string, unknown> = {}) => {
+      const r = await fetch(api(m), {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      return (await r.json().catch(() => ({}))) as { ok?: boolean; result?: Record<string, unknown>; description?: string };
+    };
+
+    const me = await call("getMe");
+    if (!me.ok) return { ok: false, step: "getMe", channelIdConfigured: channelId, error: me.description ?? "getMe hatası" };
+    const botUsername = (me.result?.username as string) ?? "?";
+    const botId = me.result?.id as number | undefined;
+
+    const chat = await call("getChat", { chat_id: channelId });
+    if (!chat.ok) {
+      return {
+        ok: false,
+        step: "getChat",
+        botUsername,
+        channelIdConfigured: channelId,
+        error: chat.description ?? "getChat hatası",
+        hint: chat.description?.includes("chat not found")
+          ? "TELEGRAM_CHANNEL_ID yanlış. @kullaniciadi (başında @) veya -100 ile başlayan sayısal ID olmalı."
+          : undefined,
+      };
+    }
+    const chatTitle = (chat.result?.title as string) ?? "?";
+    const chatUsername = (chat.result?.username as string) ?? null;
+    const chatType = (chat.result?.type as string) ?? "?";
+
+    let memberStatus = "unknown";
+    let memberError: string | null = null;
+    if (botId) {
+      const mem = await call("getChatMember", { chat_id: channelId, user_id: botId });
+      if (mem.ok) memberStatus = (mem.result?.status as string) ?? "unknown";
+      else memberError = mem.description ?? "getChatMember hatası";
+    }
+
+    return {
+      ok: true,
+      botUsername,
+      channelIdConfigured: channelId,
+      chatTitle,
+      chatUsername: chatUsername ? "@" + chatUsername : null,
+      chatType,
+      memberStatus,
+      memberError,
+    };
+  });
