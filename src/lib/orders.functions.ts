@@ -57,13 +57,31 @@ export const markOrderPaid = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => markPaidInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { supabase, userId, claims } = context;
     const { error } = await supabase
       .from("orders")
       .update({ receipt_path: data.receiptPath, status: "reviewing" })
       .eq("id", data.orderId)
       .eq("user_id", userId);
     if (error) throw new Error(error.message);
+
+    try {
+      const { data: o } = await supabase
+        .from("orders")
+        .select("reference_code, price_try, product:products(name)")
+        .eq("id", data.orderId)
+        .single();
+      if (o) {
+        const { notifyTelegram, receiptUploadedMessage } = await import("@/lib/telegram.server");
+        await notifyTelegram(receiptUploadedMessage({
+          reference: o.reference_code,
+          productName: (o.product as unknown as { name: string } | null)?.name ?? "—",
+          priceTry: Number(o.price_try),
+          userEmail: (claims as { email?: string } | null)?.email ?? null,
+        }));
+      }
+    } catch (e) { console.error("[notify] markOrderPaid", (e as Error).message); }
+
     return { ok: true };
   });
 
