@@ -177,12 +177,18 @@ function SiteHeader() {
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  const mobileLinks: Array<{ to: string; label: string; cmd: string }> = [
-    { to: "/", label: "anasayfa", cmd: "cd ~" },
-    { to: "/urunler", label: "ürünler", cmd: "ls ./products" },
-    { to: "/nasil-calisir", label: "nasıl çalışır", cmd: "man siberphp" },
-    { to: "/sss", label: "SSS", cmd: "cat FAQ.md" },
+  const mobileLinks: Array<{
+    to: string;
+    label: string;
+    tag: string;
+    Icon: typeof Home;
+  }> = [
+    { to: "/", label: "Anasayfa", tag: "EXEC_HOME", Icon: Home },
+    { to: "/urunler", label: "Ürünler", tag: "EXEC_PROD", Icon: Package },
+    { to: "/nasil-calisir", label: "Nasıl Çalışır", tag: "EXEC_DOCS", Icon: BookOpen },
+    { to: "/sss", label: "SSS", tag: "EXEC_HELP", Icon: HelpCircle },
   ];
+
 
   return (
     <header className="sticky top-0 z-40 border-b border-primary/20 bg-background/70 backdrop-blur-xl">
