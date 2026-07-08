@@ -135,6 +135,7 @@ function ProductDetail() {
   const stock = liveStock > 0 ? liveStock : (product.stock_hint ?? 0);
   const manual = !!product.manual_fulfillment;
   const unlimited = !!(product as { unlimited_stock?: boolean }).unlimited_stock;
+  const isEpic = ((product as { tier?: string }).tier ?? "standard") === "epic";
   const soldOut = !manual && !unlimited && stock === 0;
   const bullets = (product.description ?? "")
     .split("|")
