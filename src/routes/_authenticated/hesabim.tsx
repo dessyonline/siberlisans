@@ -178,7 +178,7 @@ function MyAccount() {
           <KeysTab keys={approvedKeys} />
         </TabsContent>
         <TabsContent value="profile" className="mt-6">
-          <ProfileTab email={user?.email ?? ""} onSignOut={signOut} />
+          <ProfileTab userId={user?.id ?? ""} email={user?.email ?? ""} onSignOut={signOut} />
         </TabsContent>
       </Tabs>
     </div>
