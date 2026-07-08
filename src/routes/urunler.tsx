@@ -5,8 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  KeyRound, Search, X, Sparkles, TrendingUp, Zap, ShieldCheck, ArrowRight, Package,
-  MonitorSmartphone, Palette, Brain, FileText, Gamepad2, Mail, Cpu, Star, Crown,
+  Search, X, Sparkles, TrendingUp, Zap, ShieldCheck, ArrowRight, Package, Star, Crown,
 } from "lucide-react";
 
 // Category → icon + accent color (oklch tokens)
