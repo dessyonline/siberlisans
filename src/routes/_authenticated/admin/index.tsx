@@ -374,9 +374,104 @@ function Dashboard() {
           </div>
         </div>
       </div>
+
+      <ProfitabilityPanel />
     </div>
   );
 }
+
+function ProfitabilityPanel() {
+  const { data } = useQuery({
+    queryKey: ["admin-profitability"],
+    queryFn: async () => {
+      const [sumRes, profRes] = await Promise.all([
+        supabase.rpc("admin_dashboard_summary" as never),
+        supabase.rpc("admin_product_profitability" as never, { _days: 30 } as never),
+      ]);
+      const s = Array.isArray(sumRes.data) ? sumRes.data[0] : sumRes.data;
+      return {
+        summary: s as {
+          today_revenue: number; today_orders: number;
+          week_revenue: number; week_orders: number;
+          month_revenue: number; month_orders: number;
+          avg_basket: number; users_count: number;
+        } | null,
+        products: (profRes.data ?? []) as {
+          product_id: string; name: string; sold: number;
+          revenue: number; cost: number; profit: number;
+        }[],
+      };
+    },
+    refetchInterval: 30000,
+  });
+
+  const s = data?.summary;
+  const products = (data?.products ?? []).slice(0, 8);
+
+  return (
+    <>
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <MiniStat label="Bugün" value={`₺${Number(s?.today_revenue ?? 0).toLocaleString("tr-TR")}`} sub={`${s?.today_orders ?? 0} sipariş`} />
+        <MiniStat label="Son 7 gün" value={`₺${Number(s?.week_revenue ?? 0).toLocaleString("tr-TR")}`} sub={`${s?.week_orders ?? 0} sipariş`} />
+        <MiniStat label="Son 30 gün" value={`₺${Number(s?.month_revenue ?? 0).toLocaleString("tr-TR")}`} sub={`${s?.month_orders ?? 0} sipariş`} />
+        <MiniStat label="Ort. sepet" value={`₺${Number(s?.avg_basket ?? 0).toLocaleString("tr-TR", { maximumFractionDigits: 0 })}`} sub={`${s?.users_count ?? 0} kullanıcı`} />
+      </div>
+
+      <div className="glass-card rounded-xl p-5 min-w-0 overflow-hidden">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <div className="text-xs text-muted-foreground font-mono">son 30 gün · sadece maliyet girilen ürünler kâr hesaplar</div>
+            <div className="text-lg font-semibold">Ürün Karlılık Raporu</div>
+          </div>
+        </div>
+        {products.length === 0 ? (
+          <div className="text-xs text-muted-foreground py-6 text-center font-mono">bu dönemde satış yok</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground border-b border-border/60">
+                  <th className="text-left py-2 pr-2">ürün</th>
+                  <th className="text-right py-2 px-2">adet</th>
+                  <th className="text-right py-2 px-2">ciro</th>
+                  <th className="text-right py-2 px-2">maliyet</th>
+                  <th className="text-right py-2 pl-2">kâr</th>
+                </tr>
+              </thead>
+              <tbody className="font-mono text-xs">
+                {products.map((p) => {
+                  const noCost = Number(p.cost) === 0;
+                  return (
+                    <tr key={p.product_id} className="border-b border-border/40 last:border-0">
+                      <td className="py-2 pr-2 truncate max-w-[220px]">{p.name}</td>
+                      <td className="py-2 px-2 text-right">{p.sold}</td>
+                      <td className="py-2 px-2 text-right text-primary">₺{Number(p.revenue).toLocaleString("tr-TR")}</td>
+                      <td className="py-2 px-2 text-right text-muted-foreground">{noCost ? "—" : `₺${Number(p.cost).toLocaleString("tr-TR")}`}</td>
+                      <td className={`py-2 pl-2 text-right ${noCost ? "text-muted-foreground" : Number(p.profit) > 0 ? "text-primary" : "text-destructive"}`}>
+                        {noCost ? "maliyet ekle" : `₺${Number(p.profit).toLocaleString("tr-TR")}`}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+function MiniStat({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="glass-card rounded-xl p-4">
+      <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-mono">{label}</div>
+      <div className="mt-1 text-xl font-semibold tracking-tight">{value}</div>
+      {sub && <div className="mt-0.5 text-[11px] text-muted-foreground font-mono">{sub}</div>}
+    </div>
+  );
+}
+
 
 function Stat({
   icon: Icon,
