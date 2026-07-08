@@ -99,16 +99,30 @@ export function NotificationBell() {
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0 max-h-[70vh] overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between border-b border-border/60 px-3 py-2">
-          <div className="font-mono text-xs text-muted-foreground">
+        <div className="flex items-center justify-between border-b border-border/60 px-3 py-2 gap-2">
+          <div className="font-mono text-xs text-muted-foreground truncate">
             $ ./bildirimler ({unread} okunmamış)
           </div>
-          {unread > 0 && (
-            <Button size="sm" variant="ghost" className="h-6 text-[10px] font-mono" onClick={markAllRead}>
-              <Check className="h-3 w-3 mr-1" /> tümü okundu
-            </Button>
-          )}
+          <div className="flex items-center gap-1 shrink-0">
+            {unread > 0 && (
+              <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] font-mono" onClick={markAllRead}>
+                <Check className="h-3 w-3 mr-1" /> okundu
+              </Button>
+            )}
+            {items.length > 0 && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 px-2 text-[10px] font-mono text-destructive hover:text-destructive"
+                onClick={clearAll}
+                title="Tüm bildirimleri sil"
+              >
+                <Trash2 className="h-3 w-3 mr-1" /> temizle
+              </Button>
+            )}
+          </div>
         </div>
+
         <div className="overflow-y-auto flex-1">
           {items.length === 0 && (
             <div className="py-10 text-center text-xs font-mono text-muted-foreground">
