@@ -481,6 +481,39 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          abandonment: boolean
+          created_at: string
+          marketing: boolean
+          order_updates: boolean
+          telegram_chat_id: string | null
+          updated_at: string
+          user_id: string
+          wallet_events: boolean
+        }
+        Insert: {
+          abandonment?: boolean
+          created_at?: string
+          marketing?: boolean
+          order_updates?: boolean
+          telegram_chat_id?: string | null
+          updated_at?: string
+          user_id: string
+          wallet_events?: boolean
+        }
+        Update: {
+          abandonment?: boolean
+          created_at?: string
+          marketing?: boolean
+          order_updates?: boolean
+          telegram_chat_id?: string | null
+          updated_at?: string
+          user_id?: string
+          wallet_events?: boolean
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           body: string | null
@@ -636,6 +669,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          abandonment_notified_at: string | null
           admin_note: string | null
           approved_at: string | null
           checkout_fields: Json | null
@@ -651,12 +685,14 @@ export type Database = {
           product_id: string | null
           receipt_path: string | null
           reference_code: string
+          referral_commission_paid: boolean
           status: Database["public"]["Enums"]["order_status"]
           updated_at: string
           user_id: string
           user_note: string | null
         }
         Insert: {
+          abandonment_notified_at?: string | null
           admin_note?: string | null
           approved_at?: string | null
           checkout_fields?: Json | null
@@ -672,12 +708,14 @@ export type Database = {
           product_id?: string | null
           receipt_path?: string | null
           reference_code: string
+          referral_commission_paid?: boolean
           status?: Database["public"]["Enums"]["order_status"]
           updated_at?: string
           user_id: string
           user_note?: string | null
         }
         Update: {
+          abandonment_notified_at?: string | null
           admin_note?: string | null
           approved_at?: string | null
           checkout_fields?: Json | null
@@ -693,6 +731,7 @@ export type Database = {
           product_id?: string | null
           receipt_path?: string | null
           reference_code?: string
+          referral_commission_paid?: boolean
           status?: Database["public"]["Enums"]["order_status"]
           updated_at?: string
           user_id?: string
@@ -1288,12 +1327,39 @@ export type Database = {
       }
       gen_random_bytes: { Args: { len: number }; Returns: string }
       gen_referral_code: { Args: never; Returns: string }
+      get_order_by_reference: {
+        Args: { _ref: string }
+        Returns: {
+          admin_note: string
+          approved_at: string
+          created_at: string
+          external_status: string
+          order_id: string
+          price_try: number
+          reference_code: string
+          status: Database["public"]["Enums"]["order_status"]
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      list_abandoned_orders: {
+        Args: { _minutes?: number }
+        Returns: {
+          created_at: string
+          order_id: string
+          price_try: number
+          reference_code: string
+          user_id: string
+        }[]
+      }
+      mark_abandonment_notified: {
+        Args: { _order_id: string }
+        Returns: undefined
       }
       pay_order_with_wallet: {
         Args: { _order_id: string }
