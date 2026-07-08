@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
-import { MessageCircle, X, Send } from "lucide-react";
+import { MessageCircle, X, Send, Ticket } from "lucide-react";
 import { SITE } from "@/lib/site-config";
+import { useAuth } from "@/lib/auth-context";
+import { Link } from "@tanstack/react-router";
 
 /**
  * Sağ-alt köşede "destek" butonu. Açıldığında Telegram / WhatsApp / e-posta
