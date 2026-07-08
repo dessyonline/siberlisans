@@ -41,6 +41,72 @@ export type Database = {
         }
         Relationships: []
       }
+      campaigns: {
+        Row: {
+          body: string | null
+          created_at: string
+          created_by: string | null
+          error: string | null
+          id: string
+          image_url: string | null
+          product_id: string | null
+          promo_code_id: string | null
+          scheduled_at: string | null
+          sent_at: string | null
+          status: string
+          telegram_message_id: number | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          error?: string | null
+          id?: string
+          image_url?: string | null
+          product_id?: string | null
+          promo_code_id?: string | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          telegram_message_id?: number | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          error?: string | null
+          id?: string
+          image_url?: string | null
+          product_id?: string | null
+          promo_code_id?: string | null
+          scheduled_at?: string | null
+          sent_at?: string | null
+          status?: string
+          telegram_message_id?: number | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "campaigns_promo_code_id_fkey"
+            columns: ["promo_code_id"]
+            isOneToOne: false
+            referencedRelation: "promo_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       license_keys: {
         Row: {
           activated_at: string | null
