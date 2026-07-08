@@ -211,6 +211,51 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          product_id: string
+          product_name_snapshot: string
+          quantity: number
+          unit_price_try: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          product_id: string
+          product_name_snapshot: string
+          quantity?: number
+          unit_price_try: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          product_id?: string
+          product_name_snapshot?: string
+          quantity?: number
+          unit_price_try?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_keys: {
         Row: {
           delivered_at: string
@@ -253,9 +298,10 @@ export type Database = {
           approved_at: string | null
           created_at: string
           id: string
+          item_count: number
           paid_with: string
           price_try: number
-          product_id: string
+          product_id: string | null
           receipt_path: string | null
           reference_code: string
           status: Database["public"]["Enums"]["order_status"]
@@ -268,9 +314,10 @@ export type Database = {
           approved_at?: string | null
           created_at?: string
           id?: string
+          item_count?: number
           paid_with?: string
           price_try: number
-          product_id: string
+          product_id?: string | null
           receipt_path?: string | null
           reference_code: string
           status?: Database["public"]["Enums"]["order_status"]
@@ -283,9 +330,10 @@ export type Database = {
           approved_at?: string | null
           created_at?: string
           id?: string
+          item_count?: number
           paid_with?: string
           price_try?: number
-          product_id?: string
+          product_id?: string | null
           receipt_path?: string | null
           reference_code?: string
           status?: Database["public"]["Enums"]["order_status"]
@@ -658,6 +706,14 @@ export type Database = {
           delivery_type: Database["public"]["Enums"]["delivery_type"]
           key_value: string
           product_name: string
+        }[]
+      }
+      create_cart_order: {
+        Args: { _items: Json }
+        Returns: {
+          order_id: string
+          reference_code: string
+          total_try: number
         }[]
       }
       finalize_free_order: {
