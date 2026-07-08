@@ -34,6 +34,30 @@ export const listUsers = createServerFn({ method: "GET" })
     if (rErr) throw new Error(rErr.message);
     if (oErr) throw new Error(oErr.message);
 
+    // Auth admin API: fetch last_sign_in_at + email_confirmed flag
+    const authMap = new Map<string, { last_sign_in_at: string | null; confirmed: boolean }>();
+    try {
+      let page = 1;
+      while (page <= 20) {
+        const { data: authData, error: aErr } = await supabaseAdmin.auth.admin.listUsers({
+          page,
+          perPage: 200,
+        });
+        if (aErr) break;
+        const users = authData?.users ?? [];
+        for (const u of users) {
+          authMap.set(u.id, {
+            last_sign_in_at: u.last_sign_in_at ?? null,
+            confirmed: !!u.email_confirmed_at,
+          });
+        }
+        if (users.length < 200) break;
+        page++;
+      }
+    } catch {
+      // ignore, sign-in verisi opsiyonel
+    }
+
     const roleMap = new Map<string, string[]>();
     (roles ?? []).forEach((r) => {
       const list = roleMap.get(r.user_id) ?? [];
@@ -53,14 +77,105 @@ export const listUsers = createServerFn({ method: "GET" })
       orderStats.set(o.user_id, s);
     });
 
-    return (profiles ?? []).map((p) => ({
-      id: p.id,
-      email: p.email,
-      display_name: p.display_name,
-      created_at: p.created_at,
-      roles: roleMap.get(p.id) ?? [],
-      stats: orderStats.get(p.id) ?? { total: 0, approved: 0, pending: 0, spend: 0 },
-    }));
+    return (profiles ?? []).map((p) => {
+      const a = authMap.get(p.id);
+      return {
+        id: p.id,
+        email: p.email,
+        display_name: p.display_name,
+        created_at: p.created_at,
+        last_sign_in_at: a?.last_sign_in_at ?? null,
+        email_confirmed: a?.confirmed ?? false,
+        roles: roleMap.get(p.id) ?? [],
+        stats: orderStats.get(p.id) ?? { total: 0, approved: 0, pending: 0, spend: 0 },
+      };
+    });
+  });
+
+export const recentUserActivity = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: profiles } = await supabaseAdmin
+      .from("profiles")
+      .select("id, email, display_name, created_at")
+      .order("created_at", { ascending: false })
+      .limit(8);
+
+    const authUsers: { id: string; email: string | null; last_sign_in_at: string | null }[] = [];
+    try {
+      let page = 1;
+      while (page <= 20) {
+        const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage: 200 });
+        if (error) break;
+        const users = data?.users ?? [];
+        for (const u of users) {
+          if (u.last_sign_in_at) {
+            authUsers.push({
+              id: u.id,
+              email: u.email ?? null,
+              last_sign_in_at: u.last_sign_in_at,
+            });
+          }
+        }
+        if (users.length < 200) break;
+        page++;
+      }
+    } catch {
+      // ignore
+    }
+
+    const nameMap = new Map<string, string | null>();
+    (profiles ?? []).forEach((p) => nameMap.set(p.id, p.display_name));
+    const missing = authUsers.map((u) => u.id).filter((id) => !nameMap.has(id));
+    if (missing.length > 0) {
+      const { data: extra } = await supabaseAdmin
+        .from("profiles")
+        .select("id, display_name")
+        .in("id", missing.slice(0, 100));
+      (extra ?? []).forEach((p) => nameMap.set(p.id, p.display_name));
+    }
+
+    const recentLogins = authUsers
+      .sort((a, b) => (b.last_sign_in_at ?? "").localeCompare(a.last_sign_in_at ?? ""))
+      .slice(0, 8)
+      .map((u) => ({
+        id: u.id,
+        email: u.email,
+        display_name: nameMap.get(u.id) ?? null,
+        last_sign_in_at: u.last_sign_in_at,
+      }));
+
+    const { count: totalCount } = await supabaseAdmin
+      .from("profiles")
+      .select("id", { count: "exact", head: true });
+
+    // Son 24 saat kayıt / giriş
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const newLast24h = (profiles ?? []).filter((p) => p.created_at > oneDayAgo).length;
+    const activeLast24h = authUsers.filter(
+      (u) => (u.last_sign_in_at ?? "") > oneDayAgo,
+    ).length;
+
+    return {
+      recentSignups: (profiles ?? []).map((p) => ({
+        id: p.id,
+        email: p.email,
+        display_name: p.display_name,
+        created_at: p.created_at,
+      })),
+      recentLogins,
+      totals: {
+        users: totalCount ?? 0,
+        signedInEver: authUsers.length,
+        newLast24h,
+        activeLast24h,
+      },
+    };
   });
 
 const setRoleInput = z.object({

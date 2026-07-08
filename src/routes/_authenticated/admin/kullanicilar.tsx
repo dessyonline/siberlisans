@@ -15,7 +15,25 @@ import {
   ChevronDown,
   ChevronUp,
   X,
+  MailCheck,
+  MailX,
 } from "lucide-react";
+
+type SortKey = "recent_signup" | "recent_login" | "top_spender" | "most_orders";
+
+function timeAgo(iso: string | null): string {
+  if (!iso) return "hiç";
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return "az önce";
+  if (m < 60) return `${m}dk önce`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}sa önce`;
+  const d = Math.floor(h / 24);
+  if (d < 30) return `${d}g önce`;
+  const mo = Math.floor(d / 30);
+  return `${mo}ay önce`;
+}
 
 export const Route = createFileRoute("/_authenticated/admin/kullanicilar")({
   component: UsersAdmin,
@@ -29,6 +47,7 @@ function UsersAdmin() {
   const delFn = useServerFn(deleteUser);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "admin" | "user">("all");
+  const [sort, setSort] = useState<SortKey>("recent_signup");
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const { data: users, isLoading } = useQuery({
@@ -39,7 +58,7 @@ function UsersAdmin() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return (users ?? []).filter((u) => {
+    const list = (users ?? []).filter((u) => {
       const isAdmin = u.roles.includes("admin");
       if (filter === "admin" && !isAdmin) return false;
       if (filter === "user" && isAdmin) return false;
@@ -49,11 +68,38 @@ function UsersAdmin() {
         (u.display_name ?? "").toLowerCase().includes(q)
       );
     });
-  }, [users, search, filter]);
+    const sorted = [...list];
+    sorted.sort((a, b) => {
+      switch (sort) {
+        case "recent_login":
+          return (b.last_sign_in_at ?? "").localeCompare(a.last_sign_in_at ?? "");
+        case "top_spender":
+          return b.stats.spend - a.stats.spend;
+        case "most_orders":
+          return b.stats.total - a.stats.total;
+        default:
+          return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+      }
+    });
+    return sorted;
+  }, [users, search, filter, sort]);
 
   const totals = useMemo(() => {
     const admins = (users ?? []).filter((u) => u.roles.includes("admin")).length;
-    return { admins, users: (users ?? []).length - admins, total: users?.length ?? 0 };
+    const oneDayAgo = Date.now() - 86400000;
+    const newLast24h = (users ?? []).filter(
+      (u) => new Date(u.created_at).getTime() > oneDayAgo,
+    ).length;
+    const activeLast24h = (users ?? []).filter(
+      (u) => u.last_sign_in_at && new Date(u.last_sign_in_at).getTime() > oneDayAgo,
+    ).length;
+    return {
+      admins,
+      users: (users ?? []).length - admins,
+      total: users?.length ?? 0,
+      newLast24h,
+      activeLast24h,
+    };
   }, [users]);
 
   const toggleAdmin = async (userId: string, isAdmin: boolean) => {
@@ -81,7 +127,7 @@ function UsersAdmin() {
     <div>
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="font-mono text-xl sm:text-2xl neon-text">Kullanıcılar</h1>
-        <div className="flex items-center gap-2 font-mono text-xs">
+        <div className="flex items-center gap-2 font-mono text-xs flex-wrap">
           <span className="rounded border border-primary/30 bg-primary/5 px-2 py-1 text-primary">
             <Shield className="inline h-3 w-3 mr-1" />admin {totals.admins}
           </span>
@@ -90,6 +136,12 @@ function UsersAdmin() {
           </span>
           <span className="rounded border border-cyan/30 bg-cyan/5 px-2 py-1 text-cyan">
             toplam {totals.total}
+          </span>
+          <span className="rounded border border-primary/30 bg-primary/5 px-2 py-1 text-primary">
+            +{totals.newLast24h} / 24s yeni
+          </span>
+          <span className="rounded border border-cyan/30 bg-cyan/5 px-2 py-1 text-cyan">
+            {totals.activeLast24h} / 24s aktif
           </span>
         </div>
       </div>
@@ -122,7 +174,18 @@ function UsersAdmin() {
             <option value="admin">adminler</option>
             <option value="user">kullanıcılar</option>
           </select>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortKey)}
+            className="h-9 rounded border border-border bg-input px-2 font-mono text-xs"
+          >
+            <option value="recent_signup">son kayıt</option>
+            <option value="recent_login">son giriş</option>
+            <option value="top_spender">en çok harcayan</option>
+            <option value="most_orders">en çok sipariş</option>
+          </select>
         </div>
+
 
         <div className="space-y-2">
           {isLoading && (
@@ -164,16 +227,19 @@ function UsersAdmin() {
                             ADMIN
                           </span>
                         )}
+                        {u.email_confirmed ? (
+                          <MailCheck className="h-3 w-3 text-primary" aria-label="e-posta doğrulanmış" />
+                        ) : (
+                          <MailX className="h-3 w-3 text-warn" aria-label="e-posta doğrulanmamış" />
+                        )}
                       </div>
                       <div className="text-xs text-muted-foreground truncate font-mono">
                         {u.email ?? "—"}
                       </div>
                     </div>
                     <div className="hidden sm:flex flex-col items-end shrink-0 font-mono text-[10px] text-muted-foreground">
-                      <span>{u.stats.total} sipariş</span>
-                      <span className="text-primary">
-                        ₺{u.stats.spend.toLocaleString("tr-TR")}
-                      </span>
+                      <span>{u.stats.total} sipariş · ₺{u.stats.spend.toLocaleString("tr-TR")}</span>
+                      <span className="text-cyan">giriş: {timeAgo(u.last_sign_in_at)}</span>
                     </div>
                     {isOpen ? (
                       <ChevronUp className="h-4 w-4 text-muted-foreground" />
@@ -194,8 +260,14 @@ function UsersAdmin() {
                         accent="cyan"
                       />
                     </div>
-                    <div className="text-[10px] font-mono text-muted-foreground">
-                      kayıt: {new Date(u.created_at).toLocaleString("tr-TR")}
+                    <div className="grid sm:grid-cols-2 gap-2 text-[11px] font-mono text-muted-foreground">
+                      <div>kayıt: {new Date(u.created_at).toLocaleString("tr-TR")}</div>
+                      <div>
+                        son giriş:{" "}
+                        {u.last_sign_in_at
+                          ? new Date(u.last_sign_in_at).toLocaleString("tr-TR")
+                          : "—"}
+                      </div>
                     </div>
                     <UserOrders userId={u.id} />
                     <div className="flex flex-wrap gap-2 pt-2 border-t border-border/40">
