@@ -484,6 +484,13 @@ function Payment() {
           <SecurityChecklist />
         </aside>
       </div>
+      <MfaGateDialog
+        open={mfaGateOpen}
+        onOpenChange={setMfaGateOpen}
+        title="Satın alma için 2FA gerekli"
+        description="Cüzdan ödemesini onaylamak için authenticator uygulamandaki 6 haneli kodu gir."
+        onSuccess={() => runWalletPay()}
+      />
     </div>
   );
 }
