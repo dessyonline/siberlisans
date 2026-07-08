@@ -174,6 +174,7 @@ function ProductsAdmin() {
           category: p.category ?? null,
           manual_fulfillment: p.manual_fulfillment,
           stock_hint: p.stock_hint,
+          low_stock_threshold: p.low_stock_threshold ?? 5,
           featured: patch.featured ?? p.featured,
           unlimited_stock: p.unlimited_stock,
           sort_order: Number(p.sort_order ?? 0),
