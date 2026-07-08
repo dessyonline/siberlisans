@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { Info, ShieldCheck, Zap, CheckCircle2, X, KeyRound, Lock, ArrowLeft, Terminal, Cpu, Wifi, Crown, Sparkles, Landmark, Package, RefreshCw, HelpCircle, Users, Clock, ShoppingCart } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useCart } from "@/lib/cart-store";
+import { FavoriteButton } from "@/components/FavoriteButton";
+import { ReviewsSection } from "@/components/ReviewsSection";
 
 const productMetaQuery = (slug: string) => ({
   queryKey: ["product-meta", slug],
@@ -441,6 +443,8 @@ function ProductDetail() {
                   <ShoppingCart className="h-4 w-4" />
                   <span className="ml-1.5 hidden lg:inline">sepete ekle</span>
                 </Button>
+                <FavoriteButton productId={product.id} />
+
               </div>
               <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center hidden md:block">
                 <span className="text-primary/60">//</span> kredi kartı KABUL EDİLMEZ · sadece banka transferi
@@ -551,6 +555,10 @@ function ProductDetail() {
             ))}
           </Accordion>
         </div>
+
+        {/* Reviews */}
+        <ReviewsSection productId={product.id} />
+
 
         {/* Related products */}
         {relatedProducts && relatedProducts.length > 0 && (

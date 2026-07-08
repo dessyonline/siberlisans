@@ -3,11 +3,13 @@ import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Minus, Plus, Trash2, ShoppingCart, KeyRound, ArrowRight } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingCart, KeyRound, ArrowRight, Ticket, X } from "lucide-react";
 import { useCart, selectCartTotal } from "@/lib/cart-store";
 import { useAuth } from "@/lib/auth-context";
 import { createCartOrder } from "@/lib/orders.functions";
+import { validateCoupon } from "@/lib/coupons.functions";
 
 export function CartDrawer() {
   const isOpen = useCart((s) => s.isOpen);
@@ -20,7 +22,32 @@ export function CartDrawer() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const createCartOrderFn = useServerFn(createCartOrder);
+  const validateCouponFn = useServerFn(validateCoupon);
   const [submitting, setSubmitting] = useState(false);
+  const [couponInput, setCouponInput] = useState("");
+  const [coupon, setCoupon] = useState<{ code: string; discount: number } | null>(null);
+  const [checking, setChecking] = useState(false);
+
+  const finalTotal = Math.max(0, total - (coupon?.discount ?? 0));
+
+  async function applyCoupon() {
+    if (!couponInput.trim()) return;
+    if (!user) {
+      toast("Kupon uygulamak için giriş yap");
+      return;
+    }
+    setChecking(true);
+    try {
+      const res = await validateCouponFn({ data: { code: couponInput.trim(), subtotal: total } });
+      setCoupon({ code: res.code, discount: res.discountTry });
+      toast.success(`Kupon uygulandı: -₺${res.discountTry.toLocaleString("tr-TR")}`);
+    } catch (e) {
+      toast.error((e as Error).message);
+      setCoupon(null);
+    } finally {
+      setChecking(false);
+    }
+  }
 
   const checkout = async () => {
     if (items.length === 0) return;
@@ -33,9 +60,14 @@ export function CartDrawer() {
     setSubmitting(true);
     try {
       const res = await createCartOrderFn({
-        data: { items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })) },
+        data: {
+          items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+          couponCode: coupon?.code ?? null,
+        },
       });
       clear();
+      setCoupon(null);
+      setCouponInput("");
       close();
       navigate({ to: "/odeme/$orderId", params: { orderId: res.orderId } });
     } catch (e) {
@@ -117,9 +149,39 @@ export function CartDrawer() {
 
         {items.length > 0 && (
           <div className="border-t border-border/60 p-4 space-y-3 bg-background/70 backdrop-blur">
+            {/* Kupon */}
+            {coupon ? (
+              <div className="flex items-center gap-2 font-mono text-xs bg-primary/10 border border-primary/30 rounded px-2 py-1.5">
+                <Ticket className="h-3.5 w-3.5 text-primary" />
+                <span className="text-primary">{coupon.code}</span>
+                <span className="ml-auto text-primary">-₺{coupon.discount.toLocaleString("tr-TR")}</span>
+                <button onClick={() => { setCoupon(null); setCouponInput(""); }} className="text-muted-foreground hover:text-destructive">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Input
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                  placeholder="Kupon kodu"
+                  className="font-mono text-xs h-9"
+                />
+                <Button onClick={applyCoupon} disabled={checking || !couponInput.trim()} size="sm" variant="outline" className="font-mono">
+                  {checking ? "…" : "uygula"}
+                </Button>
+              </div>
+            )}
+
+            {coupon && (
+              <div className="flex items-center justify-between font-mono text-xs text-muted-foreground">
+                <span>ara toplam</span>
+                <span>₺{total.toLocaleString("tr-TR")}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between font-mono">
               <span className="text-xs text-muted-foreground uppercase tracking-widest">toplam</span>
-              <span className="text-xl neon-text">₺{total.toLocaleString("tr-TR")}</span>
+              <span className="text-xl neon-text">₺{finalTotal.toLocaleString("tr-TR")}</span>
             </div>
             <Button
               onClick={checkout}

@@ -29,6 +29,7 @@ import { Route as ApiRevokeRouteImport } from './routes/api/revoke'
 import { Route as ApiActivateRouteImport } from './routes/api/activate'
 import { Route as AktivasyonTokenRouteImport } from './routes/aktivasyon.$token'
 import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
+import { Route as AuthenticatedFavorilerimRouteImport } from './routes/_authenticated/favorilerim'
 import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated/cuzdan'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
@@ -37,6 +38,7 @@ import { Route as AuthenticatedAdminSiparislerRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminPromosyonlarRouteImport } from './routes/_authenticated/admin/promosyonlar'
 import { Route as AuthenticatedAdminPopulerRouteImport } from './routes/_authenticated/admin/populer'
 import { Route as AuthenticatedAdminLisanslarRouteImport } from './routes/_authenticated/admin/lisanslar'
+import { Route as AuthenticatedAdminKuponlarRouteImport } from './routes/_authenticated/admin/kuponlar'
 import { Route as AuthenticatedAdminKullanicilarRouteImport } from './routes/_authenticated/admin/kullanicilar'
 import { Route as AuthenticatedAdminKeylerRouteImport } from './routes/_authenticated/admin/keyler'
 import { Route as AuthenticatedAdminKampanyalarRouteImport } from './routes/_authenticated/admin/kampanyalar'
@@ -143,6 +145,12 @@ const AuthenticatedHesabimRoute = AuthenticatedHesabimRouteImport.update({
   path: '/hesabim',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFavorilerimRoute =
+  AuthenticatedFavorilerimRouteImport.update({
+    id: '/favorilerim',
+    path: '/favorilerim',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCuzdanRoute = AuthenticatedCuzdanRouteImport.update({
   id: '/cuzdan',
   path: '/cuzdan',
@@ -186,6 +194,12 @@ const AuthenticatedAdminLisanslarRoute =
   AuthenticatedAdminLisanslarRouteImport.update({
     id: '/lisanslar',
     path: '/lisanslar',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminKuponlarRoute =
+  AuthenticatedAdminKuponlarRouteImport.update({
+    id: '/kuponlar',
+    path: '/kuponlar',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 const AuthenticatedAdminKullanicilarRoute =
@@ -239,6 +253,7 @@ export interface FileRoutesByFullPath {
   '/urunler': typeof UrunlerRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/cuzdan': typeof AuthenticatedCuzdanRoute
+  '/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
@@ -252,6 +267,7 @@ export interface FileRoutesByFullPath {
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
+  '/admin/kuponlar': typeof AuthenticatedAdminKuponlarRoute
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
   '/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
@@ -273,6 +289,7 @@ export interface FileRoutesByTo {
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
+  '/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
@@ -286,6 +303,7 @@ export interface FileRoutesByTo {
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
+  '/admin/kuponlar': typeof AuthenticatedAdminKuponlarRoute
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
   '/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
@@ -310,6 +328,7 @@ export interface FileRoutesById {
   '/urunler': typeof UrunlerRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/cuzdan': typeof AuthenticatedCuzdanRoute
+  '/_authenticated/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/_authenticated/hesabim': typeof AuthenticatedHesabimRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
@@ -323,6 +342,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/_authenticated/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/_authenticated/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
+  '/_authenticated/admin/kuponlar': typeof AuthenticatedAdminKuponlarRoute
   '/_authenticated/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
   '/_authenticated/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/_authenticated/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
@@ -347,6 +367,7 @@ export interface FileRouteTypes {
     | '/urunler'
     | '/admin'
     | '/cuzdan'
+    | '/favorilerim'
     | '/hesabim'
     | '/aktivasyon/$token'
     | '/api/activate'
@@ -360,6 +381,7 @@ export interface FileRouteTypes {
     | '/admin/kampanyalar'
     | '/admin/keyler'
     | '/admin/kullanicilar'
+    | '/admin/kuponlar'
     | '/admin/lisanslar'
     | '/admin/populer'
     | '/admin/promosyonlar'
@@ -381,6 +403,7 @@ export interface FileRouteTypes {
     | '/sss'
     | '/urunler'
     | '/cuzdan'
+    | '/favorilerim'
     | '/hesabim'
     | '/aktivasyon/$token'
     | '/api/activate'
@@ -394,6 +417,7 @@ export interface FileRouteTypes {
     | '/admin/kampanyalar'
     | '/admin/keyler'
     | '/admin/kullanicilar'
+    | '/admin/kuponlar'
     | '/admin/lisanslar'
     | '/admin/populer'
     | '/admin/promosyonlar'
@@ -417,6 +441,7 @@ export interface FileRouteTypes {
     | '/urunler'
     | '/_authenticated/admin'
     | '/_authenticated/cuzdan'
+    | '/_authenticated/favorilerim'
     | '/_authenticated/hesabim'
     | '/aktivasyon/$token'
     | '/api/activate'
@@ -430,6 +455,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/kampanyalar'
     | '/_authenticated/admin/keyler'
     | '/_authenticated/admin/kullanicilar'
+    | '/_authenticated/admin/kuponlar'
     | '/_authenticated/admin/lisanslar'
     | '/_authenticated/admin/populer'
     | '/_authenticated/admin/promosyonlar'
@@ -604,6 +630,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHesabimRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/favorilerim': {
+      id: '/_authenticated/favorilerim'
+      path: '/favorilerim'
+      fullPath: '/favorilerim'
+      preLoaderRoute: typeof AuthenticatedFavorilerimRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/cuzdan': {
       id: '/_authenticated/cuzdan'
       path: '/cuzdan'
@@ -660,6 +693,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminLisanslarRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/kuponlar': {
+      id: '/_authenticated/admin/kuponlar'
+      path: '/kuponlar'
+      fullPath: '/admin/kuponlar'
+      preLoaderRoute: typeof AuthenticatedAdminKuponlarRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/kullanicilar': {
       id: '/_authenticated/admin/kullanicilar'
       path: '/kullanicilar'
@@ -711,6 +751,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminKampanyalarRoute: typeof AuthenticatedAdminKampanyalarRoute
   AuthenticatedAdminKeylerRoute: typeof AuthenticatedAdminKeylerRoute
   AuthenticatedAdminKullanicilarRoute: typeof AuthenticatedAdminKullanicilarRoute
+  AuthenticatedAdminKuponlarRoute: typeof AuthenticatedAdminKuponlarRoute
   AuthenticatedAdminLisanslarRoute: typeof AuthenticatedAdminLisanslarRoute
   AuthenticatedAdminPopulerRoute: typeof AuthenticatedAdminPopulerRoute
   AuthenticatedAdminPromosyonlarRoute: typeof AuthenticatedAdminPromosyonlarRoute
@@ -726,6 +767,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminKampanyalarRoute: AuthenticatedAdminKampanyalarRoute,
     AuthenticatedAdminKeylerRoute: AuthenticatedAdminKeylerRoute,
     AuthenticatedAdminKullanicilarRoute: AuthenticatedAdminKullanicilarRoute,
+    AuthenticatedAdminKuponlarRoute: AuthenticatedAdminKuponlarRoute,
     AuthenticatedAdminLisanslarRoute: AuthenticatedAdminLisanslarRoute,
     AuthenticatedAdminPopulerRoute: AuthenticatedAdminPopulerRoute,
     AuthenticatedAdminPromosyonlarRoute: AuthenticatedAdminPromosyonlarRoute,
@@ -742,12 +784,14 @@ const AuthenticatedAdminRouteRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedCuzdanRoute: typeof AuthenticatedCuzdanRoute
+  AuthenticatedFavorilerimRoute: typeof AuthenticatedFavorilerimRoute
   AuthenticatedHesabimRoute: typeof AuthenticatedHesabimRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedCuzdanRoute: AuthenticatedCuzdanRoute,
+  AuthenticatedFavorilerimRoute: AuthenticatedFavorilerimRoute,
   AuthenticatedHesabimRoute: AuthenticatedHesabimRoute,
 }
 
