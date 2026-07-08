@@ -513,6 +513,7 @@ const productInput = z.object({
   sort_order: z.number().int().min(-9999).max(9999).optional(),
   tier: z.enum(["standard", "epic"]).optional(),
   image_url: z.union([z.string().url().max(500), z.string().max(0), z.string().regex(/^\/[\w\-\/.]+$/)]).optional().nullable(),
+  shopier_url: z.union([z.string().url().max(500), z.string().max(0)]).optional().nullable(),
 });
 
 export const upsertProduct = createServerFn({ method: "POST" })
