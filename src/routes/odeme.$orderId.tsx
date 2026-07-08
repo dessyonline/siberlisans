@@ -63,6 +63,8 @@ function Payment() {
   const [dragOver, setDragOver] = useState(false);
   const markPaidFn = useServerFn(markOrderPaid);
   const finalizeFreeFn = useServerFn(finalizeFreeOrder);
+  const setFieldsFn = useServerFn(setOrderCheckoutFields);
+
   const payWithWalletFn = useServerFn(payOrderWithWallet);
   const [payingWallet, setPayingWallet] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
