@@ -47,6 +47,7 @@ function UsersAdmin() {
   const delFn = useServerFn(deleteUser);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "admin" | "user">("all");
+  const [sort, setSort] = useState<SortKey>("recent_signup");
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const { data: users, isLoading } = useQuery({
@@ -57,7 +58,7 @@ function UsersAdmin() {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return (users ?? []).filter((u) => {
+    const list = (users ?? []).filter((u) => {
       const isAdmin = u.roles.includes("admin");
       if (filter === "admin" && !isAdmin) return false;
       if (filter === "user" && isAdmin) return false;
@@ -67,11 +68,38 @@ function UsersAdmin() {
         (u.display_name ?? "").toLowerCase().includes(q)
       );
     });
-  }, [users, search, filter]);
+    const sorted = [...list];
+    sorted.sort((a, b) => {
+      switch (sort) {
+        case "recent_login":
+          return (b.last_sign_in_at ?? "").localeCompare(a.last_sign_in_at ?? "");
+        case "top_spender":
+          return b.stats.spend - a.stats.spend;
+        case "most_orders":
+          return b.stats.total - a.stats.total;
+        default:
+          return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+      }
+    });
+    return sorted;
+  }, [users, search, filter, sort]);
 
   const totals = useMemo(() => {
     const admins = (users ?? []).filter((u) => u.roles.includes("admin")).length;
-    return { admins, users: (users ?? []).length - admins, total: users?.length ?? 0 };
+    const oneDayAgo = Date.now() - 86400000;
+    const newLast24h = (users ?? []).filter(
+      (u) => new Date(u.created_at).getTime() > oneDayAgo,
+    ).length;
+    const activeLast24h = (users ?? []).filter(
+      (u) => u.last_sign_in_at && new Date(u.last_sign_in_at).getTime() > oneDayAgo,
+    ).length;
+    return {
+      admins,
+      users: (users ?? []).length - admins,
+      total: users?.length ?? 0,
+      newLast24h,
+      activeLast24h,
+    };
   }, [users]);
 
   const toggleAdmin = async (userId: string, isAdmin: boolean) => {
