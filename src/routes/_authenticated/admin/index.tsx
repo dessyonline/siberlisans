@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { recentUserActivity } from "@/lib/admin-users.functions";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line } from "recharts";
 import {
   TrendingUp,
@@ -11,6 +13,8 @@ import {
   MessageCircle,
   ArrowUpRight,
   Package,
+  UserPlus,
+  LogIn,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
