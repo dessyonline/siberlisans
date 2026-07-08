@@ -7,7 +7,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { createTopup, TOPUP_PACKAGES } from "@/lib/wallet.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Wallet, Plus, ArrowRight, Clock, CheckCircle2, XCircle, ArrowDownLeft, ArrowUpRight, Loader2 } from "lucide-react";
+import { Wallet, Plus, ArrowRight, Clock, CheckCircle2, XCircle, ArrowDownLeft, ArrowUpRight, Loader2, Bitcoin } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/cuzdan")({
   component: WalletPage,
@@ -148,6 +148,20 @@ function WalletPage() {
             </button>
           ))}
         </div>
+        <Link
+          to="/kripto-yukle"
+          className="mt-3 glass-card corner-cut rounded-lg p-4 flex items-center justify-between hover:neon-glow transition"
+        >
+          <div className="flex items-center gap-3">
+            <Bitcoin className="h-6 w-6 text-primary" />
+            <div>
+              <div className="font-mono text-[10px] uppercase text-muted-foreground">alternatif</div>
+              <div className="text-sm font-bold neon-text">USDT-TRC20 ile yükle</div>
+              <div className="text-[11px] text-muted-foreground">tx-hash ile otomatik onay</div>
+            </div>
+          </div>
+          <ArrowRight className="h-4 w-4 text-primary" />
+        </Link>
       </div>
 
       {/* Bekleyen yüklemeler */}

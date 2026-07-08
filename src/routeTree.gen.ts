@@ -30,6 +30,7 @@ import { Route as ApiValidateRouteImport } from './routes/api/validate'
 import { Route as ApiRevokeRouteImport } from './routes/api/revoke'
 import { Route as ApiActivateRouteImport } from './routes/api/activate'
 import { Route as AktivasyonTokenRouteImport } from './routes/aktivasyon.$token'
+import { Route as AuthenticatedKriptoYukleRouteImport } from './routes/_authenticated/kripto-yukle'
 import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
 import { Route as AuthenticatedFavorilerimRouteImport } from './routes/_authenticated/favorilerim'
 import { Route as AuthenticatedDavetRouteImport } from './routes/_authenticated/davet'
@@ -43,6 +44,7 @@ import { Route as AuthenticatedAdminPopulerRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminLisanslarRouteImport } from './routes/_authenticated/admin/lisanslar'
 import { Route as AuthenticatedAdminKuponlarRouteImport } from './routes/_authenticated/admin/kuponlar'
 import { Route as AuthenticatedAdminKullanicilarRouteImport } from './routes/_authenticated/admin/kullanicilar'
+import { Route as AuthenticatedAdminKriptoRouteImport } from './routes/_authenticated/admin/kripto'
 import { Route as AuthenticatedAdminKeylerRouteImport } from './routes/_authenticated/admin/keyler'
 import { Route as AuthenticatedAdminKampanyalarRouteImport } from './routes/_authenticated/admin/kampanyalar'
 import { Route as AuthenticatedAdminFlashRouteImport } from './routes/_authenticated/admin/flash'
@@ -155,6 +157,12 @@ const AktivasyonTokenRoute = AktivasyonTokenRouteImport.update({
   path: '/aktivasyon/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedKriptoYukleRoute =
+  AuthenticatedKriptoYukleRouteImport.update({
+    id: '/kripto-yukle',
+    path: '/kripto-yukle',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHesabimRoute = AuthenticatedHesabimRouteImport.update({
   id: '/hesabim',
   path: '/hesabim',
@@ -228,6 +236,12 @@ const AuthenticatedAdminKullanicilarRoute =
     path: '/kullanicilar',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminKriptoRoute =
+  AuthenticatedAdminKriptoRouteImport.update({
+    id: '/kripto',
+    path: '/kripto',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminKeylerRoute =
   AuthenticatedAdminKeylerRouteImport.update({
     id: '/keyler',
@@ -286,6 +300,7 @@ export interface FileRoutesByFullPath {
   '/davet': typeof AuthenticatedDavetRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
+  '/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
   '/api/revoke': typeof ApiRevokeRoute
@@ -301,6 +316,7 @@ export interface FileRoutesByFullPath {
   '/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
+  '/admin/kripto': typeof AuthenticatedAdminKriptoRoute
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
   '/admin/kuponlar': typeof AuthenticatedAdminKuponlarRoute
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
@@ -327,6 +343,7 @@ export interface FileRoutesByTo {
   '/davet': typeof AuthenticatedDavetRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
+  '/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
   '/api/revoke': typeof ApiRevokeRoute
@@ -342,6 +359,7 @@ export interface FileRoutesByTo {
   '/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
+  '/admin/kripto': typeof AuthenticatedAdminKriptoRoute
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
   '/admin/kuponlar': typeof AuthenticatedAdminKuponlarRoute
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
@@ -371,6 +389,7 @@ export interface FileRoutesById {
   '/_authenticated/davet': typeof AuthenticatedDavetRoute
   '/_authenticated/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/_authenticated/hesabim': typeof AuthenticatedHesabimRoute
+  '/_authenticated/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
   '/api/revoke': typeof ApiRevokeRoute
@@ -386,6 +405,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/_authenticated/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/_authenticated/admin/keyler': typeof AuthenticatedAdminKeylerRoute
+  '/_authenticated/admin/kripto': typeof AuthenticatedAdminKriptoRoute
   '/_authenticated/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
   '/_authenticated/admin/kuponlar': typeof AuthenticatedAdminKuponlarRoute
   '/_authenticated/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
@@ -415,6 +435,7 @@ export interface FileRouteTypes {
     | '/davet'
     | '/favorilerim'
     | '/hesabim'
+    | '/kripto-yukle'
     | '/aktivasyon/$token'
     | '/api/activate'
     | '/api/revoke'
@@ -430,6 +451,7 @@ export interface FileRouteTypes {
     | '/admin/flash'
     | '/admin/kampanyalar'
     | '/admin/keyler'
+    | '/admin/kripto'
     | '/admin/kullanicilar'
     | '/admin/kuponlar'
     | '/admin/lisanslar'
@@ -456,6 +478,7 @@ export interface FileRouteTypes {
     | '/davet'
     | '/favorilerim'
     | '/hesabim'
+    | '/kripto-yukle'
     | '/aktivasyon/$token'
     | '/api/activate'
     | '/api/revoke'
@@ -471,6 +494,7 @@ export interface FileRouteTypes {
     | '/admin/flash'
     | '/admin/kampanyalar'
     | '/admin/keyler'
+    | '/admin/kripto'
     | '/admin/kullanicilar'
     | '/admin/kuponlar'
     | '/admin/lisanslar'
@@ -499,6 +523,7 @@ export interface FileRouteTypes {
     | '/_authenticated/davet'
     | '/_authenticated/favorilerim'
     | '/_authenticated/hesabim'
+    | '/_authenticated/kripto-yukle'
     | '/aktivasyon/$token'
     | '/api/activate'
     | '/api/revoke'
@@ -514,6 +539,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/flash'
     | '/_authenticated/admin/kampanyalar'
     | '/_authenticated/admin/keyler'
+    | '/_authenticated/admin/kripto'
     | '/_authenticated/admin/kullanicilar'
     | '/_authenticated/admin/kuponlar'
     | '/_authenticated/admin/lisanslar'
@@ -699,6 +725,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AktivasyonTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/kripto-yukle': {
+      id: '/_authenticated/kripto-yukle'
+      path: '/kripto-yukle'
+      fullPath: '/kripto-yukle'
+      preLoaderRoute: typeof AuthenticatedKriptoYukleRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/hesabim': {
       id: '/_authenticated/hesabim'
       path: '/hesabim'
@@ -790,6 +823,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminKullanicilarRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/kripto': {
+      id: '/_authenticated/admin/kripto'
+      path: '/kripto'
+      fullPath: '/admin/kripto'
+      preLoaderRoute: typeof AuthenticatedAdminKriptoRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/keyler': {
       id: '/_authenticated/admin/keyler'
       path: '/keyler'
@@ -849,6 +889,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminFlashRoute: typeof AuthenticatedAdminFlashRoute
   AuthenticatedAdminKampanyalarRoute: typeof AuthenticatedAdminKampanyalarRoute
   AuthenticatedAdminKeylerRoute: typeof AuthenticatedAdminKeylerRoute
+  AuthenticatedAdminKriptoRoute: typeof AuthenticatedAdminKriptoRoute
   AuthenticatedAdminKullanicilarRoute: typeof AuthenticatedAdminKullanicilarRoute
   AuthenticatedAdminKuponlarRoute: typeof AuthenticatedAdminKuponlarRoute
   AuthenticatedAdminLisanslarRoute: typeof AuthenticatedAdminLisanslarRoute
@@ -867,6 +908,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminFlashRoute: AuthenticatedAdminFlashRoute,
     AuthenticatedAdminKampanyalarRoute: AuthenticatedAdminKampanyalarRoute,
     AuthenticatedAdminKeylerRoute: AuthenticatedAdminKeylerRoute,
+    AuthenticatedAdminKriptoRoute: AuthenticatedAdminKriptoRoute,
     AuthenticatedAdminKullanicilarRoute: AuthenticatedAdminKullanicilarRoute,
     AuthenticatedAdminKuponlarRoute: AuthenticatedAdminKuponlarRoute,
     AuthenticatedAdminLisanslarRoute: AuthenticatedAdminLisanslarRoute,
@@ -888,6 +930,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDavetRoute: typeof AuthenticatedDavetRoute
   AuthenticatedFavorilerimRoute: typeof AuthenticatedFavorilerimRoute
   AuthenticatedHesabimRoute: typeof AuthenticatedHesabimRoute
+  AuthenticatedKriptoYukleRoute: typeof AuthenticatedKriptoYukleRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -896,6 +939,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDavetRoute: AuthenticatedDavetRoute,
   AuthenticatedFavorilerimRoute: AuthenticatedFavorilerimRoute,
   AuthenticatedHesabimRoute: AuthenticatedHesabimRoute,
+  AuthenticatedKriptoYukleRoute: AuthenticatedKriptoYukleRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -928,13 +972,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

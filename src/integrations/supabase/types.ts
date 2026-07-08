@@ -236,6 +236,84 @@ export type Database = {
         }
         Relationships: []
       }
+      crypto_deposits: {
+        Row: {
+          amount_try: number
+          amount_usdt: number
+          block_timestamp: string | null
+          created_at: string
+          from_address: string | null
+          id: string
+          notes: string | null
+          rate_used: number
+          status: string
+          to_address: string
+          tx_hash: string
+          user_id: string
+        }
+        Insert: {
+          amount_try: number
+          amount_usdt: number
+          block_timestamp?: string | null
+          created_at?: string
+          from_address?: string | null
+          id?: string
+          notes?: string | null
+          rate_used: number
+          status?: string
+          to_address: string
+          tx_hash: string
+          user_id: string
+        }
+        Update: {
+          amount_try?: number
+          amount_usdt?: number
+          block_timestamp?: string | null
+          created_at?: string
+          from_address?: string | null
+          id?: string
+          notes?: string | null
+          rate_used?: number
+          status?: string
+          to_address?: string
+          tx_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      crypto_settings: {
+        Row: {
+          created_at: string
+          enabled: boolean
+          id: string
+          min_amount_usdt: number
+          singleton: boolean
+          trc20_address: string
+          updated_at: string
+          usdt_try_rate: number | null
+        }
+        Insert: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          min_amount_usdt?: number
+          singleton?: boolean
+          trc20_address?: string
+          updated_at?: string
+          usdt_try_rate?: number | null
+        }
+        Update: {
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          min_amount_usdt?: number
+          singleton?: boolean
+          trc20_address?: string
+          updated_at?: string
+          usdt_try_rate?: number | null
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -1068,6 +1146,18 @@ export type Database = {
               total_try: number
             }[]
           }
+      credit_crypto_deposit: {
+        Args: {
+          _amount_usdt: number
+          _block_timestamp: string
+          _from_address: string
+          _rate: number
+          _to_address: string
+          _tx_hash: string
+          _user_id: string
+        }
+        Returns: string
+      }
       finalize_free_order: {
         Args: { _order_id: string }
         Returns: {
