@@ -12,6 +12,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { useCart } from "@/lib/cart-store";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ReviewsSection } from "@/components/ReviewsSection";
+import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
 
 const productMetaQuery = (slug: string) => ({
   queryKey: ["product-meta", slug],
@@ -117,6 +118,8 @@ function ProductDetail() {
       return data ?? [];
     },
   });
+
+  const flashSale = useActiveFlashSale(product?.id);
 
   const handleBuy = async () => {
     if (!user) {
@@ -359,6 +362,7 @@ function ProductDetail() {
                     <span className="text-primary/60">#</span> {product.category}
                   </span>
                 )}
+                <FlashSaleBadge sale={flashSale} />
                 <span className="rounded-full border border-border/60 bg-background/60 backdrop-blur px-2.5 py-1 text-muted-foreground">
                   <Cpu className="mr-1 inline h-3 w-3 text-primary" />
                   {manual ? "manuel teslim" : "otomatik teslim"}

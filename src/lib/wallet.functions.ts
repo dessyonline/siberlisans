@@ -140,6 +140,22 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
       const { notifyLowStockForOrder } = await import("@/lib/orders.functions");
       await notifyLowStockForOrder(supabase, data.orderId);
     } catch (e) { console.error("[notify] lowStock wallet", (e as Error).message); }
+
+    // Push bildirim + referral bonus
+    try {
+      const { data: ord } = await supabase.from("orders").select("user_id, reference_code").eq("id", data.orderId).single();
+      if (ord?.user_id) {
+        await supabase.rpc("push_notification" as never, {
+          _user_id: ord.user_id,
+          _type: "order_paid",
+          _title: "Ödeme başarılı ✓",
+          _body: `Ref: ${ord.reference_code} · Anahtarların hazır.`,
+          _link: "/hesabim",
+        } as never);
+        await supabase.rpc("process_referral_bonus" as never, { _user_id: ord.user_id } as never);
+      }
+    } catch (e) { console.error("[notify] payWallet", (e as Error).message); }
+
     return {
       ok: true as const,
       error: null,
