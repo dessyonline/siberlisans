@@ -557,6 +557,10 @@ function ProductDetail() {
           </Accordion>
         </div>
 
+        {/* Reviews */}
+        <ReviewsSection productId={product.id} />
+
+
         {/* Related products */}
         {relatedProducts && relatedProducts.length > 0 && (
           <div className="mt-10">
