@@ -43,14 +43,14 @@ export const Route = createFileRoute("/odeme/$orderId")({
   component: Payment,
 });
 
-type StepKey = "init" | "transfer" | "receipt" | "delivery";
+type StepKey = "init" | "payment" | "delivery";
 
 const STEPS: { key: StepKey; label: string; sub: string }[] = [
   { key: "init", label: "sipariş", sub: "referans oluşturuldu" },
-  { key: "transfer", label: "havale", sub: "banka bilgileri" },
-  { key: "receipt", label: "dekont", sub: "doğrulama" },
+  { key: "payment", label: "ödeme", sub: "bakiye / shopier" },
   { key: "delivery", label: "teslimat", sub: "ürün / key" },
 ];
+
 
 // Ödeme (pending) için maksimum süre — dolarsa kullanıcı sayfadan atılır
 const PAYMENT_WINDOW_SEC = 3 * 60;
