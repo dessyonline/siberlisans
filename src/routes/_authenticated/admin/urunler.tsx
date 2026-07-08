@@ -28,6 +28,20 @@ const DELIVERY_LABELS: Record<DeliveryType, string> = {
   link_token: "aktivasyon linki (token)",
 };
 
+const CATEGORY_OPTIONS: string[] = [
+  "ChatGPT", "Google Gemini", "Lovable", "Claude", "Nano Banana", "Midjourney", "Ideogram", "Yapay Zeka",
+  "Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array",
+  "CorelDRAW", "Autodesk", "Görsel Ürünler",
+  "Office", "Office 365",
+  "Windows", "Windows 10/11", "Windows Server",
+  "Wordpress Eklentileri & Temaları",
+  "Seo Araçları",
+  "Vpn & Antivirüs",
+  "Steam Oyunları",
+  "Email Hesapları",
+  "Diğer",
+];
+
 type Product = {
   id: string;
   name: string;
@@ -457,7 +471,21 @@ function ProductsAdmin() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <Field label="slug (a-z, 0-9, -)" value={editing.slug ?? ""} onChange={(v) => setEditing((p) => ({ ...p!, slug: slugify(v) }))} />
-                  <Field label="kategori" value={editing.category ?? ""} onChange={(v) => setEditing((p) => ({ ...p!, category: v }))} />
+                  <div>
+                    <Label className="font-mono text-xs">kategori</Label>
+                    <Input
+                      list="urun-kategori-list"
+                      value={editing.category ?? ""}
+                      onChange={(e) => setEditing((p) => ({ ...p!, category: e.target.value }))}
+                      className="font-mono"
+                      placeholder="listeden seç veya yaz"
+                    />
+                    <datalist id="urun-kategori-list">
+                      {CATEGORY_OPTIONS.map((c) => (
+                        <option key={c} value={c} />
+                      ))}
+                    </datalist>
+                  </div>
                 </div>
                 <div>
                   <Label className="font-mono text-xs">açıklama</Label>
