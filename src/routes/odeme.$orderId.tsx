@@ -263,20 +263,51 @@ function Payment() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         {/* MAIN CONTENT */}
         <div className="space-y-6">
-          {order.status === "approved" && deliveredKey && (
-            <DeliveryBlock
-              keyValue={deliveredKey}
-              activationToken={deliveredToken}
-              deliveryType={deliveryType}
-              product={order.product?.name ?? ""}
-            />
+          {isCartOrder && (
+            <section className="glass-card rounded-lg p-4 sm:p-5">
+              <div className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+                sipariş içeriği · {orderItems.length} kalem
+              </div>
+              <div className="mt-3 divide-y divide-border/40">
+                {orderItems.map((it) => (
+                  <div key={it.id} className="flex items-center justify-between py-2 font-mono text-sm">
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate">{it.product_name_snapshot}</div>
+                      <div className="text-[11px] text-muted-foreground">
+                        ₺{Number(it.unit_price_try).toLocaleString("tr-TR")} × {it.quantity}
+                      </div>
+                    </div>
+                    <div className="ml-3 shrink-0 neon-text">
+                      ₺{(Number(it.unit_price_try) * it.quantity).toLocaleString("tr-TR")}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {order.status === "approved" && deliveredKeys.length > 0 && (
+            <div className="space-y-3">
+              {deliveredKeys.map((k, i) => {
+                const kProduct = (k as { product?: { name?: string; delivery_type?: string } | null }).product;
+                return (
+                  <DeliveryBlock
+                    key={i}
+                    keyValue={k.key_value}
+                    activationToken={k.activation_token}
+                    deliveryType={(kProduct?.delivery_type ?? deliveryType) as DeliveryType}
+                    product={kProduct?.name ?? orderTitle}
+                  />
+                );
+              })}
+            </div>
           )}
 
           {needsManualContact && (order.status === "reviewing" || order.status === "approved") && (
             <ManualContactBlock
               orderId={orderId}
               reference={order.reference_code}
-              product={order.product?.name ?? ""}
+              product={orderTitle}
               status={order.status}
               existingNote={order.user_note ?? ""}
             />
