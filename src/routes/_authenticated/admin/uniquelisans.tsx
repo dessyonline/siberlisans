@@ -253,11 +253,6 @@ function UniquelisansPage() {
                   {p.active ? "aktif" : "pasif"}
                 </span>
               </div>
-
-                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${p.active ? "text-primary bg-primary/10 border-primary/30" : "text-muted-foreground border-muted-foreground/30"}`}>
-                  {p.active ? "aktif" : "pasif"}
-                </span>
-              </div>
             ))}
           </div>
         ) : (
