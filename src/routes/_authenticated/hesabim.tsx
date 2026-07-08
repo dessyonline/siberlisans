@@ -579,6 +579,21 @@ function ProfileTab({ userId, email, onSignOut }: { userId: string; email: strin
 
       <div className="glass-card rounded-lg p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
+          <div className="flex items-center gap-2 font-mono text-sm font-semibold">
+            <ShieldCheck className="h-4 w-4 text-primary" /> Güvenlik & 2FA
+          </div>
+          <div className="mt-0.5 font-mono text-xs text-muted-foreground">
+            iki adımlı doğrulama, oturum güvenliği, hassas işlem kilitleri
+          </div>
+        </div>
+        <Button asChild variant="outline" size="sm" className="font-mono self-start sm:self-auto shrink-0 border-primary/40 text-primary hover:bg-primary/10">
+          <Link to="/guvenlik">{"> "}yönet</Link>
+        </Button>
+      </div>
+
+
+      <div className="glass-card rounded-lg p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <div className="font-mono text-sm font-semibold">Bildirim Tercihleri</div>
           <div className="mt-0.5 font-mono text-xs text-muted-foreground">
             hangi bildirimleri almak istediğinizi seçin
