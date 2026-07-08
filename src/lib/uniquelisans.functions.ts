@@ -136,10 +136,12 @@ export const ulImportProduct = createServerFn({ method: "POST" })
       .eq("external_id", String(detail.id))
       .maybeSingle();
 
-    // Stok kontrolü: API stok yok diyorsa veya stock_count <= 0 ise ürünü pasif tut
-    const outOfStock = detail.is_automatic_delivery
-      ? false
-      : (detail.is_stock === false || (typeof detail.stock_count === "number" && detail.stock_count <= 0));
+    // Stok kontrolü: SADECE sayısal stok takibi yapılan ürünlerde stock_count <= 0 ise pasif tut.
+    // Manuel teslimli ürünlerde API `is_stock:false, stock_count:null` döndürebilir; bu "stok yok"
+    // değil "stok takibi yok" demektir — o yüzden gizlemeyiz.
+    const outOfStock = !detail.is_automatic_delivery
+      && typeof detail.stock_count === "number"
+      && detail.stock_count <= 0;
     const effectiveActive = outOfStock ? false : data.active;
 
     const payload = {
