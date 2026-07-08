@@ -417,6 +417,21 @@ function Payment() {
                       </section>
                     ) : (
                       <>
+                        {(() => {
+                          const singleUrl = (order.product as { shopier_url?: string | null } | null)?.shopier_url ?? null;
+                          const cartUrls = orderItems
+                            .map((i) => (i.product as { shopier_url?: string | null } | null)?.shopier_url)
+                            .filter(Boolean);
+                          const shopierUrl = singleUrl ?? (cartUrls.length === 1 ? cartUrls[0] : null);
+                          if (!shopierUrl) return null;
+                          return (
+                            <ShopierPayBlock
+                              url={shopierUrl}
+                              amount={finalAmount}
+                              reference={order.reference_code}
+                            />
+                          );
+                        })()}
                         <WalletPayBlock
                           balance={Number(wallet?.balance_try ?? 0)}
                           amount={finalAmount}
