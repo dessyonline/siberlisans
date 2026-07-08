@@ -377,6 +377,7 @@ function RootComponent() {
         </div>
         <SupportFab />
         <CartDrawer />
+        <IpChangeGuard />
         <Toaster />
       </AuthProvider>
     </QueryClientProvider>
