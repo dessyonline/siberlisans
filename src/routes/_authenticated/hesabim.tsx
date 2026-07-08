@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { toast } from "sonner";
-import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell } from "lucide-react";
+import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck } from "lucide-react";
 import { TierCard } from "@/components/TierCard";
 import { AVATARS, UserAvatar } from "@/components/UserAvatar";
 
@@ -487,6 +487,13 @@ function ProfileTab({ userId, email, onSignOut }: { userId: string; email: strin
   const changePw = async () => {
     if (pw.length < 6) return toast.error("[!] şifre en az 6 karakter olmalı");
     if (pw !== pw2) return toast.error("[!] şifreler eşleşmiyor");
+    // 2FA aktifse hassas işlem — aal2 zorunlu
+    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalData?.nextLevel === "aal2" && aalData.currentLevel === "aal1") {
+      toast.error("[!] şifre değişikliği için önce 2FA doğrulaması gerekli");
+      window.location.href = "/guvenlik";
+      return;
+    }
     setSaving(true);
     const { error } = await supabase.auth.updateUser({ password: pw });
     setSaving(false);
@@ -569,6 +576,21 @@ function ProfileTab({ userId, email, onSignOut }: { userId: string; email: strin
           {saving ? "kaydediliyor…" : "> şifreyi güncelle"}
         </Button>
       </div>
+
+      <div className="glass-card rounded-lg p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 font-mono text-sm font-semibold">
+            <ShieldCheck className="h-4 w-4 text-primary" /> Güvenlik & 2FA
+          </div>
+          <div className="mt-0.5 font-mono text-xs text-muted-foreground">
+            iki adımlı doğrulama, oturum güvenliği, hassas işlem kilitleri
+          </div>
+        </div>
+        <Button asChild variant="outline" size="sm" className="font-mono self-start sm:self-auto shrink-0 border-primary/40 text-primary hover:bg-primary/10">
+          <Link to="/guvenlik">{"> "}yönet</Link>
+        </Button>
+      </div>
+
 
       <div className="glass-card rounded-lg p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">

@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Terminal, Gift, MailCheck } from "lucide-react";
+import { MfaChallenge } from "@/components/security/MfaChallenge";
 
 const authSearch = z.object({ ref: z.string().max(20).optional() });
 
@@ -61,19 +62,29 @@ function AuthPage() {
   const [captcha, setCaptcha] = useState(() => newCaptcha());
   const [captchaInput, setCaptchaInput] = useState("");
   const [signupSent, setSignupSent] = useState<string | null>(null);
+  const [mfaMode, setMfaMode] = useState(false);
   const refCode = search.ref?.toUpperCase() ?? "";
 
   useEffect(() => {
-    if (user) navigate({ to: "/hesabim" });
-  }, [user, navigate]);
+    if (user && !mfaMode) navigate({ to: "/hesabim" });
+  }, [user, mfaMode, navigate]);
 
   const emailValid = useMemo(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()), [email]);
 
   const signIn = async () => {
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (error) {
+      setLoading(false);
+      return toast.error(error.message);
+    }
+    // 2FA gerekli mi?
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     setLoading(false);
-    if (error) return toast.error(error.message);
+    if (aal?.nextLevel === "aal2" && aal.currentLevel === "aal1") {
+      setMfaMode(true);
+      return;
+    }
     toast.success("Giriş başarılı");
     navigate({ to: "/hesabim" });
   };
@@ -136,7 +147,31 @@ function AuthPage() {
         </div>
         <h1 className="mt-2 font-mono text-2xl neon-text">Hesabına Giriş</h1>
 
-        {signupSent ? (
+        {mfaMode ? (
+          <div className="mt-6">
+            <MfaChallenge
+              title="iki adımlı doğrulama"
+              onCancel={async () => {
+                await supabase.auth.signOut();
+                setMfaMode(false);
+              }}
+              onSuccess={() => {
+                toast.success("[✓] doğrulandı");
+                navigate({ to: "/hesabim" });
+              }}
+            />
+            <button
+              type="button"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                setMfaMode(false);
+              }}
+              className="mt-3 font-mono text-[10px] text-muted-foreground hover:text-primary"
+            >
+              ← farklı hesapla giriş yap
+            </button>
+          </div>
+        ) : signupSent ? (
           <div className="mt-6 space-y-3 rounded-md border border-primary/40 bg-primary/5 p-4 font-mono text-sm">
             <div className="flex items-center gap-2 text-primary">
               <MailCheck className="h-4 w-4" /> doğrulama e-postası gönderildi
