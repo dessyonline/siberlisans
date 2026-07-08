@@ -7,7 +7,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { createTopup, TOPUP_PACKAGES } from "@/lib/wallet.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Wallet, Plus, ArrowRight, Clock, CheckCircle2, XCircle, ArrowDownLeft, ArrowUpRight, Loader2 } from "lucide-react";
+import { Wallet, Plus, ArrowRight, Clock, CheckCircle2, XCircle, ArrowDownLeft, ArrowUpRight, Loader2, Bitcoin } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/cuzdan")({
   component: WalletPage,
