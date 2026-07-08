@@ -33,6 +33,9 @@ import {
 } from "lucide-react";
 import { ProductCardSkeleton } from "@/components/Skeleton";
 import { ProductLogo } from "@/components/ProductLogo";
+import { UserAvatar } from "@/components/UserAvatar";
+import { useAuth } from "@/lib/auth-context";
+import { Wallet } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -202,6 +205,7 @@ function Index() {
 
   return (
     <div>
+      <UserBalanceWelcome />
       {/* HERO — cinematic */}
       <section className="relative overflow-hidden border-b border-border/40">
         {/* animated grid backdrop */}
@@ -823,5 +827,59 @@ function ProductCard({
         </Button>
       </div>
     </div>
+  );
+}
+
+function UserBalanceWelcome() {
+  const { user } = useAuth();
+  const { data } = useQuery({
+    queryKey: ["home-welcome", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const [{ data: p }, { data: w }] = await Promise.all([
+        supabase.from("profiles").select("avatar_id, display_name").eq("id", user!.id).maybeSingle(),
+        supabase.from("wallets").select("balance_try").eq("user_id", user!.id).maybeSingle(),
+      ]);
+      return {
+        avatar_id: (p?.avatar_id as string | null) ?? null,
+        display_name: (p?.display_name as string | null) ?? null,
+        balance_try: Number(w?.balance_try ?? 0),
+      };
+    },
+    refetchInterval: 10000,
+  });
+  if (!user) return null;
+  const name = data?.display_name?.trim() || user.email?.split("@")[0] || "hacker";
+  const bal = Number(data?.balance_try ?? 0);
+  return (
+    <section className="border-b border-primary/15 bg-background/60 backdrop-blur">
+      <div className="mx-auto max-w-6xl px-4 py-3">
+        <div className="glass-card corner-cut flex flex-wrap items-center justify-between gap-3 rounded-md px-3 sm:px-4 py-2.5">
+          <div className="flex items-center gap-3 min-w-0">
+            <UserAvatar id={data?.avatar_id} size={40} />
+            <div className="min-w-0">
+              <div className="font-mono text-[11px] text-muted-foreground">$ welcome_back</div>
+              <div className="font-mono text-sm truncate">
+                <span className="text-primary">@{name}</span>
+                <span className="text-muted-foreground"> · hoş geldin</span>
+              </div>
+            </div>
+          </div>
+          <Link
+            to="/cuzdan"
+            className="flex items-center gap-3 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 hover:bg-primary/10 hover:neon-glow transition"
+          >
+            <Wallet className="h-4 w-4 text-primary" />
+            <div className="font-mono">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">bakiye</div>
+              <div className="text-primary text-sm font-bold">
+                ₺{bal.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+            </div>
+            <span className="hidden sm:inline font-mono text-xs text-primary/80">yükle →</span>
+          </Link>
+        </div>
+      </div>
+    </section>
   );
 }

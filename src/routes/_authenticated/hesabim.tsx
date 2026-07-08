@@ -10,6 +10,7 @@ import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload
 import { toast } from "sonner";
 import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell } from "lucide-react";
 import { TierCard } from "@/components/TierCard";
+import { AVATARS, UserAvatar } from "@/components/UserAvatar";
 
 export const Route = createFileRoute("/_authenticated/hesabim")({
   component: MyAccount,
@@ -177,7 +178,7 @@ function MyAccount() {
           <KeysTab keys={approvedKeys} />
         </TabsContent>
         <TabsContent value="profile" className="mt-6">
-          <ProfileTab email={user?.email ?? ""} onSignOut={signOut} />
+          <ProfileTab userId={user?.id ?? ""} email={user?.email ?? ""} onSignOut={signOut} />
         </TabsContent>
       </Tabs>
     </div>
@@ -458,10 +459,30 @@ function KeyRowItem({ row }: { row: KeyRow }) {
   );
 }
 
-function ProfileTab({ email, onSignOut }: { email: string; onSignOut: () => void }) {
+function ProfileTab({ userId, email, onSignOut }: { userId: string; email: string; onSignOut: () => void }) {
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [saving, setSaving] = useState(false);
+  const [avatarSaving, setAvatarSaving] = useState(false);
+
+  const { data: profile, refetch: refetchProfile } = useQuery({
+    queryKey: ["profile-avatar", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("avatar_id").eq("id", userId).maybeSingle();
+      return (data ?? { avatar_id: null }) as { avatar_id: string | null };
+    },
+  });
+
+  const pickAvatar = async (id: string) => {
+    if (!userId) return;
+    setAvatarSaving(true);
+    const { error } = await supabase.from("profiles").update({ avatar_id: id }).eq("id", userId);
+    setAvatarSaving(false);
+    if (error) return toast.error(`[!] ${error.message}`);
+    toast.success("[✓] avatar güncellendi");
+    refetchProfile();
+  };
 
   const changePw = async () => {
     if (pw.length < 6) return toast.error("[!] şifre en az 6 karakter olmalı");
@@ -475,12 +496,51 @@ function ProfileTab({ email, onSignOut }: { email: string; onSignOut: () => void
     toast.success("[✓] şifre güncellendi");
   };
 
+  const currentAvatarId = profile?.avatar_id ?? null;
+
   return (
     <div className="space-y-4">
       <div className="glass-card rounded-lg p-5">
-        <div className="font-mono text-xs text-muted-foreground">$ id --user</div>
-        <div className="mt-1 font-mono text-sm break-all">{email}</div>
+        <div className="flex items-center gap-3">
+          <UserAvatar id={currentAvatarId} size={48} />
+          <div className="min-w-0">
+            <div className="font-mono text-xs text-muted-foreground">$ id --user</div>
+            <div className="font-mono text-sm break-all">{email}</div>
+          </div>
+        </div>
       </div>
+
+      <div className="glass-card rounded-lg p-5">
+        <div className="font-mono text-sm font-semibold">Avatar Seç</div>
+        <div className="mt-1 font-mono text-[11px] text-muted-foreground">
+          hacker temalı hazır avatarlardan birini seç · seçim anında kaydedilir
+        </div>
+        <div className="mt-3 grid grid-cols-6 sm:grid-cols-8 gap-2">
+          {AVATARS.map((a) => {
+            const selected = currentAvatarId === a.id;
+            return (
+              <button
+                key={a.id}
+                type="button"
+                disabled={avatarSaving}
+                onClick={() => pickAvatar(a.id)}
+                className={`group flex flex-col items-center gap-1 rounded-md border p-1.5 transition ${
+                  selected
+                    ? "border-primary bg-primary/10"
+                    : "border-border/50 hover:border-primary/50 hover:bg-primary/5"
+                } ${avatarSaving ? "opacity-60 cursor-wait" : ""}`}
+                title={a.label}
+              >
+                <UserAvatar id={a.id} size={36} />
+                <span className="font-mono text-[9px] text-muted-foreground truncate w-full text-center">
+                  {a.label.toLowerCase()}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
 
       <div className="glass-card rounded-lg p-5">
         <div className="font-mono text-sm font-semibold">Şifre Değiştir</div>

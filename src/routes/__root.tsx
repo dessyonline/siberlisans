@@ -13,7 +13,6 @@ import {
   ShieldCheck,
   LogIn,
   LayoutDashboard,
-  User as UserIcon,
   Package,
   BookOpen,
   HelpCircle,
@@ -34,6 +33,8 @@ import { SupportFab } from "../components/SupportFab";
 import { CartButton } from "../components/CartButton";
 import { CartDrawer } from "../components/CartDrawer";
 import { NotificationBell } from "../components/NotificationBell";
+import { UserAvatar } from "../components/UserAvatar";
+import { useQuery } from "@tanstack/react-query";
 
 function NotFoundComponent() {
   return (
@@ -234,8 +235,8 @@ function SiteHeader() {
                 </Button>
               )}
               <Button asChild size="sm" variant="ghost" className="font-mono px-2 sm:px-3">
-                <Link to="/hesabim" aria-label="Hesabım">
-                  <UserIcon className="h-4 w-4 sm:mr-1" />
+                <Link to="/hesabim" aria-label="Hesabım" className="flex items-center gap-1.5">
+                  <HeaderUserBadge userId={user.id} />
                   <span className="hidden sm:inline">hesabım</span>
                 </Link>
               </Button>
@@ -259,6 +260,32 @@ function SiteHeader() {
         </div>
       </div>
     </header>
+  );
+}
+
+function HeaderUserBadge({ userId }: { userId: string }) {
+  const { data } = useQuery({
+    queryKey: ["header-avatar-balance", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const [{ data: p }, { data: w }] = await Promise.all([
+        supabase.from("profiles").select("avatar_id").eq("id", userId).maybeSingle(),
+        supabase.from("wallets").select("balance_try").eq("user_id", userId).maybeSingle(),
+      ]);
+      return {
+        avatar_id: (p?.avatar_id as string | null) ?? null,
+        balance_try: Number(w?.balance_try ?? 0),
+      };
+    },
+    refetchInterval: 15000,
+  });
+  return (
+    <span className="flex items-center gap-1.5">
+      <UserAvatar id={data?.avatar_id} size={22} />
+      <span className="hidden md:inline font-mono text-[11px] text-primary">
+        ₺{(data?.balance_try ?? 0).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+      </span>
+    </span>
   );
 }
 
