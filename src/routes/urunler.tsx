@@ -292,8 +292,12 @@ function ProductsPage() {
             (p.category ?? "").toLowerCase().includes(q),
         );
       }
-      // Kategori içi: destansı önce, sonra sort_order yüksek olan, sonra fiyat
+      // Kategori içi sıralama
       list = [...list].sort((a, b) => {
+        if (sort === "price_asc") return (a.price_try ?? 0) - (b.price_try ?? 0);
+        if (sort === "price_desc") return (b.price_try ?? 0) - (a.price_try ?? 0);
+        if (sort === "newest") return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        // default: destansı önce, sonra sort_order, sonra fiyat
         const ea = a.tier === "epic" ? 0 : 1;
         const eb = b.tier === "epic" ? 0 : 1;
         if (ea !== eb) return ea - eb;
@@ -308,7 +312,8 @@ function ProductsPage() {
     const nonEmpty = filtered.filter(([, items]) => items.length > 0);
     // Kategoriler arası: GROUPS sırasına göre
     return nonEmpty.sort(([a], [b]) => catPriority(a) - catPriority(b));
-  }, [byCategory, group, search]);
+  }, [byCategory, group, search, sort]);
+
 
   return (
     <div className="relative min-h-screen overflow-hidden">
