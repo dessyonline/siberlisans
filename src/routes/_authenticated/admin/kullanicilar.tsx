@@ -127,7 +127,7 @@ function UsersAdmin() {
     <div>
       <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="font-mono text-xl sm:text-2xl neon-text">Kullanıcılar</h1>
-        <div className="flex items-center gap-2 font-mono text-xs">
+        <div className="flex items-center gap-2 font-mono text-xs flex-wrap">
           <span className="rounded border border-primary/30 bg-primary/5 px-2 py-1 text-primary">
             <Shield className="inline h-3 w-3 mr-1" />admin {totals.admins}
           </span>
@@ -136,6 +136,12 @@ function UsersAdmin() {
           </span>
           <span className="rounded border border-cyan/30 bg-cyan/5 px-2 py-1 text-cyan">
             toplam {totals.total}
+          </span>
+          <span className="rounded border border-primary/30 bg-primary/5 px-2 py-1 text-primary">
+            +{totals.newLast24h} / 24s yeni
+          </span>
+          <span className="rounded border border-cyan/30 bg-cyan/5 px-2 py-1 text-cyan">
+            {totals.activeLast24h} / 24s aktif
           </span>
         </div>
       </div>
@@ -168,7 +174,18 @@ function UsersAdmin() {
             <option value="admin">adminler</option>
             <option value="user">kullanıcılar</option>
           </select>
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as SortKey)}
+            className="h-9 rounded border border-border bg-input px-2 font-mono text-xs"
+          >
+            <option value="recent_signup">son kayıt</option>
+            <option value="recent_login">son giriş</option>
+            <option value="top_spender">en çok harcayan</option>
+            <option value="most_orders">en çok sipariş</option>
+          </select>
         </div>
+
 
         <div className="space-y-2">
           {isLoading && (
