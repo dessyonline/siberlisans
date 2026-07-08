@@ -53,12 +53,8 @@ function AdminWallet() {
     refetchInterval: 8000,
   });
 
-  const userIds = useMemo(() => {
-    const set = new Set<string>();
-    (topups ?? []).forEach((t) => set.add(t.user_id));
-    (wallets ?? []).forEach((w) => set.add(w.user_id));
-    return Array.from(set);
-  }, [topups, wallets]);
+
+
 
   const listUsersFn = useServerFn(listUsers);
   const { data: emails } = useQuery({
