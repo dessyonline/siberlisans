@@ -16,6 +16,7 @@ import {
   Star,
   Zap,
   BookOpen,
+  Bitcoin,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({

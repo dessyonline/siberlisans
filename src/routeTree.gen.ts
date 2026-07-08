@@ -44,6 +44,7 @@ import { Route as AuthenticatedAdminPopulerRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminLisanslarRouteImport } from './routes/_authenticated/admin/lisanslar'
 import { Route as AuthenticatedAdminKuponlarRouteImport } from './routes/_authenticated/admin/kuponlar'
 import { Route as AuthenticatedAdminKullanicilarRouteImport } from './routes/_authenticated/admin/kullanicilar'
+import { Route as AuthenticatedAdminKriptoRouteImport } from './routes/_authenticated/admin/kripto'
 import { Route as AuthenticatedAdminKeylerRouteImport } from './routes/_authenticated/admin/keyler'
 import { Route as AuthenticatedAdminKampanyalarRouteImport } from './routes/_authenticated/admin/kampanyalar'
 import { Route as AuthenticatedAdminFlashRouteImport } from './routes/_authenticated/admin/flash'
@@ -235,6 +236,12 @@ const AuthenticatedAdminKullanicilarRoute =
     path: '/kullanicilar',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminKriptoRoute =
+  AuthenticatedAdminKriptoRouteImport.update({
+    id: '/kripto',
+    path: '/kripto',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminKeylerRoute =
   AuthenticatedAdminKeylerRouteImport.update({
     id: '/keyler',
@@ -309,6 +316,7 @@ export interface FileRoutesByFullPath {
   '/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
+  '/admin/kripto': typeof AuthenticatedAdminKriptoRoute
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
   '/admin/kuponlar': typeof AuthenticatedAdminKuponlarRoute
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
@@ -351,6 +359,7 @@ export interface FileRoutesByTo {
   '/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
+  '/admin/kripto': typeof AuthenticatedAdminKriptoRoute
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
   '/admin/kuponlar': typeof AuthenticatedAdminKuponlarRoute
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
@@ -396,6 +405,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/_authenticated/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/_authenticated/admin/keyler': typeof AuthenticatedAdminKeylerRoute
+  '/_authenticated/admin/kripto': typeof AuthenticatedAdminKriptoRoute
   '/_authenticated/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
   '/_authenticated/admin/kuponlar': typeof AuthenticatedAdminKuponlarRoute
   '/_authenticated/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
@@ -441,6 +451,7 @@ export interface FileRouteTypes {
     | '/admin/flash'
     | '/admin/kampanyalar'
     | '/admin/keyler'
+    | '/admin/kripto'
     | '/admin/kullanicilar'
     | '/admin/kuponlar'
     | '/admin/lisanslar'
@@ -483,6 +494,7 @@ export interface FileRouteTypes {
     | '/admin/flash'
     | '/admin/kampanyalar'
     | '/admin/keyler'
+    | '/admin/kripto'
     | '/admin/kullanicilar'
     | '/admin/kuponlar'
     | '/admin/lisanslar'
@@ -527,6 +539,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/flash'
     | '/_authenticated/admin/kampanyalar'
     | '/_authenticated/admin/keyler'
+    | '/_authenticated/admin/kripto'
     | '/_authenticated/admin/kullanicilar'
     | '/_authenticated/admin/kuponlar'
     | '/_authenticated/admin/lisanslar'
@@ -810,6 +823,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminKullanicilarRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/kripto': {
+      id: '/_authenticated/admin/kripto'
+      path: '/kripto'
+      fullPath: '/admin/kripto'
+      preLoaderRoute: typeof AuthenticatedAdminKriptoRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/keyler': {
       id: '/_authenticated/admin/keyler'
       path: '/keyler'
@@ -869,6 +889,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminFlashRoute: typeof AuthenticatedAdminFlashRoute
   AuthenticatedAdminKampanyalarRoute: typeof AuthenticatedAdminKampanyalarRoute
   AuthenticatedAdminKeylerRoute: typeof AuthenticatedAdminKeylerRoute
+  AuthenticatedAdminKriptoRoute: typeof AuthenticatedAdminKriptoRoute
   AuthenticatedAdminKullanicilarRoute: typeof AuthenticatedAdminKullanicilarRoute
   AuthenticatedAdminKuponlarRoute: typeof AuthenticatedAdminKuponlarRoute
   AuthenticatedAdminLisanslarRoute: typeof AuthenticatedAdminLisanslarRoute
@@ -887,6 +908,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminFlashRoute: AuthenticatedAdminFlashRoute,
     AuthenticatedAdminKampanyalarRoute: AuthenticatedAdminKampanyalarRoute,
     AuthenticatedAdminKeylerRoute: AuthenticatedAdminKeylerRoute,
+    AuthenticatedAdminKriptoRoute: AuthenticatedAdminKriptoRoute,
     AuthenticatedAdminKullanicilarRoute: AuthenticatedAdminKullanicilarRoute,
     AuthenticatedAdminKuponlarRoute: AuthenticatedAdminKuponlarRoute,
     AuthenticatedAdminLisanslarRoute: AuthenticatedAdminLisanslarRoute,
