@@ -50,7 +50,22 @@ function CampaignsAdmin() {
   const upsertFn = useServerFn(upsertCampaign);
   const deleteFn = useServerFn(deleteCampaign);
   const sendFn = useServerFn(sendCampaignNow);
+  const testFn = useServerFn(testTelegramChannel);
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [testResult, setTestResult] = useState<Awaited<ReturnType<typeof testTelegramChannel>> | null>(null);
+  const [testing, setTesting] = useState(false);
+
+  const runTest = async () => {
+    setTesting(true);
+    try {
+      const r = await testFn();
+      setTestResult(r);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setTesting(false);
+    }
+  };
 
   const { data: campaigns } = useQuery({
     queryKey: ["admin-campaigns"],
