@@ -494,11 +494,17 @@ function ProductsAdmin() {
 
               {/* SECTION: STOCK & VISIBILITY */}
               <Section title="stok & görünürlük">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Field
                     label="stok ipucu (havuz boşsa/manuelde gösterilir)"
                     value={editing.stock_hint == null ? "" : String(editing.stock_hint)}
                     onChange={(v) => setEditing((p) => ({ ...p!, stock_hint: v === "" ? null : Number(v) }))}
+                    type="number"
+                  />
+                  <Field
+                    label="düşük stok eşiği (uyarı için)"
+                    value={String(editing.low_stock_threshold ?? 5)}
+                    onChange={(v) => setEditing((p) => ({ ...p!, low_stock_threshold: v === "" ? 0 : Number(v) }))}
                     type="number"
                   />
                   <Field
