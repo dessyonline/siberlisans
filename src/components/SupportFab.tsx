@@ -11,6 +11,7 @@ import { Link } from "@tanstack/react-router";
 export function SupportFab() {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const { user } = useAuth();
   useEffect(() => setMounted(true), []);
   if (!mounted) return null;
 
