@@ -33,6 +33,7 @@ import {
   Sparkles,
   Ticket,
   Tag,
+  Crown,
 } from "lucide-react";
 
 
