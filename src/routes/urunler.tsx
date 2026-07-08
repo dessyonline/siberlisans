@@ -541,7 +541,7 @@ function ProductCard({ product: p }: { product: Row }) {
                 src={p.image_url}
                 alt={p.name}
                 loading="lazy"
-                className="relative h-full w-full object-contain p-4 transition-transform duration-500 group-hover:scale-[1.06]"
+                className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.06]"
                 style={{ filter: `drop-shadow(0 0 22px ${cv.ring})` }}
               />
             ) : (
