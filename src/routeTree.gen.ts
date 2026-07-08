@@ -34,6 +34,7 @@ import { Route as AktivasyonTokenRouteImport } from './routes/aktivasyon.$token'
 import { Route as AuthenticatedKriptoYukleRouteImport } from './routes/_authenticated/kripto-yukle'
 import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
 import { Route as AuthenticatedFavorilerimRouteImport } from './routes/_authenticated/favorilerim'
+import { Route as AuthenticatedDestekRouteImport } from './routes/_authenticated/destek'
 import { Route as AuthenticatedDavetRouteImport } from './routes/_authenticated/davet'
 import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated/cuzdan'
 import { Route as AuthenticatedBildirimlerRouteImport } from './routes/_authenticated/bildirimler'
@@ -52,6 +53,7 @@ import { Route as AuthenticatedAdminKriptoRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminKeylerRouteImport } from './routes/_authenticated/admin/keyler'
 import { Route as AuthenticatedAdminKampanyalarRouteImport } from './routes/_authenticated/admin/kampanyalar'
 import { Route as AuthenticatedAdminFlashRouteImport } from './routes/_authenticated/admin/flash'
+import { Route as AuthenticatedAdminDestekRouteImport } from './routes/_authenticated/admin/destek'
 import { Route as AuthenticatedAdminCuzdanRouteImport } from './routes/_authenticated/admin/cuzdan'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin/blog'
 import { Route as AuthenticatedAdminAyarlarRouteImport } from './routes/_authenticated/admin/ayarlar'
@@ -186,6 +188,11 @@ const AuthenticatedFavorilerimRoute =
     path: '/favorilerim',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedDestekRoute = AuthenticatedDestekRouteImport.update({
+  id: '/destek',
+  path: '/destek',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDavetRoute = AuthenticatedDavetRouteImport.update({
   id: '/davet',
   path: '/davet',
@@ -289,6 +296,12 @@ const AuthenticatedAdminFlashRoute = AuthenticatedAdminFlashRouteImport.update({
   path: '/flash',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminDestekRoute =
+  AuthenticatedAdminDestekRouteImport.update({
+    id: '/destek',
+    path: '/destek',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminCuzdanRoute =
   AuthenticatedAdminCuzdanRouteImport.update({
     id: '/cuzdan',
@@ -346,6 +359,7 @@ export interface FileRoutesByFullPath {
   '/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/davet': typeof AuthenticatedDavetRoute
+  '/destek': typeof AuthenticatedDestekRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
@@ -362,6 +376,7 @@ export interface FileRoutesByFullPath {
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
+  '/admin/destek': typeof AuthenticatedAdminDestekRoute
   '/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
@@ -396,6 +411,7 @@ export interface FileRoutesByTo {
   '/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/davet': typeof AuthenticatedDavetRoute
+  '/destek': typeof AuthenticatedDestekRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
   '/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
@@ -412,6 +428,7 @@ export interface FileRoutesByTo {
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
+  '/admin/destek': typeof AuthenticatedAdminDestekRoute
   '/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
@@ -449,6 +466,7 @@ export interface FileRoutesById {
   '/_authenticated/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/_authenticated/cuzdan': typeof AuthenticatedCuzdanRoute
   '/_authenticated/davet': typeof AuthenticatedDavetRoute
+  '/_authenticated/destek': typeof AuthenticatedDestekRoute
   '/_authenticated/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/_authenticated/hesabim': typeof AuthenticatedHesabimRoute
   '/_authenticated/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
@@ -465,6 +483,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/_authenticated/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
+  '/_authenticated/admin/destek': typeof AuthenticatedAdminDestekRoute
   '/_authenticated/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/_authenticated/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/_authenticated/admin/keyler': typeof AuthenticatedAdminKeylerRoute
@@ -502,6 +521,7 @@ export interface FileRouteTypes {
     | '/bildirimler'
     | '/cuzdan'
     | '/davet'
+    | '/destek'
     | '/favorilerim'
     | '/hesabim'
     | '/kripto-yukle'
@@ -518,6 +538,7 @@ export interface FileRouteTypes {
     | '/admin/ayarlar'
     | '/admin/blog'
     | '/admin/cuzdan'
+    | '/admin/destek'
     | '/admin/flash'
     | '/admin/kampanyalar'
     | '/admin/keyler'
@@ -552,6 +573,7 @@ export interface FileRouteTypes {
     | '/bildirimler'
     | '/cuzdan'
     | '/davet'
+    | '/destek'
     | '/favorilerim'
     | '/hesabim'
     | '/kripto-yukle'
@@ -568,6 +590,7 @@ export interface FileRouteTypes {
     | '/admin/ayarlar'
     | '/admin/blog'
     | '/admin/cuzdan'
+    | '/admin/destek'
     | '/admin/flash'
     | '/admin/kampanyalar'
     | '/admin/keyler'
@@ -604,6 +627,7 @@ export interface FileRouteTypes {
     | '/_authenticated/bildirimler'
     | '/_authenticated/cuzdan'
     | '/_authenticated/davet'
+    | '/_authenticated/destek'
     | '/_authenticated/favorilerim'
     | '/_authenticated/hesabim'
     | '/_authenticated/kripto-yukle'
@@ -620,6 +644,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/ayarlar'
     | '/_authenticated/admin/blog'
     | '/_authenticated/admin/cuzdan'
+    | '/_authenticated/admin/destek'
     | '/_authenticated/admin/flash'
     | '/_authenticated/admin/kampanyalar'
     | '/_authenticated/admin/keyler'
@@ -846,6 +871,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFavorilerimRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/destek': {
+      id: '/_authenticated/destek'
+      path: '/destek'
+      fullPath: '/destek'
+      preLoaderRoute: typeof AuthenticatedDestekRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/davet': {
       id: '/_authenticated/davet'
       path: '/davet'
@@ -972,6 +1004,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminFlashRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/destek': {
+      id: '/_authenticated/admin/destek'
+      path: '/destek'
+      fullPath: '/admin/destek'
+      preLoaderRoute: typeof AuthenticatedAdminDestekRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/cuzdan': {
       id: '/_authenticated/admin/cuzdan'
       path: '/cuzdan'
@@ -1028,6 +1067,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAyarlarRoute: typeof AuthenticatedAdminAyarlarRoute
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
   AuthenticatedAdminCuzdanRoute: typeof AuthenticatedAdminCuzdanRoute
+  AuthenticatedAdminDestekRoute: typeof AuthenticatedAdminDestekRoute
   AuthenticatedAdminFlashRoute: typeof AuthenticatedAdminFlashRoute
   AuthenticatedAdminKampanyalarRoute: typeof AuthenticatedAdminKampanyalarRoute
   AuthenticatedAdminKeylerRoute: typeof AuthenticatedAdminKeylerRoute
@@ -1049,6 +1089,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminAyarlarRoute: AuthenticatedAdminAyarlarRoute,
     AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
     AuthenticatedAdminCuzdanRoute: AuthenticatedAdminCuzdanRoute,
+    AuthenticatedAdminDestekRoute: AuthenticatedAdminDestekRoute,
     AuthenticatedAdminFlashRoute: AuthenticatedAdminFlashRoute,
     AuthenticatedAdminKampanyalarRoute: AuthenticatedAdminKampanyalarRoute,
     AuthenticatedAdminKeylerRoute: AuthenticatedAdminKeylerRoute,
@@ -1075,6 +1116,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBildirimlerRoute: typeof AuthenticatedBildirimlerRoute
   AuthenticatedCuzdanRoute: typeof AuthenticatedCuzdanRoute
   AuthenticatedDavetRoute: typeof AuthenticatedDavetRoute
+  AuthenticatedDestekRoute: typeof AuthenticatedDestekRoute
   AuthenticatedFavorilerimRoute: typeof AuthenticatedFavorilerimRoute
   AuthenticatedHesabimRoute: typeof AuthenticatedHesabimRoute
   AuthenticatedKriptoYukleRoute: typeof AuthenticatedKriptoYukleRoute
@@ -1085,6 +1127,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBildirimlerRoute: AuthenticatedBildirimlerRoute,
   AuthenticatedCuzdanRoute: AuthenticatedCuzdanRoute,
   AuthenticatedDavetRoute: AuthenticatedDavetRoute,
+  AuthenticatedDestekRoute: AuthenticatedDestekRoute,
   AuthenticatedFavorilerimRoute: AuthenticatedFavorilerimRoute,
   AuthenticatedHesabimRoute: AuthenticatedHesabimRoute,
   AuthenticatedKriptoYukleRoute: AuthenticatedKriptoYukleRoute,
@@ -1125,13 +1168,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

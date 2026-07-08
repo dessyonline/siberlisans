@@ -979,6 +979,83 @@ export type Database = {
           },
         ]
       }
+      support_messages: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          is_admin: boolean
+          sender_id: string
+          ticket_id: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          sender_id: string
+          ticket_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          is_admin?: boolean
+          sender_id?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string
+          last_message_by_admin: boolean
+          priority: Database["public"]["Enums"]["support_ticket_priority"]
+          status: Database["public"]["Enums"]["support_ticket_status"]
+          subject: string
+          unread_for_admin: number
+          unread_for_user: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          last_message_by_admin?: boolean
+          priority?: Database["public"]["Enums"]["support_ticket_priority"]
+          status?: Database["public"]["Enums"]["support_ticket_status"]
+          subject: string
+          unread_for_admin?: number
+          unread_for_user?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          last_message_by_admin?: boolean
+          priority?: Database["public"]["Enums"]["support_ticket_priority"]
+          status?: Database["public"]["Enums"]["support_ticket_status"]
+          subject?: string
+          unread_for_admin?: number
+          unread_for_user?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_points_ledger: {
         Row: {
           balance_after: number
@@ -1412,6 +1489,14 @@ export type Database = {
           discount_try: number
         }[]
       }
+      support_mark_read_admin: {
+        Args: { _ticket_id: string }
+        Returns: undefined
+      }
+      support_mark_read_user: {
+        Args: { _ticket_id: string }
+        Returns: undefined
+      }
       validate_coupon: {
         Args: { _code: string; _subtotal: number }
         Returns: {
@@ -1436,6 +1521,8 @@ export type Database = {
       key_status: "available" | "assigned" | "revoked"
       order_status: "pending" | "reviewing" | "approved" | "rejected"
       promo_type: "percent" | "fixed"
+      support_ticket_priority: "low" | "normal" | "high" | "urgent"
+      support_ticket_status: "open" | "pending" | "closed"
       topup_status: "pending" | "reviewing" | "approved" | "rejected"
       user_tier: "bronze" | "silver" | "gold" | "platinum"
       wallet_txn_kind:
@@ -1585,6 +1672,8 @@ export const Constants = {
       key_status: ["available", "assigned", "revoked"],
       order_status: ["pending", "reviewing", "approved", "rejected"],
       promo_type: ["percent", "fixed"],
+      support_ticket_priority: ["low", "normal", "high", "urgent"],
+      support_ticket_status: ["open", "pending", "closed"],
       topup_status: ["pending", "reviewing", "approved", "rejected"],
       user_tier: ["bronze", "silver", "gold", "platinum"],
       wallet_txn_kind: [
