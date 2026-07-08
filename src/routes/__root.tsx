@@ -17,6 +17,7 @@ import { AuthProvider, useAuth } from "../lib/auth-context";
 import { Button } from "../components/ui/button";
 import { Toaster } from "../components/ui/sonner";
 import { supabase } from "../integrations/supabase/client";
+import { initTelegramWebApp } from "../lib/telegram-webapp";
 
 function NotFoundComponent() {
   return (
@@ -101,6 +102,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/favicon.png", type: "image/png" },
     ],
     scripts: [
+      { src: "https://telegram.org/js/telegram-web-app.js", async: true },
       {
         type: "application/ld+json",
         children: JSON.stringify({
@@ -216,6 +218,22 @@ function SiteFooter() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    // Initialize once Telegram SDK script has loaded
+    if (window.Telegram?.WebApp) {
+      initTelegramWebApp();
+    } else {
+      const t = setInterval(() => {
+        if (window.Telegram?.WebApp) {
+          initTelegramWebApp();
+          clearInterval(t);
+        }
+      }, 100);
+      setTimeout(() => clearInterval(t), 3000);
+    }
+  }, []);
+
 
   return (
     <QueryClientProvider client={queryClient}>
