@@ -115,9 +115,13 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
         .eq("product_id", order.product_id)
         .eq("status", "available");
       if ((count ?? 0) === 0) {
-        throw new Error(
-          `"${product?.name ?? "Ürün"}" için şu an stok bulunmuyor. Havale ile sipariş bırakabilir veya destek ile iletişime geçebilirsiniz.`,
-        );
+        return {
+          ok: false as const,
+          error: `"${product?.name ?? "Ürün"}" için şu an stok bulunmuyor. Havale ile sipariş bırakabilir veya destek ile iletişime geçebilirsiniz.`,
+          licenseKey: null,
+          activationToken: null,
+          balanceAfter: 0,
+        };
       }
     }
 
@@ -126,16 +130,15 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
     });
     if (error) {
       const msg = error.message || "";
-      if (/anahtar yok|stokta/i.test(msg)) {
-        throw new Error(
-          `Stok az önce tükendi. Bakiyeniz düşülmedi; lütfen havale ile ödeyin veya biraz sonra tekrar deneyin.`,
-        );
-      }
-      throw new Error(msg);
+      const friendly = /anahtar yok|stokta/i.test(msg)
+        ? "Stok az önce tükendi. Bakiyeniz düşülmedi; lütfen havale ile ödeyin veya biraz sonra tekrar deneyin."
+        : msg;
+      return { ok: false as const, error: friendly, licenseKey: null, activationToken: null, balanceAfter: 0 };
     }
     const row = Array.isArray(rows) ? rows[0] : rows;
     return {
-      ok: true,
+      ok: true as const,
+      error: null,
       licenseKey: (row?.license_key as string) ?? null,
       activationToken: (row?.activation_token as string) ?? null,
       balanceAfter: Number(row?.balance_after ?? 0),
