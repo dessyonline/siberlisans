@@ -453,25 +453,8 @@ function Payment() {
                             }
                           }}
                         />
-                        <TransferBlock
-                          bank={bank}
-                          amount={finalAmount}
-                          originalAmount={Number(order.price_try)}
-                          discountTry={discountTry}
-                          appliedCode={codeSnap}
-                          reference={order.reference_code}
-                          productName={orderTitle}
-                          productDuration={order.product?.duration}
-                        />
-                        <ReceiptBlock
-                          dragOver={dragOver}
-                          setDragOver={setDragOver}
-                          uploading={uploading}
-                          fileRef={fileRef}
-                          onFile={handleFile}
-                          reviewing={order.status === "reviewing"}
-                          receiptPath={order.receipt_path}
-                        />
+
+
                       </>
                     )}
                   </>
