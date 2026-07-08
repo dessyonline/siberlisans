@@ -371,26 +371,6 @@ function SiteFooter() {
 
 
 
-function SiteFooter() {
-  return (
-    <footer className="border-t border-border/60 bg-background/60 backdrop-blur-xl mt-16">
-      <div className="mx-auto max-w-7xl px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4 text-primary" />
-          <span>SiberPHP {new Date().getFullYear()} — Güvenli Lisans Dağıtım Sistemi</span>
-        </div>
-        <div className="flex gap-4">
-          <span>SSL/TLS 1.3</span>
-          <span>·</span>
-          <span>AES-256</span>
-          <span>·</span>
-          <span>KVKK Uyumlu</span>
-        </div>
-      </div>
-    </footer>
-  );
-}
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
