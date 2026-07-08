@@ -9,6 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { toast } from "sonner";
 import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift } from "lucide-react";
+import { TierCard } from "@/components/TierCard";
 
 export const Route = createFileRoute("/_authenticated/hesabim")({
   component: MyAccount,
@@ -144,6 +145,13 @@ function MyAccount() {
           </Link>
         </div>
       </div>
+
+      <div className="mt-4">
+        <TierCard />
+      </div>
+
+
+
 
 
       <Tabs defaultValue="orders" className="mt-6 md:mt-8">

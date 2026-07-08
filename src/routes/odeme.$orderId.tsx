@@ -9,6 +9,7 @@ import { payOrderWithWallet } from "@/lib/wallet.functions";
 import { Input } from "@/components/ui/input";
 
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
+import { PointsBlock } from "@/components/PointsBlock";
 import enparaQr from "@/assets/enpara-qr.png";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -368,6 +369,17 @@ function Payment() {
                       discountTry={discountTry}
                       appliedCode={codeSnap}
                     />
+                    <PointsBlock
+                      orderId={orderId}
+                      originalPrice={Number(order.price_try)}
+                      hasOtherDiscount={discountTry > 0 && !(codeSnap ?? "").startsWith("PUAN-")}
+                      appliedPointsAmount={
+                        (codeSnap ?? "").startsWith("PUAN-")
+                          ? Number((codeSnap ?? "").slice(5)) || null
+                          : null
+                      }
+                    />
+
                     {isFree ? (
                       <section className="glass-card rounded-lg p-6 border-primary/40">
                         <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
@@ -1102,8 +1114,11 @@ function PromoBlock({
   const removeFn = useServerFn(removePromoCode);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const isPointsCode = (appliedCode ?? "").startsWith("PUAN-");
+  if (isPointsCode) return null;
   const hasDiscount = discountTry > 0 && !!appliedCode;
   const finalPrice = Math.max(0, originalPrice - discountTry);
+
 
   const apply = async () => {
     if (!code.trim()) return;
