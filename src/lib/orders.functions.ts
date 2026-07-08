@@ -276,6 +276,7 @@ export const finalizeFreeOrder = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
     const row = Array.isArray(rows) ? rows[0] : rows;
+    await notifyLowStockForOrder(supabase, data.orderId);
     return {
       ok: true,
       licenseKey: row?.license_key ?? null,
