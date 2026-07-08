@@ -1,4 +1,4 @@
-/* xSiberPHPx — Fingerprint (HWID) */
+/* SiberPHP — Fingerprint (HWID) */
 (function () {
   "use strict";
   const KEY = "sp_hwid";

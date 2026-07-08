@@ -1,4 +1,4 @@
-/* xSiberPHPx — License flow controller (popup) */
+/* SiberPHP — License flow controller (popup) */
 (function () {
   "use strict";
 
