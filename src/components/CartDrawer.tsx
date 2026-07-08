@@ -149,9 +149,39 @@ export function CartDrawer() {
 
         {items.length > 0 && (
           <div className="border-t border-border/60 p-4 space-y-3 bg-background/70 backdrop-blur">
+            {/* Kupon */}
+            {coupon ? (
+              <div className="flex items-center gap-2 font-mono text-xs bg-primary/10 border border-primary/30 rounded px-2 py-1.5">
+                <Ticket className="h-3.5 w-3.5 text-primary" />
+                <span className="text-primary">{coupon.code}</span>
+                <span className="ml-auto text-primary">-₺{coupon.discount.toLocaleString("tr-TR")}</span>
+                <button onClick={() => { setCoupon(null); setCouponInput(""); }} className="text-muted-foreground hover:text-destructive">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Input
+                  value={couponInput}
+                  onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                  placeholder="Kupon kodu"
+                  className="font-mono text-xs h-9"
+                />
+                <Button onClick={applyCoupon} disabled={checking || !couponInput.trim()} size="sm" variant="outline" className="font-mono">
+                  {checking ? "…" : "uygula"}
+                </Button>
+              </div>
+            )}
+
+            {coupon && (
+              <div className="flex items-center justify-between font-mono text-xs text-muted-foreground">
+                <span>ara toplam</span>
+                <span>₺{total.toLocaleString("tr-TR")}</span>
+              </div>
+            )}
             <div className="flex items-center justify-between font-mono">
               <span className="text-xs text-muted-foreground uppercase tracking-widest">toplam</span>
-              <span className="text-xl neon-text">₺{total.toLocaleString("tr-TR")}</span>
+              <span className="text-xl neon-text">₺{finalTotal.toLocaleString("tr-TR")}</span>
             </div>
             <Button
               onClick={checkout}
