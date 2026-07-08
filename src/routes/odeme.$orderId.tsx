@@ -237,7 +237,7 @@ function Payment() {
 
       {/* Stepper rail */}
       <div className="glass-card rounded-b-lg rounded-t-none p-3 sm:p-5 scan-line">
-        <ol className="grid grid-cols-4 gap-1.5 sm:gap-2">
+        <ol className="grid grid-cols-3 gap-1.5 sm:gap-2">
           {STEPS.map((s, i) => {
             const done = i < stepIndex || order.status === "approved";
             const active = i === stepIndex && order.status !== "approved";
