@@ -17,6 +17,7 @@ import {
   Zap,
   BookOpen,
   Bitcoin,
+  Boxes,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -45,6 +46,7 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
   { to: "/admin/blog", label: "blog", icon: BookOpen },
   { to: "/admin/cuzdan", label: "cüzdan", icon: Wallet },
   { to: "/admin/kripto", label: "kripto", icon: Bitcoin },
+  { to: "/admin/uniquelisans", label: "uniquelisans", icon: Boxes },
   { to: "/admin/ayarlar", label: "ayarlar", icon: Settings },
 ];
 
