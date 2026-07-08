@@ -38,6 +38,7 @@ type Product = {
   category: string | null;
   manual_fulfillment: boolean;
   stock_hint: number | null;
+  low_stock_threshold: number;
   featured: boolean;
   unlimited_stock: boolean;
   sort_order: number;
