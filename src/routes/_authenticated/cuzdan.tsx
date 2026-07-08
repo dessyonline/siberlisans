@@ -148,6 +148,7 @@ function WalletPage() {
             </button>
           ))}
         </div>
+        <CustomTopupInput onSubmit={onCreate} creating={creating !== null} />
         <Link
           to="/kripto-yukle"
           className="mt-3 glass-card corner-cut rounded-lg p-4 flex items-center justify-between hover:neon-glow transition"
@@ -163,6 +164,7 @@ function WalletPage() {
           <ArrowRight className="h-4 w-4 text-primary" />
         </Link>
       </div>
+
 
       {/* Bekleyen yüklemeler */}
       <div className="mt-8">
