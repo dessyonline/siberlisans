@@ -213,7 +213,7 @@ export const ulSyncStock = createServerFn({ method: "POST" })
           ? false
           : (d.is_stock === false || (typeof d.stock_count === "number" && d.stock_count <= 0));
 
-        const patch: Record<string, unknown> = {
+        const patch: { external_price: number; stock_hint: number | null; unlimited_stock: boolean; active?: boolean } = {
           external_price: d.amount,
           stock_hint: d.stock_count ?? null,
           unlimited_stock: !!d.is_automatic_delivery,
