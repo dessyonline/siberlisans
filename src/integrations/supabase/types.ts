@@ -891,6 +891,8 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          last_seen_at: string | null
+          last_seen_ip: string | null
           referral_bonus_paid: boolean
           referral_code: string | null
           referred_by: string | null
@@ -904,6 +906,8 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id: string
+          last_seen_at?: string | null
+          last_seen_ip?: string | null
           referral_bonus_paid?: boolean
           referral_code?: string | null
           referred_by?: string | null
@@ -917,6 +921,8 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          last_seen_at?: string | null
+          last_seen_ip?: string | null
           referral_bonus_paid?: boolean
           referral_code?: string | null
           referred_by?: string | null
@@ -1503,6 +1509,13 @@ export type Database = {
       support_mark_read_user: {
         Args: { _ticket_id: string }
         Returns: undefined
+      }
+      touch_session_ip: {
+        Args: { _ip: string }
+        Returns: {
+          ip_changed: boolean
+          previous_ip: string
+        }[]
       }
       validate_coupon: {
         Args: { _code: string; _subtotal: number }
