@@ -3,14 +3,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { listCampaigns, upsertCampaign, deleteCampaign, sendCampaignNow } from "@/lib/campaigns.functions";
+import { listCampaigns, upsertCampaign, deleteCampaign, sendCampaignNow, testTelegramChannel } from "@/lib/campaigns.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Megaphone, Plus, Send, Trash2, Pencil, Clock, CheckCircle2, AlertTriangle, FileText } from "lucide-react";
+import { Megaphone, Plus, Send, Trash2, Pencil, Clock, CheckCircle2, AlertTriangle, FileText, Radio } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/kampanyalar")({
   component: CampaignsAdmin,
