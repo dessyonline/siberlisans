@@ -224,6 +224,7 @@ export const approveOrder = createServerFn({ method: "POST" })
     const { data: result, error } = await supabase.rpc("approve_order", { _order_id: data.orderId });
     if (error) throw new Error(error.message);
     const row = Array.isArray(result) ? result[0] : null;
+    await notifyLowStockForOrder(supabase, data.orderId);
     return {
       ok: true,
       licenseKey: row?.license_key ?? null,
