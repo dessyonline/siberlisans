@@ -72,7 +72,7 @@ export const adminUpsertCoupon = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
-    return { id: (row as { id: string }).id };
+    return { id: (row as unknown as { id: string }).id };
   });
 
 export const adminDeleteCoupon = createServerFn({ method: "POST" })
