@@ -30,6 +30,7 @@ import { Button } from "../components/ui/button";
 import { Toaster } from "../components/ui/sonner";
 import { supabase } from "../integrations/supabase/client";
 import { initTelegramWebApp } from "../lib/telegram-webapp";
+import { SupportFab } from "../components/SupportFab";
 
 function NotFoundComponent() {
   return (
