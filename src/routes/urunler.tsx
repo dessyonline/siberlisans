@@ -171,22 +171,35 @@ type Row = {
 
 // Kategori grupları — talep sırasına göre: AI en önce, sonra görsel/office...
 const GROUPS: { key: string; label: string; cats: string[] }[] = [
-  { key: "ai", label: "Yapay Zeka", cats: ["ChatGPT", "Google Gemini", "Lovable", "Claude", "Nano Banana", "Midjourney", "Ideogram"] },
+  { key: "ai", label: "Yapay Zeka", cats: ["ChatGPT", "Google Gemini", "Lovable", "Claude", "Nano Banana", "Midjourney", "Ideogram", "Yapay Zeka"] },
   {
     key: "gorsel",
     label: "Görsel & Tasarım",
-    cats: ["Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array", "CorelDRAW", "Autodesk"],
+    cats: ["Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array", "CorelDRAW", "Autodesk", "Görsel Ürünler", "Görsel"],
   },
-  { key: "office", label: "Microsoft Office", cats: ["Office (Ömürlük)", "Office 365"] },
-  { key: "windows", label: "Windows", cats: ["Windows 10/11", "Windows Server"] },
+  { key: "office", label: "Microsoft Office", cats: ["Office", "Office (Ömürlük)", "Office 365"] },
+  { key: "windows", label: "Windows", cats: ["Windows", "Windows 10/11", "Windows Server"] },
+  { key: "wordpress", label: "WordPress", cats: ["Wordpress Eklentileri & Temaları"] },
+  { key: "seo", label: "SEO Araçları", cats: ["Seo Araçları"] },
+  { key: "guvenlik", label: "VPN & Antivirüs", cats: ["Vpn & Antivirüs"] },
   { key: "oyun", label: "Oyunlar", cats: ["Steam Oyunları"] },
   { key: "email", label: "E-posta", cats: ["Email Hesapları"] },
+  { key: "diger", label: "Diğer", cats: ["Diğer", "Diğer Ürünler"] },
 ];
 
 function groupOf(cat: string | null): string {
   const c = cat ?? "Diğer";
   return GROUPS.find((g) => g.cats.includes(c))?.key ?? "diger";
 }
+
+type SortKey = "default" | "price_asc" | "price_desc" | "newest";
+const SORT_LABELS: Record<SortKey, string> = {
+  default: "önerilen",
+  price_asc: "fiyat: düşük → yüksek",
+  price_desc: "fiyat: yüksek → düşük",
+  newest: "en yeni",
+};
+
 
 
 function ProductsPage() {
@@ -224,6 +237,8 @@ function ProductsPage() {
 
   const [group, setGroup] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<SortKey>("default");
+
 
   // Ortak admin sıralaması: destansı → sıra → tarih
   const adminOrder = (list: Row[]) =>
@@ -277,8 +292,12 @@ function ProductsPage() {
             (p.category ?? "").toLowerCase().includes(q),
         );
       }
-      // Kategori içi: destansı önce, sonra sort_order yüksek olan, sonra fiyat
+      // Kategori içi sıralama
       list = [...list].sort((a, b) => {
+        if (sort === "price_asc") return (a.price_try ?? 0) - (b.price_try ?? 0);
+        if (sort === "price_desc") return (b.price_try ?? 0) - (a.price_try ?? 0);
+        if (sort === "newest") return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        // default: destansı önce, sonra sort_order, sonra fiyat
         const ea = a.tier === "epic" ? 0 : 1;
         const eb = b.tier === "epic" ? 0 : 1;
         if (ea !== eb) return ea - eb;
@@ -293,7 +312,8 @@ function ProductsPage() {
     const nonEmpty = filtered.filter(([, items]) => items.length > 0);
     // Kategoriler arası: GROUPS sırasına göre
     return nonEmpty.sort(([a], [b]) => catPriority(a) - catPriority(b));
-  }, [byCategory, group, search]);
+  }, [byCategory, group, search, sort]);
+
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -353,16 +373,34 @@ function ProductsPage() {
           </div>
           <div className="flex flex-wrap gap-2 font-mono text-xs">
             <CatChip label={`hepsi · ${data?.length ?? 0}`} active={group === "all"} onClick={() => setGroup("all")} />
-            {GROUPS.map((g) => (
-              <CatChip
-                key={g.key}
-                label={`${g.label} · ${groupCounts.get(g.key) ?? 0}`}
-                active={group === g.key}
-                onClick={() => setGroup(g.key)}
-              />
-            ))}
+            {GROUPS.map((g) => {
+              const c = groupCounts.get(g.key) ?? 0;
+              if (c === 0) return null;
+              return (
+                <CatChip
+                  key={g.key}
+                  label={`${g.label} · ${c}`}
+                  active={group === g.key}
+                  onClick={() => setGroup(g.key)}
+                />
+              );
+            })}
           </div>
         </div>
+
+        {/* Sort bar */}
+        <div className="mb-6 flex flex-wrap items-center gap-2 font-mono text-xs">
+          <span className="text-muted-foreground">sırala:</span>
+          {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
+            <CatChip
+              key={k}
+              label={SORT_LABELS[k]}
+              active={sort === k}
+              onClick={() => setSort(k)}
+            />
+          ))}
+        </div>
+
 
         {/* Hot picks */}
         {!search && hot.length > 0 && (
