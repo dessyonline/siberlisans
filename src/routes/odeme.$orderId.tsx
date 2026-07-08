@@ -253,7 +253,7 @@ function Payment() {
                   }`}
                 >
                   <div className="flex items-center gap-1 sm:gap-2 text-[9px] sm:text-[10px] tracking-widest text-muted-foreground">
-                    <span>[{String(i + 1).padStart(2, "0")}/04]</span>
+                    <span>[{String(i + 1).padStart(2, "0")}/03]</span>
                     {done && <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />}
                     {active && <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse shrink-0" />}
                   </div>
