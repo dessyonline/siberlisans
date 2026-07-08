@@ -582,10 +582,22 @@ function Stat({ label, value, tone, icon }: {
 }
 
 function Field({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
+  const [local, setLocal] = useState<string | null>(null);
+  const shown = local ?? value;
   return (
     <div>
       <Label className="font-mono text-xs">{label}</Label>
-      <Input type={type} value={value} onChange={(e) => onChange(e.target.value)} className="font-mono" />
+      <Input
+        type={type}
+        value={shown}
+        onFocus={() => setLocal(value)}
+        onChange={(e) => {
+          setLocal(e.target.value);
+          onChange(e.target.value);
+        }}
+        onBlur={() => setLocal(null)}
+        className="font-mono"
+      />
     </div>
   );
 }
