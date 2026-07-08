@@ -450,3 +450,5 @@ function WalletBalance() {
   });
   const n = Number(data?.balance_try ?? 0);
   return <>{n.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL</>;
+}
+
