@@ -66,8 +66,8 @@ function AuthPage() {
   const refCode = search.ref?.toUpperCase() ?? "";
 
   useEffect(() => {
-    if (user) navigate({ to: "/hesabim" });
-  }, [user, navigate]);
+    if (user && !mfaMode) navigate({ to: "/hesabim" });
+  }, [user, mfaMode, navigate]);
 
   const emailValid = useMemo(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()), [email]);
 
