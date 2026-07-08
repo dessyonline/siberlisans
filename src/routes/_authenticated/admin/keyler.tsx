@@ -324,6 +324,50 @@ function KeysAdmin() {
               placeholder={hint.placeholder}
               className="font-mono"
             />
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
+              <label className="inline-flex items-center gap-1.5 rounded-md border border-border px-3 py-1.5 text-xs font-mono cursor-pointer hover:border-primary/40 transition">
+                <FileUp className="h-3.5 w-3.5" />
+                dosya seç (.txt / .csv)
+                <input
+                  type="file"
+                  accept=".txt,.csv,text/plain,text/csv"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    if (f.size > 1024 * 1024) {
+                      toast.error("Dosya 1MB'dan büyük olamaz");
+                      e.target.value = "";
+                      return;
+                    }
+                    const text = await f.text();
+                    // CSV: ilk sütunu al; TXT: tüm satır
+                    const lines = text
+                      .split(/\r?\n/)
+                      .map((l) => l.trim())
+                      .filter(Boolean)
+                      .map((l) => (f.name.toLowerCase().endsWith(".csv") ? l.split(",")[0].trim() : l))
+                      .filter(Boolean);
+                    setRaw((cur) => (cur ? cur.trimEnd() + "\n" : "") + lines.join("\n"));
+                    toast.success(`${lines.length} satır yüklendi`);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+              {raw && (
+                <span className="text-[11px] font-mono text-muted-foreground">
+                  {raw.split(/[\r\n,;]+/).map((s) => s.trim()).filter(Boolean).length} key hazır
+                </span>
+              )}
+              {raw && (
+                <button
+                  onClick={() => setRaw("")}
+                  className="text-[11px] font-mono text-muted-foreground hover:text-destructive"
+                >
+                  temizle
+                </button>
+              )}
+            </div>
           </div>
           <Button disabled={busy} onClick={doImport} className="font-mono self-start">
             <Upload className="h-4 w-4 mr-1" />içe aktar
