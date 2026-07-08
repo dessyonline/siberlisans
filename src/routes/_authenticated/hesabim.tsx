@@ -143,11 +143,13 @@ function MyAccount() {
               <div className="text-primary text-sm truncate">$ arkadaşını davet et →</div>
             </div>
           </Link>
+        </div>
       </div>
 
       <div className="mt-4">
         <TierCard />
       </div>
+
 
 
 
