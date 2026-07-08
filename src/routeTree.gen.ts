@@ -42,6 +42,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
 import { Route as AuthenticatedAdminUniquelisansRouteImport } from './routes/_authenticated/admin/uniquelisans'
 import { Route as AuthenticatedAdminSiparislerRouteImport } from './routes/_authenticated/admin/siparisler'
+import { Route as AuthenticatedAdminShopierRouteImport } from './routes/_authenticated/admin/shopier'
 import { Route as AuthenticatedAdminPromosyonlarRouteImport } from './routes/_authenticated/admin/promosyonlar'
 import { Route as AuthenticatedAdminPopulerRouteImport } from './routes/_authenticated/admin/populer'
 import { Route as AuthenticatedAdminLisanslarRouteImport } from './routes/_authenticated/admin/lisanslar'
@@ -229,6 +230,12 @@ const AuthenticatedAdminSiparislerRoute =
     path: '/siparisler',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminShopierRoute =
+  AuthenticatedAdminShopierRouteImport.update({
+    id: '/shopier',
+    path: '/shopier',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminPromosyonlarRoute =
   AuthenticatedAdminPromosyonlarRouteImport.update({
     id: '/promosyonlar',
@@ -364,6 +371,7 @@ export interface FileRoutesByFullPath {
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
   '/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
+  '/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
@@ -413,6 +421,7 @@ export interface FileRoutesByTo {
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
   '/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
+  '/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
@@ -465,6 +474,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
   '/_authenticated/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/_authenticated/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
+  '/_authenticated/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/_authenticated/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
   '/_authenticated/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/_authenticated/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
@@ -517,6 +527,7 @@ export interface FileRouteTypes {
     | '/admin/lisanslar'
     | '/admin/populer'
     | '/admin/promosyonlar'
+    | '/admin/shopier'
     | '/admin/siparisler'
     | '/admin/uniquelisans'
     | '/admin/urunler'
@@ -566,6 +577,7 @@ export interface FileRouteTypes {
     | '/admin/lisanslar'
     | '/admin/populer'
     | '/admin/promosyonlar'
+    | '/admin/shopier'
     | '/admin/siparisler'
     | '/admin/uniquelisans'
     | '/admin/urunler'
@@ -617,6 +629,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/lisanslar'
     | '/_authenticated/admin/populer'
     | '/_authenticated/admin/promosyonlar'
+    | '/_authenticated/admin/shopier'
     | '/_authenticated/admin/siparisler'
     | '/_authenticated/admin/uniquelisans'
     | '/_authenticated/admin/urunler'
@@ -889,6 +902,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminSiparislerRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/shopier': {
+      id: '/_authenticated/admin/shopier'
+      path: '/shopier'
+      fullPath: '/admin/shopier'
+      preLoaderRoute: typeof AuthenticatedAdminShopierRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/promosyonlar': {
       id: '/_authenticated/admin/promosyonlar'
       path: '/promosyonlar'
@@ -1017,6 +1037,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminLisanslarRoute: typeof AuthenticatedAdminLisanslarRoute
   AuthenticatedAdminPopulerRoute: typeof AuthenticatedAdminPopulerRoute
   AuthenticatedAdminPromosyonlarRoute: typeof AuthenticatedAdminPromosyonlarRoute
+  AuthenticatedAdminShopierRoute: typeof AuthenticatedAdminShopierRoute
   AuthenticatedAdminSiparislerRoute: typeof AuthenticatedAdminSiparislerRoute
   AuthenticatedAdminUniquelisansRoute: typeof AuthenticatedAdminUniquelisansRoute
   AuthenticatedAdminUrunlerRoute: typeof AuthenticatedAdminUrunlerRoute
@@ -1037,6 +1058,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminLisanslarRoute: AuthenticatedAdminLisanslarRoute,
     AuthenticatedAdminPopulerRoute: AuthenticatedAdminPopulerRoute,
     AuthenticatedAdminPromosyonlarRoute: AuthenticatedAdminPromosyonlarRoute,
+    AuthenticatedAdminShopierRoute: AuthenticatedAdminShopierRoute,
     AuthenticatedAdminSiparislerRoute: AuthenticatedAdminSiparislerRoute,
     AuthenticatedAdminUniquelisansRoute: AuthenticatedAdminUniquelisansRoute,
     AuthenticatedAdminUrunlerRoute: AuthenticatedAdminUrunlerRoute,
