@@ -768,46 +768,43 @@ function ProductCard({
       )}
       {/* corner shine on hover */}
       <div className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" aria-hidden />
-      {epic && (
-        <span className="absolute top-2 left-2 z-10 rounded-full px-2 py-0.5 font-mono text-[10px] border border-[oklch(0.78_0.16_75)] bg-[oklch(0.78_0.16_75/0.15)] text-[oklch(0.85_0.15_75)] shadow-[0_0_18px_oklch(0.78_0.16_75/0.45)] uppercase tracking-widest">
-          ★ EPIC
-        </span>
-      )}
-      {isNew && !epic && (
-        <span className="absolute top-2 right-2 z-10 rounded-full px-2 py-0.5 font-mono text-[10px] border border-cyan/50 bg-cyan/20 text-cyan animate-pulse shadow-lg">
-          ✦ YENİ
-        </span>
-      )}
+
+      {/* Top row: category + tier badges — no absolute overlaps */}
       <div className="relative flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className={`text-[11px] font-mono flex items-center gap-1.5 uppercase tracking-wider ${epic ? "text-[oklch(0.85_0.15_75)]" : "text-muted-foreground"}`}>
-            {epic ? <Star className="h-3 w-3 fill-current" /> : featured && <Star className="h-3 w-3 text-warn fill-warn" />}
-            {p.category ?? "license"}
+            {epic ? <Star className="h-3 w-3 fill-current shrink-0" /> : featured && <Star className="h-3 w-3 text-warn fill-warn shrink-0" />}
+            <span className="truncate">{p.category ?? "license"}</span>
           </div>
-          <h3 className={`mt-1.5 text-lg font-semibold tracking-tight truncate ${epic ? "epic-text-glow" : ""}`}>{p.name}</h3>
         </div>
-        <KeyRound className={`h-5 w-5 shrink-0 ${epic ? "text-[oklch(0.85_0.15_75)]" : "text-primary opacity-60"}`} />
+        <div className="flex items-center gap-1.5 shrink-0">
+          {epic && (
+            <span className="rounded-full px-2 py-0.5 font-mono text-[10px] border border-[oklch(0.78_0.16_75)] bg-[oklch(0.78_0.16_75/0.15)] text-[oklch(0.85_0.15_75)] shadow-[0_0_18px_oklch(0.78_0.16_75/0.45)] uppercase tracking-widest">
+              ★ EPIC
+            </span>
+          )}
+          {isNew && !epic && (
+            <span className="rounded-full px-2 py-0.5 font-mono text-[10px] border border-cyan/50 bg-cyan/20 text-cyan animate-pulse shadow-lg">
+              ✦ YENİ
+            </span>
+          )}
+          <KeyRound className={`h-5 w-5 shrink-0 ${epic ? "text-[oklch(0.85_0.15_75)]" : "text-primary opacity-60"}`} />
+        </div>
       </div>
+
+      <h3 className={`relative mt-1.5 text-lg font-semibold tracking-tight truncate ${epic ? "epic-text-glow" : ""}`}>{p.name}</h3>
       <p className="relative mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed">{p.description}</p>
+
       <div className="relative mt-4 flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
         <span className="rounded-md bg-muted/40 text-muted-foreground border border-border px-2 py-0.5">
           {DURATION_LABEL[p.duration] ?? p.duration}
         </span>
-        <span className={`rounded-md px-2 py-0.5 border ${unlimited || manual ? "text-cyan border-cyan/40 bg-cyan/5" : soldOut ? "text-destructive border-destructive/40 bg-destructive/5" : stock <= 3 ? "text-warn border-warn/40 bg-warn/5" : "text-primary border-primary/40 bg-primary/5"}`}>
-          {unlimited ? "stok: ∞" : manual ? "sipariş sonrası" : soldOut ? "tükendi" : stock <= 3 ? `son ${stock}` : `stok: ${stock}`}
-        </span>
       </div>
-      {showStockBar && (
-        <div className="relative mt-3">
-          <div className="h-1 rounded-full bg-muted/40 overflow-hidden">
-            <div
-              className={`h-full transition-all ${stock <= 3 ? "bg-warn" : "bg-primary"}`}
-              style={{ width: `${Math.min(100, stock * 10)}%` }}
-            />
-          </div>
-        </div>
-      )}
+
+      <CyberStockLoader stock={stock} manual={manual} unlimited={unlimited} soldOut={soldOut} />
+
       <div className="relative mt-auto pt-5 flex items-end justify-between">
+
         <div>
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">fiyat</div>
           <div className={`font-mono text-2xl font-semibold ${epic ? "text-[oklch(0.88_0.15_75)] epic-text-glow" : "text-primary"}`}>
