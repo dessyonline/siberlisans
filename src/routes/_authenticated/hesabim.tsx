@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { toast } from "sonner";
-import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart } from "lucide-react";
+import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/hesabim")({
   component: MyAccount,
@@ -124,12 +124,22 @@ function MyAccount() {
           </div>
           <Link
             to="/favorilerim"
-            className="glass-card corner-cut col-span-2 sm:col-span-3 flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
+            className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
           >
             <Heart className="h-4 w-4 text-destructive fill-destructive shrink-0" />
             <div className="min-w-0">
-              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">favorilerim</div>
-              <div className="text-primary text-sm truncate">$ favori ürünlerini gör →</div>
+              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">favoriler</div>
+              <div className="text-primary text-sm truncate">$ favorilerin →</div>
+            </div>
+          </Link>
+          <Link
+            to="/davet"
+            className="glass-card corner-cut col-span-2 sm:col-span-2 flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
+          >
+            <Gift className="h-4 w-4 text-primary shrink-0" />
+            <div className="min-w-0">
+              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">davet et & ₺25 kazan</div>
+              <div className="text-primary text-sm truncate">$ arkadaşını davet et →</div>
             </div>
           </Link>
         </div>
