@@ -264,6 +264,32 @@ function SiteHeader() {
   );
 }
 
+function HeaderUserBadge({ userId }: { userId: string }) {
+  const { data } = useQuery({
+    queryKey: ["header-avatar-balance", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const [{ data: p }, { data: w }] = await Promise.all([
+        supabase.from("profiles").select("avatar_id").eq("id", userId).maybeSingle(),
+        supabase.from("wallets").select("balance_try").eq("user_id", userId).maybeSingle(),
+      ]);
+      return {
+        avatar_id: (p?.avatar_id as string | null) ?? null,
+        balance_try: Number(w?.balance_try ?? 0),
+      };
+    },
+    refetchInterval: 15000,
+  });
+  return (
+    <span className="flex items-center gap-1.5">
+      <UserAvatar id={data?.avatar_id} size={22} />
+      <span className="hidden md:inline font-mono text-[11px] text-primary">
+        ₺{(data?.balance_try ?? 0).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+      </span>
+    </span>
+  );
+}
+
 
 function SiteFooter() {
   return (
