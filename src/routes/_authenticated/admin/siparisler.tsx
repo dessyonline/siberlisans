@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { approveOrder, rejectOrder } from "@/lib/orders.functions";
+import { syncUniquelisansOrder, syncAllPendingUniquelisans } from "@/lib/uniquelisans-sync.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
