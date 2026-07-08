@@ -7,8 +7,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { createOrder } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Info, ShieldCheck, Zap, CheckCircle2, X, KeyRound, Lock, ArrowLeft, Terminal, Cpu, Wifi, Crown, Sparkles, Landmark, Package, RefreshCw, HelpCircle, Users, Clock } from "lucide-react";
+import { Info, ShieldCheck, Zap, CheckCircle2, X, KeyRound, Lock, ArrowLeft, Terminal, Cpu, Wifi, Crown, Sparkles, Landmark, Package, RefreshCw, HelpCircle, Users, Clock, ShoppingCart } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useCart } from "@/lib/cart-store";
 
 const productMetaQuery = (slug: string) => ({
   queryKey: ["product-meta", slug],
@@ -84,6 +85,8 @@ function ProductDetail() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const createOrderFn = useServerFn(createOrder);
+  const addToCart = useCart((s) => s.addItem);
+
 
   const { data: product, isLoading } = useQuery({
     queryKey: ["product", slug],
@@ -130,6 +133,19 @@ function ProductDetail() {
       setLoading(false);
     }
   };
+
+  const handleAddToCart = () => {
+    if (!product) return;
+    addToCart({
+      productId: product.id,
+      slug: product.slug,
+      name: product.name,
+      priceTry: Number(product.price_try),
+      imageUrl: product.image_url ?? null,
+    });
+    toast.success("Sepete eklendi");
+  };
+
 
   if (isLoading)
     return (
@@ -401,22 +417,31 @@ function ProductDetail() {
                 ))}
               </div>
 
-              <Button
-                disabled={loading || soldOut}
-                onClick={handleBuy}
-                className="mt-7 w-full group relative overflow-hidden font-mono bg-primary text-primary-foreground border border-primary/50 hover:bg-primary/90 shadow-[0_0_25px_oklch(0.82_0.20_145/0.35)] hover:shadow-[0_0_40px_oklch(0.82_0.20_145/0.55)] transition-all duration-300 hidden md:inline-flex"
-                size="lg"
-              >
-                <span className="pointer-events-none absolute inset-0 scan-line opacity-30" aria-hidden />
-                <Zap className="relative mr-2 h-4 w-4 animate-pulse" />
-                <span className="relative">
-                  {loading
-                    ? "$ processing…"
-                    : soldOut
-                    ? "$ out_of_stock"
-                    : "$ satın al --now"}
-                </span>
-              </Button>
+              <div className="mt-7 hidden md:grid grid-cols-[1fr_auto] gap-2">
+                <Button
+                  disabled={loading || soldOut}
+                  onClick={handleBuy}
+                  className="w-full group relative overflow-hidden font-mono bg-primary text-primary-foreground border border-primary/50 hover:bg-primary/90 shadow-[0_0_25px_oklch(0.82_0.20_145/0.35)] hover:shadow-[0_0_40px_oklch(0.82_0.20_145/0.55)] transition-all duration-300"
+                  size="lg"
+                >
+                  <span className="pointer-events-none absolute inset-0 scan-line opacity-30" aria-hidden />
+                  <Zap className="relative mr-2 h-4 w-4 animate-pulse" />
+                  <span className="relative">
+                    {loading ? "$ processing…" : soldOut ? "$ out_of_stock" : "$ satın al --now"}
+                  </span>
+                </Button>
+                <Button
+                  disabled={soldOut}
+                  onClick={handleAddToCart}
+                  variant="outline"
+                  size="lg"
+                  className="font-mono border-primary/40 hover:bg-primary/10 hover:text-primary"
+                  aria-label="Sepete ekle"
+                >
+                  <ShoppingCart className="h-4 w-4" />
+                  <span className="ml-1.5 hidden lg:inline">sepete ekle</span>
+                </Button>
+              </div>
               <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center hidden md:block">
                 <span className="text-primary/60">//</span> kredi kartı KABUL EDİLMEZ · sadece banka transferi
               </p>
@@ -588,6 +613,16 @@ function ProductDetail() {
               ₺{Number(product.price_try).toLocaleString("tr-TR")}
             </div>
           </div>
+          <Button
+            disabled={soldOut}
+            onClick={handleAddToCart}
+            variant="outline"
+            size="lg"
+            className="font-mono shrink-0 border-primary/40 hover:bg-primary/10 hover:text-primary h-11 px-3"
+            aria-label="Sepete ekle"
+          >
+            <ShoppingCart className="h-4 w-4" />
+          </Button>
           <Button
             disabled={loading || soldOut}
             onClick={handleBuy}

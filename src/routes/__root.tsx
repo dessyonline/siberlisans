@@ -31,6 +31,8 @@ import { Toaster } from "../components/ui/sonner";
 import { supabase } from "../integrations/supabase/client";
 import { initTelegramWebApp } from "../lib/telegram-webapp";
 import { SupportFab } from "../components/SupportFab";
+import { CartButton } from "../components/CartButton";
+import { CartDrawer } from "../components/CartDrawer";
 
 function NotFoundComponent() {
   return (
@@ -214,6 +216,10 @@ function SiteHeader() {
             </Link>
           </nav>
 
+          <CartButton compact />
+
+
+
           {user ? (
             <>
               {isAdmin && (
@@ -339,6 +345,7 @@ function RootComponent() {
           <SiteFooter />
         </div>
         <SupportFab />
+        <CartDrawer />
         <Toaster />
       </AuthProvider>
     </QueryClientProvider>

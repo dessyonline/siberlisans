@@ -74,6 +74,55 @@ export const createOrder = createServerFn({ method: "POST" })
   });
 
 
+/* ============ CART / MULTI-ITEM ORDERS ============ */
+
+const cartOrderInput = z.object({
+  items: z
+    .array(
+      z.object({
+        productId: z.string().uuid(),
+        quantity: z.number().int().min(1).max(50),
+      }),
+    )
+    .min(1)
+    .max(20),
+});
+
+export const createCartOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => cartOrderInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, claims } = context;
+    const { data: rows, error } = await supabase.rpc("create_cart_order", {
+      _items: data.items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+    });
+    if (error) throw new Error(error.message);
+    const row = Array.isArray(rows) ? rows[0] : rows;
+    if (!row?.order_id) throw new Error("Sipariş oluşturulamadı.");
+
+    try {
+      const { notifyTelegram, orderCreatedMessage } = await import("@/lib/telegram.server");
+      const totalItems = data.items.reduce((s, i) => s + i.quantity, 0);
+      await notifyTelegram(
+        orderCreatedMessage({
+          reference: row.reference_code,
+          productName: `Sepet siparişi (${totalItems} ürün)`,
+          priceTry: Number(row.total_try),
+          userEmail: (claims as { email?: string } | null)?.email ?? null,
+        }),
+      );
+    } catch (e) {
+      console.error("[notify] createCartOrder", (e as Error).message);
+    }
+
+    return {
+      orderId: row.order_id as string,
+      referenceCode: row.reference_code as string,
+      totalTry: Number(row.total_try),
+    };
+  });
+
+
 const markPaidInput = z.object({ orderId: z.string().uuid(), receiptPath: z.string().min(1) });
 
 export const markOrderPaid = createServerFn({ method: "POST" })

@@ -34,7 +34,20 @@ type Order = {
   reference_code: string;
   created_at: string;
   product: { name: string; slug: string; delivery_type: string } | null;
-  keys: { license_key: { key_value: string; activation_token: string | null } | null }[] | null;
+  items:
+    | { quantity: number; product_name_snapshot: string; product: { slug: string; delivery_type: string } | null }[]
+    | null;
+  keys:
+    | {
+        license_key:
+          | {
+              key_value: string;
+              activation_token: string | null;
+              product: { name: string; slug: string; delivery_type: string } | null;
+            }
+          | null;
+      }[]
+    | null;
 };
 
 function MyAccount() {
@@ -46,7 +59,7 @@ function MyAccount() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, status, price_try, reference_code, created_at, product:products(name, slug, delivery_type), keys:order_keys(license_key:license_keys(key_value, activation_token))"
+          "id, status, price_try, reference_code, created_at, product:products(name, slug, delivery_type), items:order_items(quantity, product_name_snapshot, product:products(slug, delivery_type)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, slug, delivery_type)))"
         )
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
@@ -64,9 +77,9 @@ function MyAccount() {
             .map((k) => k.license_key)
             .filter((k): k is NonNullable<typeof k> => !!k?.key_value)
             .map((k) => ({
-              product: o.product?.name ?? "-",
-              productSlug: o.product?.slug ?? "",
-              deliveryType: (o.product?.delivery_type ?? "key") as DeliveryType,
+              product: k.product?.name ?? o.product?.name ?? "-",
+              productSlug: k.product?.slug ?? o.product?.slug ?? "",
+              deliveryType: (k.product?.delivery_type ?? o.product?.delivery_type ?? "key") as DeliveryType,
               keyValue: k.key_value,
               activationToken: k.activation_token,
               date: o.created_at,
@@ -152,9 +165,13 @@ function OrdersTab({ orders, isLoading }: { orders: Order[]; isLoading: boolean 
     return orders.filter((o) => {
       if (status !== "all" && o.status !== status) return false;
       if (!lc) return true;
+      const inItems = (o.items ?? []).some((it) =>
+        it.product_name_snapshot.toLowerCase().includes(lc),
+      );
       return (
         (o.product?.name ?? "").toLowerCase().includes(lc) ||
-        o.reference_code.toLowerCase().includes(lc)
+        o.reference_code.toLowerCase().includes(lc) ||
+        inItems
       );
     });
   }, [orders, q, status]);
@@ -215,15 +232,30 @@ function OrdersTab({ orders, isLoading }: { orders: Order[]; isLoading: boolean 
         )}
         {filtered.map((o) => {
           const s = STATUS_LABEL[o.status] ?? STATUS_LABEL.pending;
-          const lk = o.keys?.[0]?.license_key;
-          const dt = (o.product?.delivery_type ?? "key") as DeliveryType;
+          const validKeys = (o.keys ?? [])
+            .map((k) => k.license_key)
+            .filter((k): k is NonNullable<typeof k> => !!k?.key_value);
+          const itemCount = (o.items ?? []).reduce((sum, it) => sum + it.quantity, 0);
+          const title =
+            o.product?.name ??
+            (itemCount > 0 ? `Sepet siparişi · ${itemCount} ürün` : "—");
           return (
             <div key={o.id} className="glass-card rounded-lg p-3 sm:p-4">
               <div className="font-mono text-sm space-y-2">
                 {/* top row: product name + status */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <div className="font-semibold break-words leading-snug">{o.product?.name}</div>
+                    <div className="font-semibold break-words leading-snug">{title}</div>
+                    {(o.items ?? []).length > 0 && (
+                      <ul className="mt-1 space-y-0.5 text-[11px] text-muted-foreground">
+                        {(o.items ?? []).map((it, i) => (
+                          <li key={i} className="truncate">
+                            <span className="text-primary/60">·</span> {it.product_name_snapshot}
+                            {it.quantity > 1 ? ` ×${it.quantity}` : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                     <div className="mt-0.5 text-[11px] text-muted-foreground break-all">
                       ref: {o.reference_code} ·{" "}
                       {new Date(o.created_at).toLocaleDateString("tr-TR", {
@@ -249,13 +281,25 @@ function OrdersTab({ orders, isLoading }: { orders: Order[]; isLoading: boolean 
                   </Button>
                 </div>
               </div>
-              {lk?.key_value && (
-                <div className="mt-3">
-                  <DeliveryPayload
-                    deliveryType={dt}
-                    keyValue={lk.key_value}
-                    activationToken={lk.activation_token}
-                  />
+              {validKeys.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  {validKeys.map((lk, i) => {
+                    const dt = (lk.product?.delivery_type ?? o.product?.delivery_type ?? "key") as DeliveryType;
+                    return (
+                      <div key={i}>
+                        {validKeys.length > 1 && lk.product?.name && (
+                          <div className="mb-1 font-mono text-[10px] text-primary/70">
+                            &gt; {lk.product.name}
+                          </div>
+                        )}
+                        <DeliveryPayload
+                          deliveryType={dt}
+                          keyValue={lk.key_value}
+                          activationToken={lk.activation_token}
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
