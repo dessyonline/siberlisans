@@ -7,20 +7,18 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import {
   Terminal,
   ShieldCheck,
   LogIn,
   LayoutDashboard,
   User as UserIcon,
-  Menu,
-  X,
-  Home,
   Package,
   BookOpen,
   HelpCircle,
 } from "lucide-react";
+
 
 
 
@@ -165,35 +163,11 @@ function AuthListener() {
 
 function SiteHeader() {
   const { user, isAdmin, signOut } = useAuth();
-  const [open, setOpen] = useState(false);
-  const close = () => setOpen(false);
-
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [open]);
-
-  const mobileLinks: Array<{
-    to: string;
-    label: string;
-    tag: string;
-    Icon: typeof Home;
-  }> = [
-    { to: "/", label: "Anasayfa", tag: "EXEC_HOME", Icon: Home },
-    { to: "/urunler", label: "Ürünler", tag: "EXEC_PROD", Icon: Package },
-    { to: "/nasil-calisir", label: "Nasıl Çalışır", tag: "EXEC_DOCS", Icon: BookOpen },
-    { to: "/sss", label: "SSS", tag: "EXEC_HELP", Icon: HelpCircle },
-  ];
-
 
   return (
     <header className="sticky top-0 z-40 border-b border-primary/20 bg-background/70 backdrop-blur-xl">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2 font-mono" onClick={close}>
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 sm:px-4">
+        <Link to="/" className="flex items-center gap-2 font-mono shrink-0">
           <Terminal className="h-5 w-5 text-primary" />
           <span className="text-lg tracking-tight">
             <span className="neon-text">Siber</span>
@@ -201,157 +175,81 @@ function SiteHeader() {
             <span className="text-primary animate-pulse">_</span>
           </span>
         </Link>
+
+        {/* Desktop nav */}
         <nav className="hidden md:flex items-center gap-6 font-mono text-sm">
           <Link to="/" className="text-muted-foreground hover:text-primary">./anasayfa</Link>
           <Link to="/urunler" className="text-muted-foreground hover:text-primary">./ürünler</Link>
           <Link to="/nasil-calisir" className="text-muted-foreground hover:text-primary">./nasıl-çalışır</Link>
           <Link to="/sss" className="text-muted-foreground hover:text-primary">./SSS</Link>
         </nav>
-        <div className="hidden md:flex items-center gap-2">
+
+        {/* Right side actions */}
+        <div className="flex items-center gap-1 sm:gap-2">
+          {/* Mobile icon-only quick nav */}
+          <nav className="flex md:hidden items-center gap-1">
+            <Link
+              to="/urunler"
+              aria-label="Ürünler"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10"
+            >
+              <Package className="h-4 w-4" />
+            </Link>
+            <Link
+              to="/nasil-calisir"
+              aria-label="Nasıl çalışır"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10"
+            >
+              <BookOpen className="h-4 w-4" />
+            </Link>
+            <Link
+              to="/sss"
+              aria-label="SSS"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10"
+            >
+              <HelpCircle className="h-4 w-4" />
+            </Link>
+          </nav>
+
           {user ? (
             <>
               {isAdmin && (
-                <Button asChild size="sm" variant="outline" className="font-mono">
-                  <Link to="/admin">
-                    <LayoutDashboard className="mr-1 h-4 w-4" />admin
+                <Button asChild size="sm" variant="outline" className="font-mono px-2 sm:px-3">
+                  <Link to="/admin" aria-label="Admin">
+                    <LayoutDashboard className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">admin</span>
                   </Link>
                 </Button>
               )}
-              <Button asChild size="sm" variant="ghost" className="font-mono">
-                <Link to="/hesabim"><UserIcon className="mr-1 h-4 w-4" />hesabım</Link>
+              <Button asChild size="sm" variant="ghost" className="font-mono px-2 sm:px-3">
+                <Link to="/hesabim" aria-label="Hesabım">
+                  <UserIcon className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">hesabım</span>
+                </Link>
               </Button>
-              <Button size="sm" variant="ghost" onClick={signOut} className="font-mono text-muted-foreground">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={signOut}
+                className="hidden sm:inline-flex font-mono text-muted-foreground"
+              >
                 çıkış
               </Button>
             </>
           ) : (
-            <Button asChild size="sm" className="font-mono">
-              <Link to="/auth"><LogIn className="mr-1 h-4 w-4" />giriş</Link>
+            <Button asChild size="sm" className="font-mono px-2 sm:px-3">
+              <Link to="/auth" aria-label="Giriş">
+                <LogIn className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">giriş</span>
+              </Link>
             </Button>
           )}
         </div>
-
-        {/* Mobile hamburger trigger */}
-        <button
-          type="button"
-          aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
-          aria-expanded={open}
-          onClick={() => setOpen((v) => !v)}
-          className="md:hidden relative z-[60] inline-flex h-10 w-10 items-center justify-center rounded-md border border-primary/30 bg-card text-primary hover:bg-primary/10 active:scale-95 transition-all"
-        >
-          <span className="sr-only">menü</span>
-          <Menu className={`h-5 w-5 transition-opacity ${open ? "opacity-0" : "opacity-100"}`} />
-        </button>
       </div>
-
-      {/* Mobile terminal-shell menu — full viewport, opaque, self-contained header */}
-      <div
-        className={`md:hidden fixed inset-0 z-[55] transition-opacity duration-200 ${
-          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
-        aria-hidden={!open}
-      >
-        {/* Solid opaque backdrop — masks all page content underneath */}
-        <div className="absolute inset-0 bg-[hsl(var(--background))]" />
-
-        {/* Panel */}
-        <div className="relative flex h-full w-full flex-col">
-          {/* Terminal shell header (replaces site header while menu is open) */}
-          <div className="flex h-14 items-center justify-between border-b border-primary/30 bg-card px-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <span className="h-2 w-2 shrink-0 rounded-full bg-primary animate-pulse shadow-[0_0_8px_hsl(var(--primary))]" />
-              <div className="font-mono text-[13px] tracking-tight text-primary truncate">
-                <span className="opacity-50">root@siberphp:~$</span>
-                <span className="ml-1 font-bold">./menu --open</span>
-              </div>
-            </div>
-            <button
-              type="button"
-              aria-label="Menüyü kapat"
-              onClick={close}
-              className="group relative flex h-9 w-9 shrink-0 items-center justify-center rounded border border-primary/20 bg-card transition-all hover:bg-primary"
-            >
-              <X className="h-4 w-4 text-primary transition-colors group-hover:text-background" strokeWidth={2.5} />
-            </button>
-          </div>
-
-          {/* Body */}
-          <div className="flex-1 overflow-y-auto bg-[hsl(var(--background))] px-5 py-6">
-            <nav className="flex flex-col gap-3">
-              {mobileLinks.map((l, i) => (
-                <Link
-                  key={l.to}
-                  to={l.to}
-                  onClick={close}
-                  className="group block rounded border border-border/60 bg-card p-4 transition-all hover:border-primary/50"
-                  style={{ animation: open ? `slideIn 0.3s ease ${i * 50}ms both` : undefined }}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-4 min-w-0">
-                      <div className="shrink-0 rounded border border-border/60 bg-background p-2 text-primary">
-                        <l.Icon className="h-5 w-5" />
-                      </div>
-                      <span className="text-lg font-semibold text-foreground truncate">{l.label}</span>
-                    </div>
-                    <span className="shrink-0 font-mono text-[10px] tracking-wider text-primary opacity-0 transition-opacity group-hover:opacity-100">
-                      {l.tag}
-                    </span>
-                  </div>
-                </Link>
-              ))}
-            </nav>
-
-            {/* Auth block */}
-            <div className="mt-6 flex flex-col gap-2 border-t border-border/60 pt-6">
-              {user ? (
-                <>
-                  {isAdmin && (
-                    <Button asChild size="lg" variant="outline" className="font-mono justify-start border-primary/40" onClick={close}>
-                      <Link to="/admin">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />./admin-panel
-                      </Link>
-                    </Button>
-                  )}
-                  <Button asChild size="lg" variant="secondary" className="font-mono justify-start" onClick={close}>
-                    <Link to="/hesabim"><UserIcon className="mr-2 h-4 w-4" />./hesabım</Link>
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="ghost"
-                    onClick={() => { close(); signOut(); }}
-                    className="font-mono justify-start text-muted-foreground hover:text-destructive"
-                  >
-                    {"> "}exit
-                  </Button>
-                </>
-              ) : (
-                <Button asChild size="lg" className="font-mono justify-start" onClick={close}>
-                  <Link to="/auth"><LogIn className="mr-2 h-4 w-4" />./giriş-yap</Link>
-                </Button>
-              )}
-            </div>
-
-            {/* Kernel footer */}
-            <div className="mt-8 border-t border-border/40 pt-4 text-center">
-              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
-                SiberPHP System Kernel · v4.2.0-stable
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-
-      <style>{`
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateX(-16px); }
-          to { opacity: 1; transform: translateX(0); }
-        }
-      `}</style>
     </header>
   );
 }
+
 
 function SiteFooter() {
   return (
