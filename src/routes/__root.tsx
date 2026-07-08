@@ -7,20 +7,18 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import {
   Terminal,
   ShieldCheck,
   LogIn,
   LayoutDashboard,
   User as UserIcon,
-  Menu,
-  X,
-  Home,
   Package,
   BookOpen,
   HelpCircle,
 } from "lucide-react";
+
 
 
 
