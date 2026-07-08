@@ -152,6 +152,18 @@ function AuthListener() {
 
 function SiteHeader() {
   const { user, isAdmin, signOut } = useAuth();
+  const [open, setOpen] = useState(false);
+  const close = () => setOpen(false);
+
+  const navLinks = (
+    <>
+      <Link to="/" onClick={close} className="text-muted-foreground hover:text-primary">./anasayfa</Link>
+      <Link to="/urunler" onClick={close} className="text-muted-foreground hover:text-primary">./ürünler</Link>
+      <Link to="/nasil-calisir" onClick={close} className="text-muted-foreground hover:text-primary">./nasıl-çalışır</Link>
+      <Link to="/sss" onClick={close} className="text-muted-foreground hover:text-primary">./SSS</Link>
+    </>
+  );
+
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
@@ -164,12 +176,9 @@ function SiteHeader() {
           </span>
         </Link>
         <nav className="hidden md:flex items-center gap-6 font-mono text-sm">
-          <Link to="/" className="text-muted-foreground hover:text-primary">./anasayfa</Link>
-          <Link to="/urunler" className="text-muted-foreground hover:text-primary">./ürünler</Link>
-          <Link to="/nasil-calisir" className="text-muted-foreground hover:text-primary">./nasıl-çalışır</Link>
-          <Link to="/sss" className="text-muted-foreground hover:text-primary">./SSS</Link>
+          {navLinks}
         </nav>
-        <div className="flex items-center gap-2">
+        <div className="hidden md:flex items-center gap-2">
           {user ? (
             <>
               {isAdmin && (
@@ -192,10 +201,61 @@ function SiteHeader() {
             </Button>
           )}
         </div>
+
+        {/* Mobile hamburger */}
+        <button
+          type="button"
+          aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
+          aria-expanded={open}
+          onClick={() => setOpen((v) => !v)}
+          className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-background/60 text-primary hover:bg-primary/10 transition-colors"
+        >
+          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
       </div>
+
+      {/* Mobile menu panel */}
+      {open && (
+        <div className="md:hidden border-t border-border/60 bg-background/95 backdrop-blur-xl">
+          <div className="mx-auto max-w-7xl px-4 py-4 flex flex-col gap-4 font-mono text-sm">
+            <nav className="flex flex-col gap-3">
+              {navLinks}
+            </nav>
+            <div className="flex flex-col gap-2 pt-3 border-t border-border/60">
+              {user ? (
+                <>
+                  {isAdmin && (
+                    <Button asChild size="sm" variant="outline" className="font-mono justify-start" onClick={close}>
+                      <Link to="/admin">
+                        <LayoutDashboard className="mr-2 h-4 w-4" />admin
+                      </Link>
+                    </Button>
+                  )}
+                  <Button asChild size="sm" variant="ghost" className="font-mono justify-start" onClick={close}>
+                    <Link to="/hesabim"><UserIcon className="mr-2 h-4 w-4" />hesabım</Link>
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => { close(); signOut(); }}
+                    className="font-mono justify-start text-muted-foreground"
+                  >
+                    çıkış
+                  </Button>
+                </>
+              ) : (
+                <Button asChild size="sm" className="font-mono justify-start" onClick={close}>
+                  <Link to="/auth"><LogIn className="mr-2 h-4 w-4" />giriş</Link>
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
+
 
 function SiteFooter() {
   return (
