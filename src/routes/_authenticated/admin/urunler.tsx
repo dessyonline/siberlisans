@@ -28,6 +28,20 @@ const DELIVERY_LABELS: Record<DeliveryType, string> = {
   link_token: "aktivasyon linki (token)",
 };
 
+const CATEGORY_OPTIONS: string[] = [
+  "ChatGPT", "Google Gemini", "Lovable", "Claude", "Nano Banana", "Midjourney", "Ideogram", "Yapay Zeka",
+  "Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array",
+  "CorelDRAW", "Autodesk", "Görsel Ürünler",
+  "Office", "Office 365",
+  "Windows", "Windows 10/11", "Windows Server",
+  "Wordpress Eklentileri & Temaları",
+  "Seo Araçları",
+  "Vpn & Antivirüs",
+  "Steam Oyunları",
+  "Email Hesapları",
+  "Diğer",
+];
+
 type Product = {
   id: string;
   name: string;
