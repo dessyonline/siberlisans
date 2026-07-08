@@ -97,7 +97,7 @@ function ProductsAdmin() {
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return (products ?? []).filter((p: Product & { license_keys: { status: string }[] }) => {
+    return ((products ?? []) as unknown as Array<Product & { license_keys: { status: string }[] }>).filter((p) => {
       if (q && !(
         p.name.toLowerCase().includes(q) ||
         p.slug.toLowerCase().includes(q) ||
