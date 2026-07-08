@@ -438,14 +438,14 @@ function ProfileTab({ email, onSignOut }: { email: string; onSignOut: () => void
         </Button>
       </div>
 
-      <div className="glass-card rounded-lg p-5 flex items-center justify-between gap-3">
-        <div>
+      <div className="glass-card rounded-lg p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <div className="font-mono text-sm font-semibold">Oturumu Kapat</div>
           <div className="mt-0.5 font-mono text-xs text-muted-foreground">
             tüm cihazlarda çıkış için tekrar giriş yapmanız gerekir.
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={onSignOut} className="font-mono">
+        <Button variant="outline" size="sm" onClick={onSignOut} className="font-mono self-start sm:self-auto shrink-0">
           <LogOut className="mr-1.5 h-3.5 w-3.5" /> çıkış
         </Button>
       </div>
