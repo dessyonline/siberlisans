@@ -198,6 +198,15 @@ function Payment() {
   const orderTitle = order.product?.name ?? `Sepet siparişi · ${orderItems.length} ürün`;
   const stepIndex = STEPS.findIndex((s) => s.key === currentStep);
 
+  // Uniquelisans kaynaklı ürünler: müşteri gerekli bilgileri girmezse admin API'den satın alamaz
+  const productSource = (order.product as { source?: string | null } | null)?.source ?? null;
+  const requiredFields = ((order.product as { required_fields?: unknown } | null)?.required_fields ?? []) as Array<{
+    name: string; el_type?: string; input_type?: string; required?: boolean;
+  }>;
+  const needsCheckoutFields = productSource === "uniquelisans" && Array.isArray(requiredFields) && requiredFields.length > 0;
+
+
+
   return (
     <div className="mx-auto max-w-6xl px-3 sm:px-4 py-6 sm:py-10">
       {isEpic && (
