@@ -118,10 +118,9 @@ function Payment() {
   const currentStep: StepKey = useMemo(() => {
     if (!order) return "init";
     if (order.status === "approved") return "delivery";
-    if (order.status === "reviewing") return "receipt";
-    if (order.status === "rejected") return "receipt";
-    return "transfer";
+    return "payment";
   }, [order]);
+
 
   // 3 dk ödeme penceresi (pending durumu için)
   const createdMs = order?.created_at ? new Date(order.created_at).getTime() : null;
