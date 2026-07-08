@@ -228,8 +228,9 @@ function ProductDetail() {
                   </div>
                 </div>
 
-                {/* image window (16:10) */}
-                <div className="relative aspect-[16/10] w-full bg-black/50 overflow-hidden">
+                {/* image window */}
+                <div className="relative aspect-[3/2] w-full bg-black/50 overflow-hidden">
+
                   {/* corner brackets */}
                   <span className="pointer-events-none absolute top-2 left-2 h-3 w-3 border-l border-t border-primary/60" />
                   <span className="pointer-events-none absolute top-2 right-2 h-3 w-3 border-r border-t border-primary/60" />
