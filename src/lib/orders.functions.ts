@@ -319,6 +319,7 @@ const productInput = z.object({
   category: z.string().max(80).optional().nullable(),
   manual_fulfillment: z.boolean().optional(),
   stock_hint: z.number().int().min(0).max(100000).optional().nullable(),
+  low_stock_threshold: z.number().int().min(0).max(10000).optional(),
   featured: z.boolean().optional(),
   unlimited_stock: z.boolean().optional(),
   sort_order: z.number().int().min(-9999).max(9999).optional(),
