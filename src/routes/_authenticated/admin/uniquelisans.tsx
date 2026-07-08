@@ -181,9 +181,12 @@ function UniquelisansPage() {
                         )}
                       </div>
                       <div className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{p.description}</div>
-                      <div className="mt-1 font-mono text-xs">
-                        alış: <b>{fmt(p.amount)} ₺</b> → satış: <b className="text-primary">{fmt(finalPrice)} ₺</b>
+                      <div className="mt-1 font-mono text-xs flex flex-wrap gap-x-3 gap-y-0.5">
+                        <span>alış: <b>{fmt(p.amount)} ₺</b></span>
+                        <span>satış: <b className="text-primary">{fmt(finalPrice)} ₺</b></span>
+                        <span className="text-primary">kar: <b>{fmt(finalPrice - p.amount)} ₺</b> {p.amount > 0 && <span className="text-muted-foreground">(%{fmt(((finalPrice - p.amount) / p.amount) * 100)})</span>}</span>
                       </div>
+
                     </div>
                     <Button
                       size="sm"
