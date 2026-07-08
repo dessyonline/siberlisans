@@ -48,3 +48,44 @@ export async function ulBuy(
   }
   return body;
 }
+
+export type UlStatusResponse = {
+  status: "success" | "pending" | "error" | string;
+  code?: number;
+  order_id?: number;
+  delivery_data?: string | null;
+  message?: string;
+};
+
+/**
+ * Sipariş durumunu Uniquelisans'tan sorgular.
+ * Varsayılan endpoint: GET /orders/{id}?key=...
+ * Farklıysa UNIQUELISANS_STATUS_PATH ile override edilir (örn. "/order-status/{id}").
+ */
+export async function ulOrderStatus(orderId: number | string): Promise<UlStatusResponse> {
+  const key = process.env.UNIQUELISANS_API_KEY;
+  const base = process.env.UNIQUELISANS_API_URL || DEFAULT_URL;
+  if (!key) throw new Error("UNIQUELISANS_API_KEY tanımlı değil.");
+
+  const template = process.env.UNIQUELISANS_STATUS_PATH || "/orders/{id}";
+  const path = template.replace("{id}", String(orderId));
+  const url = new URL(`${base}${path}`);
+  url.searchParams.set("key", key);
+
+  const res = await fetch(url.toString(), {
+    method: "GET",
+    headers: { accept: "application/json" },
+  });
+  const text = await res.text();
+  let body: UlStatusResponse;
+  try {
+    body = JSON.parse(text) as UlStatusResponse;
+  } catch {
+    throw new Error(`Uniquelisans durum yanıtı JSON değil (${res.status}): ${text.slice(0, 200)}`);
+  }
+  if (!res.ok && !body.status) {
+    throw new Error(`Uniquelisans durum HTTP ${res.status}: ${text.slice(0, 200)}`);
+  }
+  return body;
+}
+
