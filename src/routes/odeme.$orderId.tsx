@@ -464,23 +464,7 @@ function Payment() {
                           balance={Number(wallet?.balance_try ?? 0)}
                           amount={finalAmount}
                           paying={payingWallet}
-                          onPay={async () => {
-                            setPayingWallet(true);
-                            try {
-                              const res = await payWithWalletFn({ data: { orderId } });
-                              if (!res.ok) {
-                                toast.error(res.error ?? "Ödeme başarısız");
-                              } else {
-                                toast.success("Ödeme başarılı · ürün teslim edildi");
-                                qc.invalidateQueries({ queryKey: ["order", orderId] });
-                                qc.invalidateQueries({ queryKey: ["wallet", user?.id] });
-                              }
-                            } catch (e) {
-                              toast.error((e as Error).message);
-                            } finally {
-                              setPayingWallet(false);
-                            }
-                          }}
+                          onPay={startWalletPay}
                         />
 
 
