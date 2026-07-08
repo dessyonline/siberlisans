@@ -213,8 +213,8 @@ function UniquelisansPage() {
             onClick={async () => {
               setSyncing(true);
               try {
-                const r = await syncFn();
-                toast.success(`Kontrol: ${r.checked} · Güncel: ${r.updated} · Gizlenen: ${r.hidden}${r.failed ? ` · Hata: ${r.failed}` : ""}`);
+                const r = await syncFn({ data: { reactivate: true } });
+                toast.success(`Kontrol: ${r.checked} · Güncel: ${r.updated} · Gizlenen: ${r.hidden} · Geri açılan: ${r.reactivated}${r.failed ? ` · Hata: ${r.failed}` : ""}`);
                 qc.invalidateQueries({ queryKey: ["ul-imported"] });
                 qc.invalidateQueries({ queryKey: ["admin-products"] });
               } catch (e) {
