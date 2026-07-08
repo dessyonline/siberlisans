@@ -630,6 +630,93 @@ function Index() {
   );
 }
 
+function CyberStockLoader({
+  stock, manual, unlimited, soldOut, cells = 18,
+}: { stock: number; manual: boolean; unlimited: boolean; soldOut: boolean; cells?: number }) {
+  const mode = soldOut ? "offline" : unlimited ? "infinite" : manual ? "queue" : "stock";
+  const cap = mode === "stock" ? Math.min(20, Math.max(3, stock * 2)) : cells;
+  const filled =
+    mode === "infinite" ? cells :
+    mode === "queue"    ? Math.round(cells * 0.35) :
+    mode === "offline"  ? 0 :
+    Math.min(cells, Math.max(1, Math.round((stock / cap) * cells)));
+  const pct =
+    mode === "infinite" ? 100 :
+    mode === "offline"  ? 0 :
+    mode === "queue"    ? null :
+    Math.round((filled / cells) * 100);
+  const color =
+    mode === "offline"  ? "text-destructive" :
+    mode === "infinite" ? "text-cyan" :
+    mode === "queue"    ? "text-cyan" :
+    stock <= 3 ? "text-warn" : "text-primary";
+  const bar =
+    mode === "offline"  ? "bg-destructive" :
+    mode === "infinite" ? "bg-cyan" :
+    mode === "queue"    ? "bg-cyan" :
+    stock <= 3 ? "bg-warn" : "bg-primary";
+  const label =
+    mode === "offline"  ? "OFFLINE" :
+    mode === "infinite" ? "READY" :
+    mode === "queue"    ? "QUEUE" :
+    stock <= 3 ? "LOW" : "OK";
+
+  return (
+    <div className="mt-3 font-mono select-none">
+      <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.22em] mb-1">
+        <span className="text-muted-foreground/80">
+          <span className="text-primary/60">$</span> stock.load
+        </span>
+        <span className={`inline-flex items-center gap-1.5 ${color}`}>
+          <span className={`h-1 w-1 rounded-full ${bar} ${mode === "offline" ? "" : "animate-pulse"} shadow-[0_0_6px_currentColor]`} />
+          {label}
+          {pct !== null && <span className="text-muted-foreground/60">· {pct}%</span>}
+        </span>
+      </div>
+      <div className="relative flex gap-[2px] h-2 rounded-sm bg-background/60 border border-border/50 p-[2px] overflow-hidden">
+        {Array.from({ length: cells }).map((_, i) => {
+          const isFilled = i < filled;
+          const isEdge = mode === "stock" && i === filled - 1 && stock <= 3;
+          return (
+            <span
+              key={i}
+              className={`flex-1 rounded-[1px] transition-colors ${
+                isFilled ? `${bar} ${isEdge ? "cell-flicker" : ""} shadow-[0_0_4px_currentColor]` : "bg-muted/25"
+              }`}
+            />
+          );
+        })}
+        {mode !== "offline" && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 w-1/3 bar-shimmer opacity-70"
+            style={{ background: "linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 0.35) 50%, transparent 100%)" }}
+          />
+        )}
+        {mode === "queue" && (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute top-0 bottom-0 w-[30%] bar-scan"
+            style={{ background: "linear-gradient(90deg, transparent, oklch(0.78 0.16 220 / 0.55), transparent)" }}
+          />
+        )}
+      </div>
+      <div className="mt-1 flex items-center justify-between text-[9px] text-muted-foreground/70">
+        <span>
+          {mode === "offline" && "// havuzda anahtar yok"}
+          {mode === "infinite" && "// anlık teslim · sınırsız kaynak"}
+          {mode === "queue" && "// sipariş sonrası tedarik"}
+          {mode === "stock" && `// havuzda ${stock} anahtar hazır`}
+        </span>
+        <span className="text-muted-foreground/50 hidden sm:inline">
+          [{filled.toString().padStart(2, "0")}/{cells}]
+        </span>
+      </div>
+    </div>
+  );
+}
+
+
 function ProductCard({
   p,
   featured,
@@ -681,46 +768,43 @@ function ProductCard({
       )}
       {/* corner shine on hover */}
       <div className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" aria-hidden />
-      {epic && (
-        <span className="absolute top-2 left-2 z-10 rounded-full px-2 py-0.5 font-mono text-[10px] border border-[oklch(0.78_0.16_75)] bg-[oklch(0.78_0.16_75/0.15)] text-[oklch(0.85_0.15_75)] shadow-[0_0_18px_oklch(0.78_0.16_75/0.45)] uppercase tracking-widest">
-          ★ EPIC
-        </span>
-      )}
-      {isNew && !epic && (
-        <span className="absolute top-2 right-2 z-10 rounded-full px-2 py-0.5 font-mono text-[10px] border border-cyan/50 bg-cyan/20 text-cyan animate-pulse shadow-lg">
-          ✦ YENİ
-        </span>
-      )}
+
+      {/* Top row: category + tier badges — no absolute overlaps */}
       <div className="relative flex items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className={`text-[11px] font-mono flex items-center gap-1.5 uppercase tracking-wider ${epic ? "text-[oklch(0.85_0.15_75)]" : "text-muted-foreground"}`}>
-            {epic ? <Star className="h-3 w-3 fill-current" /> : featured && <Star className="h-3 w-3 text-warn fill-warn" />}
-            {p.category ?? "license"}
+            {epic ? <Star className="h-3 w-3 fill-current shrink-0" /> : featured && <Star className="h-3 w-3 text-warn fill-warn shrink-0" />}
+            <span className="truncate">{p.category ?? "license"}</span>
           </div>
-          <h3 className={`mt-1.5 text-lg font-semibold tracking-tight truncate ${epic ? "epic-text-glow" : ""}`}>{p.name}</h3>
         </div>
-        <KeyRound className={`h-5 w-5 shrink-0 ${epic ? "text-[oklch(0.85_0.15_75)]" : "text-primary opacity-60"}`} />
+        <div className="flex items-center gap-1.5 shrink-0">
+          {epic && (
+            <span className="rounded-full px-2 py-0.5 font-mono text-[10px] border border-[oklch(0.78_0.16_75)] bg-[oklch(0.78_0.16_75/0.15)] text-[oklch(0.85_0.15_75)] shadow-[0_0_18px_oklch(0.78_0.16_75/0.45)] uppercase tracking-widest">
+              ★ EPIC
+            </span>
+          )}
+          {isNew && !epic && (
+            <span className="rounded-full px-2 py-0.5 font-mono text-[10px] border border-cyan/50 bg-cyan/20 text-cyan animate-pulse shadow-lg">
+              ✦ YENİ
+            </span>
+          )}
+          <KeyRound className={`h-5 w-5 shrink-0 ${epic ? "text-[oklch(0.85_0.15_75)]" : "text-primary opacity-60"}`} />
+        </div>
       </div>
+
+      <h3 className={`relative mt-1.5 text-lg font-semibold tracking-tight truncate ${epic ? "epic-text-glow" : ""}`}>{p.name}</h3>
       <p className="relative mt-2 text-sm text-muted-foreground line-clamp-2 leading-relaxed">{p.description}</p>
+
       <div className="relative mt-4 flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
         <span className="rounded-md bg-muted/40 text-muted-foreground border border-border px-2 py-0.5">
           {DURATION_LABEL[p.duration] ?? p.duration}
         </span>
-        <span className={`rounded-md px-2 py-0.5 border ${unlimited || manual ? "text-cyan border-cyan/40 bg-cyan/5" : soldOut ? "text-destructive border-destructive/40 bg-destructive/5" : stock <= 3 ? "text-warn border-warn/40 bg-warn/5" : "text-primary border-primary/40 bg-primary/5"}`}>
-          {unlimited ? "stok: ∞" : manual ? "sipariş sonrası" : soldOut ? "tükendi" : stock <= 3 ? `son ${stock}` : `stok: ${stock}`}
-        </span>
       </div>
-      {showStockBar && (
-        <div className="relative mt-3">
-          <div className="h-1 rounded-full bg-muted/40 overflow-hidden">
-            <div
-              className={`h-full transition-all ${stock <= 3 ? "bg-warn" : "bg-primary"}`}
-              style={{ width: `${Math.min(100, stock * 10)}%` }}
-            />
-          </div>
-        </div>
-      )}
+
+      <CyberStockLoader stock={stock} manual={manual} unlimited={unlimited} soldOut={soldOut} />
+
       <div className="relative mt-auto pt-5 flex items-end justify-between">
+
         <div>
           <div className="text-[10px] uppercase tracking-widest text-muted-foreground font-mono">fiyat</div>
           <div className={`font-mono text-2xl font-semibold ${epic ? "text-[oklch(0.88_0.15_75)] epic-text-glow" : "text-primary"}`}>
