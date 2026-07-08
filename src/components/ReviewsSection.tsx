@@ -59,14 +59,21 @@ export function ReviewsSection({ productId }: { productId: string }) {
         .eq("product_id", productId)
         .limit(1);
       if (byOrder && byOrder.length > 0) return true;
-      const { data: byItem } = await supabase
+      // find any order_items with this product, then check if any of those orders are ours + approved
+      const { data: items } = await supabase
         .from("order_items")
-        .select("id, order:orders!inner(user_id, status)")
-        .eq("product_id", productId)
-        .eq("orders.user_id" as never, uid as never)
-        .eq("orders.status" as never, "approved" as never)
+        .select("order_id")
+        .eq("product_id", productId);
+      const ids = (items ?? []).map((r) => r.order_id);
+      if (ids.length === 0) return false;
+      const { data: mine } = await supabase
+        .from("orders")
+        .select("id")
+        .in("id", ids)
+        .eq("user_id", uid)
+        .eq("status", "approved")
         .limit(1);
-      return !!(byItem && byItem.length > 0);
+      return !!(mine && mine.length > 0);
     },
   });
 
