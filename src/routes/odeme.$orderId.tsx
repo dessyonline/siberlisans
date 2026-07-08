@@ -369,6 +369,17 @@ function Payment() {
                       discountTry={discountTry}
                       appliedCode={codeSnap}
                     />
+                    <PointsBlock
+                      orderId={orderId}
+                      originalPrice={Number(order.price_try)}
+                      hasOtherDiscount={discountTry > 0 && !(codeSnap ?? "").startsWith("PUAN-")}
+                      appliedPointsAmount={
+                        (codeSnap ?? "").startsWith("PUAN-")
+                          ? Number((codeSnap ?? "").slice(5)) || null
+                          : null
+                      }
+                    />
+
                     {isFree ? (
                       <section className="glass-card rounded-lg p-6 border-primary/40">
                         <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
