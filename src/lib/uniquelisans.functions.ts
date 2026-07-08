@@ -186,10 +186,14 @@ export const ulImportProduct = createServerFn({ method: "POST" })
   });
 
 // Tüm içe aktarılmış Uniquelisans ürünlerinin stok/fiyatını API ile senkronize et.
-// Stok yoksa ürünü otomatik pasifleştirir; stok gelirse aktifleştirmez (admin karar verir).
+// Stok yoksa (yalnızca sayısal stok takibi olan ürünlerde stock_count <= 0) pasifleştirir.
+// `reactivate` true ise, stokta olan ancak daha önce yanlış gizlenmiş ürünleri geri açar.
+const syncInput = z.object({ reactivate: z.boolean().default(false) }).default({ reactivate: false });
+
 export const ulSyncStock = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
+  .inputValidator((d: unknown) => syncInput.parse(d))
+  .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
 
@@ -199,7 +203,7 @@ export const ulSyncStock = createServerFn({ method: "POST" })
       .eq("source", "uniquelisans");
 
     const list = rows ?? [];
-    let checked = 0, hidden = 0, updated = 0, failed = 0;
+    let checked = 0, hidden = 0, reactivated = 0, updated = 0, failed = 0;
 
     for (const p of list) {
       if (!p.external_id) continue;
@@ -211,9 +215,9 @@ export const ulSyncStock = createServerFn({ method: "POST" })
         } | undefined;
         if (!d) { failed++; continue; }
 
-        const outOfStock = d.is_automatic_delivery
-          ? false
-          : (d.is_stock === false || (typeof d.stock_count === "number" && d.stock_count <= 0));
+        const outOfStock = !d.is_automatic_delivery
+          && typeof d.stock_count === "number"
+          && d.stock_count <= 0;
 
         const patch: { external_price: number; stock_hint: number | null; unlimited_stock: boolean; active?: boolean } = {
           external_price: d.amount,
@@ -223,6 +227,9 @@ export const ulSyncStock = createServerFn({ method: "POST" })
         if (outOfStock && p.active) {
           patch.active = false;
           hidden++;
+        } else if (!outOfStock && !p.active && data.reactivate) {
+          patch.active = true;
+          reactivated++;
         }
         const { error } = await supabase.from("products").update(patch).eq("id", p.id);
         if (error) { failed++; continue; }
@@ -232,7 +239,7 @@ export const ulSyncStock = createServerFn({ method: "POST" })
       }
     }
 
-    return { checked, updated, hidden, failed };
+    return { checked, updated, hidden, reactivated, failed };
   });
 
 export const ulImportedProducts = createServerFn({ method: "GET" })
