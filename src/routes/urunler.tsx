@@ -419,7 +419,9 @@ function ProductCard({ product: p }: { product: Row }) {
         </div>
 
         {/* Title */}
-        <CyberTitle name={p.name} size="base" color={epic ? "warn" : "primary"} />
+        <h3 className={`font-mono text-base font-semibold tracking-tight truncate ${epic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "text-foreground"}`}>
+          {p.name}
+        </h3>
 
         {/* Description */}
         {p.description && (
