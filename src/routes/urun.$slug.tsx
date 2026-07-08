@@ -195,7 +195,8 @@ function ProductDetail() {
 
           <div className="grid md:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)]">
             {/* Left: digital ID card */}
-            <div className="relative border-b md:border-b-0 md:border-r border-border/60 bg-black/40 p-4 sm:p-6 flex items-center justify-center">
+            <div className="relative order-2 md:order-1 border-t md:border-t-0 md:border-r border-border/60 bg-black/40 p-3 sm:p-6 flex items-center justify-center">
+
               <div className="pointer-events-none absolute inset-0 cyber-grid opacity-30" aria-hidden />
 
               {/* ID CARD */}
