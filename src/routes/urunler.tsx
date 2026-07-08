@@ -237,6 +237,8 @@ function ProductsPage() {
 
   const [group, setGroup] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<SortKey>("default");
+
 
   // Ortak admin sıralaması: destansı → sıra → tarih
   const adminOrder = (list: Row[]) =>
