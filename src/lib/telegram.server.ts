@@ -159,6 +159,18 @@ export function receiptUploadedMessage(o: {
   ].filter(Boolean).join("\n");
 }
 
+export function outOfStockAlertMessage(o: {
+  productName: string;
+  userEmail?: string | null;
+}): string {
+  return [
+    "⚠️ <b>STOK TÜKENDİ — alıcı bekliyor</b>",
+    `📦 Ürün: <b>${esc(o.productName)}</b>`,
+    o.userEmail ? `👤 Müşteri: ${esc(o.userEmail)}` : null,
+    "🚨 Bu ürün için havuzda anahtar kalmadı. Lütfen en kısa sürede yeni key ekleyin.",
+  ].filter(Boolean).join("\n");
+}
+
 /* ============ Channel post builders ============ */
 
 export function productAnnouncement(p: {
