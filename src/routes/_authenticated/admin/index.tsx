@@ -35,7 +35,7 @@ function Dashboard() {
             .eq("status", "available"),
           supabase
             .from("products")
-            .select("id, name, slug, stock_hint, unlimited_stock, manual_fulfillment, license_keys(id, status)")
+            .select("id, name, slug, stock_hint, unlimited_stock, manual_fulfillment, low_stock_threshold, license_keys(id, status)")
             .eq("active", true),
           supabase
             .from("orders")
