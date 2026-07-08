@@ -218,28 +218,36 @@ function OrdersTab({ orders, isLoading }: { orders: Order[]; isLoading: boolean 
           const lk = o.keys?.[0]?.license_key;
           const dt = (o.product?.delivery_type ?? "key") as DeliveryType;
           return (
-            <div key={o.id} className="glass-card rounded-lg p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 font-mono text-sm">
-                <div className="min-w-0 flex-1">
-                  <div className="font-semibold break-words">{o.product?.name}</div>
-                  <div className="text-xs text-muted-foreground break-all">
-                    ref: {o.reference_code} ·{" "}
-                    {new Date(o.created_at).toLocaleDateString("tr-TR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}
+            <div key={o.id} className="glass-card rounded-lg p-3 sm:p-4">
+              <div className="font-mono text-sm space-y-2">
+                {/* top row: product name + status */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold break-words leading-snug">{o.product?.name}</div>
+                    <div className="mt-0.5 text-[11px] text-muted-foreground break-all">
+                      ref: {o.reference_code} ·{" "}
+                      {new Date(o.created_at).toLocaleDateString("tr-TR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
+                    </div>
+                  </div>
+                  <div className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] uppercase whitespace-nowrap ${s.bg} ${s.c}`}>
+                    {s.l}
                   </div>
                 </div>
-                <div className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] uppercase ${s.bg} ${s.c}`}>
-                  {s.l}
+                {/* bottom row: price + detail button */}
+                <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/40">
+                  <div className="neon-text text-base font-bold">
+                    ₺{Number(o.price_try).toLocaleString("tr-TR")}
+                  </div>
+                  <Button asChild size="sm" variant="outline" className="font-mono h-8 text-xs">
+                    <Link to="/odeme/$orderId" params={{ orderId: o.id }}>
+                      detay →
+                    </Link>
+                  </Button>
                 </div>
-                <div className="neon-text shrink-0">₺{Number(o.price_try).toLocaleString("tr-TR")}</div>
-                <Button asChild size="sm" variant="outline" className="font-mono shrink-0">
-                  <Link to="/odeme/$orderId" params={{ orderId: o.id }}>
-                    detay →
-                  </Link>
-                </Button>
               </div>
               {lk?.key_value && (
                 <div className="mt-3">
