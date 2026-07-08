@@ -5,42 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  KeyRound, Search, X, Sparkles, TrendingUp, Zap, ShieldCheck, ArrowRight, Package,
-  MonitorSmartphone, Palette, Brain, FileText, Gamepad2, Mail, Cpu,
+  Search, X, Sparkles, TrendingUp, Zap, ShieldCheck, ArrowRight, Package, Star, Crown,
 } from "lucide-react";
 
-// Category → icon + accent color (oklch tokens)
-const CAT_VISUAL: Record<string, { Icon: typeof KeyRound; hue: string; ring: string; grad: string }> = {
-  Windows:         { Icon: MonitorSmartphone, hue: "oklch(0.75 0.13 210)", ring: "oklch(0.75 0.13 210 / 0.4)", grad: "from-[oklch(0.75_0.13_210/0.25)] to-transparent" },
-  "Windows 10/11": { Icon: MonitorSmartphone, hue: "oklch(0.75 0.13 210)", ring: "oklch(0.75 0.13 210 / 0.4)", grad: "from-[oklch(0.75_0.13_210/0.25)] to-transparent" },
-  "Windows Server":{ Icon: MonitorSmartphone, hue: "oklch(0.75 0.13 210)", ring: "oklch(0.75 0.13 210 / 0.4)", grad: "from-[oklch(0.75_0.13_210/0.25)] to-transparent" },
-  "Görsel & Tasarım": { Icon: Palette,       hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
-  Adobe:           { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
-  Canva:           { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
-  CorelDRAW:       { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
-  "Envato Elements":{ Icon: Palette,          hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
-  Flaticon:        { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
-  Freepik:         { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
-  "Motion Array":  { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
-  Vecteezy:        { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
-  "Nano Banana":   { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
-  Autodesk:        { Icon: Palette,           hue: "oklch(0.72 0.20 320)", ring: "oklch(0.72 0.20 320 / 0.4)", grad: "from-[oklch(0.72_0.20_320/0.25)] to-transparent" },
-  "Yapay Zeka":    { Icon: Brain,             hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
-  ChatGPT:         { Icon: Brain,             hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
-  "Google Gemini": { Icon: Brain,             hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
-  Ideogram:        { Icon: Brain,             hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
-  Midjourney:      { Icon: Brain,             hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
-  "Microsoft Office": { Icon: FileText,       hue: "oklch(0.65 0.20 25)",  ring: "oklch(0.65 0.20 25 / 0.4)",  grad: "from-[oklch(0.65_0.20_25/0.25)] to-transparent" },
-  "Office 365":    { Icon: FileText,          hue: "oklch(0.65 0.20 25)",  ring: "oklch(0.65 0.20 25 / 0.4)",  grad: "from-[oklch(0.65_0.20_25/0.25)] to-transparent" },
-  "Office (Ömürlük)": { Icon: FileText,       hue: "oklch(0.65 0.20 25)",  ring: "oklch(0.65 0.20 25 / 0.4)",  grad: "from-[oklch(0.65_0.20_25/0.25)] to-transparent" },
-  Oyunlar:         { Icon: Gamepad2,          hue: "oklch(0.68 0.22 340)", ring: "oklch(0.68 0.22 340 / 0.4)", grad: "from-[oklch(0.68_0.22_340/0.25)] to-transparent" },
-  "Steam Oyunları":{ Icon: Gamepad2,          hue: "oklch(0.68 0.22 340)", ring: "oklch(0.68 0.22 340 / 0.4)", grad: "from-[oklch(0.68_0.22_340/0.25)] to-transparent" },
-  "E-posta":       { Icon: Mail,              hue: "oklch(0.78 0.16 220)", ring: "oklch(0.78 0.16 220 / 0.4)", grad: "from-[oklch(0.78_0.16_220/0.25)] to-transparent" },
-  "Email Hesapları": { Icon: Mail,            hue: "oklch(0.78 0.16 220)", ring: "oklch(0.78 0.16 220 / 0.4)", grad: "from-[oklch(0.78_0.16_220/0.25)] to-transparent" },
-  Diğer:           { Icon: Cpu,               hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" },
-};
-const catVisual = (cat: string | null) =>
-  (cat && CAT_VISUAL[cat]) || { Icon: Cpu, hue: "oklch(0.82 0.20 145)", ring: "oklch(0.82 0.20 145 / 0.4)", grad: "from-[oklch(0.82_0.20_145/0.20)] to-transparent" };
 
 export const Route = createFileRoute("/urunler")({
   component: ProductsPage,
@@ -65,92 +32,6 @@ export const Route = createFileRoute("/urunler")({
 
 const DUR: Record<string, string> = { monthly: "aylık", yearly: "yıllık", lifetime: "ömürlük" };
 
-// Cyber "stock load" progress — segmented cells + shimmer, state-aware
-function CyberStockLoader({
-  stock, manual, unlimited, soldOut, cells = 18,
-}: { stock: number; manual: boolean; unlimited: boolean; soldOut: boolean; cells?: number }) {
-  const mode = soldOut ? "offline" : unlimited ? "infinite" : manual ? "queue" : "stock";
-  const cap = mode === "stock" ? Math.min(20, Math.max(3, stock * 2)) : cells;
-  const filled =
-    mode === "infinite" ? cells :
-    mode === "queue"    ? Math.round(cells * 0.35) :
-    mode === "offline"  ? 0 :
-    Math.min(cells, Math.max(1, Math.round((stock / cap) * cells)));
-  const pct =
-    mode === "infinite" ? 100 :
-    mode === "offline"  ? 0 :
-    mode === "queue"    ? null :
-    Math.round((filled / cells) * 100);
-  const color =
-    mode === "offline"  ? "text-destructive" :
-    mode === "infinite" ? "text-cyan" :
-    mode === "queue"    ? "text-cyan" :
-    stock <= 3 ? "text-warn" : "text-primary";
-  const bar =
-    mode === "offline"  ? "bg-destructive" :
-    mode === "infinite" ? "bg-cyan" :
-    mode === "queue"    ? "bg-cyan" :
-    stock <= 3 ? "bg-warn" : "bg-primary";
-  const label =
-    mode === "offline"  ? "OFFLINE" :
-    mode === "infinite" ? "READY" :
-    mode === "queue"    ? "QUEUE" :
-    stock <= 3 ? "LOW" : "OK";
-
-  return (
-    <div className="mt-3 font-mono select-none">
-      <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.22em] mb-1">
-        <span className="text-muted-foreground/80">
-          <span className="text-primary/60">$</span> stock.load
-        </span>
-        <span className={`inline-flex items-center gap-1.5 ${color}`}>
-          <span className={`h-1 w-1 rounded-full ${bar} ${mode === "offline" ? "" : "animate-pulse"} shadow-[0_0_6px_currentColor]`} />
-          {label}
-          {pct !== null && <span className="text-muted-foreground/60">· {pct}%</span>}
-        </span>
-      </div>
-      <div className="relative flex gap-[2px] h-2 rounded-sm bg-background/60 border border-border/50 p-[2px] overflow-hidden">
-        {Array.from({ length: cells }).map((_, i) => {
-          const isFilled = i < filled;
-          const isEdge = mode === "stock" && i === filled - 1 && stock <= 3;
-          return (
-            <span
-              key={i}
-              className={`flex-1 rounded-[1px] transition-colors ${
-                isFilled ? `${bar} ${isEdge ? "cell-flicker" : ""} shadow-[0_0_4px_currentColor]` : "bg-muted/25"
-              }`}
-            />
-          );
-        })}
-        {mode !== "offline" && (
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 w-1/3 bar-shimmer opacity-70"
-            style={{ background: "linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 0.35) 50%, transparent 100%)" }}
-          />
-        )}
-        {mode === "queue" && (
-          <span
-            aria-hidden
-            className="pointer-events-none absolute top-0 bottom-0 w-[30%] bar-scan"
-            style={{ background: "linear-gradient(90deg, transparent, oklch(0.78 0.16 220 / 0.55), transparent)" }}
-          />
-        )}
-      </div>
-      <div className="mt-1 flex items-center justify-between text-[9px] text-muted-foreground/70">
-        <span>
-          {mode === "offline" && "// havuzda anahtar yok"}
-          {mode === "infinite" && "// anlık teslim · sınırsız kaynak"}
-          {mode === "queue" && "// sipariş sonrası tedarik"}
-          {mode === "stock" && `// havuzda ${stock} anahtar hazır`}
-        </span>
-        <span className="text-muted-foreground/50 hidden sm:inline">
-          [{filled.toString().padStart(2, "0")}/{cells}]
-        </span>
-      </div>
-    </div>
-  );
-}
 
 
 // Cyber-styled product title — terminal prompt + hover caret + glitch
@@ -511,110 +392,63 @@ function ProductCard({ product: p }: { product: Row }) {
   const isNew = (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7;
   const epic = p.tier === "epic";
 
-
   return (
-    <div className={`group relative rounded-xl overflow-hidden flex flex-col cv-auto glass-card-hover ${epic ? "epic-card border border-transparent" : "glass-card border border-border/60"}`}>
+    <div className={`group relative rounded-xl overflow-hidden flex flex-col glass-card-hover ${epic ? "epic-card border border-transparent" : "glass-card border border-border/60"}`}>
       {epic && <div className="pointer-events-none absolute inset-0 epic-shimmer" aria-hidden />}
+      <div className="pointer-events-none absolute inset-0 cyber-grid opacity-20" aria-hidden />
 
-      {(() => {
-        const cv = catVisual(p.category);
-        const CIcon = cv.Icon;
-        return (
-          <div
-            className="relative h-40 overflow-hidden border-b border-border/60"
-            style={{
-              background: epic
-                ? "radial-gradient(circle at 30% 30%, oklch(0.78 0.16 75 / 0.28), transparent 60%), radial-gradient(circle at 80% 80%, oklch(0.65 0.20 300 / 0.20), transparent 55%), oklch(0.13 0.02 145)"
-                : `radial-gradient(circle at 30% 30%, ${cv.hue.replace(")", " / 0.18)")}, transparent 65%), oklch(0.13 0.02 145)`,
-            }}
-          >
-            {/* cyber grid backdrop */}
-            <div className="pointer-events-none absolute inset-0 cyber-grid opacity-40" aria-hidden />
-
-
-            {p.image_url ? (
-              <img
-                src={p.image_url}
-                alt={p.name}
-                loading="lazy"
-                className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-[1.06]"
-                style={{ filter: `drop-shadow(0 0 22px ${cv.ring})` }}
-              />
-            ) : (
-              <div className="relative h-full w-full flex flex-col items-center justify-center gap-2">
-                <CIcon
-                  className="h-14 w-14 transition-transform duration-500 group-hover:scale-110"
-                  style={{ color: cv.hue, filter: `drop-shadow(0 0 18px ${cv.ring})` }}
-                />
-                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-                  {p.category ?? "lisans"}
-                </span>
-              </div>
-            )}
-
-            {/* corner brackets */}
-            <span className="pointer-events-none absolute top-2 left-2 h-3 w-3 border-l border-t border-primary/50" />
-            <span className="pointer-events-none absolute top-2 right-2 h-3 w-3 border-r border-t border-primary/50" />
-            <span className="pointer-events-none absolute bottom-2 left-2 h-3 w-3 border-l border-b border-primary/50" />
-            <span className="pointer-events-none absolute bottom-2 right-2 h-3 w-3 border-r border-b border-primary/50" />
-
-            {/* soft bottom fade for legibility */}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-background/95 to-transparent" />
-
-            {/* meta chips */}
-            <span
-              className={`absolute left-3 top-3 rounded px-2 py-0.5 font-mono text-[10px] border backdrop-blur-sm ${
-                manual
-                  ? "border-warn/50 bg-warn/15 text-warn"
-                  : "border-primary/40 bg-primary/15 text-primary"
-              }`}
-            >
-              {manual ? "manuel teslim" : "otomatik teslim"}
-            </span>
-            <KeyRound
-              className="absolute right-3 top-3 h-4 w-4 text-primary drop-shadow-[0_0_8px_oklch(0.82_0.20_145/0.7)]"
-            />
+      <div className="relative p-4 flex flex-col flex-1">
+        {/* Top row: category + badges */}
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 font-mono text-[10px] text-primary uppercase tracking-wider">
+            <Star className="h-3 w-3 fill-primary" />
+            {p.category ?? "lisans"}
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
             {epic && (
-              <span className="absolute left-3 bottom-3 rounded px-2 py-0.5 font-mono text-[10px] border border-[oklch(0.78_0.16_75)] bg-[oklch(0.78_0.16_75/0.15)] text-[oklch(0.88_0.16_75)] shadow-[0_0_14px_oklch(0.78_0.16_75/0.45)] uppercase tracking-widest">
-                ★ EPIC
+              <span className="inline-flex items-center gap-1 rounded-full border border-[oklch(0.78_0.16_75)] bg-[oklch(0.78_0.16_75/0.15)] px-2 py-0.5 font-mono text-[9px] text-[oklch(0.88_0.16_75)] uppercase tracking-wider shadow-[0_0_14px_oklch(0.78_0.16_75/0.45)]">
+                <Crown className="h-3 w-3" /> epic
               </span>
             )}
             {isNew && !epic && (
-              <span className="absolute right-3 bottom-3 rounded px-2 py-0.5 font-mono text-[10px] border border-cyan/50 bg-cyan/20 text-cyan animate-pulse">
-                ✦ YENİ
+              <span className="inline-flex items-center gap-1 rounded-full border border-cyan/50 bg-cyan/15 px-2 py-0.5 font-mono text-[9px] text-cyan uppercase tracking-wider">
+                <Sparkles className="h-3 w-3" /> yeni
               </span>
             )}
           </div>
-        );
-      })()}
+        </div>
 
-      <div className="p-5 flex flex-col flex-1">
-        <CyberTitle name={p.name} size="base" color="primary" />
+        {/* Title */}
+        <CyberTitle name={p.name} size="base" color={epic ? "warn" : "primary"} />
+
+        {/* Description */}
         {p.description && (
           <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{p.description}</p>
         )}
+
+        {/* Badges */}
         <div className="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px]">
-          <span className="rounded bg-primary/10 text-primary border border-primary/30 px-2 py-0.5">
+          <span className="rounded-full bg-primary/10 text-primary border border-primary/30 px-2.5 py-1">
             {DUR[p.duration] ?? p.duration}
           </span>
-          <span className={`rounded px-2 py-0.5 border ${stockCls}`}>● {stockLabel}</span>
+          <span className={`rounded-full px-2.5 py-1 border ${stockCls}`}>
+            {stockLabel}
+          </span>
         </div>
-        <CyberStockLoader stock={stock} manual={manual} unlimited={unlimited} soldOut={soldOut} />
-        <div className="mt-auto pt-4">
-          <div className="mb-3 font-mono text-2xl neon-text">
-            ₺{Number(p.price_try).toLocaleString("tr-TR")}
+
+        {/* Price + CTA */}
+        <div className="mt-auto pt-4 flex items-end justify-between gap-3">
+          <div>
+            <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-muted-foreground mb-0.5">fiyat</div>
+            <div className={`font-mono text-2xl leading-none ${epic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "neon-text"}`}>
+              ₺{Number(p.price_try).toLocaleString("tr-TR")}
+            </div>
           </div>
-          <div className="flex items-center justify-between gap-2">
-            <Button asChild variant="outline" size="sm" className="font-mono flex-1 border-primary/30 hover:bg-primary/10 hover:text-primary">
-              <Link to="/urun/$slug" params={{ slug: p.slug }}>İncele</Link>
-            </Button>
-            <Button asChild size="sm" className="font-mono flex-1 group/btn" disabled={soldOut}>
-              <Link to="/urun/$slug" params={{ slug: p.slug }} className="flex items-center justify-center gap-1">
-                {soldOut ? "tükendi" : "Satın Al"}
-                {!soldOut && <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover/btn:translate-x-0.5" />}
-              </Link>
-            </Button>
-          </div>
+          <Button asChild size="sm" className="font-mono bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_oklch(0.82_0.20_145/0.35)] transition-all">
+            <Link to="/urun/$slug" params={{ slug: p.slug }} className="flex items-center gap-1">
+              Satın al <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </Button>
         </div>
       </div>
     </div>
