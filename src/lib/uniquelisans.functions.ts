@@ -179,8 +179,58 @@ export const ulImportProduct = createServerFn({ method: "POST" })
         .select("id")
         .single();
       if (error) throw new Error(error.message);
-      return { ok: true as const, productId: row.id, updated: false };
+      return { ok: true as const, productId: row.id, updated: false, outOfStock };
     }
+  });
+
+// Tüm içe aktarılmış Uniquelisans ürünlerinin stok/fiyatını API ile senkronize et.
+// Stok yoksa ürünü otomatik pasifleştirir; stok gelirse aktifleştirmez (admin karar verir).
+export const ulSyncStock = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+
+    const { data: rows } = await supabase
+      .from("products")
+      .select("id, external_id, price_try, external_price, active")
+      .eq("source", "uniquelisans");
+
+    const list = rows ?? [];
+    let checked = 0, hidden = 0, updated = 0, failed = 0;
+
+    for (const p of list) {
+      if (!p.external_id) continue;
+      checked++;
+      try {
+        const b = await ul(`/products/${p.external_id}`);
+        const d = b.product_detail as {
+          amount: number; is_stock: boolean; is_automatic_delivery: boolean; stock_count: number | null;
+        } | undefined;
+        if (!d) { failed++; continue; }
+
+        const outOfStock = d.is_automatic_delivery
+          ? false
+          : (d.is_stock === false || (typeof d.stock_count === "number" && d.stock_count <= 0));
+
+        const patch: Record<string, unknown> = {
+          external_price: d.amount,
+          stock_hint: d.stock_count ?? null,
+          unlimited_stock: !!d.is_automatic_delivery,
+        };
+        if (outOfStock && p.active) {
+          patch.active = false;
+          hidden++;
+        }
+        const { error } = await supabase.from("products").update(patch).eq("id", p.id);
+        if (error) { failed++; continue; }
+        updated++;
+      } catch {
+        failed++;
+      }
+    }
+
+    return { checked, updated, hidden, failed };
   });
 
 export const ulImportedProducts = createServerFn({ method: "GET" })
