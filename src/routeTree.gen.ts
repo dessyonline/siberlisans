@@ -45,7 +45,9 @@ import { Route as AuthenticatedAdminKuponlarRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminKullanicilarRouteImport } from './routes/_authenticated/admin/kullanicilar'
 import { Route as AuthenticatedAdminKeylerRouteImport } from './routes/_authenticated/admin/keyler'
 import { Route as AuthenticatedAdminKampanyalarRouteImport } from './routes/_authenticated/admin/kampanyalar'
+import { Route as AuthenticatedAdminFlashRouteImport } from './routes/_authenticated/admin/flash'
 import { Route as AuthenticatedAdminCuzdanRouteImport } from './routes/_authenticated/admin/cuzdan'
+import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin/blog'
 import { Route as AuthenticatedAdminAyarlarRouteImport } from './routes/_authenticated/admin/ayarlar'
 import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
 
@@ -238,12 +240,22 @@ const AuthenticatedAdminKampanyalarRoute =
     path: '/kampanyalar',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminFlashRoute = AuthenticatedAdminFlashRouteImport.update({
+  id: '/flash',
+  path: '/flash',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 const AuthenticatedAdminCuzdanRoute =
   AuthenticatedAdminCuzdanRouteImport.update({
     id: '/cuzdan',
     path: '/cuzdan',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 const AuthenticatedAdminAyarlarRoute =
   AuthenticatedAdminAyarlarRouteImport.update({
     id: '/ayarlar',
@@ -284,7 +296,9 @@ export interface FileRoutesByFullPath {
   '/urun/$slug': typeof UrunSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
+  '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
+  '/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
@@ -323,7 +337,9 @@ export interface FileRoutesByTo {
   '/urun/$slug': typeof UrunSlugRoute
   '/blog': typeof BlogIndexRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
+  '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
+  '/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
@@ -365,7 +381,9 @@ export interface FileRoutesById {
   '/urun/$slug': typeof UrunSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/_authenticated/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
+  '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/_authenticated/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
+  '/_authenticated/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/_authenticated/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/_authenticated/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/_authenticated/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
@@ -407,7 +425,9 @@ export interface FileRouteTypes {
     | '/urun/$slug'
     | '/blog/'
     | '/admin/ayarlar'
+    | '/admin/blog'
     | '/admin/cuzdan'
+    | '/admin/flash'
     | '/admin/kampanyalar'
     | '/admin/keyler'
     | '/admin/kullanicilar'
@@ -446,7 +466,9 @@ export interface FileRouteTypes {
     | '/urun/$slug'
     | '/blog'
     | '/admin/ayarlar'
+    | '/admin/blog'
     | '/admin/cuzdan'
+    | '/admin/flash'
     | '/admin/kampanyalar'
     | '/admin/keyler'
     | '/admin/kullanicilar'
@@ -487,7 +509,9 @@ export interface FileRouteTypes {
     | '/urun/$slug'
     | '/blog/'
     | '/_authenticated/admin/ayarlar'
+    | '/_authenticated/admin/blog'
     | '/_authenticated/admin/cuzdan'
+    | '/_authenticated/admin/flash'
     | '/_authenticated/admin/kampanyalar'
     | '/_authenticated/admin/keyler'
     | '/_authenticated/admin/kullanicilar'
@@ -780,11 +804,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminKampanyalarRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/flash': {
+      id: '/_authenticated/admin/flash'
+      path: '/flash'
+      fullPath: '/admin/flash'
+      preLoaderRoute: typeof AuthenticatedAdminFlashRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/cuzdan': {
       id: '/_authenticated/admin/cuzdan'
       path: '/cuzdan'
       fullPath: '/admin/cuzdan'
       preLoaderRoute: typeof AuthenticatedAdminCuzdanRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/blog': {
+      id: '/_authenticated/admin/blog'
+      path: '/blog'
+      fullPath: '/admin/blog'
+      preLoaderRoute: typeof AuthenticatedAdminBlogRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/ayarlar': {
@@ -806,7 +844,9 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAyarlarRoute: typeof AuthenticatedAdminAyarlarRoute
+  AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
   AuthenticatedAdminCuzdanRoute: typeof AuthenticatedAdminCuzdanRoute
+  AuthenticatedAdminFlashRoute: typeof AuthenticatedAdminFlashRoute
   AuthenticatedAdminKampanyalarRoute: typeof AuthenticatedAdminKampanyalarRoute
   AuthenticatedAdminKeylerRoute: typeof AuthenticatedAdminKeylerRoute
   AuthenticatedAdminKullanicilarRoute: typeof AuthenticatedAdminKullanicilarRoute
@@ -822,7 +862,9 @@ interface AuthenticatedAdminRouteRouteChildren {
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
     AuthenticatedAdminAyarlarRoute: AuthenticatedAdminAyarlarRoute,
+    AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
     AuthenticatedAdminCuzdanRoute: AuthenticatedAdminCuzdanRoute,
+    AuthenticatedAdminFlashRoute: AuthenticatedAdminFlashRoute,
     AuthenticatedAdminKampanyalarRoute: AuthenticatedAdminKampanyalarRoute,
     AuthenticatedAdminKeylerRoute: AuthenticatedAdminKeylerRoute,
     AuthenticatedAdminKullanicilarRoute: AuthenticatedAdminKullanicilarRoute,

@@ -1,5 +1,6 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -7,20 +8,25 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Terminal } from "lucide-react";
+import { Terminal, Gift } from "lucide-react";
+
+const authSearch = z.object({ ref: z.string().max(20).optional() });
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
+  validateSearch: authSearch,
   head: () => ({ meta: [{ title: "Giriş / Kayıt — SiberPHP" }] }),
 });
 
 function AuthPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const search = useSearch({ from: "/auth" });
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const refCode = search.ref?.toUpperCase() ?? "";
 
   useEffect(() => {
     if (user) navigate({ to: "/hesabim" });
@@ -42,12 +48,15 @@ function AuthPage() {
       password,
       options: {
         emailRedirectTo: `${window.location.origin}/hesabim`,
-        data: { display_name: displayName || email.split("@")[0] },
+        data: {
+          display_name: displayName || email.split("@")[0],
+          ...(refCode ? { ref: refCode } : {}),
+        },
       },
     });
     setLoading(false);
     if (error) return toast.error(error.message);
-    toast.success("Hesap oluşturuldu. Giriş yapılıyor…");
+    toast.success(refCode ? `Hesap oluşturuldu — davet kodu: ${refCode}` : "Hesap oluşturuldu. Giriş yapılıyor…");
     navigate({ to: "/hesabim" });
   };
 
