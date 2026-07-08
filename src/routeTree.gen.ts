@@ -30,7 +30,9 @@ import { Route as AuthenticatedAdminPromosyonlarRouteImport } from './routes/_au
 import { Route as AuthenticatedAdminLisanslarRouteImport } from './routes/_authenticated/admin/lisanslar'
 import { Route as AuthenticatedAdminKullanicilarRouteImport } from './routes/_authenticated/admin/kullanicilar'
 import { Route as AuthenticatedAdminKeylerRouteImport } from './routes/_authenticated/admin/keyler'
+import { Route as AuthenticatedAdminKampanyalarRouteImport } from './routes/_authenticated/admin/kampanyalar'
 import { Route as AuthenticatedAdminAyarlarRouteImport } from './routes/_authenticated/admin/ayarlar'
+import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
 
 const UrunlerRoute = UrunlerRouteImport.update({
   id: '/urunler',
@@ -142,11 +144,23 @@ const AuthenticatedAdminKeylerRoute =
     path: '/keyler',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminKampanyalarRoute =
+  AuthenticatedAdminKampanyalarRouteImport.update({
+    id: '/kampanyalar',
+    path: '/kampanyalar',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminAyarlarRoute =
   AuthenticatedAdminAyarlarRouteImport.update({
     id: '/ayarlar',
     path: '/ayarlar',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const ApiPublicHooksCampaignTickRoute =
+  ApiPublicHooksCampaignTickRouteImport.update({
+    id: '/api/public/hooks/campaign-tick',
+    path: '/api/public/hooks/campaign-tick',
+    getParentRoute: () => rootRouteImport,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -164,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
+  '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
@@ -171,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -186,6 +202,7 @@ export interface FileRoutesByTo {
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
+  '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
@@ -193,6 +210,7 @@ export interface FileRoutesByTo {
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -211,6 +229,7 @@ export interface FileRoutesById {
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/_authenticated/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
+  '/_authenticated/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/_authenticated/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/_authenticated/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
   '/_authenticated/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
@@ -218,6 +237,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
   '/_authenticated/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -236,6 +256,7 @@ export interface FileRouteTypes {
     | '/odeme/$orderId'
     | '/urun/$slug'
     | '/admin/ayarlar'
+    | '/admin/kampanyalar'
     | '/admin/keyler'
     | '/admin/kullanicilar'
     | '/admin/lisanslar'
@@ -243,6 +264,7 @@ export interface FileRouteTypes {
     | '/admin/siparisler'
     | '/admin/urunler'
     | '/admin/'
+    | '/api/public/hooks/campaign-tick'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -258,6 +280,7 @@ export interface FileRouteTypes {
     | '/odeme/$orderId'
     | '/urun/$slug'
     | '/admin/ayarlar'
+    | '/admin/kampanyalar'
     | '/admin/keyler'
     | '/admin/kullanicilar'
     | '/admin/lisanslar'
@@ -265,6 +288,7 @@ export interface FileRouteTypes {
     | '/admin/siparisler'
     | '/admin/urunler'
     | '/admin'
+    | '/api/public/hooks/campaign-tick'
   id:
     | '__root__'
     | '/'
@@ -282,6 +306,7 @@ export interface FileRouteTypes {
     | '/odeme/$orderId'
     | '/urun/$slug'
     | '/_authenticated/admin/ayarlar'
+    | '/_authenticated/admin/kampanyalar'
     | '/_authenticated/admin/keyler'
     | '/_authenticated/admin/kullanicilar'
     | '/_authenticated/admin/lisanslar'
@@ -289,6 +314,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/siparisler'
     | '/_authenticated/admin/urunler'
     | '/_authenticated/admin/'
+    | '/api/public/hooks/campaign-tick'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -304,6 +330,7 @@ export interface RootRouteChildren {
   ApiValidateRoute: typeof ApiValidateRoute
   OdemeOrderIdRoute: typeof OdemeOrderIdRoute
   UrunSlugRoute: typeof UrunSlugRoute
+  ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -455,6 +482,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminKeylerRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/kampanyalar': {
+      id: '/_authenticated/admin/kampanyalar'
+      path: '/kampanyalar'
+      fullPath: '/admin/kampanyalar'
+      preLoaderRoute: typeof AuthenticatedAdminKampanyalarRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/ayarlar': {
       id: '/_authenticated/admin/ayarlar'
       path: '/ayarlar'
@@ -462,11 +496,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAyarlarRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/api/public/hooks/campaign-tick': {
+      id: '/api/public/hooks/campaign-tick'
+      path: '/api/public/hooks/campaign-tick'
+      fullPath: '/api/public/hooks/campaign-tick'
+      preLoaderRoute: typeof ApiPublicHooksCampaignTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAyarlarRoute: typeof AuthenticatedAdminAyarlarRoute
+  AuthenticatedAdminKampanyalarRoute: typeof AuthenticatedAdminKampanyalarRoute
   AuthenticatedAdminKeylerRoute: typeof AuthenticatedAdminKeylerRoute
   AuthenticatedAdminKullanicilarRoute: typeof AuthenticatedAdminKullanicilarRoute
   AuthenticatedAdminLisanslarRoute: typeof AuthenticatedAdminLisanslarRoute
@@ -479,6 +521,7 @@ interface AuthenticatedAdminRouteRouteChildren {
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
     AuthenticatedAdminAyarlarRoute: AuthenticatedAdminAyarlarRoute,
+    AuthenticatedAdminKampanyalarRoute: AuthenticatedAdminKampanyalarRoute,
     AuthenticatedAdminKeylerRoute: AuthenticatedAdminKeylerRoute,
     AuthenticatedAdminKullanicilarRoute: AuthenticatedAdminKullanicilarRoute,
     AuthenticatedAdminLisanslarRoute: AuthenticatedAdminLisanslarRoute,
@@ -519,6 +562,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiValidateRoute: ApiValidateRoute,
   OdemeOrderIdRoute: OdemeOrderIdRoute,
   UrunSlugRoute: UrunSlugRoute,
+  ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
