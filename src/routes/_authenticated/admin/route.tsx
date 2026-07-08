@@ -34,6 +34,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/admin", label: "dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/admin/destek", label: "destek", icon: LifeBuoy },
   { to: "/admin/siparisler", label: "siparişler", icon: ShoppingCart },
   { to: "/admin/urunler", label: "ürünler", icon: Package },
   { to: "/admin/populer", label: "popüler seçimler", icon: Star },
