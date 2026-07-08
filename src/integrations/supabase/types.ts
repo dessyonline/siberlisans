@@ -751,6 +751,7 @@ export type Database = {
           active: boolean
           avg_rating: number
           category: string | null
+          cost_try: number | null
           created_at: string
           default_license_days: number | null
           delivery_type: Database["public"]["Enums"]["delivery_type"]
@@ -780,6 +781,7 @@ export type Database = {
           active?: boolean
           avg_rating?: number
           category?: string | null
+          cost_try?: number | null
           created_at?: string
           default_license_days?: number | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
@@ -809,6 +811,7 @@ export type Database = {
           active?: boolean
           avg_rating?: number
           category?: string | null
+          cost_try?: number | null
           created_at?: string
           default_license_days?: number | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
@@ -845,6 +848,8 @@ export type Database = {
           referral_bonus_paid: boolean
           referral_code: string | null
           referred_by: string | null
+          tier: Database["public"]["Enums"]["user_tier"]
+          total_points: number
           updated_at: string
         }
         Insert: {
@@ -855,6 +860,8 @@ export type Database = {
           referral_bonus_paid?: boolean
           referral_code?: string | null
           referred_by?: string | null
+          tier?: Database["public"]["Enums"]["user_tier"]
+          total_points?: number
           updated_at?: string
         }
         Update: {
@@ -865,6 +872,8 @@ export type Database = {
           referral_bonus_paid?: boolean
           referral_code?: string | null
           referred_by?: string | null
+          tier?: Database["public"]["Enums"]["user_tier"]
+          total_points?: number
           updated_at?: string
         }
         Relationships: []
@@ -921,6 +930,44 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_points_ledger: {
+        Row: {
+          balance_after: number
+          created_at: string
+          delta: number
+          id: string
+          order_id: string | null
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          balance_after: number
+          created_at?: string
+          delta: number
+          id?: string
+          order_id?: string | null
+          reason: string
+          user_id: string
+        }
+        Update: {
+          balance_after?: number
+          created_at?: string
+          delta?: number
+          id?: string
+          order_id?: string | null
+          reason?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_points_ledger_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -1077,6 +1124,29 @@ export type Database = {
         Args: { _delta: number; _note: string; _user_id: string }
         Returns: number
       }
+      admin_daily_revenue: {
+        Args: { _days?: number }
+        Returns: {
+          day: string
+          orders: number
+          revenue: number
+        }[]
+      }
+      admin_dashboard_summary: {
+        Args: never
+        Returns: {
+          avg_basket: number
+          month_orders: number
+          month_revenue: number
+          pending_count: number
+          reviewing_count: number
+          today_orders: number
+          today_revenue: number
+          users_count: number
+          week_orders: number
+          week_revenue: number
+        }[]
+      }
       admin_force_delete_license: { Args: { _id: string }; Returns: boolean }
       admin_low_stock_products: {
         Args: never
@@ -1086,6 +1156,17 @@ export type Database = {
           product_id: string
           slug: string
           threshold: number
+        }[]
+      }
+      admin_product_profitability: {
+        Args: { _days?: number }
+        Returns: {
+          cost: number
+          name: string
+          product_id: string
+          profit: number
+          revenue: number
+          sold: number
         }[]
       }
       admin_set_license: {
@@ -1136,6 +1217,15 @@ export type Database = {
         }[]
       }
       approve_topup: { Args: { _topup_id: string }; Returns: number }
+      award_points: {
+        Args: {
+          _delta: number
+          _order_id?: string
+          _reason: string
+          _user_id: string
+        }
+        Returns: number
+      }
       bump_orders_count: { Args: { _order_id: string }; Returns: undefined }
       check_low_stock_after_assign: {
         Args: { _product_id: string }
@@ -1155,6 +1245,10 @@ export type Database = {
           key_value: string
           product_name: string
         }[]
+      }
+      compute_tier: {
+        Args: { _points: number }
+        Returns: Database["public"]["Enums"]["user_tier"]
       }
       create_cart_order:
         | {
@@ -1226,6 +1320,13 @@ export type Database = {
         Returns: undefined
       }
       remove_promo_code: { Args: { _order_id: string }; Returns: undefined }
+      spend_points: {
+        Args: { _amount: number; _order_id: string }
+        Returns: {
+          balance_after: number
+          discount_try: number
+        }[]
+      }
       validate_coupon: {
         Args: { _code: string; _subtotal: number }
         Returns: {
@@ -1251,6 +1352,7 @@ export type Database = {
       order_status: "pending" | "reviewing" | "approved" | "rejected"
       promo_type: "percent" | "fixed"
       topup_status: "pending" | "reviewing" | "approved" | "rejected"
+      user_tier: "bronze" | "silver" | "gold" | "platinum"
       wallet_txn_kind:
         | "topup"
         | "purchase"
@@ -1399,6 +1501,7 @@ export const Constants = {
       order_status: ["pending", "reviewing", "approved", "rejected"],
       promo_type: ["percent", "fixed"],
       topup_status: ["pending", "reviewing", "approved", "rejected"],
+      user_tier: ["bronze", "silver", "gold", "platinum"],
       wallet_txn_kind: [
         "topup",
         "purchase",
