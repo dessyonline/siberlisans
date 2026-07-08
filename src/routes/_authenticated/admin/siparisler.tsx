@@ -408,10 +408,23 @@ function OrdersAdmin() {
               </div>
             )}
             {o.product?.source === "uniquelisans" && (
-              <div className="mt-2 text-[10px] font-mono text-cyan">
-                ⚡ Uniquelisans otomatik teslim
-                {o.external_order_id ? ` · ext #${o.external_order_id}` : ""}
-                {o.external_status ? ` · ${o.external_status}` : ""}
+              <div className="mt-2 flex items-center gap-2 flex-wrap text-[10px] font-mono text-cyan">
+                <span>
+                  ⚡ Uniquelisans otomatik teslim
+                  {o.external_order_id ? ` · ext #${o.external_order_id}` : ""}
+                  {o.external_status ? ` · ${o.external_status}` : ""}
+                </span>
+                {o.external_order_id && o.status !== "approved" && (
+                  <button
+                    onClick={() => handleSyncOne(o.id)}
+                    disabled={syncing === o.id}
+                    className="inline-flex items-center gap-1 rounded-md border border-cyan/40 bg-cyan/5 px-2 py-0.5 text-[10px] hover:bg-cyan/10 disabled:opacity-50"
+                    title="Uniquelisans'tan durumu yeniden sorgula"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${syncing === o.id ? "animate-spin" : ""}`} />
+                    sync
+                  </button>
+                )}
               </div>
             )}
             {o.external_delivery_data && (
