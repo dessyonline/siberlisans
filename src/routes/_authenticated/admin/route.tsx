@@ -28,6 +28,11 @@ export const Route = createFileRoute("/_authenticated/admin")({
     if (!userData.user) throw redirect({ to: "/auth" });
     const { data } = await supabase.rpc("has_role", { _user_id: userData.user.id, _role: "admin" });
     if (!data) throw redirect({ to: "/hesabim" });
+    // Admin panele giriş için 2FA zorunlu (aal2)
+    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aalData?.currentLevel !== "aal2") {
+      throw redirect({ to: "/guvenlik" });
+    }
   },
   component: AdminLayout,
 });
