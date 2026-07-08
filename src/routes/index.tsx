@@ -33,6 +33,9 @@ import {
 } from "lucide-react";
 import { ProductCardSkeleton } from "@/components/Skeleton";
 import { ProductLogo } from "@/components/ProductLogo";
+import { UserAvatar } from "@/components/UserAvatar";
+import { useAuth } from "@/lib/auth-context";
+import { Wallet } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   component: Index,
