@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
 import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode, finalizeFreeOrder } from "@/lib/orders.functions";
+import { payOrderWithWallet } from "@/lib/wallet.functions";
 import { Input } from "@/components/ui/input";
 
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
@@ -62,6 +63,8 @@ function Payment() {
   const [dragOver, setDragOver] = useState(false);
   const markPaidFn = useServerFn(markOrderPaid);
   const finalizeFreeFn = useServerFn(finalizeFreeOrder);
+  const payWithWalletFn = useServerFn(payOrderWithWallet);
+  const [payingWallet, setPayingWallet] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -93,6 +96,20 @@ function Payment() {
         .maybeSingle();
       return data;
     },
+  });
+
+  const { data: wallet } = useQuery({
+    queryKey: ["wallet", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("wallets")
+        .select("balance_try")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return data ?? { balance_try: 0 };
+    },
+    refetchInterval: 6000,
   });
 
   const currentStep: StepKey = useMemo(() => {

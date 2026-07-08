@@ -253,6 +253,7 @@ export type Database = {
           approved_at: string | null
           created_at: string
           id: string
+          paid_with: string
           price_try: number
           product_id: string
           receipt_path: string | null
@@ -267,6 +268,7 @@ export type Database = {
           approved_at?: string | null
           created_at?: string
           id?: string
+          paid_with?: string
           price_try: number
           product_id: string
           receipt_path?: string | null
@@ -281,6 +283,7 @@ export type Database = {
           approved_at?: string | null
           created_at?: string
           id?: string
+          paid_with?: string
           price_try?: number
           product_id?: string
           receipt_path?: string | null
@@ -467,12 +470,137 @@ export type Database = {
         }
         Relationships: []
       }
+      wallet_topups: {
+        Row: {
+          admin_note: string | null
+          amount_try: number
+          approved_at: string | null
+          created_at: string
+          id: string
+          receipt_path: string | null
+          reference_code: string
+          status: Database["public"]["Enums"]["topup_status"]
+          updated_at: string
+          user_id: string
+          user_note: string | null
+        }
+        Insert: {
+          admin_note?: string | null
+          amount_try: number
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          receipt_path?: string | null
+          reference_code: string
+          status?: Database["public"]["Enums"]["topup_status"]
+          updated_at?: string
+          user_id: string
+          user_note?: string | null
+        }
+        Update: {
+          admin_note?: string | null
+          amount_try?: number
+          approved_at?: string | null
+          created_at?: string
+          id?: string
+          receipt_path?: string | null
+          reference_code?: string
+          status?: Database["public"]["Enums"]["topup_status"]
+          updated_at?: string
+          user_id?: string
+          user_note?: string | null
+        }
+        Relationships: []
+      }
+      wallet_transactions: {
+        Row: {
+          amount_try: number
+          balance_after: number
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: Database["public"]["Enums"]["wallet_txn_kind"]
+          note: string | null
+          order_id: string | null
+          topup_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_try: number
+          balance_after: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["wallet_txn_kind"]
+          note?: string | null
+          order_id?: string | null
+          topup_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_try?: number
+          balance_after?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["wallet_txn_kind"]
+          note?: string | null
+          order_id?: string | null
+          topup_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wallet_transactions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "wallet_transactions_topup_id_fkey"
+            columns: ["topup_id"]
+            isOneToOne: false
+            referencedRelation: "wallet_topups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wallets: {
+        Row: {
+          balance_try: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance_try?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance_try?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      _assign_key_to_order: {
+        Args: { _order_id: string }
+        Returns: {
+          activation_token: string
+          license_key: string
+        }[]
+      }
       activate_license: { Args: { _hwid: string; _key: string }; Returns: Json }
+      admin_adjust_wallet: {
+        Args: { _delta: number; _note: string; _user_id: string }
+        Returns: number
+      }
       admin_set_license: {
         Args: {
           _action: string
@@ -520,6 +648,7 @@ export type Database = {
           license_key: string
         }[]
       }
+      approve_topup: { Args: { _topup_id: string }; Returns: number }
       claim_license_by_token: {
         Args: { _token: string }
         Returns: {
@@ -545,6 +674,19 @@ export type Database = {
         }
         Returns: boolean
       }
+      pay_order_with_wallet: {
+        Args: { _order_id: string }
+        Returns: {
+          activation_token: string
+          balance_after: number
+          license_key: string
+        }[]
+      }
+      refund_order_to_wallet: { Args: { _order_id: string }; Returns: number }
+      reject_topup: {
+        Args: { _note: string; _topup_id: string }
+        Returns: undefined
+      }
       remove_promo_code: { Args: { _order_id: string }; Returns: undefined }
       validate_license: { Args: { _hwid: string; _key: string }; Returns: Json }
     }
@@ -561,6 +703,13 @@ export type Database = {
       key_status: "available" | "assigned" | "revoked"
       order_status: "pending" | "reviewing" | "approved" | "rejected"
       promo_type: "percent" | "fixed"
+      topup_status: "pending" | "reviewing" | "approved" | "rejected"
+      wallet_txn_kind:
+        | "topup"
+        | "purchase"
+        | "refund"
+        | "admin_credit"
+        | "admin_debit"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -701,6 +850,14 @@ export const Constants = {
       key_status: ["available", "assigned", "revoked"],
       order_status: ["pending", "reviewing", "approved", "rejected"],
       promo_type: ["percent", "fixed"],
+      topup_status: ["pending", "reviewing", "approved", "rejected"],
+      wallet_txn_kind: [
+        "topup",
+        "purchase",
+        "refund",
+        "admin_credit",
+        "admin_debit",
+      ],
     },
   },
 } as const
