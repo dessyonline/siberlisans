@@ -138,7 +138,11 @@ function UniquelisansPage() {
               onChange={(e) => setMarkup(Number(e.target.value))}
               className="w-full rounded border border-primary/30 bg-background/40 px-3 py-2 font-mono text-sm"
             />
+            <div className="mt-1 font-mono text-[11px] text-muted-foreground">
+              örn. alış 50 ₺ → satış <b className="text-primary">{fmt(50 * (1 + markup / 100))} ₺</b> · kar <b className="text-primary">{fmt(50 * markup / 100)} ₺</b>
+            </div>
           </div>
+
         </div>
       </div>
 
@@ -177,9 +181,12 @@ function UniquelisansPage() {
                         )}
                       </div>
                       <div className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{p.description}</div>
-                      <div className="mt-1 font-mono text-xs">
-                        alış: <b>{fmt(p.amount)} ₺</b> → satış: <b className="text-primary">{fmt(finalPrice)} ₺</b>
+                      <div className="mt-1 font-mono text-xs flex flex-wrap gap-x-3 gap-y-0.5">
+                        <span>alış: <b>{fmt(p.amount)} ₺</b></span>
+                        <span>satış: <b className="text-primary">{fmt(finalPrice)} ₺</b></span>
+                        <span className="text-primary">kar: <b>{fmt(finalPrice - p.amount)} ₺</b> {p.amount > 0 && <span className="text-muted-foreground">(%{fmt(((finalPrice - p.amount) / p.amount) * 100)})</span>}</span>
                       </div>
+
                     </div>
                     <Button
                       size="sm"
@@ -231,11 +238,17 @@ function UniquelisansPage() {
         {imported && imported.length > 0 ? (
           <div className="space-y-1.5">
             {imported.map((p) => (
-              <div key={p.id} className="glass-card rounded-md p-2.5 flex items-center gap-3 text-sm">
+              <div key={p.id} className="glass-card rounded-md p-2.5 flex flex-wrap items-center gap-3 text-sm">
                 <Package className="h-4 w-4 text-primary shrink-0" />
                 <div className="min-w-0 flex-1 truncate">{p.name}</div>
                 <div className="font-mono text-xs text-muted-foreground">alış: {fmt(Number(p.external_price ?? 0))} ₺</div>
                 <div className="font-mono text-xs">satış: <b>{fmt(Number(p.price_try))} ₺</b></div>
+                <div className="font-mono text-xs text-primary">
+                  kar: <b>{fmt(Number(p.price_try) - Number(p.external_price ?? 0))} ₺</b>
+                  {Number(p.external_price ?? 0) > 0 && (
+                    <span className="text-muted-foreground"> (%{fmt(((Number(p.price_try) - Number(p.external_price)) / Number(p.external_price)) * 100)})</span>
+                  )}
+                </div>
                 <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${p.active ? "text-primary bg-primary/10 border-primary/30" : "text-muted-foreground border-muted-foreground/30"}`}>
                   {p.active ? "aktif" : "pasif"}
                 </span>
