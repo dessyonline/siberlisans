@@ -77,32 +77,37 @@ function MyAccount() {
   );
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 md:py-12">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="font-mono text-xs text-muted-foreground">$ whoami · {user?.email}</div>
-          <h1 className="mt-2 font-mono text-2xl md:text-3xl neon-text">Hesabım</h1>
+    <div className="mx-auto max-w-5xl px-4 py-6 md:py-12">
+      {/* header */}
+      <div className="space-y-4">
+        <div className="min-w-0">
+          <div className="font-mono text-[11px] text-muted-foreground truncate">
+            $ whoami · <span className="text-foreground/80">{user?.email}</span>
+          </div>
+          <h1 className="mt-1.5 font-mono text-2xl md:text-3xl neon-text">Hesabım</h1>
         </div>
-        <div className="flex items-center gap-4 font-mono text-xs">
+
+        {/* stats grid: 3 cols on all sizes, cüzdan spans 3 on mobile for tap target */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 font-mono">
           <Link
             to="/cuzdan"
-            className="glass-card corner-cut px-3 py-2 rounded-md hover:neon-glow transition flex items-center gap-2"
+            className="glass-card corner-cut col-span-2 sm:col-span-1 flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
           >
-            <Wallet className="h-3.5 w-3.5 text-primary" />
-            <div>
-              <div className="text-muted-foreground text-[10px]">cüzdan</div>
-              <div className="text-primary text-sm font-bold">
+            <Wallet className="h-4 w-4 text-primary shrink-0" />
+            <div className="min-w-0">
+              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">cüzdan</div>
+              <div className="text-primary text-sm font-bold truncate">
                 <WalletBalance />
               </div>
             </div>
           </Link>
-          <div className="text-right">
-            <div className="text-muted-foreground">toplam sipariş</div>
-            <div className="text-lg neon-text">{orders?.length ?? 0}</div>
+          <div className="glass-card rounded-md px-3 py-2.5">
+            <div className="text-muted-foreground text-[10px] uppercase tracking-wider">sipariş</div>
+            <div className="text-lg neon-text leading-tight">{orders?.length ?? 0}</div>
           </div>
-          <div className="text-right">
-            <div className="text-muted-foreground">aktif anahtar</div>
-            <div className="text-lg neon-text">{approvedKeys.length}</div>
+          <div className="glass-card rounded-md px-3 py-2.5">
+            <div className="text-muted-foreground text-[10px] uppercase tracking-wider">anahtar</div>
+            <div className="text-lg neon-text leading-tight">{approvedKeys.length}</div>
           </div>
         </div>
       </div>
