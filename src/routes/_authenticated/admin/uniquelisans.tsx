@@ -8,6 +8,7 @@ import {
   ulProducts,
   ulImportProduct,
   ulImportedProducts,
+  ulSyncStock,
   DEFAULT_MARKUP_PERCENT,
 } from "@/lib/uniquelisans.functions";
 import { Button } from "@/components/ui/button";
@@ -31,6 +32,8 @@ function UniquelisansPage() {
   const prodsFn = useServerFn(ulProducts);
   const importFn = useServerFn(ulImportProduct);
   const importedFn = useServerFn(ulImportedProducts);
+  const syncFn = useServerFn(ulSyncStock);
+  const [syncing, setSyncing] = useState(false);
 
   const { data: balance, refetch: refetchBalance, isFetching: balLoading } = useQuery({
     queryKey: ["ul-balance"],
@@ -201,7 +204,30 @@ function UniquelisansPage() {
 
       {/* Imported list */}
       <div>
-        <div className="mb-3 font-mono text-xs text-muted-foreground">$ ice_aktarilan_urunler</div>
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <div className="font-mono text-xs text-muted-foreground">$ ice_aktarilan_urunler</div>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={syncing}
+            onClick={async () => {
+              setSyncing(true);
+              try {
+                const r = await syncFn();
+                toast.success(`Kontrol: ${r.checked} · Güncel: ${r.updated} · Gizlenen: ${r.hidden}${r.failed ? ` · Hata: ${r.failed}` : ""}`);
+                qc.invalidateQueries({ queryKey: ["ul-imported"] });
+                qc.invalidateQueries({ queryKey: ["admin-products"] });
+              } catch (e) {
+                toast.error((e as Error).message);
+              } finally {
+                setSyncing(false);
+              }
+            }}
+          >
+            {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <RefreshCw className="h-3.5 w-3.5 mr-1" />}
+            stokları senkronize et
+          </Button>
+        </div>
         {imported && imported.length > 0 ? (
           <div className="space-y-1.5">
             {imported.map((p) => (
