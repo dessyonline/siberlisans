@@ -363,7 +363,6 @@ function ProductDetail() {
                   </span>
                 )}
                 <FlashSaleBadge sale={flashSale} />
-                )}
                 <span className="rounded-full border border-border/60 bg-background/60 backdrop-blur px-2.5 py-1 text-muted-foreground">
                   <Cpu className="mr-1 inline h-3 w-3 text-primary" />
                   {manual ? "manuel teslim" : "otomatik teslim"}
