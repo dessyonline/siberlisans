@@ -34,7 +34,20 @@ type Order = {
   reference_code: string;
   created_at: string;
   product: { name: string; slug: string; delivery_type: string } | null;
-  keys: { license_key: { key_value: string; activation_token: string | null } | null }[] | null;
+  items:
+    | { quantity: number; product_name_snapshot: string; product: { slug: string; delivery_type: string } | null }[]
+    | null;
+  keys:
+    | {
+        license_key:
+          | {
+              key_value: string;
+              activation_token: string | null;
+              product: { name: string; slug: string; delivery_type: string } | null;
+            }
+          | null;
+      }[]
+    | null;
 };
 
 function MyAccount() {
@@ -46,7 +59,7 @@ function MyAccount() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, status, price_try, reference_code, created_at, product:products(name, slug, delivery_type), keys:order_keys(license_key:license_keys(key_value, activation_token))"
+          "id, status, price_try, reference_code, created_at, product:products(name, slug, delivery_type), items:order_items(quantity, product_name_snapshot, product:products(slug, delivery_type)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, slug, delivery_type)))"
         )
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
@@ -64,9 +77,9 @@ function MyAccount() {
             .map((k) => k.license_key)
             .filter((k): k is NonNullable<typeof k> => !!k?.key_value)
             .map((k) => ({
-              product: o.product?.name ?? "-",
-              productSlug: o.product?.slug ?? "",
-              deliveryType: (o.product?.delivery_type ?? "key") as DeliveryType,
+              product: k.product?.name ?? o.product?.name ?? "-",
+              productSlug: k.product?.slug ?? o.product?.slug ?? "",
+              deliveryType: (k.product?.delivery_type ?? o.product?.delivery_type ?? "key") as DeliveryType,
               keyValue: k.key_value,
               activationToken: k.activation_token,
               date: o.created_at,
