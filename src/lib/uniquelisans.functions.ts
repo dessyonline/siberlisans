@@ -136,13 +136,19 @@ export const ulImportProduct = createServerFn({ method: "POST" })
       .eq("external_id", String(detail.id))
       .maybeSingle();
 
+    // Stok kontrolü: API stok yok diyorsa veya stock_count <= 0 ise ürünü pasif tut
+    const outOfStock = detail.is_automatic_delivery
+      ? false
+      : (detail.is_stock === false || (typeof detail.stock_count === "number" && detail.stock_count <= 0));
+    const effectiveActive = outOfStock ? false : data.active;
+
     const payload = {
       name: detail.name,
       description: detail.description ?? "",
       price_try: finalPrice,
       external_price: detail.amount,
       category: data.category ?? "Dijital Ürünler",
-      active: data.active,
+      active: effectiveActive,
       manual_fulfillment: true, // otomatik teslim kapalı — admin manuel siparişi Uniquelisans'ta açar
       unlimited_stock: !!detail.is_automatic_delivery,
       source: "uniquelisans",
