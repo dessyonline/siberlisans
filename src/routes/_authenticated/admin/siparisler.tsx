@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { approveOrder, rejectOrder } from "@/lib/orders.functions";
+import { syncUniquelisansOrder, syncAllPendingUniquelisans } from "@/lib/uniquelisans-sync.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import {
-  Eye, Check, X, ImageIcon, Link2, Search, MessageCircle, Send, Instagram, Copy, Download, CheckSquare, Square,
+  Eye, Check, X, ImageIcon, Link2, Search, MessageCircle, Send, Instagram, Copy, Download, CheckSquare, Square, RefreshCw,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/siparisler")({
@@ -42,9 +43,13 @@ function OrdersAdmin() {
   const [onlyWithMessage, setOnlyWithMessage] = useState(false);
   const approveFn = useServerFn(approveOrder);
   const rejectFn = useServerFn(rejectOrder);
+  const syncOneFn = useServerFn(syncUniquelisansOrder);
+  const syncAllFn = useServerFn(syncAllPendingUniquelisans);
   const [note, setNote] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [syncing, setSyncing] = useState<string | null>(null);
+  const [syncingAll, setSyncingAll] = useState(false);
 
   const { data: orders } = useQuery({
     queryKey: ["admin-orders", filter],
@@ -101,6 +106,31 @@ function OrdersAdmin() {
       setNote("");
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
     } catch (e) { toast.error((e as Error).message); }
+  };
+
+  const handleSyncOne = async (id: string) => {
+    setSyncing(id);
+    try {
+      const res = await syncOneFn({ data: { orderId: id } });
+      if (res.result === "delivered") toast.success(`${res.ref} teslim edildi`);
+      else if (res.result === "still_pending") toast.info(`${res.ref} hâlâ pending`);
+      else if (res.result === "error") toast.error(`${res.ref}: ${res.message}`);
+      else toast.message(`${res.ref}: ${res.reason}`);
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setSyncing(null); }
+  };
+  const handleSyncAll = async () => {
+    setSyncingAll(true);
+    try {
+      const res = await syncAllFn({});
+      const delivered = res.outcomes.filter((o) => o.result === "delivered").length;
+      const pending = res.outcomes.filter((o) => o.result === "still_pending").length;
+      const errors = res.outcomes.filter((o) => o.result === "error").length;
+      toast.success(`Senkron: ${res.scanned} tarandı · ${delivered} teslim · ${pending} pending · ${errors} hata`);
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setSyncingAll(false); }
   };
 
   const copyRef = (ref: string) => {
@@ -253,6 +283,17 @@ function OrdersAdmin() {
         <Button variant="outline" size="sm" onClick={exportCsv} className="font-mono">
           <Download className="h-3.5 w-3.5 mr-1" /> CSV
         </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleSyncAll}
+          disabled={syncingAll}
+          className="font-mono border-cyan/40 text-cyan hover:bg-cyan/10"
+          title="Uniquelisans pending siparişlerini yeniden sorgula"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 mr-1 ${syncingAll ? "animate-spin" : ""}`} />
+          UL sync
+        </Button>
         <div className="text-xs text-muted-foreground font-mono ml-auto">
           {filtered.length} sonuç
         </div>
@@ -367,10 +408,23 @@ function OrdersAdmin() {
               </div>
             )}
             {o.product?.source === "uniquelisans" && (
-              <div className="mt-2 text-[10px] font-mono text-cyan">
-                ⚡ Uniquelisans otomatik teslim
-                {o.external_order_id ? ` · ext #${o.external_order_id}` : ""}
-                {o.external_status ? ` · ${o.external_status}` : ""}
+              <div className="mt-2 flex items-center gap-2 flex-wrap text-[10px] font-mono text-cyan">
+                <span>
+                  ⚡ Uniquelisans otomatik teslim
+                  {o.external_order_id ? ` · ext #${o.external_order_id}` : ""}
+                  {o.external_status ? ` · ${o.external_status}` : ""}
+                </span>
+                {o.external_order_id && o.status !== "approved" && (
+                  <button
+                    onClick={() => handleSyncOne(o.id)}
+                    disabled={syncing === o.id}
+                    className="inline-flex items-center gap-1 rounded-md border border-cyan/40 bg-cyan/5 px-2 py-0.5 text-[10px] hover:bg-cyan/10 disabled:opacity-50"
+                    title="Uniquelisans'tan durumu yeniden sorgula"
+                  >
+                    <RefreshCw className={`h-3 w-3 ${syncing === o.id ? "animate-spin" : ""}`} />
+                    sync
+                  </button>
+                )}
               </div>
             )}
             {o.external_delivery_data && (

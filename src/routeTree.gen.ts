@@ -52,6 +52,7 @@ import { Route as AuthenticatedAdminFlashRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminCuzdanRouteImport } from './routes/_authenticated/admin/cuzdan'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin/blog'
 import { Route as AuthenticatedAdminAyarlarRouteImport } from './routes/_authenticated/admin/ayarlar'
+import { Route as ApiPublicHooksSyncUniquelisansRouteImport } from './routes/api/public/hooks/sync-uniquelisans'
 import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
 
 const UrunlerRoute = UrunlerRouteImport.update({
@@ -283,6 +284,12 @@ const AuthenticatedAdminAyarlarRoute =
     path: '/ayarlar',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const ApiPublicHooksSyncUniquelisansRoute =
+  ApiPublicHooksSyncUniquelisansRouteImport.update({
+    id: '/api/public/hooks/sync-uniquelisans',
+    path: '/api/public/hooks/sync-uniquelisans',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksCampaignTickRoute =
   ApiPublicHooksCampaignTickRouteImport.update({
     id: '/api/public/hooks/campaign-tick',
@@ -334,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -378,6 +386,7 @@ export interface FileRoutesByTo {
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -425,6 +434,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -472,6 +482,7 @@ export interface FileRouteTypes {
     | '/admin/urunler'
     | '/admin/'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/sync-uniquelisans'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -516,6 +527,7 @@ export interface FileRouteTypes {
     | '/admin/urunler'
     | '/admin'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/sync-uniquelisans'
   id:
     | '__root__'
     | '/'
@@ -562,6 +574,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/urunler'
     | '/_authenticated/admin/'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/sync-uniquelisans'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -587,6 +600,7 @@ export interface RootRouteChildren {
   UrunSlugRoute: typeof UrunSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
+  ApiPublicHooksSyncUniquelisansRoute: typeof ApiPublicHooksSyncUniquelisansRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -892,6 +906,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAyarlarRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/api/public/hooks/sync-uniquelisans': {
+      id: '/api/public/hooks/sync-uniquelisans'
+      path: '/api/public/hooks/sync-uniquelisans'
+      fullPath: '/api/public/hooks/sync-uniquelisans'
+      preLoaderRoute: typeof ApiPublicHooksSyncUniquelisansRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/campaign-tick': {
       id: '/api/public/hooks/campaign-tick'
       path: '/api/public/hooks/campaign-tick'
@@ -990,6 +1011,7 @@ const rootRouteChildren: RootRouteChildren = {
   UrunSlugRoute: UrunSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,
+  ApiPublicHooksSyncUniquelisansRoute: ApiPublicHooksSyncUniquelisansRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
