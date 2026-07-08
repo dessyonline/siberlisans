@@ -166,7 +166,13 @@ function ProductDetail() {
         </div>
 
         {/* Terminal window frame */}
-        <div className="glass-card rounded-xl overflow-hidden neon-glow-strong">
+        <div className={`relative rounded-xl overflow-hidden ${isEpic ? "epic-card" : "glass-card neon-glow-strong"}`}>
+          {isEpic && <div className="epic-shimmer" aria-hidden />}
+          {isEpic && (
+            <div className="relative flex items-center justify-center gap-2 border-b border-[oklch(0.78_0.16_75/0.4)] bg-gradient-to-r from-[oklch(0.14_0.03_75/0.6)] via-[oklch(0.13_0.05_300/0.55)] to-[oklch(0.14_0.03_75/0.6)] py-1.5 font-mono text-[10px] uppercase tracking-[0.4em] text-[oklch(0.90_0.14_85)] epic-text-glow">
+              <Crown className="h-3 w-3" /> destansı sürüm · epic tier <Sparkles className="h-3 w-3" />
+            </div>
+          )}
           {/* window chrome */}
           <div className="flex items-center justify-between border-b border-border/60 bg-background/50 px-4 py-2.5 backdrop-blur">
             <div className="flex items-center gap-2">
