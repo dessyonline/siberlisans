@@ -253,22 +253,19 @@ function ProductDetail() {
                 </div>
 
                 {/* card body: identity strip */}
-                <div className="relative px-3 py-3 border-t border-primary/20 bg-black/40">
-                  <div className="grid grid-cols-[1fr_auto] gap-3 items-end">
+                <div className="relative px-3 py-2.5 border-t border-primary/20 bg-black/40">
+                  <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <div className="font-mono text-[9px] uppercase tracking-[0.28em] text-primary/70">
-                        product_holder
+                        category
                       </div>
-                      <div className="mt-0.5 font-mono text-sm text-foreground truncate">
-                        {product.name}
-                      </div>
-                      <div className="mt-1 font-mono text-[9px] uppercase tracking-[0.24em] text-muted-foreground">
-                        cat · <span className="text-primary/90">{product.category ?? "license"}</span>
+                      <div className="mt-0.5 font-mono text-xs text-primary/90 uppercase tracking-[0.2em] truncate">
+                        {product.category ?? "license"}
                       </div>
                     </div>
                     {/* chip */}
                     <div
-                      className="h-9 w-11 rounded border border-primary/40 relative overflow-hidden"
+                      className="h-8 w-10 rounded border border-primary/40 relative overflow-hidden shrink-0"
                       style={{
                         background:
                           "linear-gradient(135deg, oklch(0.80 0.15 85) 0%, oklch(0.90 0.16 95) 45%, oklch(0.65 0.15 75) 100%)",
@@ -284,10 +281,11 @@ function ProductDetail() {
                   </div>
 
                   {/* MRZ-like footer */}
-                  <div className="mt-3 font-mono text-[9px] text-primary/70 tracking-[0.15em] break-all border-t border-primary/15 pt-2">
+                  <div className="mt-2 font-mono text-[9px] text-primary/70 tracking-[0.15em] break-all border-t border-primary/15 pt-1.5">
                     &lt;LIC&lt;{(product.slug ?? "").toUpperCase().padEnd(12, "<").slice(0, 12)}&lt;&lt;{String(product.duration ?? "std").toUpperCase().slice(0, 4)}&lt;&lt;{(product.id ?? "").replace(/-/g, "").slice(0, 10).toUpperCase()}
                   </div>
                 </div>
+
               </div>
             </div>
 
