@@ -95,10 +95,44 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => orderIdInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase } = context;
+
+    // Pre-flight: ensure a license key is available before touching the wallet,
+    // otherwise the DB function throws mid-transaction and the user sees a
+    // confusing "stokta anahtar yok" runtime error.
+    const { data: order } = await supabase
+      .from("orders")
+      .select("product_id, products(manual_fulfillment, unlimited_stock, name)")
+      .eq("id", data.orderId)
+      .maybeSingle();
+    const product = (order?.products ?? null) as
+      | { manual_fulfillment: boolean | null; unlimited_stock: boolean | null; name: string | null }
+      | null;
+    const needsStock = !!product && !product.manual_fulfillment && !product.unlimited_stock;
+    if (needsStock && order?.product_id) {
+      const { count } = await supabase
+        .from("license_keys")
+        .select("id", { head: true, count: "exact" })
+        .eq("product_id", order.product_id)
+        .eq("status", "available");
+      if ((count ?? 0) === 0) {
+        throw new Error(
+          `"${product?.name ?? "Ürün"}" için şu an stok bulunmuyor. Havale ile sipariş bırakabilir veya destek ile iletişime geçebilirsiniz.`,
+        );
+      }
+    }
+
     const { data: rows, error } = await supabase.rpc("pay_order_with_wallet", {
       _order_id: data.orderId,
     });
-    if (error) throw new Error(error.message);
+    if (error) {
+      const msg = error.message || "";
+      if (/anahtar yok|stokta/i.test(msg)) {
+        throw new Error(
+          `Stok az önce tükendi. Bakiyeniz düşülmedi; lütfen havale ile ödeyin veya biraz sonra tekrar deneyin.`,
+        );
+      }
+      throw new Error(msg);
+    }
     const row = Array.isArray(rows) ? rows[0] : rows;
     return {
       ok: true,
