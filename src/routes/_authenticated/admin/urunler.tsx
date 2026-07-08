@@ -13,7 +13,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Star, Search, X, Package, AlertTriangle, Crown, Copy, ImageIcon, EyeOff, Eye, Wand2, Sparkles } from "lucide-react";
-import { resolveLogoUrl, fallbackLogoUrl } from "@/lib/logo-resolver";
+import { isLegacyClearbitLogo, resolveLogoUrl } from "@/lib/logo-resolver";
+import { ProductLogo } from "@/components/ProductLogo";
 
 export const Route = createFileRoute("/_authenticated/admin/urunler")({
   component: ProductsAdmin,
@@ -227,14 +228,14 @@ function ProductsAdmin() {
             className="font-mono"
             onClick={async () => {
               const list = (products ?? []) as Array<{ id: string; name: string; image_url: string | null }>;
-              const missing = list.filter((p) => !p.image_url || p.image_url.trim() === "");
+              const missing = list.filter((p) => !p.image_url || p.image_url.trim() === "" || isLegacyClearbitLogo(p.image_url));
               if (missing.length === 0) {
                 toast.info("Tüm ürünlerde logo mevcut.");
                 return;
               }
               let filled = 0;
               for (const p of missing) {
-                const url = resolveLogoUrl(p.name);
+                  const url = resolveLogoUrl(p.name);
                 if (!url) continue;
                 const { error } = await supabase.from("products").update({ image_url: url }).eq("id", p.id);
                 if (!error) filled++;
@@ -318,26 +319,13 @@ function ProductsAdmin() {
             } ${p.tier === "epic" ? "!border-transparent epic-card" : ""}`}>
               <div className="flex gap-3 sm:gap-4 items-start">
                 {/* thumbnail */}
-                <div className="shrink-0 h-14 w-14 sm:h-16 sm:w-16 rounded-md border border-border/50 bg-black/40 overflow-hidden flex items-center justify-center">
-                  {p.image_url ? (
-                    <img
-                      src={p.image_url}
-                      alt=""
-                      className="h-full w-full object-cover"
-                      loading="lazy"
-                      onError={(e) => {
-                        const img = e.currentTarget;
-                        const fb = fallbackLogoUrl(p.name);
-                        if (fb && img.dataset.fb !== "1") {
-                          img.dataset.fb = "1";
-                          img.src = fb;
-                        }
-                      }}
-                    />
-                  ) : (
-                    <ImageIcon className="h-5 w-5 text-muted-foreground/50" />
-                  )}
-                </div>
+                <ProductLogo
+                  name={p.name}
+                  src={p.image_url}
+                  className="h-14 w-14 sm:h-16 sm:w-16 rounded-md border border-border/50 bg-background/60"
+                  imgClassName="h-full w-full object-contain p-2"
+                  fallback={<ImageIcon className="h-5 w-5 text-muted-foreground/50" />}
+                />
 
 
                 {/* main */}
@@ -477,25 +465,13 @@ function ProductsAdmin() {
               {/* SECTION: IMAGE */}
               <Section title="görsel">
                 <div className="flex gap-3 items-start">
-                  <div className="shrink-0 h-20 w-20 rounded-md border border-border/60 bg-black/40 overflow-hidden flex items-center justify-center">
-                    {editing.image_url ? (
-                      <img
-                        src={editing.image_url}
-                        alt=""
-                        className="h-full w-full object-cover"
-                        onError={(e) => {
-                          const img = e.currentTarget;
-                          const fb = fallbackLogoUrl(editing?.name ?? "");
-                          if (fb && img.dataset.fb !== "1") {
-                            img.dataset.fb = "1";
-                            img.src = fb;
-                          }
-                        }}
-                      />
-                    ) : (
-                      <ImageIcon className="h-6 w-6 text-muted-foreground/50" />
-                    )}
-                  </div>
+                  <ProductLogo
+                    name={editing.name ?? ""}
+                    src={editing.image_url}
+                    className="h-20 w-20 rounded-md border border-border/60 bg-background/60"
+                    imgClassName="h-full w-full object-contain p-2"
+                    fallback={<ImageIcon className="h-6 w-6 text-muted-foreground/50" />}
+                  />
                   <div className="flex-1 min-w-0">
                     <Label className="font-mono text-xs">image_url (https://… veya /products/…jpg)</Label>
                     <div className="flex gap-2">
@@ -524,7 +500,7 @@ function ProductsAdmin() {
                       </Button>
                     </div>
                     <p className="mt-1 font-mono text-[10px] text-muted-foreground">
-                      ad girildiğinde marka logosu otomatik doldurulur (Clearbit). yüklenmezse Google favicon'a düşer.
+                      ad girildiğinde marka logosu otomatik doldurulur; bozuk eski logo linkleri güvenilir favicon kaynağına düşer.
                     </p>
                   </div>
                 </div>

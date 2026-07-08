@@ -13,6 +13,7 @@ import { useCart } from "@/lib/cart-store";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ReviewsSection } from "@/components/ReviewsSection";
 import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
+import { ProductLogo } from "@/components/ProductLogo";
 
 const productMetaQuery = (slug: string) => ({
   queryKey: ["product-meta", slug],
@@ -274,20 +275,21 @@ function ProductDetail() {
                   <span className="pointer-events-none absolute top-2 right-2 h-3 w-3 border-r border-t border-primary/60" />
                   <span className="pointer-events-none absolute bottom-2 left-2 h-3 w-3 border-l border-b border-primary/60" />
                   <span className="pointer-events-none absolute bottom-2 right-2 h-3 w-3 border-r border-b border-primary/60" />
-                  {product.image_url ? (
-                    <img
-                      src={product.image_url}
-                      alt={product.name}
-                      className="relative h-full w-full object-contain p-4 drop-shadow-[0_0_18px_oklch(0.82_0.20_145/0.45)]"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-primary">
+                  <ProductLogo
+                    name={product.name}
+                    src={product.image_url}
+                    className="absolute inset-0 border-0 bg-transparent"
+                    imgClassName="relative h-full w-full object-contain p-4 drop-shadow-[0_0_18px_oklch(0.82_0.20_145/0.45)]"
+                    loading="eager"
+                    fallback={(
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-primary">
                       <KeyRound className="h-16 w-16 opacity-80 drop-shadow-[0_0_20px_oklch(0.82_0.20_145/0.6)]" />
                       <span className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest">
                         {product.category ?? "lisans"}
                       </span>
                     </div>
-                  )}
+                    )}
+                  />
                   {/* scanline */}
                   <div className="pointer-events-none absolute inset-x-0 top-0 h-full scan-line opacity-30" aria-hidden />
                 </div>
@@ -590,11 +592,13 @@ function ProductDetail() {
                     }`}
                   >
                     <div className="aspect-[3/2] rounded bg-black/40 border border-border/40 flex items-center justify-center overflow-hidden">
-                      {rp.image_url ? (
-                        <img src={rp.image_url} alt={rp.name} className="h-full w-full object-contain p-3 group-hover:scale-105 transition-transform" />
-                      ) : (
-                        <KeyRound className="h-8 w-8 text-primary/60" />
-                      )}
+                      <ProductLogo
+                        name={rp.name}
+                        src={rp.image_url}
+                        className="h-full w-full border-0 bg-transparent"
+                        imgClassName="h-full w-full object-contain p-3 group-hover:scale-105 transition-transform"
+                        fallback={<KeyRound className="h-8 w-8 text-primary/60" />}
+                      />
                     </div>
                     <div className="mt-2 font-mono text-[10px] uppercase tracking-widest text-primary/70 flex items-center gap-1">
                       {rEpic && <Crown className="h-3 w-3 text-[oklch(0.90_0.14_85)]" />}
