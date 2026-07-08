@@ -13,7 +13,6 @@ import {
   ShieldCheck,
   LogIn,
   LayoutDashboard,
-  User as UserIcon,
   Package,
   BookOpen,
   HelpCircle,
