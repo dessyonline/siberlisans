@@ -37,7 +37,7 @@ export const Route = createFileRoute("/blog/$slug")({
       .lte("published_at", new Date().toISOString())
       .maybeSingle();
     if (error || !data) throw notFound();
-    return data as { title: string; excerpt: string | null; cover_url: string | null };
+    return data as unknown as { title: string; excerpt: string | null; cover_url: string | null };
   },
 });
 
