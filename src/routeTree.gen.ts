@@ -38,6 +38,7 @@ import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
+import { Route as AuthenticatedAdminUniquelisansRouteImport } from './routes/_authenticated/admin/uniquelisans'
 import { Route as AuthenticatedAdminSiparislerRouteImport } from './routes/_authenticated/admin/siparisler'
 import { Route as AuthenticatedAdminPromosyonlarRouteImport } from './routes/_authenticated/admin/promosyonlar'
 import { Route as AuthenticatedAdminPopulerRouteImport } from './routes/_authenticated/admin/populer'
@@ -200,6 +201,12 @@ const AuthenticatedAdminUrunlerRoute =
     path: '/urunler',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminUniquelisansRoute =
+  AuthenticatedAdminUniquelisansRouteImport.update({
+    id: '/uniquelisans',
+    path: '/uniquelisans',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminSiparislerRoute =
   AuthenticatedAdminSiparislerRouteImport.update({
     id: '/siparisler',
@@ -323,6 +330,7 @@ export interface FileRoutesByFullPath {
   '/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
+  '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
@@ -366,6 +374,7 @@ export interface FileRoutesByTo {
   '/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
+  '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
@@ -412,6 +421,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/_authenticated/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
   '/_authenticated/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
+  '/_authenticated/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/_authenticated/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
@@ -458,6 +468,7 @@ export interface FileRouteTypes {
     | '/admin/populer'
     | '/admin/promosyonlar'
     | '/admin/siparisler'
+    | '/admin/uniquelisans'
     | '/admin/urunler'
     | '/admin/'
     | '/api/public/hooks/campaign-tick'
@@ -501,6 +512,7 @@ export interface FileRouteTypes {
     | '/admin/populer'
     | '/admin/promosyonlar'
     | '/admin/siparisler'
+    | '/admin/uniquelisans'
     | '/admin/urunler'
     | '/admin'
     | '/api/public/hooks/campaign-tick'
@@ -546,6 +558,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/populer'
     | '/_authenticated/admin/promosyonlar'
     | '/_authenticated/admin/siparisler'
+    | '/_authenticated/admin/uniquelisans'
     | '/_authenticated/admin/urunler'
     | '/_authenticated/admin/'
     | '/api/public/hooks/campaign-tick'
@@ -781,6 +794,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUrunlerRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/uniquelisans': {
+      id: '/_authenticated/admin/uniquelisans'
+      path: '/uniquelisans'
+      fullPath: '/admin/uniquelisans'
+      preLoaderRoute: typeof AuthenticatedAdminUniquelisansRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/siparisler': {
       id: '/_authenticated/admin/siparisler'
       path: '/siparisler'
@@ -896,6 +916,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminPopulerRoute: typeof AuthenticatedAdminPopulerRoute
   AuthenticatedAdminPromosyonlarRoute: typeof AuthenticatedAdminPromosyonlarRoute
   AuthenticatedAdminSiparislerRoute: typeof AuthenticatedAdminSiparislerRoute
+  AuthenticatedAdminUniquelisansRoute: typeof AuthenticatedAdminUniquelisansRoute
   AuthenticatedAdminUrunlerRoute: typeof AuthenticatedAdminUrunlerRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
@@ -915,6 +936,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminPopulerRoute: AuthenticatedAdminPopulerRoute,
     AuthenticatedAdminPromosyonlarRoute: AuthenticatedAdminPromosyonlarRoute,
     AuthenticatedAdminSiparislerRoute: AuthenticatedAdminSiparislerRoute,
+    AuthenticatedAdminUniquelisansRoute: AuthenticatedAdminUniquelisansRoute,
     AuthenticatedAdminUrunlerRoute: AuthenticatedAdminUrunlerRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
   }
