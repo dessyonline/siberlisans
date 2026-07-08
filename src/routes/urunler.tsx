@@ -373,16 +373,34 @@ function ProductsPage() {
           </div>
           <div className="flex flex-wrap gap-2 font-mono text-xs">
             <CatChip label={`hepsi · ${data?.length ?? 0}`} active={group === "all"} onClick={() => setGroup("all")} />
-            {GROUPS.map((g) => (
-              <CatChip
-                key={g.key}
-                label={`${g.label} · ${groupCounts.get(g.key) ?? 0}`}
-                active={group === g.key}
-                onClick={() => setGroup(g.key)}
-              />
-            ))}
+            {GROUPS.map((g) => {
+              const c = groupCounts.get(g.key) ?? 0;
+              if (c === 0) return null;
+              return (
+                <CatChip
+                  key={g.key}
+                  label={`${g.label} · ${c}`}
+                  active={group === g.key}
+                  onClick={() => setGroup(g.key)}
+                />
+              );
+            })}
           </div>
         </div>
+
+        {/* Sort bar */}
+        <div className="mb-6 flex flex-wrap items-center gap-2 font-mono text-xs">
+          <span className="text-muted-foreground">sırala:</span>
+          {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
+            <CatChip
+              key={k}
+              label={SORT_LABELS[k]}
+              active={sort === k}
+              onClick={() => setSort(k)}
+            />
+          ))}
+        </div>
+
 
         {/* Hot picks */}
         {!search && hot.length > 0 && (
