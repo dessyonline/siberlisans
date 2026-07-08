@@ -268,6 +268,22 @@ function Payment() {
         </ol>
       </div>
 
+      {needsCheckoutFields && (
+        <CheckoutFieldsCard
+          orderId={orderId}
+          fields={requiredFields}
+          initial={(order.checkout_fields ?? {}) as Record<string, string>}
+          saved={!!order.checkout_fields && Object.keys((order.checkout_fields ?? {}) as object).length > 0}
+          onSave={async (values) => {
+            await setFieldsFn({ data: { orderId, fields: values } });
+            toast.success("Bilgiler kaydedildi");
+            qc.invalidateQueries({ queryKey: ["order", orderId] });
+          }}
+        />
+      )}
+
+
+
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         {/* MAIN CONTENT */}
         <div className="space-y-6">
