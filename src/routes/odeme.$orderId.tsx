@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
 import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode, finalizeFreeOrder, setOrderCheckoutFields } from "@/lib/orders.functions";
 import { payOrderWithWallet } from "@/lib/wallet.functions";
+import { MfaGateDialog } from "@/components/security/MfaGateDialog";
 import { Input } from "@/components/ui/input";
 
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
