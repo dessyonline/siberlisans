@@ -31,7 +31,7 @@ type Product = {
   name: string;
   slug: string;
   description: string | null;
-  duration: "monthly" | "yearly" | "lifetime";
+  duration: "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "lifetime";
   delivery_type: DeliveryType;
   price_try: number;
   active: boolean;
@@ -458,12 +458,15 @@ function ProductsAdmin() {
                       onChange={(e) => setEditing((p) => ({ ...p!, duration: e.target.value as Product["duration"] }))}
                       className="w-full h-9 rounded border border-border bg-input px-3 font-mono text-sm"
                     >
+                      <option value="hourly">saatlik</option>
+                      <option value="daily">günlük</option>
+                      <option value="weekly">haftalık</option>
                       <option value="monthly">aylık</option>
                       <option value="yearly">yıllık</option>
                       <option value="lifetime">ömürlük</option>
                     </select>
                   </div>
-                  <Field label="fiyat (₺)" value={String(editing.price_try ?? 0)} onChange={(v) => setEditing((p) => ({ ...p!, price_try: Number(v) }))} type="number" />
+                  <Field label="fiyat (₺)" value={editing.price_try == null ? "" : String(editing.price_try)} onChange={(v) => setEditing((p) => ({ ...p!, price_try: v === "" ? 0 : Number(v) }))} type="number" />
                   <div>
                     <Label className="font-mono text-xs">teslim tipi</Label>
                     <select
@@ -579,10 +582,22 @@ function Stat({ label, value, tone, icon }: {
 }
 
 function Field({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (v: string) => void; type?: string }) {
+  const [local, setLocal] = useState<string | null>(null);
+  const shown = local ?? value;
   return (
     <div>
       <Label className="font-mono text-xs">{label}</Label>
-      <Input type={type} value={value} onChange={(e) => onChange(e.target.value)} className="font-mono" />
+      <Input
+        type={type}
+        value={shown}
+        onFocus={() => setLocal(value)}
+        onChange={(e) => {
+          setLocal(e.target.value);
+          onChange(e.target.value);
+        }}
+        onBlur={() => setLocal(null)}
+        className="font-mono"
+      />
     </div>
   );
 }

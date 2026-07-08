@@ -484,7 +484,13 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user"
       delivery_type: "key" | "account" | "link" | "link_token"
-      duration_type: "monthly" | "yearly" | "lifetime"
+      duration_type:
+        | "monthly"
+        | "yearly"
+        | "lifetime"
+        | "hourly"
+        | "daily"
+        | "weekly"
       key_status: "available" | "assigned" | "revoked"
       order_status: "pending" | "reviewing" | "approved" | "rejected"
       promo_type: "percent" | "fixed"
@@ -617,7 +623,14 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user"],
       delivery_type: ["key", "account", "link", "link_token"],
-      duration_type: ["monthly", "yearly", "lifetime"],
+      duration_type: [
+        "monthly",
+        "yearly",
+        "lifetime",
+        "hourly",
+        "daily",
+        "weekly",
+      ],
       key_status: ["available", "assigned", "revoked"],
       order_status: ["pending", "reviewing", "approved", "rejected"],
       promo_type: ["percent", "fixed"],
