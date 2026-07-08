@@ -380,15 +380,26 @@ function ProductCard({ product: p }: { product: Row }) {
     : stock < 3
     ? `son ${stock}`
     : `stok: ${stock}`;
-  const stockCls = unlimited
-    ? "text-cyan border-cyan/40 bg-cyan/10"
-    : manual
-    ? "text-cyan border-cyan/40 bg-cyan/10"
+  const stockBarPct = unlimited || manual
+    ? 100
     : soldOut
-    ? "text-destructive border-destructive/40 bg-destructive/10"
+    ? 0
+    : Math.max(6, Math.min(100, Math.round((stock / 20) * 100)));
+  const stockBarCls = unlimited || manual
+    ? "bg-cyan shadow-[0_0_10px_oklch(0.78_0.15_200/0.6)]"
+    : soldOut
+    ? "bg-destructive"
     : stock < 3
-    ? "text-warn border-warn/40 bg-warn/10 animate-pulse"
-    : "text-primary border-primary/30 bg-primary/10";
+    ? "bg-warn shadow-[0_0_10px_oklch(0.75_0.18_80/0.6)] animate-pulse"
+    : "bg-primary shadow-[0_0_10px_oklch(0.82_0.20_145/0.6)]";
+  const stockTextCls = unlimited || manual
+    ? "text-cyan"
+    : soldOut
+    ? "text-destructive"
+    : stock < 3
+    ? "text-warn"
+    : "text-primary";
+
   const isNew = (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7;
   const epic = p.tier === "epic";
 
@@ -428,15 +439,24 @@ function ProductCard({ product: p }: { product: Row }) {
           <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{p.description}</p>
         )}
 
-        {/* Badges */}
+        {/* Duration badge */}
         <div className="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px]">
           <span className="rounded-full bg-primary/10 text-primary border border-primary/30 px-2.5 py-1">
             {DUR[p.duration] ?? p.duration}
           </span>
-          <span className={`rounded-full px-2.5 py-1 border ${stockCls}`}>
-            {stockLabel}
-          </span>
         </div>
+
+        {/* Stock bar */}
+        <div className="mt-3">
+          <div className="flex items-center justify-between font-mono text-[10px] mb-1.5">
+            <span className="text-muted-foreground uppercase tracking-wider">stok</span>
+            <span className={`${stockTextCls} uppercase tracking-wider`}>{stockLabel}</span>
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-muted/40 overflow-hidden border border-border/50">
+            <div className={`h-full rounded-full transition-all ${stockBarCls}`} style={{ width: `${stockBarPct}%` }} />
+          </div>
+        </div>
+
 
         {/* Price + CTA */}
         <div className="mt-auto pt-4 flex items-end justify-between gap-3">
