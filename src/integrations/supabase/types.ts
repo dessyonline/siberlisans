@@ -601,6 +601,7 @@ export type Database = {
         Args: { _delta: number; _note: string; _user_id: string }
         Returns: number
       }
+      admin_force_delete_license: { Args: { _id: string }; Returns: boolean }
       admin_set_license: {
         Args: {
           _action: string
