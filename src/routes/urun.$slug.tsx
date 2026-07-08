@@ -423,6 +423,158 @@ function ProductDetail() {
             </div>
           </div>
         </div>
+
+        {/* Trust strip: payment / delivery / return */}
+        <div className="mt-8 grid gap-3 md:grid-cols-3">
+          {[
+            {
+              i: Landmark,
+              t: "ödeme yöntemi",
+              d: "Sadece Havale / EFT / FAST kabul edilir. Ödemeniz onaylandığında sipariş anında işleme alınır.",
+              tag: "havale · eft · fast",
+            },
+            {
+              i: Package,
+              t: "teslimat süresi",
+              d: manual
+                ? "Manuel teslim: ödeme onayının ardından 5-30 dakika içinde e-posta ile teslim."
+                : "Otomatik teslim: ödeme onayının ardından anında hesabınızda görünür.",
+              tag: manual ? "5-30 dk" : "anında",
+            },
+            {
+              i: RefreshCw,
+              t: "iade & değişim",
+              d: "Çalışmayan/kullanılmamış lisanslar 24 saat içinde ücretsiz değiştirilir. Aktive edilmiş keyler iade edilmez.",
+              tag: "24 saat garanti",
+            },
+          ].map((c) => (
+            <div
+              key={c.t}
+              className="glass-card corner-cut rounded-lg border border-border/50 p-4 hover:border-primary/40 transition-colors"
+            >
+              <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-primary/80">
+                <c.i className="h-3.5 w-3.5" /> {c.t}
+              </div>
+              <p className="mt-2 font-mono text-xs leading-relaxed text-foreground/90">{c.d}</p>
+              <div className="mt-2 font-mono text-[10px] text-muted-foreground">
+                <span className="text-primary/60">//</span> {c.tag}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Live trust bar */}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-primary/25 bg-primary/5 px-4 py-2.5 font-mono text-[11px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <Users className="h-3.5 w-3.5 text-primary" />
+            <span className="text-primary">2.418+</span> mutlu müşteri
+          </span>
+          <span className="hidden sm:inline text-border/60">·</span>
+          <span className="inline-flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-primary" />
+            son teslim <span className="text-primary">2 dk önce</span>
+          </span>
+          <span className="hidden sm:inline text-border/60">·</span>
+          <span className="inline-flex items-center gap-1.5">
+            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+            SSL & şifreli veri aktarımı
+          </span>
+        </div>
+
+        {/* FAQ */}
+        <div className="mt-8">
+          <div className="mb-3 font-mono text-[10px] uppercase tracking-[0.3em] text-primary/80 flex items-center gap-2">
+            <HelpCircle className="h-3.5 w-3.5" /> sık sorulan sorular
+          </div>
+          <Accordion type="single" collapsible className="glass-card rounded-lg border border-border/50 divide-y divide-border/40">
+            {[
+              {
+                q: "Ödeme sonrası lisansım ne zaman teslim edilir?",
+                a: manual
+                  ? "Manuel teslim ürünlerde ödemeniz onaylandıktan sonra 5-30 dakika içinde e-posta ile lisans bilgileriniz iletilir. Mesai saatleri dışında bu süre uzayabilir."
+                  : "Otomatik teslim: ödeme onaylandığı an lisansınız hesabınızda ve mail adresinizde görüntülenir.",
+              },
+              {
+                q: "Hangi ödeme yöntemlerini kabul ediyorsunuz?",
+                a: "Sadece banka Havale / EFT / FAST kabul ediyoruz. Kredi kartı, PayPal veya kripto para kabul edilmez. Ödeme yaparken sipariş numaranızı açıklamaya yazmanız gerekir.",
+              },
+              {
+                q: "Lisans çalışmazsa ne olur?",
+                a: "Lisans key'i çalışmıyorsa 24 saat içinde bize ulaşın, ücretsiz olarak yeni bir key ile değiştirilir. Aktive edilmiş ve kullanılmış lisanslar iade kapsamı dışındadır.",
+              },
+              {
+                q: "Faturamı nasıl alabilirim?",
+                a: "Kurumsal fatura talepleriniz için ödeme sonrası destek ekibimizle iletişime geçin. E-fatura veya e-arşiv olarak iletilir.",
+              },
+              {
+                q: "Lisans süresi ne kadar?",
+                a: `Bu ürünün lisans türü: ${DUR[product.duration ?? "lifetime"] ?? "belirtilmemiş"}. Ürün açıklamasında detaylı süre bilgisi yer alır.`,
+              },
+            ].map((f, i) => (
+              <AccordionItem key={i} value={`faq-${i}`} className="border-0 px-4">
+                <AccordionTrigger className="font-mono text-sm hover:no-underline hover:text-primary">
+                  <span className="text-left">
+                    <span className="text-primary/60 mr-2">Q{i + 1}.</span>
+                    {f.q}
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent className="font-mono text-xs text-muted-foreground leading-relaxed pl-6">
+                  <span className="text-primary/60">A. </span>
+                  {f.a}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+
+        {/* Related products */}
+        {relatedProducts && relatedProducts.length > 0 && (
+          <div className="mt-10">
+            <div className="mb-4 flex items-baseline justify-between">
+              <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-primary/80 flex items-center gap-2">
+                <span>~</span> ilgili ürünler / {product.category}
+              </div>
+              <Link to="/urunler" className="font-mono text-[10px] text-muted-foreground hover:text-primary transition-colors">
+                tümünü gör →
+              </Link>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              {relatedProducts.map((rp) => {
+                const rEpic = (rp as { tier?: string }).tier === "epic";
+                return (
+                  <Link
+                    key={rp.id}
+                    to="/urun/$slug"
+                    params={{ slug: rp.slug }}
+                    className={`group relative overflow-hidden rounded-lg border p-3 transition-all hover:-translate-y-0.5 ${
+                      rEpic
+                        ? "border-[oklch(0.78_0.16_75/0.5)] bg-[oklch(0.14_0.03_75/0.4)] hover:shadow-[0_0_25px_oklch(0.80_0.18_85/0.35)]"
+                        : "border-border/50 bg-background/40 backdrop-blur hover:border-primary/50 hover:shadow-[0_0_20px_oklch(0.82_0.20_145/0.25)]"
+                    }`}
+                  >
+                    <div className="aspect-[3/2] rounded bg-black/40 border border-border/40 flex items-center justify-center overflow-hidden">
+                      {rp.image_url ? (
+                        <img src={rp.image_url} alt={rp.name} className="h-full w-full object-contain p-3 group-hover:scale-105 transition-transform" />
+                      ) : (
+                        <KeyRound className="h-8 w-8 text-primary/60" />
+                      )}
+                    </div>
+                    <div className="mt-2 font-mono text-[10px] uppercase tracking-widest text-primary/70 flex items-center gap-1">
+                      {rEpic && <Crown className="h-3 w-3 text-[oklch(0.90_0.14_85)]" />}
+                      {rp.category}
+                    </div>
+                    <div className="mt-1 font-mono text-sm text-foreground/95 truncate group-hover:text-primary transition-colors">
+                      {rp.name}
+                    </div>
+                    <div className={`mt-1.5 font-mono text-sm font-semibold ${rEpic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "text-primary neon-text"}`}>
+                      ₺{Number(rp.price_try).toLocaleString("tr-TR")}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Sticky mobile buy bar */}
