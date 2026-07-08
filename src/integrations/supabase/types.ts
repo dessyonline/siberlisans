@@ -41,6 +41,51 @@ export type Database = {
         }
         Relationships: []
       }
+      blog_posts: {
+        Row: {
+          author_id: string | null
+          content: string
+          cover_url: string | null
+          created_at: string
+          excerpt: string | null
+          id: string
+          published_at: string | null
+          slug: string
+          tags: string[]
+          title: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          author_id?: string | null
+          content?: string
+          cover_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published_at?: string | null
+          slug: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          author_id?: string | null
+          content?: string
+          cover_url?: string | null
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          published_at?: string | null
+          slug?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       campaigns: {
         Row: {
           body: string | null
@@ -220,6 +265,53 @@ export type Database = {
           },
         ]
       }
+      flash_sales: {
+        Row: {
+          created_at: string
+          discount_type: string
+          discount_value: number
+          ends_at: string
+          id: string
+          is_active: boolean
+          label: string | null
+          product_id: string
+          starts_at: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          discount_type: string
+          discount_value: number
+          ends_at: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          product_id: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          ends_at?: string
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          product_id?: string
+          starts_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flash_sales_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       license_keys: {
         Row: {
           activated_at: string | null
@@ -310,6 +402,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       order_discounts: {
         Row: {
@@ -612,6 +737,9 @@ export type Database = {
           display_name: string | null
           email: string | null
           id: string
+          referral_bonus_paid: boolean
+          referral_code: string | null
+          referred_by: string | null
           updated_at: string
         }
         Insert: {
@@ -619,6 +747,9 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id: string
+          referral_bonus_paid?: boolean
+          referral_code?: string | null
+          referred_by?: string | null
           updated_at?: string
         }
         Update: {
@@ -626,6 +757,9 @@ export type Database = {
           display_name?: string | null
           email?: string | null
           id?: string
+          referral_bonus_paid?: boolean
+          referral_code?: string | null
+          referred_by?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -942,6 +1076,7 @@ export type Database = {
         }[]
       }
       gen_random_bytes: { Args: { len: number }; Returns: string }
+      gen_referral_code: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -956,6 +1091,17 @@ export type Database = {
           balance_after: number
           license_key: string
         }[]
+      }
+      process_referral_bonus: { Args: { _user_id: string }; Returns: undefined }
+      push_notification: {
+        Args: {
+          _body?: string
+          _link?: string
+          _title: string
+          _type: string
+          _user_id: string
+        }
+        Returns: string
       }
       refund_order_to_wallet: { Args: { _order_id: string }; Returns: number }
       reject_topup: {
@@ -994,6 +1140,7 @@ export type Database = {
         | "refund"
         | "admin_credit"
         | "admin_debit"
+        | "referral_bonus"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1141,6 +1288,7 @@ export const Constants = {
         "refund",
         "admin_credit",
         "admin_debit",
+        "referral_bonus",
       ],
     },
   },
