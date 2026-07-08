@@ -436,3 +436,17 @@ function ProfileTab({ email, onSignOut }: { email: string; onSignOut: () => void
     </div>
   );
 }
+
+function WalletBalance() {
+  const { user } = useAuth();
+  const { data } = useQuery({
+    queryKey: ["wallet", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase.from("wallets").select("balance_try").eq("user_id", user!.id).maybeSingle();
+      return data ?? { balance_try: 0 };
+    },
+    refetchInterval: 8000,
+  });
+  const n = Number(data?.balance_try ?? 0);
+  return <>{n.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL</>;
