@@ -43,14 +43,14 @@ export const Route = createFileRoute("/odeme/$orderId")({
   component: Payment,
 });
 
-type StepKey = "init" | "transfer" | "receipt" | "delivery";
+type StepKey = "init" | "payment" | "delivery";
 
 const STEPS: { key: StepKey; label: string; sub: string }[] = [
   { key: "init", label: "sipariş", sub: "referans oluşturuldu" },
-  { key: "transfer", label: "havale", sub: "banka bilgileri" },
-  { key: "receipt", label: "dekont", sub: "doğrulama" },
+  { key: "payment", label: "ödeme", sub: "bakiye / shopier" },
   { key: "delivery", label: "teslimat", sub: "ürün / key" },
 ];
+
 
 // Ödeme (pending) için maksimum süre — dolarsa kullanıcı sayfadan atılır
 const PAYMENT_WINDOW_SEC = 3 * 60;
@@ -118,10 +118,9 @@ function Payment() {
   const currentStep: StepKey = useMemo(() => {
     if (!order) return "init";
     if (order.status === "approved") return "delivery";
-    if (order.status === "reviewing") return "receipt";
-    if (order.status === "rejected") return "receipt";
-    return "transfer";
+    return "payment";
   }, [order]);
+
 
   // 3 dk ödeme penceresi (pending durumu için)
   const createdMs = order?.created_at ? new Date(order.created_at).getTime() : null;
@@ -238,7 +237,7 @@ function Payment() {
 
       {/* Stepper rail */}
       <div className="glass-card rounded-b-lg rounded-t-none p-3 sm:p-5 scan-line">
-        <ol className="grid grid-cols-4 gap-1.5 sm:gap-2">
+        <ol className="grid grid-cols-3 gap-1.5 sm:gap-2">
           {STEPS.map((s, i) => {
             const done = i < stepIndex || order.status === "approved";
             const active = i === stepIndex && order.status !== "approved";
@@ -254,7 +253,7 @@ function Payment() {
                   }`}
                 >
                   <div className="flex items-center gap-1 sm:gap-2 text-[9px] sm:text-[10px] tracking-widest text-muted-foreground">
-                    <span>[{String(i + 1).padStart(2, "0")}/04]</span>
+                    <span>[{String(i + 1).padStart(2, "0")}/03]</span>
                     {done && <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />}
                     {active && <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse shrink-0" />}
                   </div>
@@ -454,25 +453,8 @@ function Payment() {
                             }
                           }}
                         />
-                        <TransferBlock
-                          bank={bank}
-                          amount={finalAmount}
-                          originalAmount={Number(order.price_try)}
-                          discountTry={discountTry}
-                          appliedCode={codeSnap}
-                          reference={order.reference_code}
-                          productName={orderTitle}
-                          productDuration={order.product?.duration}
-                        />
-                        <ReceiptBlock
-                          dragOver={dragOver}
-                          setDragOver={setDragOver}
-                          uploading={uploading}
-                          fileRef={fileRef}
-                          onFile={handleFile}
-                          reviewing={order.status === "reviewing"}
-                          receiptPath={order.receipt_path}
-                        />
+
+
                       </>
                     )}
                   </>
