@@ -66,19 +66,12 @@ async function fetchUsdtTryRate(): Promise<number> {
 
 export const getLiveRate = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { supabase } = context;
-    const { data } = await supabase
-      .from("crypto_settings")
-      .select("usdt_try_rate")
-      .limit(1)
-      .maybeSingle();
-    if (data?.usdt_try_rate && Number(data.usdt_try_rate) > 0) {
-      return { rate: Number(data.usdt_try_rate), source: "admin" as const };
-    }
+  .handler(async () => {
+    // Her zaman canlı Binance kuru; admin override kaldırıldı
     const rate = await fetchUsdtTryRate();
     return { rate, source: "binance" as const };
   });
+
 
 // ------- Submit deposit (verify via TronScan) ---------
 const submitInput = z.object({
@@ -159,10 +152,9 @@ export const submitCryptoDeposit = createServerFn({ method: "POST" })
     if (amountUsdt < min) throw new Error(`Minimum ${min} USDT gerekli, gönderilen: ${amountUsdt}`);
 
     // Rate
-    const rate =
-      settings.usdt_try_rate && Number(settings.usdt_try_rate) > 0
-        ? Number(settings.usdt_try_rate)
-        : await fetchUsdtTryRate();
+    // Kur her zaman canlı Binance USDTTRY
+    const rate = await fetchUsdtTryRate();
+
 
     const blockTs = tx.timestamp ? new Date(tx.timestamp).toISOString() : null;
 

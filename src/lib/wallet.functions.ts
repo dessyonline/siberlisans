@@ -13,10 +13,11 @@ function genRef() {
 }
 
 const createTopupInput = z.object({
-  amount: z.number().int().refine((v) => (TOPUP_PACKAGES as readonly number[]).includes(v), {
-    message: "Geçersiz paket",
+  amount: z.number().refine((v) => Number.isFinite(v) && v >= 200 && v <= 1000000, {
+    message: "Minimum 200 ₺ yükleyebilirsiniz",
   }),
 });
+
 
 export const createTopup = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

@@ -148,6 +148,7 @@ function WalletPage() {
             </button>
           ))}
         </div>
+        <CustomTopupInput onSubmit={onCreate} creating={creating !== null} />
         <Link
           to="/kripto-yukle"
           className="mt-3 glass-card corner-cut rounded-lg p-4 flex items-center justify-between hover:neon-glow transition"
@@ -163,6 +164,7 @@ function WalletPage() {
           <ArrowRight className="h-4 w-4 text-primary" />
         </Link>
       </div>
+
 
       {/* Bekleyen yüklemeler */}
       <div className="mt-8">
@@ -241,3 +243,50 @@ function WalletPage() {
     </div>
   );
 }
+
+function CustomTopupInput({ onSubmit, creating }: { onSubmit: (amount: number) => void; creating: boolean }) {
+  const [val, setVal] = useState("");
+  const num = Number(val.replace(",", "."));
+  const valid = Number.isFinite(num) && num >= 200;
+
+  return (
+    <div className="mt-3 glass-card corner-cut rounded-lg p-4">
+      <div className="font-mono text-[10px] uppercase text-muted-foreground mb-2">
+        özel tutar &middot; minimum 200 ₺, üst sınır yok
+      </div>
+      <div className="flex gap-2">
+        <div className="relative flex-1">
+          <input
+            type="number"
+            inputMode="decimal"
+            min={200}
+            step="0.01"
+            value={val}
+            onChange={(e) => setVal(e.target.value)}
+            placeholder="örn. 750"
+            className="w-full rounded-md bg-background border border-border pl-3 pr-10 py-2 text-sm font-mono focus:border-primary outline-none"
+            disabled={creating}
+          />
+          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground font-mono">
+            TL
+          </span>
+        </div>
+        <Button
+          type="button"
+          onClick={() => valid && onSubmit(Math.round(num * 100) / 100)}
+          disabled={!valid || creating}
+          className="neon-glow"
+        >
+          {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+          yükle
+        </Button>
+      </div>
+      {val && !valid && (
+        <div className="mt-1 text-[11px] text-destructive font-mono">
+          minimum 200 ₺ giriniz
+        </div>
+      )}
+    </div>
+  );
+}
+
