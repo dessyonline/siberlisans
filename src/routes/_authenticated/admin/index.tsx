@@ -375,7 +375,97 @@ function Dashboard() {
         </div>
       </div>
 
+      <UserActivityPanel />
+
       <ProfitabilityPanel />
+    </div>
+  );
+}
+
+function UserActivityPanel() {
+  const fn = useServerFn(recentUserActivity);
+  const { data } = useQuery({
+    queryKey: ["admin-user-activity"],
+    queryFn: () => fn(),
+    refetchInterval: 30000,
+  });
+
+  const signups = data?.recentSignups ?? [];
+  const logins = data?.recentLogins ?? [];
+  const t = data?.totals;
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <MiniStat label="Toplam Kullanıcı" value={String(t?.users ?? 0)} sub={`${t?.signedInEver ?? 0} giriş yapmış`} />
+        <MiniStat label="Yeni (24s)" value={String(t?.newLast24h ?? 0)} sub="son 24 saatte kayıt" />
+        <MiniStat label="Aktif (24s)" value={String(t?.activeLast24h ?? 0)} sub="son 24 saatte giriş" />
+        <MiniStat label="Aktivasyon" value={`${t?.users ? Math.round(((t?.signedInEver ?? 0) / t.users) * 100) : 0}%`} sub="giriş yapmış oran" />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <div className="glass-card rounded-xl p-5 min-w-0 overflow-hidden">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <div className="text-xs text-muted-foreground font-mono flex items-center gap-1">
+                <UserPlus className="h-3 w-3" /> son kayıt olanlar
+              </div>
+              <div className="text-lg font-semibold">Yeni Kullanıcılar</div>
+            </div>
+            <Link to="/admin/kullanicilar" className="text-xs text-primary hover:underline flex items-center gap-1">
+              tümü <ArrowUpRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {signups.length === 0 && (
+              <div className="text-xs text-muted-foreground py-6 text-center">henüz kayıt yok</div>
+            )}
+            {signups.map((u) => (
+              <div key={u.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/60 p-2.5">
+                <div className="min-w-0">
+                  <div className="text-sm truncate">{u.display_name || u.email || "isimsiz"}</div>
+                  <div className="text-[11px] text-muted-foreground font-mono truncate">{u.email ?? "—"}</div>
+                </div>
+                <div className="text-[11px] font-mono text-muted-foreground shrink-0">
+                  {new Date(u.created_at).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="glass-card rounded-xl p-5 min-w-0 overflow-hidden">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <div className="text-xs text-muted-foreground font-mono flex items-center gap-1">
+                <LogIn className="h-3 w-3" /> son giriş yapanlar
+              </div>
+              <div className="text-lg font-semibold">Aktif Kullanıcılar</div>
+            </div>
+            <Link to="/admin/kullanicilar" className="text-xs text-primary hover:underline flex items-center gap-1">
+              tümü <ArrowUpRight className="h-3 w-3" />
+            </Link>
+          </div>
+          <div className="space-y-2">
+            {logins.length === 0 && (
+              <div className="text-xs text-muted-foreground py-6 text-center">henüz giriş yok</div>
+            )}
+            {logins.map((u) => (
+              <div key={u.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/60 p-2.5">
+                <div className="min-w-0">
+                  <div className="text-sm truncate">{u.display_name || u.email || "isimsiz"}</div>
+                  <div className="text-[11px] text-muted-foreground font-mono truncate">{u.email ?? "—"}</div>
+                </div>
+                <div className="text-[11px] font-mono text-cyan shrink-0">
+                  {u.last_sign_in_at
+                    ? new Date(u.last_sign_in_at).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })
+                    : "—"}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
