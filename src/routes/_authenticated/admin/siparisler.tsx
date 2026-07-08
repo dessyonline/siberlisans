@@ -51,7 +51,7 @@ function OrdersAdmin() {
     queryFn: async () => {
       let q = supabase
         .from("orders")
-        .select("id, status, price_try, reference_code, receipt_path, admin_note, user_note, created_at, product:products(name, manual_fulfillment), user_id")
+        .select("id, status, price_try, reference_code, receipt_path, admin_note, user_note, checkout_fields, external_order_id, external_delivery_data, external_status, created_at, product:products(name, manual_fulfillment, source), user_id")
         .order("created_at", { ascending: false });
       if (filter !== "all") q = q.eq("status", filter);
       const { data, error } = await q;
@@ -356,11 +356,34 @@ function OrdersAdmin() {
                 <div className="text-foreground/90 whitespace-pre-wrap">{o.user_note}</div>
               </div>
             )}
+            {o.checkout_fields && Object.keys(o.checkout_fields as object).length > 0 && (
+              <div className="mt-3 rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs font-mono">
+                <div className="text-[10px] uppercase tracking-wider text-primary mb-1">müşteri bilgileri (API'ye gidecek)</div>
+                <ul className="space-y-0.5">
+                  {Object.entries(o.checkout_fields as Record<string, string>).map(([k, v]) => (
+                    <li key={k}><span className="text-muted-foreground">{k}:</span> <span className="text-foreground/90 break-all">{v}</span></li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {o.product?.source === "uniquelisans" && (
+              <div className="mt-2 text-[10px] font-mono text-cyan">
+                ⚡ Uniquelisans otomatik teslim
+                {o.external_order_id ? ` · ext #${o.external_order_id}` : ""}
+                {o.external_status ? ` · ${o.external_status}` : ""}
+              </div>
+            )}
+            {o.external_delivery_data && (
+              <div className="mt-2 rounded-md border border-border bg-muted/30 p-2 text-[11px] font-mono break-all">
+                <span className="text-muted-foreground">teslim: </span>{o.external_delivery_data}
+              </div>
+            )}
             {o.admin_note && (
               <div className="mt-2 text-xs text-destructive font-mono">
                 red notu: {o.admin_note}
               </div>
             )}
+
 
             <div className="mt-4 flex items-center gap-2 flex-wrap">
               <Button

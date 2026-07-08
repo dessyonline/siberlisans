@@ -638,8 +638,12 @@ export type Database = {
         Row: {
           admin_note: string | null
           approved_at: string | null
+          checkout_fields: Json | null
           created_at: string
           custom_fields: Json | null
+          external_delivery_data: string | null
+          external_order_id: string | null
+          external_status: string | null
           id: string
           item_count: number
           paid_with: string
@@ -655,8 +659,12 @@ export type Database = {
         Insert: {
           admin_note?: string | null
           approved_at?: string | null
+          checkout_fields?: Json | null
           created_at?: string
           custom_fields?: Json | null
+          external_delivery_data?: string | null
+          external_order_id?: string | null
+          external_status?: string | null
           id?: string
           item_count?: number
           paid_with?: string
@@ -672,8 +680,12 @@ export type Database = {
         Update: {
           admin_note?: string | null
           approved_at?: string | null
+          checkout_fields?: Json | null
           created_at?: string
           custom_fields?: Json | null
+          external_delivery_data?: string | null
+          external_order_id?: string | null
+          external_status?: string | null
           id?: string
           item_count?: number
           paid_with?: string

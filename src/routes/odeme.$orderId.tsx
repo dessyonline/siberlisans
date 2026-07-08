@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
-import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode, finalizeFreeOrder } from "@/lib/orders.functions";
+import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode, finalizeFreeOrder, setOrderCheckoutFields } from "@/lib/orders.functions";
 import { payOrderWithWallet } from "@/lib/wallet.functions";
 import { Input } from "@/components/ui/input";
 
@@ -63,6 +63,8 @@ function Payment() {
   const [dragOver, setDragOver] = useState(false);
   const markPaidFn = useServerFn(markOrderPaid);
   const finalizeFreeFn = useServerFn(finalizeFreeOrder);
+  const setFieldsFn = useServerFn(setOrderCheckoutFields);
+
   const payWithWalletFn = useServerFn(payOrderWithWallet);
   const [payingWallet, setPayingWallet] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
@@ -74,7 +76,7 @@ function Payment() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, status, price_try, reference_code, receipt_path, user_note, created_at, updated_at, approved_at, product:products(name, slug, duration, delivery_type, manual_fulfillment, unlimited_stock, tier), items:order_items(id, quantity, unit_price_try, product_name_snapshot, product:products(name, slug, delivery_type, manual_fulfillment, unlimited_stock)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, delivery_type))), discount:order_discounts(discount_try, code_snapshot)"
+          "id, status, price_try, reference_code, receipt_path, user_note, checkout_fields, created_at, updated_at, approved_at, product:products(name, slug, duration, delivery_type, manual_fulfillment, unlimited_stock, tier, source, required_fields), items:order_items(id, quantity, unit_price_try, product_name_snapshot, product:products(name, slug, delivery_type, manual_fulfillment, unlimited_stock)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, delivery_type))), discount:order_discounts(discount_try, code_snapshot)"
         )
         .eq("id", orderId)
         .single();
@@ -196,6 +198,15 @@ function Payment() {
   const orderTitle = order.product?.name ?? `Sepet siparişi · ${orderItems.length} ürün`;
   const stepIndex = STEPS.findIndex((s) => s.key === currentStep);
 
+  // Uniquelisans kaynaklı ürünler: müşteri gerekli bilgileri girmezse admin API'den satın alamaz
+  const productSource = (order.product as { source?: string | null } | null)?.source ?? null;
+  const requiredFields = ((order.product as { required_fields?: unknown } | null)?.required_fields ?? []) as Array<{
+    name: string; el_type?: string; input_type?: string; required?: boolean;
+  }>;
+  const needsCheckoutFields = productSource === "uniquelisans" && Array.isArray(requiredFields) && requiredFields.length > 0;
+
+
+
   return (
     <div className="mx-auto max-w-6xl px-3 sm:px-4 py-6 sm:py-10">
       {isEpic && (
@@ -256,6 +267,22 @@ function Payment() {
           })}
         </ol>
       </div>
+
+      {needsCheckoutFields && (
+        <CheckoutFieldsCard
+          orderId={orderId}
+          fields={requiredFields}
+          initial={(order.checkout_fields ?? {}) as Record<string, string>}
+          saved={!!order.checkout_fields && Object.keys((order.checkout_fields ?? {}) as object).length > 0}
+          onSave={async (values) => {
+            await setFieldsFn({ data: { orderId, fields: values } });
+            toast.success("Bilgiler kaydedildi");
+            qc.invalidateQueries({ queryKey: ["order", orderId] });
+          }}
+        />
+      )}
+
+
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         {/* MAIN CONTENT */}
@@ -1210,4 +1237,75 @@ function WalletPayBlock({
     </section>
   );
 }
+
+type CheckoutField = { name: string; el_type?: string; input_type?: string; required?: boolean };
+
+function CheckoutFieldsCard({
+  orderId,
+  fields,
+  initial,
+  saved,
+  onSave,
+}: {
+  orderId: string;
+  fields: CheckoutField[];
+  initial: Record<string, string>;
+  saved: boolean;
+  onSave: (values: Record<string, string>) => Promise<void>;
+}) {
+  const [values, setValues] = useState<Record<string, string>>(initial);
+  const [busy, setBusy] = useState(false);
+  const labelize = (n: string) => n.replace(/_/g, " ");
+  const missing = fields.filter((f) => f.required !== false && !((values[f.name] ?? "").trim()));
+  return (
+    <section className={`mt-4 glass-card rounded-xl p-4 sm:p-5 ${saved ? "border-primary/40" : "border-cyan/40"}`}>
+      <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-cyan">
+        <KeyRound className="h-3.5 w-3.5" /> ürün bilgileri · ref: {orderId.slice(0, 8)}
+      </div>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Bu ürün otomatik tedarik edilir. Aşağıdaki bilgileri girmen gerekiyor — bunlar
+        onay sonrası tedarikçiye iletilir ve teslim buna göre yapılır.
+      </p>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        {fields.map((f) => (
+          <label key={f.name} className="text-xs font-mono">
+            <span className="block mb-1 text-muted-foreground">
+              {labelize(f.name)}{f.required !== false && <span className="text-destructive"> *</span>}
+            </span>
+            {(f.el_type === "textarea" || f.input_type === "textarea") ? (
+              <Textarea
+                value={values[f.name] ?? ""}
+                onChange={(e) => setValues((v) => ({ ...v, [f.name]: e.target.value }))}
+                rows={3}
+              />
+            ) : (
+              <Input
+                type={(f.input_type === "password" ? "password" : f.input_type === "email" ? "email" : "text")}
+                value={values[f.name] ?? ""}
+                onChange={(e) => setValues((v) => ({ ...v, [f.name]: e.target.value }))}
+              />
+            )}
+          </label>
+        ))}
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-3 flex-wrap">
+        <div className="text-[11px] font-mono text-muted-foreground">
+          {saved ? "kayıtlı — düzenleyip tekrar kaydedebilirsin" : "onaylamadan önce bilgileri kaydet"}
+        </div>
+        <Button
+          size="sm"
+          disabled={busy || missing.length > 0}
+          onClick={async () => {
+            setBusy(true);
+            try { await onSave(values); } catch (e) { toast.error((e as Error).message); }
+            finally { setBusy(false); }
+          }}
+        >
+          {busy ? "kaydediliyor…" : "bilgileri kaydet"}
+        </Button>
+      </div>
+    </section>
+  );
+}
+
 

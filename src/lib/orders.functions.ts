@@ -176,6 +176,37 @@ export const setOrderUserNote = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const checkoutFieldsInput = z.object({
+  orderId: z.string().uuid(),
+  fields: z.record(z.string(), z.string().max(2000)),
+});
+
+/**
+ * Müşteri, Uniquelisans kaynaklı ürünlerde ödeme sayfasında gereken bilgileri
+ * (email/link/wordpress vs.) buradan gönderir. Admin onayında API'ye iletilir.
+ */
+export const setOrderCheckoutFields = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => checkoutFieldsInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const clean: Record<string, string> = {};
+    for (const [k, v] of Object.entries(data.fields)) {
+      const key = String(k).trim().slice(0, 64);
+      const val = String(v ?? "").trim().slice(0, 2000);
+      if (key && val) clean[key] = val;
+    }
+    const { error } = await supabase
+      .from("orders")
+      .update({ checkout_fields: clean })
+      .eq("id", data.orderId)
+      .eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+
+
 /**
  * After key assignment, check whether any product in the order dropped below
  * its low_stock_threshold and notify the admin via Telegram (throttled server-side).
@@ -224,6 +255,139 @@ export const approveOrder = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
     if (!isAdmin) throw new Error("Yetkisiz.");
+
+    // Ürün Uniquelisans kaynaklıysa → API'den otomatik satın al ve teslim et
+    const { data: ord } = await supabase
+      .from("orders")
+      .select("id, user_id, reference_code, status, product_id, checkout_fields, product:products(id, name, source, external_id, required_fields, delivery_type)")
+      .eq("id", data.orderId)
+      .single();
+
+    const product = ord?.product as {
+      id: string; name: string; source: string | null; external_id: string | null;
+      required_fields: unknown; delivery_type: string;
+    } | null;
+
+    if (product?.source === "uniquelisans" && product.external_id) {
+      if (ord?.status === "approved") throw new Error("Sipariş zaten onaylı.");
+      const required = (product.required_fields ?? []) as Array<{ name: string; required?: boolean }>;
+      const supplied = (ord?.checkout_fields ?? {}) as Record<string, string>;
+      const missing = required
+        .filter((r) => r?.required !== false)
+        .map((r) => r.name)
+        .filter((n) => !supplied[n] || String(supplied[n]).trim() === "");
+      if (missing.length > 0) {
+        throw new Error(
+          `Müşteri gerekli bilgileri girmemiş: ${missing.join(", ")}. Onaylamadan önce müşteriden istemelisin.`,
+        );
+      }
+
+      const { ulBuy } = await import("@/lib/uniquelisans.server");
+      let resp;
+      try {
+        resp = await ulBuy(Number(product.external_id), supplied);
+      } catch (e) {
+        // Ağ hatası → siparişi manuel inceleme olarak bırak
+        await supabase
+          .from("orders")
+          .update({ status: "reviewing", admin_note: `API hatası: ${(e as Error).message}` })
+          .eq("id", data.orderId);
+        try {
+          const { notifyTelegram } = await import("@/lib/telegram.server");
+          await notifyTelegram(
+            `⚠️ Uniquelisans otomatik alım başarısız — Ref: ${ord?.reference_code} · ${(e as Error).message}`,
+          );
+        } catch { /* ignore */ }
+        throw new Error(`Uniquelisans API'ye ulaşılamadı: ${(e as Error).message}. Sipariş 'inceleniyor' bırakıldı.`);
+      }
+
+      // Hata durumları — sipariş inceleniyor kalır, admin manuel işlem yapar
+      if (resp.status === "error" || resp.code === 402 || resp.code === 422 || (resp.code === 200 && resp.status !== "success" && resp.status !== "pending")) {
+        const msg = resp.message
+          || (resp.required_fields ? `Eksik alanlar: ${Object.keys(resp.required_fields).join(", ")}` : "bilinmeyen hata");
+        await supabase
+          .from("orders")
+          .update({
+            status: "reviewing",
+            admin_note: `Uniquelisans: ${msg}`,
+            external_status: resp.status,
+          })
+          .eq("id", data.orderId);
+        try {
+          const { notifyTelegram } = await import("@/lib/telegram.server");
+          await notifyTelegram(
+            `⚠️ Uniquelisans otomatik alım hatası — Ref: ${ord?.reference_code} · ${msg}`,
+          );
+        } catch { /* ignore */ }
+        throw new Error(`Uniquelisans: ${msg}. Sipariş 'inceleniyor' bırakıldı, manuel devam edebilirsin.`);
+      }
+
+      // Başarılı ama stok yok (pending) — API teslim edecek, biz de manuel bekle
+      if (resp.status === "pending") {
+        await supabase
+          .from("orders")
+          .update({
+            external_order_id: resp.order_id ? String(resp.order_id) : null,
+            external_status: "pending",
+            admin_note: "Uniquelisans: stok yok, tedarikçi hazırlıyor (pending).",
+          })
+          .eq("id", data.orderId);
+        try {
+          const { notifyTelegram } = await import("@/lib/telegram.server");
+          await notifyTelegram(
+            `⏳ Uniquelisans stok yok/beklemede — Ref: ${ord?.reference_code} · ext order: ${resp.order_id}`,
+          );
+        } catch { /* ignore */ }
+        throw new Error("Uniquelisans stoğu şu an yok — tedarikçi 'pending' verdi. Sipariş 'inceleniyor' kalıyor.");
+      }
+
+      // Başarılı teslim — delivery_data'yı license_key olarak kaydet ve siparişi onayla
+      const deliveryData = (resp.delivery_data ?? "").toString().trim();
+      if (!deliveryData) throw new Error("Uniquelisans teslim verisi boş döndü.");
+
+      const { data: keyRow, error: keyErr } = await supabase
+        .from("license_keys")
+        .insert({
+          product_id: product.id,
+          key_value: deliveryData,
+          status: "assigned",
+          assigned_order_id: data.orderId,
+          assigned_at: new Date().toISOString(),
+        })
+        .select("id")
+        .single();
+      if (keyErr) throw new Error(`Key kaydedilemedi: ${keyErr.message}`);
+
+      await supabase.from("order_keys").insert({ order_id: data.orderId, license_key_id: keyRow.id });
+      await supabase
+        .from("orders")
+        .update({
+          status: "approved",
+          approved_at: new Date().toISOString(),
+          external_order_id: resp.order_id ? String(resp.order_id) : null,
+          external_delivery_data: deliveryData,
+          external_status: "success",
+        })
+        .eq("id", data.orderId);
+
+      // Bildirimler
+      try {
+        if (ord?.user_id) {
+          await supabase.rpc("push_notification" as never, {
+            _user_id: ord.user_id,
+            _type: "order_approved",
+            _title: "Siparişin onaylandı 🎉",
+            _body: `Ref: ${ord.reference_code} · Bilgilerin hesabında hazır.`,
+            _link: "/hesabim",
+          } as never);
+          await supabase.rpc("process_referral_bonus" as never, { _user_id: ord.user_id } as never);
+        }
+      } catch (e) { console.error("[notify] approveOrder(UL)", (e as Error).message); }
+
+      return { ok: true, licenseKey: deliveryData, activationToken: null };
+    }
+
+    // Standart yol — yerel key havuzundan ata
     const { data: result, error } = await supabase.rpc("approve_order", { _order_id: data.orderId });
     if (error) throw new Error(error.message);
     const row = Array.isArray(result) ? result[0] : null;
@@ -231,20 +395,20 @@ export const approveOrder = createServerFn({ method: "POST" })
 
     // Push bildirim + referral bonus (owner user'a)
     try {
-      const { data: ord } = await supabase
+      const { data: ord2 } = await supabase
         .from("orders")
         .select("user_id, reference_code")
         .eq("id", data.orderId)
         .single();
-      if (ord?.user_id) {
+      if (ord2?.user_id) {
         await supabase.rpc("push_notification" as never, {
-          _user_id: ord.user_id,
+          _user_id: ord2.user_id,
           _type: "order_approved",
           _title: "Siparişin onaylandı 🎉",
-          _body: `Ref: ${ord.reference_code} · Anahtarların hesabında hazır.`,
+          _body: `Ref: ${ord2.reference_code} · Anahtarların hesabında hazır.`,
           _link: "/hesabim",
         } as never);
-        await supabase.rpc("process_referral_bonus" as never, { _user_id: ord.user_id } as never);
+        await supabase.rpc("process_referral_bonus" as never, { _user_id: ord2.user_id } as never);
       }
     } catch (e) { console.error("[notify] approveOrder", (e as Error).message); }
 
@@ -254,6 +418,7 @@ export const approveOrder = createServerFn({ method: "POST" })
       activationToken: row?.activation_token ?? null,
     };
   });
+
 
 const rejectInput = z.object({ orderId: z.string().uuid(), note: z.string().max(500).optional() });
 
