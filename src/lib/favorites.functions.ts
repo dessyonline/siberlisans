@@ -43,6 +43,6 @@ export const listMyFavoriteIds = createServerFn({ method: "GET" })
       .eq("user_id", userId);
     if (error) throw new Error(error.message);
     return {
-      productIds: (data as { product_id: string }[] | null)?.map((r) => r.product_id) ?? [],
+      productIds: (data as unknown as { product_id: string }[] | null)?.map((r) => r.product_id) ?? [],
     };
   });
