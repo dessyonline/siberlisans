@@ -171,22 +171,35 @@ type Row = {
 
 // Kategori grupları — talep sırasına göre: AI en önce, sonra görsel/office...
 const GROUPS: { key: string; label: string; cats: string[] }[] = [
-  { key: "ai", label: "Yapay Zeka", cats: ["ChatGPT", "Google Gemini", "Lovable", "Claude", "Nano Banana", "Midjourney", "Ideogram"] },
+  { key: "ai", label: "Yapay Zeka", cats: ["ChatGPT", "Google Gemini", "Lovable", "Claude", "Nano Banana", "Midjourney", "Ideogram", "Yapay Zeka"] },
   {
     key: "gorsel",
     label: "Görsel & Tasarım",
-    cats: ["Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array", "CorelDRAW", "Autodesk"],
+    cats: ["Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array", "CorelDRAW", "Autodesk", "Görsel Ürünler", "Görsel"],
   },
-  { key: "office", label: "Microsoft Office", cats: ["Office (Ömürlük)", "Office 365"] },
-  { key: "windows", label: "Windows", cats: ["Windows 10/11", "Windows Server"] },
+  { key: "office", label: "Microsoft Office", cats: ["Office", "Office (Ömürlük)", "Office 365"] },
+  { key: "windows", label: "Windows", cats: ["Windows", "Windows 10/11", "Windows Server"] },
+  { key: "wordpress", label: "WordPress", cats: ["Wordpress Eklentileri & Temaları"] },
+  { key: "seo", label: "SEO Araçları", cats: ["Seo Araçları"] },
+  { key: "guvenlik", label: "VPN & Antivirüs", cats: ["Vpn & Antivirüs"] },
   { key: "oyun", label: "Oyunlar", cats: ["Steam Oyunları"] },
   { key: "email", label: "E-posta", cats: ["Email Hesapları"] },
+  { key: "diger", label: "Diğer", cats: ["Diğer", "Diğer Ürünler"] },
 ];
 
 function groupOf(cat: string | null): string {
   const c = cat ?? "Diğer";
   return GROUPS.find((g) => g.cats.includes(c))?.key ?? "diger";
 }
+
+type SortKey = "default" | "price_asc" | "price_desc" | "newest";
+const SORT_LABELS: Record<SortKey, string> = {
+  default: "önerilen",
+  price_asc: "fiyat: düşük → yüksek",
+  price_desc: "fiyat: yüksek → düşük",
+  newest: "en yeni",
+};
+
 
 
 function ProductsPage() {
