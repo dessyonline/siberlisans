@@ -510,16 +510,8 @@ function ProductCard({ product: p }: { product: Row }) {
           </span>
         </div>
 
-        {/* Stock bar */}
-        <div className="mt-3">
-          <div className="flex items-center justify-between font-mono text-[10px] mb-1.5">
-            <span className="text-muted-foreground uppercase tracking-wider">stok</span>
-            <span className={`${stockTextCls} uppercase tracking-wider`}>{stockLabel}</span>
-          </div>
-          <div className="h-1.5 w-full rounded-full bg-muted/40 overflow-hidden border border-border/50">
-            <div className={`h-full rounded-full transition-all ${stockBarCls}`} style={{ width: `${stockBarPct}%` }} />
-          </div>
-        </div>
+        <CyberStockLoader stock={stock} manual={manual} unlimited={unlimited} soldOut={soldOut} />
+
 
 
         {/* Price + CTA */}
