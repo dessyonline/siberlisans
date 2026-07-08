@@ -454,7 +454,7 @@ function UserActivityPanel() {
             {logins.length === 0 && (
               <div className="text-xs text-muted-foreground py-6 text-center">henüz giriş yok</div>
             )}
-            {logins.map((u) => (
+            {logins.map((u: { id: string; email: string | null; display_name: string | null; last_sign_in_at: string | null }) => (
               <div key={u.id} className="flex items-center justify-between gap-3 rounded-lg border border-border/60 p-2.5">
                 <div className="min-w-0">
                   <div className="text-sm truncate">{u.display_name || u.email || "isimsiz"}</div>
