@@ -311,7 +311,7 @@ function Dashboard() {
               havuzu yönet <ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
             {(stats?.lowStock ?? []).length === 0 && (
               <div className="text-xs text-muted-foreground py-6 text-center">
                 tüm ürünlerde yeterli stok var ✓
@@ -320,14 +320,14 @@ function Dashboard() {
             {(stats?.lowStock ?? []).map((p) => (
               <div
                 key={p.id}
-                className="flex items-center justify-between gap-3 rounded-lg border border-border/60 p-3"
+                className="flex items-center justify-between gap-2 rounded-lg border border-border/60 p-2.5"
               >
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="text-sm font-medium truncate">{p.name}</div>
-                  <div className="text-xs text-muted-foreground font-mono">/{p.slug}</div>
+                  <div className="text-[11px] text-muted-foreground font-mono truncate">/{p.slug}</div>
                 </div>
                 <div
-                  className={`text-xs font-mono font-semibold px-2.5 py-1 rounded-md border ${
+                  className={`shrink-0 text-[10px] font-mono font-semibold px-2 py-1 rounded-md border whitespace-nowrap ${
                     p.avail === 0
                       ? "text-destructive border-destructive/40 bg-destructive/10"
                       : "text-warn border-warn/40 bg-warn/10"
@@ -338,6 +338,7 @@ function Dashboard() {
               </div>
             ))}
           </div>
+
         </div>
 
         <div className="glass-card rounded-xl p-5">
