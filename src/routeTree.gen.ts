@@ -23,6 +23,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
+import { Route as SiparisRefRouteImport } from './routes/siparis.$ref'
 import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as BakiyeYukleTopupIdRouteImport } from './routes/bakiye-yukle.$topupId'
@@ -35,6 +36,7 @@ import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedFavorilerimRouteImport } from './routes/_authenticated/favorilerim'
 import { Route as AuthenticatedDavetRouteImport } from './routes/_authenticated/davet'
 import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated/cuzdan'
+import { Route as AuthenticatedBildirimlerRouteImport } from './routes/_authenticated/bildirimler'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
@@ -54,6 +56,7 @@ import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAdminAyarlarRouteImport } from './routes/_authenticated/admin/ayarlar'
 import { Route as ApiPublicHooksSyncUniquelisansRouteImport } from './routes/api/public/hooks/sync-uniquelisans'
 import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
+import { Route as ApiPublicHooksAbandonmentReminderRouteImport } from './routes/api/public/hooks/abandonment-reminder'
 
 const UrunlerRoute = UrunlerRouteImport.update({
   id: '/urunler',
@@ -124,6 +127,11 @@ const UrunSlugRoute = UrunSlugRouteImport.update({
   path: '/urun/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SiparisRefRoute = SiparisRefRouteImport.update({
+  id: '/siparis/$ref',
+  path: '/siparis/$ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OdemeOrderIdRoute = OdemeOrderIdRouteImport.update({
   id: '/odeme/$orderId',
   path: '/odeme/$orderId',
@@ -186,6 +194,12 @@ const AuthenticatedCuzdanRoute = AuthenticatedCuzdanRouteImport.update({
   path: '/cuzdan',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBildirimlerRoute =
+  AuthenticatedBildirimlerRouteImport.update({
+    id: '/bildirimler',
+    path: '/bildirimler',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -296,6 +310,12 @@ const ApiPublicHooksCampaignTickRoute =
     path: '/api/public/hooks/campaign-tick',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksAbandonmentReminderRoute =
+  ApiPublicHooksAbandonmentReminderRouteImport.update({
+    id: '/api/public/hooks/abandonment-reminder',
+    path: '/api/public/hooks/abandonment-reminder',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -310,6 +330,7 @@ export interface FileRoutesByFullPath {
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/davet': typeof AuthenticatedDavetRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
@@ -322,6 +343,7 @@ export interface FileRoutesByFullPath {
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
+  '/siparis/$ref': typeof SiparisRefRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
@@ -340,6 +362,7 @@ export interface FileRoutesByFullPath {
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
 }
@@ -355,6 +378,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
+  '/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/davet': typeof AuthenticatedDavetRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
@@ -367,6 +391,7 @@ export interface FileRoutesByTo {
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
+  '/siparis/$ref': typeof SiparisRefRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/blog': typeof BlogIndexRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
@@ -385,6 +410,7 @@ export interface FileRoutesByTo {
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
 }
@@ -403,6 +429,7 @@ export interface FileRoutesById {
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/_authenticated/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/_authenticated/cuzdan': typeof AuthenticatedCuzdanRoute
   '/_authenticated/davet': typeof AuthenticatedDavetRoute
   '/_authenticated/favorilerim': typeof AuthenticatedFavorilerimRoute
@@ -415,6 +442,7 @@ export interface FileRoutesById {
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
+  '/siparis/$ref': typeof SiparisRefRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/_authenticated/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
@@ -433,6 +461,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/_authenticated/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
 }
@@ -451,6 +480,7 @@ export interface FileRouteTypes {
     | '/sss'
     | '/urunler'
     | '/admin'
+    | '/bildirimler'
     | '/cuzdan'
     | '/davet'
     | '/favorilerim'
@@ -463,6 +493,7 @@ export interface FileRouteTypes {
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
     | '/odeme/$orderId'
+    | '/siparis/$ref'
     | '/urun/$slug'
     | '/blog/'
     | '/admin/ayarlar'
@@ -481,6 +512,7 @@ export interface FileRouteTypes {
     | '/admin/uniquelisans'
     | '/admin/urunler'
     | '/admin/'
+    | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/sync-uniquelisans'
   fileRoutesByTo: FileRoutesByTo
@@ -496,6 +528,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sss'
     | '/urunler'
+    | '/bildirimler'
     | '/cuzdan'
     | '/davet'
     | '/favorilerim'
@@ -508,6 +541,7 @@ export interface FileRouteTypes {
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
     | '/odeme/$orderId'
+    | '/siparis/$ref'
     | '/urun/$slug'
     | '/blog'
     | '/admin/ayarlar'
@@ -526,6 +560,7 @@ export interface FileRouteTypes {
     | '/admin/uniquelisans'
     | '/admin/urunler'
     | '/admin'
+    | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/sync-uniquelisans'
   id:
@@ -543,6 +578,7 @@ export interface FileRouteTypes {
     | '/sss'
     | '/urunler'
     | '/_authenticated/admin'
+    | '/_authenticated/bildirimler'
     | '/_authenticated/cuzdan'
     | '/_authenticated/davet'
     | '/_authenticated/favorilerim'
@@ -555,6 +591,7 @@ export interface FileRouteTypes {
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
     | '/odeme/$orderId'
+    | '/siparis/$ref'
     | '/urun/$slug'
     | '/blog/'
     | '/_authenticated/admin/ayarlar'
@@ -573,6 +610,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/uniquelisans'
     | '/_authenticated/admin/urunler'
     | '/_authenticated/admin/'
+    | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/sync-uniquelisans'
   fileRoutesById: FileRoutesById
@@ -597,8 +635,10 @@ export interface RootRouteChildren {
   BakiyeYukleTopupIdRoute: typeof BakiyeYukleTopupIdRoute
   BlogSlugRoute: typeof BlogSlugRoute
   OdemeOrderIdRoute: typeof OdemeOrderIdRoute
+  SiparisRefRoute: typeof SiparisRefRoute
   UrunSlugRoute: typeof UrunSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
+  ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
   ApiPublicHooksSyncUniquelisansRoute: typeof ApiPublicHooksSyncUniquelisansRoute
 }
@@ -703,6 +743,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UrunSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/siparis/$ref': {
+      id: '/siparis/$ref'
+      path: '/siparis/$ref'
+      fullPath: '/siparis/$ref'
+      preLoaderRoute: typeof SiparisRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/odeme/$orderId': {
       id: '/odeme/$orderId'
       path: '/odeme/$orderId'
@@ -785,6 +832,13 @@ declare module '@tanstack/react-router' {
       path: '/cuzdan'
       fullPath: '/cuzdan'
       preLoaderRoute: typeof AuthenticatedCuzdanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/bildirimler': {
+      id: '/_authenticated/bildirimler'
+      path: '/bildirimler'
+      fullPath: '/bildirimler'
+      preLoaderRoute: typeof AuthenticatedBildirimlerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin': {
@@ -920,6 +974,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksCampaignTickRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/abandonment-reminder': {
+      id: '/api/public/hooks/abandonment-reminder'
+      path: '/api/public/hooks/abandonment-reminder'
+      fullPath: '/api/public/hooks/abandonment-reminder'
+      preLoaderRoute: typeof ApiPublicHooksAbandonmentReminderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -969,6 +1030,7 @@ const AuthenticatedAdminRouteRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
+  AuthenticatedBildirimlerRoute: typeof AuthenticatedBildirimlerRoute
   AuthenticatedCuzdanRoute: typeof AuthenticatedCuzdanRoute
   AuthenticatedDavetRoute: typeof AuthenticatedDavetRoute
   AuthenticatedFavorilerimRoute: typeof AuthenticatedFavorilerimRoute
@@ -978,6 +1040,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
+  AuthenticatedBildirimlerRoute: AuthenticatedBildirimlerRoute,
   AuthenticatedCuzdanRoute: AuthenticatedCuzdanRoute,
   AuthenticatedDavetRoute: AuthenticatedDavetRoute,
   AuthenticatedFavorilerimRoute: AuthenticatedFavorilerimRoute,
@@ -1008,8 +1071,11 @@ const rootRouteChildren: RootRouteChildren = {
   BakiyeYukleTopupIdRoute: BakiyeYukleTopupIdRoute,
   BlogSlugRoute: BlogSlugRoute,
   OdemeOrderIdRoute: OdemeOrderIdRoute,
+  SiparisRefRoute: SiparisRefRoute,
   UrunSlugRoute: UrunSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
+  ApiPublicHooksAbandonmentReminderRoute:
+    ApiPublicHooksAbandonmentReminderRoute,
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,
   ApiPublicHooksSyncUniquelisansRoute: ApiPublicHooksSyncUniquelisansRoute,
 }
