@@ -2,27 +2,36 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { ShieldCheck } from "lucide-react";
+import { trustDevice, TRUSTED_DEVICE_TTL_DAYS } from "@/lib/trusted-device";
 
 /**
  * MfaChallenge — hesabında totp factor olan kullanıcı için 6 haneli kod doğrulaması.
  * onSuccess çağrıldıktan sonra `supabase.auth.getUser()` aal2 döner.
+ * userId verilirse "bu cihazı hatırla" seçeneği gösterilir; işaretlenirse
+ * bu tarayıcıda 30 gün boyunca step-up 2FA modalları atlanır.
  */
 export function MfaChallenge({
   factorId,
+  userId,
   onSuccess,
   onCancel,
   title = "iki adımlı doğrulama",
+  showRememberDevice = true,
 }: {
   factorId?: string;
+  userId?: string | null;
   onSuccess: () => void;
   onCancel?: () => void;
   title?: string;
+  showRememberDevice?: boolean;
 }) {
   const [id, setId] = useState<string | null>(factorId ?? null);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [remember, setRemember] = useState(false);
 
   useEffect(() => {
     if (id) return;
@@ -53,6 +62,16 @@ export function MfaChallenge({
       setCode("");
       return toast.error(`[!] ${error.message}`);
     }
+    // Kullanıcı bu cihazı hatırlamamızı istediyse kaydet
+    let effectiveUserId = userId ?? null;
+    if (remember && !effectiveUserId) {
+      const { data: u } = await supabase.auth.getUser();
+      effectiveUserId = u.user?.id ?? null;
+    }
+    if (remember && effectiveUserId) {
+      trustDevice(effectiveUserId);
+      toast.success(`[✓] bu cihaz ${TRUSTED_DEVICE_TTL_DAYS} gün hatırlanacak`);
+    }
     onSuccess();
   };
 
@@ -74,6 +93,21 @@ export function MfaChallenge({
         onKeyDown={(e) => e.key === "Enter" && submit()}
         className="font-mono text-center tracking-[0.4em] text-lg"
       />
+      {showRememberDevice && (
+        <label className="flex items-start gap-2 font-mono text-[11px] text-muted-foreground cursor-pointer select-none">
+          <Checkbox
+            checked={remember}
+            onCheckedChange={(v) => setRemember(Boolean(v))}
+            className="mt-0.5"
+          />
+          <span>
+            bu cihazı {TRUSTED_DEVICE_TTL_DAYS} gün hatırla
+            <span className="block text-muted-foreground/70">
+              paylaşımlı / halka açık cihazlarda işaretleme
+            </span>
+          </span>
+        </label>
+      )}
       <div className="flex gap-2">
         <Button disabled={loading || code.length !== 6} onClick={submit} className="font-mono neon-glow flex-1">
           {loading ? "…" : "> doğrula"}
@@ -87,6 +121,7 @@ export function MfaChallenge({
     </div>
   );
 }
+
 
 /** Kullanıcının mevcut AAL seviyesini oku. aal2 => doğrulanmış 2FA oturumu. */
 export async function getCurrentAal(): Promise<"aal1" | "aal2" | null> {
