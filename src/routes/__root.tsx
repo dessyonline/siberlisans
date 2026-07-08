@@ -219,6 +219,22 @@ function SiteFooter() {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    // Initialize once Telegram SDK script has loaded
+    if (window.Telegram?.WebApp) {
+      initTelegramWebApp();
+    } else {
+      const t = setInterval(() => {
+        if (window.Telegram?.WebApp) {
+          initTelegramWebApp();
+          clearInterval(t);
+        }
+      }, 100);
+      setTimeout(() => clearInterval(t), 3000);
+    }
+  }, []);
+
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
