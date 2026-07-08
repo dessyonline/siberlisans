@@ -686,6 +686,7 @@ export type Database = {
           receipt_path: string | null
           reference_code: string
           referral_commission_paid: boolean
+          shopier_order_id: string | null
           status: Database["public"]["Enums"]["order_status"]
           updated_at: string
           user_id: string
@@ -709,6 +710,7 @@ export type Database = {
           receipt_path?: string | null
           reference_code: string
           referral_commission_paid?: boolean
+          shopier_order_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           updated_at?: string
           user_id: string
@@ -732,6 +734,7 @@ export type Database = {
           receipt_path?: string | null
           reference_code?: string
           referral_commission_paid?: boolean
+          shopier_order_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           updated_at?: string
           user_id?: string
@@ -808,6 +811,7 @@ export type Database = {
           price_try: number
           required_fields: Json | null
           review_count: number
+          shopier_url: string | null
           slug: string
           sort_order: number
           source: string
@@ -838,6 +842,7 @@ export type Database = {
           price_try: number
           required_fields?: Json | null
           review_count?: number
+          shopier_url?: string | null
           slug: string
           sort_order?: number
           source?: string
@@ -868,6 +873,7 @@ export type Database = {
           price_try?: number
           required_fields?: Json | null
           review_count?: number
+          shopier_url?: string | null
           slug?: string
           sort_order?: number
           source?: string
@@ -1253,6 +1259,18 @@ export type Database = {
         Returns: {
           activation_token: string
           license_key: string
+        }[]
+      }
+      approve_shopier_order: {
+        Args: {
+          _amount: number
+          _buyer_email: string
+          _shopier_order_id: string
+        }
+        Returns: {
+          already: boolean
+          matched: boolean
+          order_id: string
         }[]
       }
       approve_topup: { Args: { _topup_id: string }; Returns: number }
