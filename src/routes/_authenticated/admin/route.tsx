@@ -13,6 +13,7 @@ import {
   Megaphone,
   Wallet,
   ChevronDown,
+  Star,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -30,6 +31,7 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
   { to: "/admin", label: "dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/siparisler", label: "siparişler", icon: ShoppingCart },
   { to: "/admin/urunler", label: "ürünler", icon: Package },
+  { to: "/admin/populer", label: "popüler seçimler", icon: Star },
   { to: "/admin/keyler", label: "key havuzu", icon: KeyRound },
   { to: "/admin/lisanslar", label: "lisanslar", icon: ShieldCheck },
   { to: "/admin/kullanicilar", label: "kullanıcılar", icon: Users },
