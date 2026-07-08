@@ -205,6 +205,7 @@ function Index() {
 
   return (
     <div>
+      <UserBalanceWelcome />
       {/* HERO — cinematic */}
       <section className="relative overflow-hidden border-b border-border/40">
         {/* animated grid backdrop */}
