@@ -9,6 +9,7 @@ import { payOrderWithWallet } from "@/lib/wallet.functions";
 import { Input } from "@/components/ui/input";
 
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
+import { PointsBlock } from "@/components/PointsBlock";
 import enparaQr from "@/assets/enpara-qr.png";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
