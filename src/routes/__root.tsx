@@ -8,7 +8,20 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Terminal, ShieldCheck, LogIn, LayoutDashboard, User as UserIcon, Menu, X } from "lucide-react";
+import {
+  Terminal,
+  ShieldCheck,
+  LogIn,
+  LayoutDashboard,
+  User as UserIcon,
+  Menu,
+  X,
+  Home,
+  Package,
+  BookOpen,
+  HelpCircle,
+} from "lucide-react";
+
 
 
 import appCss from "../styles.css?url";
@@ -164,12 +177,18 @@ function SiteHeader() {
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  const mobileLinks: Array<{ to: string; label: string; cmd: string }> = [
-    { to: "/", label: "anasayfa", cmd: "cd ~" },
-    { to: "/urunler", label: "ürünler", cmd: "ls ./products" },
-    { to: "/nasil-calisir", label: "nasıl çalışır", cmd: "man siberphp" },
-    { to: "/sss", label: "SSS", cmd: "cat FAQ.md" },
+  const mobileLinks: Array<{
+    to: string;
+    label: string;
+    tag: string;
+    Icon: typeof Home;
+  }> = [
+    { to: "/", label: "Anasayfa", tag: "EXEC_HOME", Icon: Home },
+    { to: "/urunler", label: "Ürünler", tag: "EXEC_PROD", Icon: Package },
+    { to: "/nasil-calisir", label: "Nasıl Çalışır", tag: "EXEC_DOCS", Icon: BookOpen },
+    { to: "/sss", label: "SSS", tag: "EXEC_HELP", Icon: HelpCircle },
   ];
+
 
   return (
     <header className="sticky top-0 z-40 border-b border-primary/20 bg-background/70 backdrop-blur-xl">
@@ -218,91 +237,72 @@ function SiteHeader() {
           aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          className="md:hidden relative z-[60] inline-flex h-10 w-10 items-center justify-center rounded-md border border-primary/40 bg-background/80 text-primary shadow-[0_0_12px_rgba(0,255,157,0.25)] hover:bg-primary/10 active:scale-95 transition-all"
+          className="md:hidden relative z-[60] inline-flex h-10 w-10 items-center justify-center rounded-md border border-primary/30 bg-card text-primary hover:bg-primary/10 active:scale-95 transition-all"
         >
           <span className="sr-only">menü</span>
-          <div className="relative h-4 w-5">
-            <span
-              className={`absolute left-0 h-[2px] w-5 bg-primary transition-all duration-300 ${
-                open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0"
-              }`}
-            />
-            <span
-              className={`absolute left-0 top-1/2 h-[2px] w-5 -translate-y-1/2 bg-primary transition-all duration-200 ${
-                open ? "opacity-0" : "opacity-100"
-              }`}
-            />
-            <span
-              className={`absolute left-0 h-[2px] w-5 bg-primary transition-all duration-300 ${
-                open ? "top-1/2 -translate-y-1/2 -rotate-45" : "bottom-0"
-              }`}
-            />
-          </div>
+          <Menu className={`h-5 w-5 transition-opacity ${open ? "opacity-0" : "opacity-100"}`} />
         </button>
       </div>
 
-      {/* Mobile full-screen menu */}
+      {/* Mobile terminal-shell menu — full viewport, opaque, self-contained header */}
       <div
-        className={`md:hidden fixed inset-0 top-14 z-50 transition-all duration-300 ${
+        className={`md:hidden fixed inset-0 z-[55] transition-opacity duration-200 ${
           open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
         }`}
+        aria-hidden={!open}
       >
-        {/* Backdrop */}
-        <div
-          className="absolute inset-0 bg-background backdrop-blur-2xl"
-          onClick={close}
-        />
-        {/* Grid overlay */}
-        <div
-          className="absolute inset-0 opacity-20 pointer-events-none"
-          style={{
-            backgroundImage:
-              "linear-gradient(to right, hsl(var(--primary)/0.3) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--primary)/0.3) 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        />
+        {/* Solid opaque backdrop — masks all page content underneath */}
+        <div className="absolute inset-0 bg-[hsl(var(--background))]" />
 
-        <div className="relative h-full overflow-y-auto px-5 pt-6 pb-10">
-          {/* Terminal header */}
-          <div className="mb-6 flex items-center gap-2 font-mono text-xs text-primary/70">
-            <span className="inline-block h-2 w-2 rounded-full bg-primary animate-pulse" />
-            <span>root@siberphp:~$ ./menu --open</span>
+        {/* Panel */}
+        <div className="relative flex h-full w-full flex-col">
+          {/* Terminal shell header (replaces site header while menu is open) */}
+          <div className="flex h-14 items-center justify-between border-b border-primary/30 bg-card px-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-primary animate-pulse shadow-[0_0_8px_hsl(var(--primary))]" />
+              <div className="font-mono text-[13px] tracking-tight text-primary truncate">
+                <span className="opacity-50">root@siberphp:~$</span>
+                <span className="ml-1 font-bold">./menu --open</span>
+              </div>
+            </div>
+            <button
+              type="button"
+              aria-label="Menüyü kapat"
+              onClick={close}
+              className="group relative flex h-9 w-9 shrink-0 items-center justify-center rounded border border-primary/20 bg-card transition-all hover:bg-primary"
+            >
+              <X className="h-4 w-4 text-primary transition-colors group-hover:text-background" strokeWidth={2.5} />
+            </button>
           </div>
 
-          {/* Nav list */}
-          <nav className="flex flex-col gap-1">
-            {mobileLinks.map((l, i) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                onClick={close}
-                className="group relative block overflow-hidden rounded-lg border border-primary/15 bg-background/40 px-4 py-4 font-mono transition-all hover:border-primary/60 hover:bg-primary/5 hover:translate-x-1"
-                style={{
-                  animation: open ? `slideIn 0.35s ease ${i * 60}ms both` : undefined,
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-xs text-primary/60">$ {l.cmd}</div>
-                    <div className="mt-1 text-lg text-foreground group-hover:text-primary transition-colors">
-                      {"> "}{l.label}
+          {/* Body */}
+          <div className="flex-1 overflow-y-auto bg-[hsl(var(--background))] px-5 py-6">
+            <nav className="flex flex-col gap-3">
+              {mobileLinks.map((l, i) => (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  onClick={close}
+                  className="group block rounded border border-border/60 bg-card p-4 transition-all hover:border-primary/50"
+                  style={{ animation: open ? `slideIn 0.3s ease ${i * 50}ms both` : undefined }}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="shrink-0 rounded border border-border/60 bg-background p-2 text-primary">
+                        <l.Icon className="h-5 w-5" />
+                      </div>
+                      <span className="text-lg font-semibold text-foreground truncate">{l.label}</span>
                     </div>
+                    <span className="shrink-0 font-mono text-[10px] tracking-wider text-primary opacity-0 transition-opacity group-hover:opacity-100">
+                      {l.tag}
+                    </span>
                   </div>
-                  <span className="text-primary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
-                    ↗
-                  </span>
-                </div>
-                <span className="absolute left-0 top-0 h-full w-[2px] bg-primary scale-y-0 group-hover:scale-y-100 origin-top transition-transform" />
-              </Link>
-            ))}
-          </nav>
+                </Link>
+              ))}
+            </nav>
 
-          {/* Auth section */}
-          <div className="mt-8 border-t border-primary/20 pt-6">
-            <div className="mb-3 font-mono text-xs text-primary/60">
-              # {user ? "session.active" : "session.guest"}
-            </div>
-            <div className="flex flex-col gap-2">
+            {/* Auth block */}
+            <div className="mt-6 flex flex-col gap-2 border-t border-border/60 pt-6">
               {user ? (
                 <>
                   {isAdmin && (
@@ -325,19 +325,23 @@ function SiteHeader() {
                   </Button>
                 </>
               ) : (
-                <Button asChild size="lg" className="font-mono justify-start neon-glow" onClick={close}>
+                <Button asChild size="lg" className="font-mono justify-start" onClick={close}>
                   <Link to="/auth"><LogIn className="mr-2 h-4 w-4" />./giriş-yap</Link>
                 </Button>
               )}
             </div>
-          </div>
 
-          <div className="mt-10 font-mono text-[10px] text-primary/40">
-            <div>[SSL/TLS 1.3] [AES-256] [KVKK]</div>
-            <div className="mt-1">© {new Date().getFullYear()} SiberPHP</div>
+            {/* Kernel footer */}
+            <div className="mt-8 border-t border-border/40 pt-4 text-center">
+              <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted-foreground/60">
+                SiberPHP System Kernel · v4.2.0-stable
+              </div>
+            </div>
           </div>
         </div>
       </div>
+
+
 
       <style>{`
         @keyframes slideIn {
