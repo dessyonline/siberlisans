@@ -146,7 +146,31 @@ function AuthPage() {
         </div>
         <h1 className="mt-2 font-mono text-2xl neon-text">Hesabına Giriş</h1>
 
-        {signupSent ? (
+        {mfaMode ? (
+          <div className="mt-6">
+            <MfaChallenge
+              title="iki adımlı doğrulama"
+              onCancel={async () => {
+                await supabase.auth.signOut();
+                setMfaMode(false);
+              }}
+              onSuccess={() => {
+                toast.success("[✓] doğrulandı");
+                navigate({ to: "/hesabim" });
+              }}
+            />
+            <button
+              type="button"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                setMfaMode(false);
+              }}
+              className="mt-3 font-mono text-[10px] text-muted-foreground hover:text-primary"
+            >
+              ← farklı hesapla giriş yap
+            </button>
+          </div>
+        ) : signupSent ? (
           <div className="mt-6 space-y-3 rounded-md border border-primary/40 bg-primary/5 p-4 font-mono text-sm">
             <div className="flex items-center gap-2 text-primary">
               <MailCheck className="h-4 w-4" /> doğrulama e-postası gönderildi
