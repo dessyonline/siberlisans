@@ -10,7 +10,6 @@
   </head>
   <body class="sp-extension-page">
 
-    <!-- Animated background grid -->
     <div class="sp-bg-grid"></div>
     <div class="sp-bg-scanline"></div>
 
@@ -39,6 +38,15 @@
       <!-- ── BODY ── -->
       <div class="sp-body" id="sp-body">
 
+        <!-- ═══ LOADING ═══ -->
+        <div id="sp-loading" class="sp-screen sp-loading-screen">
+          <div class="sp-loader">
+            <div class="sp-loader-ring"></div>
+            <div class="sp-loader-ring sp-loader-ring--2"></div>
+          </div>
+          <p class="sp-loading-text">Sistem Başlatılıyor<span class="sp-dots"></span></p>
+        </div>
+
         <!-- ═══ LİSANS GİRİŞ EKRANI ═══ -->
         <div id="sp-license-screen" class="sp-screen" style="display:none">
           <div class="sp-lock-icon">
@@ -53,15 +61,9 @@
 
           <div class="sp-input-wrap">
             <span class="sp-input-prefix">&gt;_</span>
-            <input
-              type="text"
-              id="sp-license-input"
-              class="sp-input"
-              placeholder="SIBER-XXXX-XXXX-XXXX"
-              maxlength="24"
-              autocomplete="off"
-              spellcheck="false"
-            />
+            <input type="text" id="sp-license-input" class="sp-input"
+              placeholder="SIBER-XXXX-XXXX-XXXX" maxlength="24"
+              autocomplete="off" spellcheck="false" />
           </div>
           <div id="sp-license-error" class="sp-error-msg" style="display:none"></div>
 
@@ -73,6 +75,37 @@
           <p class="sp-hint">
             Lisans yok mu? <a href="https://instagram.com/siber.php" target="_blank">@siber.php</a>
           </p>
+        </div>
+
+        <!-- ═══ AKTİF EKRANI ═══ -->
+        <div id="sp-active-screen" class="sp-screen sp-active" style="display:none">
+          <div class="sp-active-badge">
+            <span class="sp-active-dot"></span>
+            <span>AKTİF</span>
+          </div>
+
+          <div class="sp-countdown" id="sp-countdown">--:--:--</div>
+          <div class="sp-countdown-label" id="sp-countdown-label">Kalan süre</div>
+
+          <div class="sp-progress"><div class="sp-progress-fill" id="sp-progress-fill"></div></div>
+
+          <div class="sp-info-row">
+            <div class="sp-info-row-label">HWID</div>
+            <div class="sp-info-row-value">
+              <code id="sp-hwid-short">—</code>
+              <button class="sp-copy-btn" id="sp-copy-hwid" title="HWID kopyala">📋</button>
+            </div>
+          </div>
+
+          <div class="sp-info-row">
+            <div class="sp-info-row-label">Anahtar</div>
+            <div class="sp-info-row-value">
+              <code id="sp-key-short">—</code>
+              <button class="sp-copy-btn" id="sp-copy-key" title="Anahtarı kopyala">📋</button>
+            </div>
+          </div>
+
+          <button id="sp-change-key-btn" class="sp-btn-secondary">Anahtarı Değiştir</button>
         </div>
 
         <!-- ═══ SÜRESİ DOLMUŞ EKRANI ═══ -->
@@ -89,15 +122,9 @@
 
           <div class="sp-input-wrap">
             <span class="sp-input-prefix">&gt;_</span>
-            <input
-              type="text"
-              id="sp-expired-input"
-              class="sp-input"
-              placeholder="SIBER-XXXX-XXXX-XXXX"
-              maxlength="24"
-              autocomplete="off"
-              spellcheck="false"
-            />
+            <input type="text" id="sp-expired-input" class="sp-input"
+              placeholder="SIBER-XXXX-XXXX-XXXX" maxlength="24"
+              autocomplete="off" spellcheck="false" />
           </div>
           <div id="sp-expired-error" class="sp-error-msg" style="display:none"></div>
 
@@ -111,13 +138,44 @@
           </p>
         </div>
 
-        <!-- ═══ LOADING ═══ -->
-        <div id="sp-loading" class="sp-screen sp-loading-screen">
-          <div class="sp-loader">
-            <div class="sp-loader-ring"></div>
-            <div class="sp-loader-ring sp-loader-ring--2"></div>
+        <!-- ═══ İPTAL EDİLMİŞ EKRANI ═══ -->
+        <div id="sp-revoked-screen" class="sp-screen sp-revoked" style="display:none">
+          <div class="sp-expired-icon">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+            </svg>
           </div>
-          <p class="sp-loading-text">Sistem Başlatılıyor<span class="sp-dots"></span></p>
+          <h2 class="sp-screen-title">Lisans İptal Edildi</h2>
+          <p class="sp-screen-desc">Bu lisans yönetici tarafından iptal edilmiştir.</p>
+          <button id="sp-revoked-btn" class="sp-btn-primary">
+            <span class="sp-btn-icon">🔑</span>
+            <span>Yeni Anahtar Gir</span>
+          </button>
+          <p class="sp-hint">
+            <a href="https://instagram.com/siber.php" target="_blank">@siber.php</a>
+          </p>
+        </div>
+
+        <!-- ═══ OFFLINE EKRANI ═══ -->
+        <div id="sp-offline-screen" class="sp-screen sp-offline" style="display:none">
+          <div class="sp-offline-icon">
+            <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M1 1l22 22"/>
+              <path d="M16.72 11.06A10.94 10.94 0 0119 12.55"/>
+              <path d="M5 12.55a10.94 10.94 0 015.17-2.39"/>
+              <path d="M10.71 5.05A16 16 0 0122.58 9"/>
+              <path d="M1.42 9a15.91 15.91 0 014.7-2.88"/>
+              <path d="M8.53 16.11a6 6 0 016.95 0"/>
+              <line x1="12" y1="20" x2="12.01" y2="20"/>
+            </svg>
+          </div>
+          <h2 class="sp-screen-title">Sunucuya Ulaşılamıyor</h2>
+          <p class="sp-screen-desc" id="sp-offline-desc">İnternet bağlantınızı kontrol edin.</p>
+          <button id="sp-retry-btn" class="sp-btn-primary">
+            <span class="sp-btn-icon">↻</span>
+            <span>Şimdi Dene</span>
+          </button>
         </div>
 
       </div>
@@ -130,9 +188,8 @@
 
     </div>
 
-    <!-- License module MUST load first -->
+    <script src="scripts/shared/fingerprint.js"></script>
     <script src="scripts/shared/license.js"></script>
-    <!-- License flow controller -->
     <script src="scripts/panel/license-flow.js"></script>
 
   </body>
