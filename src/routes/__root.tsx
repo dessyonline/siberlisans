@@ -155,28 +155,38 @@ function SiteHeader() {
   const [open, setOpen] = useState(false);
   const close = () => setOpen(false);
 
-  const navLinks = (
-    <>
-      <Link to="/" onClick={close} className="text-muted-foreground hover:text-primary">./anasayfa</Link>
-      <Link to="/urunler" onClick={close} className="text-muted-foreground hover:text-primary">./ürünler</Link>
-      <Link to="/nasil-calisir" onClick={close} className="text-muted-foreground hover:text-primary">./nasıl-çalışır</Link>
-      <Link to="/sss" onClick={close} className="text-muted-foreground hover:text-primary">./SSS</Link>
-    </>
-  );
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  const mobileLinks: Array<{ to: string; label: string; cmd: string }> = [
+    { to: "/", label: "anasayfa", cmd: "cd ~" },
+    { to: "/urunler", label: "ürünler", cmd: "ls ./products" },
+    { to: "/nasil-calisir", label: "nasıl çalışır", cmd: "man siberphp" },
+    { to: "/sss", label: "SSS", cmd: "cat FAQ.md" },
+  ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-primary/20 bg-background/70 backdrop-blur-xl">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
-        <Link to="/" className="flex items-center gap-2 font-mono">
+        <Link to="/" className="flex items-center gap-2 font-mono" onClick={close}>
           <Terminal className="h-5 w-5 text-primary" />
           <span className="text-lg tracking-tight">
             <span className="neon-text">Siber</span>
             <span className="text-foreground">PHP</span>
-            <span className="text-primary">_</span>
+            <span className="text-primary animate-pulse">_</span>
           </span>
         </Link>
         <nav className="hidden md:flex items-center gap-6 font-mono text-sm">
-          {navLinks}
+          <Link to="/" className="text-muted-foreground hover:text-primary">./anasayfa</Link>
+          <Link to="/urunler" className="text-muted-foreground hover:text-primary">./ürünler</Link>
+          <Link to="/nasil-calisir" className="text-muted-foreground hover:text-primary">./nasıl-çalışır</Link>
+          <Link to="/sss" className="text-muted-foreground hover:text-primary">./SSS</Link>
         </nav>
         <div className="hidden md:flex items-center gap-2">
           {user ? (
@@ -202,60 +212,142 @@ function SiteHeader() {
           )}
         </div>
 
-        {/* Mobile hamburger */}
+        {/* Mobile hamburger trigger */}
         <button
           type="button"
           aria-label={open ? "Menüyü kapat" : "Menüyü aç"}
           aria-expanded={open}
           onClick={() => setOpen((v) => !v)}
-          className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-md border border-border/60 bg-background/60 text-primary hover:bg-primary/10 transition-colors"
+          className="md:hidden relative z-[60] inline-flex h-10 w-10 items-center justify-center rounded-md border border-primary/40 bg-background/80 text-primary shadow-[0_0_12px_rgba(0,255,157,0.25)] hover:bg-primary/10 active:scale-95 transition-all"
         >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          <span className="sr-only">menü</span>
+          <div className="relative h-4 w-5">
+            <span
+              className={`absolute left-0 h-[2px] w-5 bg-primary transition-all duration-300 ${
+                open ? "top-1/2 -translate-y-1/2 rotate-45" : "top-0"
+              }`}
+            />
+            <span
+              className={`absolute left-0 top-1/2 h-[2px] w-5 -translate-y-1/2 bg-primary transition-all duration-200 ${
+                open ? "opacity-0" : "opacity-100"
+              }`}
+            />
+            <span
+              className={`absolute left-0 h-[2px] w-5 bg-primary transition-all duration-300 ${
+                open ? "top-1/2 -translate-y-1/2 -rotate-45" : "bottom-0"
+              }`}
+            />
+          </div>
         </button>
       </div>
 
-      {/* Mobile menu panel */}
-      {open && (
-        <div className="md:hidden border-t border-border/60 bg-background/95 backdrop-blur-xl">
-          <div className="mx-auto max-w-7xl px-4 py-4 flex flex-col gap-4 font-mono text-sm">
-            <nav className="flex flex-col gap-3">
-              {navLinks}
-            </nav>
-            <div className="flex flex-col gap-2 pt-3 border-t border-border/60">
+      {/* Mobile full-screen menu */}
+      <div
+        className={`md:hidden fixed inset-0 top-14 z-50 transition-all duration-300 ${
+          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-background/95 backdrop-blur-2xl"
+          onClick={close}
+        />
+        {/* Grid overlay */}
+        <div
+          className="absolute inset-0 opacity-20 pointer-events-none"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, hsl(var(--primary)/0.3) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--primary)/0.3) 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+
+        <div className="relative h-full overflow-y-auto px-5 pt-6 pb-10">
+          {/* Terminal header */}
+          <div className="mb-6 flex items-center gap-2 font-mono text-xs text-primary/70">
+            <span className="inline-block h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <span>root@siberphp:~$ ./menu --open</span>
+          </div>
+
+          {/* Nav list */}
+          <nav className="flex flex-col gap-1">
+            {mobileLinks.map((l, i) => (
+              <Link
+                key={l.to}
+                to={l.to}
+                onClick={close}
+                className="group relative block overflow-hidden rounded-lg border border-primary/15 bg-background/40 px-4 py-4 font-mono transition-all hover:border-primary/60 hover:bg-primary/5 hover:translate-x-1"
+                style={{
+                  animation: open ? `slideIn 0.35s ease ${i * 60}ms both` : undefined,
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <div>
+                    <div className="text-xs text-primary/60">$ {l.cmd}</div>
+                    <div className="mt-1 text-lg text-foreground group-hover:text-primary transition-colors">
+                      {"> "}{l.label}
+                    </div>
+                  </div>
+                  <span className="text-primary opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
+                    ↗
+                  </span>
+                </div>
+                <span className="absolute left-0 top-0 h-full w-[2px] bg-primary scale-y-0 group-hover:scale-y-100 origin-top transition-transform" />
+              </Link>
+            ))}
+          </nav>
+
+          {/* Auth section */}
+          <div className="mt-8 border-t border-primary/20 pt-6">
+            <div className="mb-3 font-mono text-xs text-primary/60">
+              # {user ? "session.active" : "session.guest"}
+            </div>
+            <div className="flex flex-col gap-2">
               {user ? (
                 <>
                   {isAdmin && (
-                    <Button asChild size="sm" variant="outline" className="font-mono justify-start" onClick={close}>
+                    <Button asChild size="lg" variant="outline" className="font-mono justify-start border-primary/40" onClick={close}>
                       <Link to="/admin">
-                        <LayoutDashboard className="mr-2 h-4 w-4" />admin
+                        <LayoutDashboard className="mr-2 h-4 w-4" />./admin-panel
                       </Link>
                     </Button>
                   )}
-                  <Button asChild size="sm" variant="ghost" className="font-mono justify-start" onClick={close}>
-                    <Link to="/hesabim"><UserIcon className="mr-2 h-4 w-4" />hesabım</Link>
+                  <Button asChild size="lg" variant="secondary" className="font-mono justify-start" onClick={close}>
+                    <Link to="/hesabim"><UserIcon className="mr-2 h-4 w-4" />./hesabım</Link>
                   </Button>
                   <Button
-                    size="sm"
+                    size="lg"
                     variant="ghost"
                     onClick={() => { close(); signOut(); }}
-                    className="font-mono justify-start text-muted-foreground"
+                    className="font-mono justify-start text-muted-foreground hover:text-destructive"
                   >
-                    çıkış
+                    {"> "}exit
                   </Button>
                 </>
               ) : (
-                <Button asChild size="sm" className="font-mono justify-start" onClick={close}>
-                  <Link to="/auth"><LogIn className="mr-2 h-4 w-4" />giriş</Link>
+                <Button asChild size="lg" className="font-mono justify-start neon-glow" onClick={close}>
+                  <Link to="/auth"><LogIn className="mr-2 h-4 w-4" />./giriş-yap</Link>
                 </Button>
               )}
             </div>
           </div>
+
+          <div className="mt-10 font-mono text-[10px] text-primary/40">
+            <div>[SSL/TLS 1.3] [AES-256] [KVKK]</div>
+            <div className="mt-1">© {new Date().getFullYear()} SiberPHP</div>
+          </div>
         </div>
-      )}
+      </div>
+
+      <style>{`
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(-16px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
     </header>
   );
 }
-
 
 function SiteFooter() {
   return (
@@ -276,6 +368,8 @@ function SiteFooter() {
     </footer>
   );
 }
+
+
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
