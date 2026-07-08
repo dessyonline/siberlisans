@@ -10,7 +10,7 @@ import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload
 import { toast } from "sonner";
 import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell } from "lucide-react";
 import { TierCard } from "@/components/TierCard";
-import { AVATARS, UserAvatar, getAvatar } from "@/components/UserAvatar";
+import { AVATARS, UserAvatar } from "@/components/UserAvatar";
 
 export const Route = createFileRoute("/_authenticated/hesabim")({
   component: MyAccount,
