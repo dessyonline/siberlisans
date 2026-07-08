@@ -92,14 +92,20 @@ function Payment() {
   };
 
   const startWalletPay = async () => {
-    // 2FA aktifse önce doğrulama iste
+    // 2FA aktifse önce doğrulama iste — ancak kullanıcı bu cihazı hatırla dediyse atla
+    const { isDeviceTrusted } = await import("@/lib/trusted-device");
     const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (aal?.nextLevel === "aal2" && aal.currentLevel === "aal1") {
+    if (
+      aal?.nextLevel === "aal2" &&
+      aal.currentLevel === "aal1" &&
+      !isDeviceTrusted(user?.id)
+    ) {
       setMfaGateOpen(true);
       return;
     }
     await runWalletPay();
   };
+
 
   const { data: order } = useQuery({
     queryKey: ["order", orderId],
@@ -485,10 +491,12 @@ function Payment() {
       <MfaGateDialog
         open={mfaGateOpen}
         onOpenChange={setMfaGateOpen}
+        userId={user?.id}
         title="Satın alma için 2FA gerekli"
         description="Cüzdan ödemesini onaylamak için authenticator uygulamandaki 6 haneli kodu gir."
         onSuccess={() => runWalletPay()}
       />
+
     </div>
   );
 }

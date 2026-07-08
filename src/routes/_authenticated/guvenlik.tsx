@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ShieldCheck, ShieldAlert, Trash2, ArrowLeft, Terminal } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Trash2, ArrowLeft, Terminal, MonitorSmartphone } from "lucide-react";
 import { MfaEnroll } from "@/components/security/MfaEnroll";
 import { MfaChallenge } from "@/components/security/MfaChallenge";
+import { trustedDeviceExpiry, untrustDevice, TRUSTED_DEVICE_TTL_DAYS } from "@/lib/trusted-device";
 
 export const Route = createFileRoute("/_authenticated/guvenlik")({
   component: SecurityPage,
@@ -27,6 +28,8 @@ function SecurityPage() {
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<"idle" | "enroll" | "verify-remove" | "step-up">("idle");
   const [removeTarget, setRemoveTarget] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [trustedUntil, setTrustedUntil] = useState<Date | null>(null);
 
   const refresh = async () => {
     setLoading(true);
@@ -39,6 +42,8 @@ function SecurityPage() {
     setFactors(((f?.totp as Factor[]) ?? []).filter((x) => x.status === "verified"));
     setAal((a?.currentLevel as "aal1" | "aal2" | null) ?? null);
     setIsAdmin(Boolean(roleRes.data));
+    setUserId(u.user?.id ?? null);
+    setTrustedUntil(trustedDeviceExpiry(u.user?.id ?? null));
     setLoading(false);
   };
 
@@ -210,6 +215,51 @@ function SecurityPage() {
           </div>
         )}
       </div>
+
+      {/* Güvenilir cihazlar */}
+      {enabled && (
+        <div className="glass-card rounded-lg p-5">
+          <div className="flex items-start gap-3">
+            <div className="rounded-md p-2 bg-primary/10 text-primary">
+              <MonitorSmartphone className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-mono text-sm font-semibold">Güvenilir Cihazlar</div>
+              <div className="mt-0.5 font-mono text-[11px] text-muted-foreground leading-relaxed">
+                2FA doğrulamasında "bu cihazı hatırla" seçtiğinde bu tarayıcıda{" "}
+                {TRUSTED_DEVICE_TTL_DAYS} gün boyunca satın alma / hassas işlem
+                modalları sana tekrar kod sormaz. Admin paneline erişim gibi
+                oturum-bazlı zorunluluklar bundan etkilenmez.
+              </div>
+              <div className="mt-2 font-mono text-[10px]">
+                bu cihaz:{" "}
+                {trustedUntil ? (
+                  <span className="text-primary">
+                    [✓] hatırlanıyor · bitiş {trustedUntil.toLocaleDateString("tr-TR")}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground">[·] hatırlanmıyor</span>
+                )}
+              </div>
+              {trustedUntil && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="mt-3 font-mono"
+                  onClick={() => {
+                    untrustDevice(userId);
+                    setTrustedUntil(null);
+                    toast.success("[✓] bu cihaz artık hatırlanmıyor");
+                  }}
+                >
+                  <Trash2 className="mr-1.5 h-3 w-3" /> bu cihazı unut
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
 
       <div className="glass-card rounded-lg p-4 font-mono text-[11px] text-muted-foreground space-y-1">
         <div className="text-primary">// ipucu</div>
