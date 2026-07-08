@@ -44,6 +44,7 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
   { to: "/admin/flash", label: "flash indirim", icon: Zap },
   { to: "/admin/blog", label: "blog", icon: BookOpen },
   { to: "/admin/cuzdan", label: "cüzdan", icon: Wallet },
+  { to: "/admin/kripto", label: "kripto", icon: Bitcoin },
   { to: "/admin/ayarlar", label: "ayarlar", icon: Settings },
 ];
 
