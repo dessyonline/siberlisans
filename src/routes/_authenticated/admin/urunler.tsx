@@ -458,12 +458,15 @@ function ProductsAdmin() {
                       onChange={(e) => setEditing((p) => ({ ...p!, duration: e.target.value as Product["duration"] }))}
                       className="w-full h-9 rounded border border-border bg-input px-3 font-mono text-sm"
                     >
+                      <option value="hourly">saatlik</option>
+                      <option value="daily">günlük</option>
+                      <option value="weekly">haftalık</option>
                       <option value="monthly">aylık</option>
                       <option value="yearly">yıllık</option>
                       <option value="lifetime">ömürlük</option>
                     </select>
                   </div>
-                  <Field label="fiyat (₺)" value={String(editing.price_try ?? 0)} onChange={(v) => setEditing((p) => ({ ...p!, price_try: Number(v) }))} type="number" />
+                  <Field label="fiyat (₺)" value={editing.price_try == null ? "" : String(editing.price_try)} onChange={(v) => setEditing((p) => ({ ...p!, price_try: v === "" ? 0 : Number(v) }))} type="number" />
                   <div>
                     <Label className="font-mono text-xs">teslim tipi</Label>
                     <select
