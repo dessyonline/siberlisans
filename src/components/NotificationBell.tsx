@@ -67,6 +67,22 @@ export function NotificationBell() {
     setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)));
   };
 
+  const clearAll = async () => {
+    if (!items.length) return;
+    const ids = items.map((n) => n.id);
+    setItems([]);
+    // biome-ignore lint/suspicious/noExplicitAny: new table
+    await supabase.from("notifications" as any).delete().in("id", ids);
+  };
+
+  const deleteOne = async (id: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setItems((prev) => prev.filter((n) => n.id !== id));
+    // biome-ignore lint/suspicious/noExplicitAny: new table
+    await supabase.from("notifications" as any).delete().eq("id", id);
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
