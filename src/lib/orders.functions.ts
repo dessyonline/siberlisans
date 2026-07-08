@@ -173,6 +173,45 @@ export const setOrderUserNote = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/**
+ * After key assignment, check whether any product in the order dropped below
+ * its low_stock_threshold and notify the admin via Telegram (throttled server-side).
+ * Fire-and-forget: never blocks the caller.
+ */
+export async function notifyLowStockForOrder(
+  supabase: import("@supabase/supabase-js").SupabaseClient,
+  orderId: string,
+): Promise<void> {
+  try {
+    const [{ data: order }, { data: items }] = await Promise.all([
+      supabase.from("orders").select("product_id").eq("id", orderId).maybeSingle(),
+      supabase.from("order_items").select("product_id").eq("order_id", orderId),
+    ]);
+    const productIds = new Set<string>();
+    if (order?.product_id) productIds.add(order.product_id);
+    (items ?? []).forEach((i: { product_id: string | null }) => {
+      if (i.product_id) productIds.add(i.product_id);
+    });
+
+    for (const pid of productIds) {
+      const { data } = await supabase.rpc("check_low_stock_after_assign", { _product_id: pid });
+      const row = Array.isArray(data) ? data[0] : data;
+      if (row?.should_alert) {
+        const { notifyTelegram, lowStockAlertMessage } = await import("@/lib/telegram.server");
+        await notifyTelegram(
+          lowStockAlertMessage({
+            productName: row.product_name ?? "—",
+            available: Number(row.available ?? 0),
+            threshold: Number(row.threshold ?? 0),
+          }),
+        );
+      }
+    }
+  } catch (e) {
+    console.error("[notify] lowStock", (e as Error).message);
+  }
+}
+
 const approveInput = z.object({ orderId: z.string().uuid() });
 
 export const approveOrder = createServerFn({ method: "POST" })
