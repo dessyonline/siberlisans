@@ -77,47 +77,55 @@ function MyAccount() {
   );
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 md:py-12">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <div className="font-mono text-xs text-muted-foreground">$ whoami · {user?.email}</div>
-          <h1 className="mt-2 font-mono text-2xl md:text-3xl neon-text">Hesabım</h1>
+    <div className="mx-auto max-w-5xl px-4 py-6 md:py-12">
+      {/* header */}
+      <div className="space-y-4">
+        <div className="min-w-0">
+          <div className="font-mono text-[11px] text-muted-foreground truncate">
+            $ whoami · <span className="text-foreground/80">{user?.email}</span>
+          </div>
+          <h1 className="mt-1.5 font-mono text-2xl md:text-3xl neon-text">Hesabım</h1>
         </div>
-        <div className="flex items-center gap-4 font-mono text-xs">
+
+        {/* stats grid: 3 cols on all sizes, cüzdan spans 3 on mobile for tap target */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 font-mono">
           <Link
             to="/cuzdan"
-            className="glass-card corner-cut px-3 py-2 rounded-md hover:neon-glow transition flex items-center gap-2"
+            className="glass-card corner-cut col-span-2 sm:col-span-1 flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
           >
-            <Wallet className="h-3.5 w-3.5 text-primary" />
-            <div>
-              <div className="text-muted-foreground text-[10px]">cüzdan</div>
-              <div className="text-primary text-sm font-bold">
+            <Wallet className="h-4 w-4 text-primary shrink-0" />
+            <div className="min-w-0">
+              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">cüzdan</div>
+              <div className="text-primary text-sm font-bold truncate">
                 <WalletBalance />
               </div>
             </div>
           </Link>
-          <div className="text-right">
-            <div className="text-muted-foreground">toplam sipariş</div>
-            <div className="text-lg neon-text">{orders?.length ?? 0}</div>
+          <div className="glass-card rounded-md px-3 py-2.5">
+            <div className="text-muted-foreground text-[10px] uppercase tracking-wider">sipariş</div>
+            <div className="text-lg neon-text leading-tight">{orders?.length ?? 0}</div>
           </div>
-          <div className="text-right">
-            <div className="text-muted-foreground">aktif anahtar</div>
-            <div className="text-lg neon-text">{approvedKeys.length}</div>
+          <div className="glass-card rounded-md px-3 py-2.5">
+            <div className="text-muted-foreground text-[10px] uppercase tracking-wider">anahtar</div>
+            <div className="text-lg neon-text leading-tight">{approvedKeys.length}</div>
           </div>
         </div>
       </div>
 
 
-      <Tabs defaultValue="orders" className="mt-8">
-        <TabsList className="grid w-full grid-cols-3 font-mono">
-          <TabsTrigger value="orders" className="text-xs sm:text-sm">
-            <ShoppingCart className="mr-1.5 h-3.5 w-3.5" /> siparişler
+      <Tabs defaultValue="orders" className="mt-6 md:mt-8">
+        <TabsList className="grid w-full grid-cols-3 font-mono h-auto">
+          <TabsTrigger value="orders" className="text-[11px] sm:text-sm py-2">
+            <ShoppingCart className="mr-1 h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">siparişler</span>
           </TabsTrigger>
-          <TabsTrigger value="keys" className="text-xs sm:text-sm">
-            <KeyRound className="mr-1.5 h-3.5 w-3.5" /> anahtarlar
+          <TabsTrigger value="keys" className="text-[11px] sm:text-sm py-2">
+            <KeyRound className="mr-1 h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">anahtarlar</span>
           </TabsTrigger>
-          <TabsTrigger value="profile" className="text-xs sm:text-sm">
-            <UserIcon className="mr-1.5 h-3.5 w-3.5" /> profil
+          <TabsTrigger value="profile" className="text-[11px] sm:text-sm py-2">
+            <UserIcon className="mr-1 h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">profil</span>
           </TabsTrigger>
         </TabsList>
 
@@ -210,28 +218,36 @@ function OrdersTab({ orders, isLoading }: { orders: Order[]; isLoading: boolean 
           const lk = o.keys?.[0]?.license_key;
           const dt = (o.product?.delivery_type ?? "key") as DeliveryType;
           return (
-            <div key={o.id} className="glass-card rounded-lg p-4">
-              <div className="flex flex-wrap items-center justify-between gap-3 font-mono text-sm">
-                <div className="min-w-0 flex-1">
-                  <div className="font-semibold break-words">{o.product?.name}</div>
-                  <div className="text-xs text-muted-foreground break-all">
-                    ref: {o.reference_code} ·{" "}
-                    {new Date(o.created_at).toLocaleDateString("tr-TR", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}
+            <div key={o.id} className="glass-card rounded-lg p-3 sm:p-4">
+              <div className="font-mono text-sm space-y-2">
+                {/* top row: product name + status */}
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-semibold break-words leading-snug">{o.product?.name}</div>
+                    <div className="mt-0.5 text-[11px] text-muted-foreground break-all">
+                      ref: {o.reference_code} ·{" "}
+                      {new Date(o.created_at).toLocaleDateString("tr-TR", {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
+                    </div>
+                  </div>
+                  <div className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] uppercase whitespace-nowrap ${s.bg} ${s.c}`}>
+                    {s.l}
                   </div>
                 </div>
-                <div className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] uppercase ${s.bg} ${s.c}`}>
-                  {s.l}
+                {/* bottom row: price + detail button */}
+                <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/40">
+                  <div className="neon-text text-base font-bold">
+                    ₺{Number(o.price_try).toLocaleString("tr-TR")}
+                  </div>
+                  <Button asChild size="sm" variant="outline" className="font-mono h-8 text-xs">
+                    <Link to="/odeme/$orderId" params={{ orderId: o.id }}>
+                      detay →
+                    </Link>
+                  </Button>
                 </div>
-                <div className="neon-text shrink-0">₺{Number(o.price_try).toLocaleString("tr-TR")}</div>
-                <Button asChild size="sm" variant="outline" className="font-mono shrink-0">
-                  <Link to="/odeme/$orderId" params={{ orderId: o.id }}>
-                    detay →
-                  </Link>
-                </Button>
               </div>
               {lk?.key_value && (
                 <div className="mt-3">
@@ -422,14 +438,14 @@ function ProfileTab({ email, onSignOut }: { email: string; onSignOut: () => void
         </Button>
       </div>
 
-      <div className="glass-card rounded-lg p-5 flex items-center justify-between gap-3">
-        <div>
+      <div className="glass-card rounded-lg p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <div className="font-mono text-sm font-semibold">Oturumu Kapat</div>
           <div className="mt-0.5 font-mono text-xs text-muted-foreground">
             tüm cihazlarda çıkış için tekrar giriş yapmanız gerekir.
           </div>
         </div>
-        <Button variant="outline" size="sm" onClick={onSignOut} className="font-mono">
+        <Button variant="outline" size="sm" onClick={onSignOut} className="font-mono self-start sm:self-auto shrink-0">
           <LogOut className="mr-1.5 h-3.5 w-3.5" /> çıkış
         </Button>
       </div>
