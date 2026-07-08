@@ -152,10 +152,9 @@ export const submitCryptoDeposit = createServerFn({ method: "POST" })
     if (amountUsdt < min) throw new Error(`Minimum ${min} USDT gerekli, gönderilen: ${amountUsdt}`);
 
     // Rate
-    const rate =
-      settings.usdt_try_rate && Number(settings.usdt_try_rate) > 0
-        ? Number(settings.usdt_try_rate)
-        : await fetchUsdtTryRate();
+    // Kur her zaman canlı Binance USDTTRY
+    const rate = await fetchUsdtTryRate();
+
 
     const blockTs = tx.timestamp ? new Date(tx.timestamp).toISOString() : null;
 
