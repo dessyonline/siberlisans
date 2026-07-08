@@ -283,6 +283,17 @@ function OrdersAdmin() {
         <Button variant="outline" size="sm" onClick={exportCsv} className="font-mono">
           <Download className="h-3.5 w-3.5 mr-1" /> CSV
         </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleSyncAll}
+          disabled={syncingAll}
+          className="font-mono border-cyan/40 text-cyan hover:bg-cyan/10"
+          title="Uniquelisans pending siparişlerini yeniden sorgula"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 mr-1 ${syncingAll ? "animate-spin" : ""}`} />
+          UL sync
+        </Button>
         <div className="text-xs text-muted-foreground font-mono ml-auto">
           {filtered.length} sonuç
         </div>
