@@ -228,6 +228,26 @@ export const approveOrder = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const row = Array.isArray(result) ? result[0] : null;
     await notifyLowStockForOrder(supabase, data.orderId);
+
+    // Push bildirim + referral bonus (owner user'a)
+    try {
+      const { data: ord } = await supabase
+        .from("orders")
+        .select("user_id, reference_code")
+        .eq("id", data.orderId)
+        .single();
+      if (ord?.user_id) {
+        await supabase.rpc("push_notification" as never, {
+          _user_id: ord.user_id,
+          _type: "order_approved",
+          _title: "Siparişin onaylandı 🎉",
+          _body: `Ref: ${ord.reference_code} · Anahtarların hesabında hazır.`,
+          _link: "/hesabim",
+        } as never);
+        await supabase.rpc("process_referral_bonus" as never, { _user_id: ord.user_id } as never);
+      }
+    } catch (e) { console.error("[notify] approveOrder", (e as Error).message); }
+
     return {
       ok: true,
       licenseKey: row?.license_key ?? null,
