@@ -138,7 +138,11 @@ function UniquelisansPage() {
               onChange={(e) => setMarkup(Number(e.target.value))}
               className="w-full rounded border border-primary/30 bg-background/40 px-3 py-2 font-mono text-sm"
             />
+            <div className="mt-1 font-mono text-[11px] text-muted-foreground">
+              örn. alış 50 ₺ → satış <b className="text-primary">{fmt(50 * (1 + markup / 100))} ₺</b> · kar <b className="text-primary">{fmt(50 * markup / 100)} ₺</b>
+            </div>
           </div>
+
         </div>
       </div>
 
