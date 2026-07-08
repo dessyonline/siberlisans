@@ -256,17 +256,48 @@ function SiteHeader() {
 function SiteFooter() {
   return (
     <footer className="border-t border-border/60 bg-background/60 backdrop-blur-xl mt-16">
-      <div className="mx-auto max-w-7xl px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="h-4 w-4 text-primary" />
-          <span>SiberPHP {new Date().getFullYear()} — Güvenli Lisans Dağıtım Sistemi</span>
+      <div className="mx-auto max-w-7xl px-4 py-8 font-mono text-xs">
+        <div className="grid gap-6 md:grid-cols-4">
+          <div>
+            <div className="flex items-center gap-2 text-foreground mb-2">
+              <ShieldCheck className="h-4 w-4 text-primary" />
+              <span className="neon-text">SiberPHP</span>
+            </div>
+            <p className="text-muted-foreground text-[11px] leading-relaxed">
+              Güvenli lisans dağıtım sistemi. Şifreli teslimat, kesintisiz destek.
+            </p>
+          </div>
+          <div>
+            <div className="text-primary/80 mb-2">./keşfet</div>
+            <ul className="space-y-1 text-muted-foreground">
+              <li><Link to="/urunler" className="hover:text-primary">Ürünler</Link></li>
+              <li><Link to="/nasil-calisir" className="hover:text-primary">Nasıl çalışır</Link></li>
+              <li><Link to="/sss" className="hover:text-primary">SSS</Link></li>
+              <li><Link to="/iletisim" className="hover:text-primary">İletişim</Link></li>
+            </ul>
+          </div>
+          <div>
+            <div className="text-primary/80 mb-2">./yasal</div>
+            <ul className="space-y-1 text-muted-foreground">
+              <li><Link to="/kvkk" className="hover:text-primary">KVKK Aydınlatma</Link></li>
+              <li><Link to="/gizlilik" className="hover:text-primary">Gizlilik Politikası</Link></li>
+              <li><Link to="/iade" className="hover:text-primary">İade & Cayma</Link></li>
+              <li><Link to="/kosullar" className="hover:text-primary">Kullanım Koşulları</Link></li>
+            </ul>
+          </div>
+          <div>
+            <div className="text-primary/80 mb-2">./güven</div>
+            <ul className="space-y-1 text-muted-foreground">
+              <li>🔒 SSL/TLS 1.3</li>
+              <li>🛡️ AES-256 şifreleme</li>
+              <li>✅ KVKK uyumlu</li>
+              <li>🧾 Yasal fatura</li>
+            </ul>
+          </div>
         </div>
-        <div className="flex gap-4">
-          <span>SSL/TLS 1.3</span>
-          <span>·</span>
-          <span>AES-256</span>
-          <span>·</span>
-          <span>KVKK Uyumlu</span>
+        <div className="mt-6 pt-4 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-2 text-muted-foreground text-[11px]">
+          <div>© {new Date().getFullYear()} SiberPHP — Tüm hakları saklıdır.</div>
+          <div className="text-primary/60">$ powered_by_secure_infra --v2</div>
         </div>
       </div>
     </footer>
