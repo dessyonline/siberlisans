@@ -8,7 +8,20 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, useState, type ReactNode } from "react";
-import { Terminal, ShieldCheck, LogIn, LayoutDashboard, User as UserIcon, Menu, X } from "lucide-react";
+import {
+  Terminal,
+  ShieldCheck,
+  LogIn,
+  LayoutDashboard,
+  User as UserIcon,
+  Menu,
+  X,
+  Home,
+  Package,
+  BookOpen,
+  HelpCircle,
+} from "lucide-react";
+
 
 
 import appCss from "../styles.css?url";
