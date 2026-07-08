@@ -459,10 +459,30 @@ function KeyRowItem({ row }: { row: KeyRow }) {
   );
 }
 
-function ProfileTab({ email, onSignOut }: { email: string; onSignOut: () => void }) {
+function ProfileTab({ userId, email, onSignOut }: { userId: string; email: string; onSignOut: () => void }) {
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [saving, setSaving] = useState(false);
+  const [avatarSaving, setAvatarSaving] = useState(false);
+
+  const { data: profile, refetch: refetchProfile } = useQuery({
+    queryKey: ["profile-avatar", userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data } = await supabase.from("profiles").select("avatar_id").eq("id", userId).maybeSingle();
+      return (data ?? { avatar_id: null }) as { avatar_id: string | null };
+    },
+  });
+
+  const pickAvatar = async (id: string) => {
+    if (!userId) return;
+    setAvatarSaving(true);
+    const { error } = await supabase.from("profiles").update({ avatar_id: id }).eq("id", userId);
+    setAvatarSaving(false);
+    if (error) return toast.error(`[!] ${error.message}`);
+    toast.success("[✓] avatar güncellendi");
+    refetchProfile();
+  };
 
   const changePw = async () => {
     if (pw.length < 6) return toast.error("[!] şifre en az 6 karakter olmalı");
@@ -475,6 +495,8 @@ function ProfileTab({ email, onSignOut }: { email: string; onSignOut: () => void
     setPw2("");
     toast.success("[✓] şifre güncellendi");
   };
+
+  const currentAvatarId = profile?.avatar_id ?? null;
 
   return (
     <div className="space-y-4">
