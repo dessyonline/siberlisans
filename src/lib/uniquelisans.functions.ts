@@ -136,13 +136,19 @@ export const ulImportProduct = createServerFn({ method: "POST" })
       .eq("external_id", String(detail.id))
       .maybeSingle();
 
+    // Stok kontrolü: API stok yok diyorsa veya stock_count <= 0 ise ürünü pasif tut
+    const outOfStock = detail.is_automatic_delivery
+      ? false
+      : (detail.is_stock === false || (typeof detail.stock_count === "number" && detail.stock_count <= 0));
+    const effectiveActive = outOfStock ? false : data.active;
+
     const payload = {
       name: detail.name,
       description: detail.description ?? "",
       price_try: finalPrice,
       external_price: detail.amount,
       category: data.category ?? "Dijital Ürünler",
-      active: data.active,
+      active: effectiveActive,
       manual_fulfillment: true, // otomatik teslim kapalı — admin manuel siparişi Uniquelisans'ta açar
       unlimited_stock: !!detail.is_automatic_delivery,
       source: "uniquelisans",
@@ -154,12 +160,18 @@ export const ulImportProduct = createServerFn({ method: "POST" })
 
     if (existing) {
       // Mevcut kayıtta admin manuel logo koyduysa üzerine yazma
-      const { data: cur } = await supabase.from("products").select("image_url").eq("id", existing.id).maybeSingle();
+      const { data: cur } = await supabase.from("products").select("image_url, active").eq("id", existing.id).maybeSingle();
       const updatePayload = { ...payload };
       if (cur?.image_url) delete (updatePayload as Partial<typeof payload>).image_url;
+      // Aktif durumu: stok yoksa zorla pasif; stok varsa admin'in mevcut seçimini bozma
+      if (outOfStock) {
+        updatePayload.active = false;
+      } else if (cur) {
+        updatePayload.active = cur.active;
+      }
       const { error } = await supabase.from("products").update(updatePayload).eq("id", existing.id);
       if (error) throw new Error(error.message);
-      return { ok: true as const, productId: existing.id, updated: true };
+      return { ok: true as const, productId: existing.id, updated: true, outOfStock };
     } else {
       const { data: row, error } = await supabase
         .from("products")
@@ -167,8 +179,58 @@ export const ulImportProduct = createServerFn({ method: "POST" })
         .select("id")
         .single();
       if (error) throw new Error(error.message);
-      return { ok: true as const, productId: row.id, updated: false };
+      return { ok: true as const, productId: row.id, updated: false, outOfStock };
     }
+  });
+
+// Tüm içe aktarılmış Uniquelisans ürünlerinin stok/fiyatını API ile senkronize et.
+// Stok yoksa ürünü otomatik pasifleştirir; stok gelirse aktifleştirmez (admin karar verir).
+export const ulSyncStock = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+
+    const { data: rows } = await supabase
+      .from("products")
+      .select("id, external_id, price_try, external_price, active")
+      .eq("source", "uniquelisans");
+
+    const list = rows ?? [];
+    let checked = 0, hidden = 0, updated = 0, failed = 0;
+
+    for (const p of list) {
+      if (!p.external_id) continue;
+      checked++;
+      try {
+        const b = await ul(`/products/${p.external_id}`);
+        const d = b.product_detail as {
+          amount: number; is_stock: boolean; is_automatic_delivery: boolean; stock_count: number | null;
+        } | undefined;
+        if (!d) { failed++; continue; }
+
+        const outOfStock = d.is_automatic_delivery
+          ? false
+          : (d.is_stock === false || (typeof d.stock_count === "number" && d.stock_count <= 0));
+
+        const patch: { external_price: number; stock_hint: number | null; unlimited_stock: boolean; active?: boolean } = {
+          external_price: d.amount,
+          stock_hint: d.stock_count ?? null,
+          unlimited_stock: !!d.is_automatic_delivery,
+        };
+        if (outOfStock && p.active) {
+          patch.active = false;
+          hidden++;
+        }
+        const { error } = await supabase.from("products").update(patch).eq("id", p.id);
+        if (error) { failed++; continue; }
+        updated++;
+      } catch {
+        failed++;
+      }
+    }
+
+    return { checked, updated, hidden, failed };
   });
 
 export const ulImportedProducts = createServerFn({ method: "GET" })
