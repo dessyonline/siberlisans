@@ -205,12 +205,26 @@ export const upsertProduct = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
     if (!isAdmin) throw new Error("Yetkisiz.");
+    const isNew = !data.id;
     if (data.id) {
       const { error } = await supabase.from("products").update(data).eq("id", data.id);
       if (error) throw new Error(error.message);
     } else {
       const { error } = await supabase.from("products").insert(data);
       if (error) throw new Error(error.message);
+    }
+    if (isNew && data.active) {
+      try {
+        const tg = await import("@/lib/telegram.server");
+        await tg.postToChannel(tg.productAnnouncement({
+          name: data.name,
+          slug: data.slug,
+          priceTry: Number(data.price_try),
+          description: data.description ?? null,
+          category: data.category ?? null,
+          imageUrl: data.image_url ?? null,
+        }));
+      } catch (e) { console.error("[notify] newProduct", (e as Error).message); }
     }
     return { ok: true };
   });
