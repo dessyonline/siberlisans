@@ -7,7 +7,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { createOrder } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Info, ShieldCheck, Zap, CheckCircle2, X, KeyRound, Lock, ArrowLeft, Terminal, Cpu, Wifi } from "lucide-react";
+import { Info, ShieldCheck, Zap, CheckCircle2, X, KeyRound, Lock, ArrowLeft, Terminal, Cpu, Wifi, Crown, Sparkles } from "lucide-react";
 
 const productMetaQuery = (slug: string) => ({
   queryKey: ["product-meta", slug],
@@ -89,7 +89,7 @@ function ProductDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, active, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, active, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, tier, license_keys(status)")
         .eq("slug", slug)
         .single();
       if (error) throw error;
@@ -135,6 +135,7 @@ function ProductDetail() {
   const stock = liveStock > 0 ? liveStock : (product.stock_hint ?? 0);
   const manual = !!product.manual_fulfillment;
   const unlimited = !!(product as { unlimited_stock?: boolean }).unlimited_stock;
+  const isEpic = ((product as { tier?: string }).tier ?? "standard") === "epic";
   const soldOut = !manual && !unlimited && stock === 0;
   const bullets = (product.description ?? "")
     .split("|")
@@ -145,8 +146,8 @@ function ProductDetail() {
     <div className="relative overflow-hidden">
       {/* cyber backdrop */}
       <div className="pointer-events-none absolute inset-0 cyber-grid grid-drift opacity-60" aria-hidden />
-      <div className="hero-orb h-[380px] w-[380px] left-[-120px] top-[-60px]" style={{ background: "oklch(0.82 0.20 145 / 0.35)" }} aria-hidden />
-      <div className="hero-orb h-[300px] w-[300px] right-[-80px] top-[40%]" style={{ background: "oklch(0.65 0.20 300 / 0.25)", animationDelay: "3s" }} aria-hidden />
+      <div className="hero-orb h-[380px] w-[380px] left-[-120px] top-[-60px]" style={{ background: isEpic ? "oklch(0.80 0.18 85 / 0.42)" : "oklch(0.82 0.20 145 / 0.35)" }} aria-hidden />
+      <div className="hero-orb h-[300px] w-[300px] right-[-80px] top-[40%]" style={{ background: isEpic ? "oklch(0.60 0.22 310 / 0.35)" : "oklch(0.65 0.20 300 / 0.25)", animationDelay: "3s" }} aria-hidden />
       <div className="pointer-events-none absolute inset-0 scan-line opacity-30" aria-hidden />
 
       <div className="relative mx-auto max-w-5xl px-4 py-10 pb-32 md:pb-14">
@@ -165,7 +166,13 @@ function ProductDetail() {
         </div>
 
         {/* Terminal window frame */}
-        <div className="glass-card rounded-xl overflow-hidden neon-glow-strong">
+        <div className={`relative rounded-xl overflow-hidden ${isEpic ? "epic-card" : "glass-card neon-glow-strong"}`}>
+          {isEpic && <div className="epic-shimmer" aria-hidden />}
+          {isEpic && (
+            <div className="relative flex items-center justify-center gap-2 border-b border-[oklch(0.78_0.16_75/0.4)] bg-gradient-to-r from-[oklch(0.14_0.03_75/0.6)] via-[oklch(0.13_0.05_300/0.55)] to-[oklch(0.14_0.03_75/0.6)] py-1.5 font-mono text-[10px] uppercase tracking-[0.4em] text-[oklch(0.90_0.14_85)] epic-text-glow">
+              <Crown className="h-3 w-3" /> destansı sürüm · epic tier <Sparkles className="h-3 w-3" />
+            </div>
+          )}
           {/* window chrome */}
           <div className="flex items-center justify-between border-b border-border/60 bg-background/50 px-4 py-2.5 backdrop-blur">
             <div className="flex items-center gap-2">
@@ -192,7 +199,8 @@ function ProductDetail() {
               <div className="pointer-events-none absolute inset-0 cyber-grid opacity-30" aria-hidden />
 
               {/* ID CARD */}
-              <div className="relative w-full max-w-[420px] mx-auto rounded-xl overflow-hidden border border-primary/40 bg-gradient-to-br from-[oklch(0.16_0.03_145)] via-[oklch(0.13_0.02_180)] to-[oklch(0.14_0.04_270)] shadow-[0_0_30px_oklch(0.82_0.20_145/0.25),inset_0_0_0_1px_oklch(0.82_0.20_145/0.15)]">
+              <div className={`relative w-full max-w-[420px] mx-auto rounded-xl overflow-hidden ${isEpic ? "epic-card" : "border border-primary/40 bg-gradient-to-br from-[oklch(0.16_0.03_145)] via-[oklch(0.13_0.02_180)] to-[oklch(0.14_0.04_270)] shadow-[0_0_30px_oklch(0.82_0.20_145/0.25),inset_0_0_0_1px_oklch(0.82_0.20_145/0.15)]"}`}>
+                {isEpic && <div className="epic-shimmer" aria-hidden />}
                 {/* holographic sheen */}
                 <div
                   className="pointer-events-none absolute inset-0 opacity-30 mix-blend-screen"
@@ -290,11 +298,16 @@ function ProductDetail() {
               </div>
               <h1 className="mt-2 font-mono text-2xl md:text-[28px] font-semibold tracking-tight leading-tight flex items-baseline gap-2">
                 <span className="text-muted-foreground/60 select-none">&gt;</span>
-                <span className="neon-sweep">{product.name}</span>
+                <span className={isEpic ? "epic-text-glow text-[oklch(0.92_0.14_85)]" : "neon-sweep"}>{product.name}</span>
                 <span aria-hidden className="caret-blink inline-block w-[2px] h-[0.9em] translate-y-[0.05em] bg-primary shadow-[0_0_10px_oklch(0.82_0.20_145/0.9)]" />
               </h1>
 
               <div className="mt-4 flex flex-wrap items-center gap-2 font-mono text-[11px]">
+                {isEpic && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-[oklch(0.78_0.16_75/0.5)] bg-[oklch(0.14_0.03_75/0.6)] px-2.5 py-1 text-[oklch(0.92_0.14_85)] epic-text-glow uppercase tracking-[0.24em] text-[10px]">
+                    <Crown className="h-3 w-3" /> destansı
+                  </span>
+                )}
                 <StockBadge stock={stock} manual={manual} unlimited={unlimited} />
                 {product.category && (
                   <span className="rounded-full border border-border/60 bg-background/60 backdrop-blur px-2.5 py-1 text-muted-foreground">
