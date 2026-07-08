@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
-import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode, finalizeFreeOrder } from "@/lib/orders.functions";
+import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode, finalizeFreeOrder, setOrderCheckoutFields } from "@/lib/orders.functions";
 import { payOrderWithWallet } from "@/lib/wallet.functions";
 import { Input } from "@/components/ui/input";
 
