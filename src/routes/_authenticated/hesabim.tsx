@@ -113,16 +113,19 @@ function MyAccount() {
       </div>
 
 
-      <Tabs defaultValue="orders" className="mt-8">
-        <TabsList className="grid w-full grid-cols-3 font-mono">
-          <TabsTrigger value="orders" className="text-xs sm:text-sm">
-            <ShoppingCart className="mr-1.5 h-3.5 w-3.5" /> siparişler
+      <Tabs defaultValue="orders" className="mt-6 md:mt-8">
+        <TabsList className="grid w-full grid-cols-3 font-mono h-auto">
+          <TabsTrigger value="orders" className="text-[11px] sm:text-sm py-2">
+            <ShoppingCart className="mr-1 h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">siparişler</span>
           </TabsTrigger>
-          <TabsTrigger value="keys" className="text-xs sm:text-sm">
-            <KeyRound className="mr-1.5 h-3.5 w-3.5" /> anahtarlar
+          <TabsTrigger value="keys" className="text-[11px] sm:text-sm py-2">
+            <KeyRound className="mr-1 h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">anahtarlar</span>
           </TabsTrigger>
-          <TabsTrigger value="profile" className="text-xs sm:text-sm">
-            <UserIcon className="mr-1.5 h-3.5 w-3.5" /> profil
+          <TabsTrigger value="profile" className="text-[11px] sm:text-sm py-2">
+            <UserIcon className="mr-1 h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">profil</span>
           </TabsTrigger>
         </TabsList>
 
