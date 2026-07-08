@@ -227,16 +227,19 @@ function UsersAdmin() {
                             ADMIN
                           </span>
                         )}
+                        {u.email_confirmed ? (
+                          <MailCheck className="h-3 w-3 text-primary" aria-label="e-posta doğrulanmış" />
+                        ) : (
+                          <MailX className="h-3 w-3 text-warn" aria-label="e-posta doğrulanmamış" />
+                        )}
                       </div>
                       <div className="text-xs text-muted-foreground truncate font-mono">
                         {u.email ?? "—"}
                       </div>
                     </div>
                     <div className="hidden sm:flex flex-col items-end shrink-0 font-mono text-[10px] text-muted-foreground">
-                      <span>{u.stats.total} sipariş</span>
-                      <span className="text-primary">
-                        ₺{u.stats.spend.toLocaleString("tr-TR")}
-                      </span>
+                      <span>{u.stats.total} sipariş · ₺{u.stats.spend.toLocaleString("tr-TR")}</span>
+                      <span className="text-cyan">giriş: {timeAgo(u.last_sign_in_at)}</span>
                     </div>
                     {isOpen ? (
                       <ChevronUp className="h-4 w-4 text-muted-foreground" />
@@ -257,8 +260,14 @@ function UsersAdmin() {
                         accent="cyan"
                       />
                     </div>
-                    <div className="text-[10px] font-mono text-muted-foreground">
-                      kayıt: {new Date(u.created_at).toLocaleString("tr-TR")}
+                    <div className="grid sm:grid-cols-2 gap-2 text-[11px] font-mono text-muted-foreground">
+                      <div>kayıt: {new Date(u.created_at).toLocaleString("tr-TR")}</div>
+                      <div>
+                        son giriş:{" "}
+                        {u.last_sign_in_at
+                          ? new Date(u.last_sign_in_at).toLocaleString("tr-TR")
+                          : "—"}
+                      </div>
                     </div>
                     <UserOrders userId={u.id} />
                     <div className="flex flex-wrap gap-2 pt-2 border-t border-border/40">
