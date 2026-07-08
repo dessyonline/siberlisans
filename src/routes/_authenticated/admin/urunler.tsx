@@ -31,7 +31,7 @@ type Product = {
   name: string;
   slug: string;
   description: string | null;
-  duration: "monthly" | "yearly" | "lifetime";
+  duration: "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "lifetime";
   delivery_type: DeliveryType;
   price_try: number;
   active: boolean;
