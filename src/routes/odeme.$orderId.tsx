@@ -74,7 +74,7 @@ function Payment() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, status, price_try, reference_code, receipt_path, user_note, created_at, updated_at, approved_at, product:products(name, slug, duration, delivery_type, manual_fulfillment, unlimited_stock, tier), keys:order_keys(license_key:license_keys(key_value, activation_token)), discount:order_discounts(discount_try, code_snapshot)"
+          "id, status, price_try, reference_code, receipt_path, user_note, created_at, updated_at, approved_at, product:products(name, slug, duration, delivery_type, manual_fulfillment, unlimited_stock, tier), items:order_items(id, quantity, unit_price_try, product_name_snapshot, product:products(name, slug, delivery_type, manual_fulfillment, unlimited_stock)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, delivery_type))), discount:order_discounts(discount_try, code_snapshot)"
         )
         .eq("id", orderId)
         .single();
@@ -170,14 +170,33 @@ function Payment() {
   }
   if (!order) return <div className="p-12 font-mono text-center">yükleniyor…</div>;
 
-  const deliveredKey = order.keys?.[0]?.license_key?.key_value;
-  const deliveredToken = order.keys?.[0]?.license_key?.activation_token ?? null;
-  const deliveryType = (order.product?.delivery_type ?? "key") as DeliveryType;
-  const isManual = !!order.product?.manual_fulfillment;
-  const isUnlimited = !!(order.product as { unlimited_stock?: boolean } | null)?.unlimited_stock;
+  const orderItems = (order.items ?? []) as Array<{
+    id: string;
+    quantity: number;
+    unit_price_try: number;
+    product_name_snapshot: string;
+    product: { name: string; delivery_type: string; manual_fulfillment: boolean; unlimited_stock: boolean } | null;
+  }>;
+  const isCartOrder = orderItems.length > 0;
+  const deliveredKeys = (order.keys ?? [])
+    .map((k) => k.license_key)
+    .filter((k): k is NonNullable<typeof k> => !!k?.key_value);
+  const firstKey = deliveredKeys[0];
+  const deliveredKey = firstKey?.key_value;
+  const deliveredToken = firstKey?.activation_token ?? null;
+  // Effective delivery flags: cart order → derive from items
+  const effectiveProduct = order.product ?? (isCartOrder ? orderItems[0].product : null);
+  const deliveryType = (effectiveProduct?.delivery_type ?? "key") as DeliveryType;
+  const isManual = isCartOrder
+    ? orderItems.some((i) => i.product?.manual_fulfillment)
+    : !!order.product?.manual_fulfillment;
+  const isUnlimited = isCartOrder
+    ? orderItems.some((i) => i.product?.unlimited_stock)
+    : !!(order.product as { unlimited_stock?: boolean } | null)?.unlimited_stock;
   const isEpic = ((order.product as { tier?: string } | null)?.tier ?? "standard") === "epic";
   const needsManualContact =
-    order.status === "approved" && !deliveredKey && (isManual || isUnlimited);
+    order.status === "approved" && deliveredKeys.length === 0 && (isManual || isUnlimited);
+  const orderTitle = order.product?.name ?? `Sepet siparişi · ${orderItems.length} ürün`;
   const stepIndex = STEPS.findIndex((s) => s.key === currentStep);
 
   return (
