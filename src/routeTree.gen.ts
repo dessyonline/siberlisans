@@ -31,6 +31,7 @@ import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as BakiyeYukleTopupIdRouteImport } from './routes/bakiye-yukle.$topupId'
 import { Route as ApiValidateRouteImport } from './routes/api/validate'
+import { Route as ApiUnlockRouteImport } from './routes/api/unlock'
 import { Route as ApiSourceCodeRouteImport } from './routes/api/source-code'
 import { Route as ApiRevokeRouteImport } from './routes/api/revoke'
 import { Route as ApiRemoveWatermarkRouteImport } from './routes/api/remove-watermark'
@@ -189,6 +190,11 @@ const BakiyeYukleTopupIdRoute = BakiyeYukleTopupIdRouteImport.update({
 const ApiValidateRoute = ApiValidateRouteImport.update({
   id: '/api/validate',
   path: '/api/validate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiUnlockRoute = ApiUnlockRouteImport.update({
+  id: '/api/unlock',
+  path: '/api/unlock',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSourceCodeRoute = ApiSourceCodeRouteImport.update({
@@ -501,6 +507,7 @@ export interface FileRoutesByFullPath {
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
   '/api/source-code': typeof ApiSourceCodeRoute
+  '/api/unlock': typeof ApiUnlockRoute
   '/api/validate': typeof ApiValidateRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -573,6 +580,7 @@ export interface FileRoutesByTo {
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
   '/api/source-code': typeof ApiSourceCodeRoute
+  '/api/unlock': typeof ApiUnlockRoute
   '/api/validate': typeof ApiValidateRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -648,6 +656,7 @@ export interface FileRoutesById {
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
   '/api/source-code': typeof ApiSourceCodeRoute
+  '/api/unlock': typeof ApiUnlockRoute
   '/api/validate': typeof ApiValidateRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -723,6 +732,7 @@ export interface FileRouteTypes {
     | '/api/remove-watermark'
     | '/api/revoke'
     | '/api/source-code'
+    | '/api/unlock'
     | '/api/validate'
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
@@ -795,6 +805,7 @@ export interface FileRouteTypes {
     | '/api/remove-watermark'
     | '/api/revoke'
     | '/api/source-code'
+    | '/api/unlock'
     | '/api/validate'
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
@@ -869,6 +880,7 @@ export interface FileRouteTypes {
     | '/api/remove-watermark'
     | '/api/revoke'
     | '/api/source-code'
+    | '/api/unlock'
     | '/api/validate'
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
@@ -935,6 +947,7 @@ export interface RootRouteChildren {
   ApiRemoveWatermarkRoute: typeof ApiRemoveWatermarkRoute
   ApiRevokeRoute: typeof ApiRevokeRoute
   ApiSourceCodeRoute: typeof ApiSourceCodeRoute
+  ApiUnlockRoute: typeof ApiUnlockRoute
   ApiValidateRoute: typeof ApiValidateRoute
   BakiyeYukleTopupIdRoute: typeof BakiyeYukleTopupIdRoute
   BlogSlugRoute: typeof BlogSlugRoute
@@ -1109,6 +1122,13 @@ declare module '@tanstack/react-router' {
       path: '/api/validate'
       fullPath: '/api/validate'
       preLoaderRoute: typeof ApiValidateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/unlock': {
+      id: '/api/unlock'
+      path: '/api/unlock'
+      fullPath: '/api/unlock'
+      preLoaderRoute: typeof ApiUnlockRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/source-code': {
@@ -1574,6 +1594,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiRemoveWatermarkRoute: ApiRemoveWatermarkRoute,
   ApiRevokeRoute: ApiRevokeRoute,
   ApiSourceCodeRoute: ApiSourceCodeRoute,
+  ApiUnlockRoute: ApiUnlockRoute,
   ApiValidateRoute: ApiValidateRoute,
   BakiyeYukleTopupIdRoute: BakiyeYukleTopupIdRoute,
   BlogSlugRoute: BlogSlugRoute,
