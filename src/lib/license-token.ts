@@ -1,9 +1,11 @@
 import { createHmac } from "crypto";
 
 /**
- * TTL for issued license tokens (30 minutes).
+ * TTL for issued license tokens (2 minutes) — kısa tutuluyor ki
+ * admin bir key'i iptal ettiğinde extension en fazla ~2 dk içinde
+ * tekrar /api/validate çağırıp reddedilsin.
  */
-export const LICENSE_TOKEN_TTL_MS = 30 * 60 * 1000;
+export const LICENSE_TOKEN_TTL_MS = 2 * 60 * 1000;
 
 /**
  * Sign an HMAC-SHA256 token binding hwid + license_key + expires timestamp.
