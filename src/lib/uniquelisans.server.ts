@@ -89,3 +89,53 @@ export async function ulOrderStatus(orderId: number | string): Promise<UlStatusR
   return body;
 }
 
+/**
+ * Sipariş oluşturmadan hemen önce Uniquelisans tarafında ürünün stok/fiyat durumunu doğrular.
+ * Fail-open: API'ye ulaşılamıyorsa engellemez (yerel stok kontrolü devrede kalır).
+ */
+export async function ulCheckAvailability(externalId: number): Promise<{
+  ok: boolean;
+  reason?: "out_of_stock" | "inactive";
+  amount?: number;
+  stock_count?: number | null;
+  is_stock?: boolean;
+}> {
+  const key = process.env.UNIQUELISANS_API_KEY;
+  const base = process.env.UNIQUELISANS_API_URL || DEFAULT_URL;
+  if (!key) return { ok: true };
+  try {
+    const url = new URL(`${base}/products/${externalId}`);
+    url.searchParams.set("key", key);
+    const res = await fetch(url.toString(), { headers: { accept: "application/json" } });
+    if (!res.ok) return { ok: true };
+    const body = (await res.json()) as {
+      product_detail?: { amount: number; is_stock: boolean; stock_count: number | null };
+    };
+    const d = body.product_detail;
+    if (!d) return { ok: true };
+    const out = d.is_stock && typeof d.stock_count === "number" && d.stock_count <= 0;
+    if (out) return { ok: false, reason: "out_of_stock", amount: d.amount, stock_count: d.stock_count, is_stock: d.is_stock };
+    return { ok: true, amount: d.amount, stock_count: d.stock_count, is_stock: d.is_stock };
+  } catch {
+    return { ok: true };
+  }
+}
+
+/** Uniquelisans bayi bakiyesi. Ulaşılamazsa null döner (bloklamaz). */
+export async function ulGetBalance(): Promise<number | null> {
+  const key = process.env.UNIQUELISANS_API_KEY;
+  const base = process.env.UNIQUELISANS_API_URL || DEFAULT_URL;
+  if (!key) return null;
+  try {
+    const url = new URL(`${base}/balance`);
+    url.searchParams.set("key", key);
+    const res = await fetch(url.toString(), { headers: { accept: "application/json" } });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { balance?: number };
+    return Number(body.balance ?? 0);
+  } catch {
+    return null;
+  }
+}
+
+
