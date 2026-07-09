@@ -39,8 +39,8 @@ export const Route = createFileRoute("/api/admin/create")({
         const { data, error } = await supabaseAdmin.rpc("admin_create_license_key", {
           _product_id: product_id,
           _duration_days: duration_days,
-          _key_value: payload?.key_value ?? null,
-          _email: payload?.email ?? null,
+          _key_value: payload?.key_value ?? undefined,
+          _email: payload?.email ?? undefined,
         });
         if (error) return json({ success: false, error: error.message }, 500);
         const row = Array.isArray(data) ? data[0] : data;
