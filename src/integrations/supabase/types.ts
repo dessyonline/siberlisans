@@ -1436,6 +1436,10 @@ export type Database = {
           sold: number
         }[]
       }
+      admin_purge_available_keys: {
+        Args: { _product_id: string }
+        Returns: number
+      }
       admin_set_license: {
         Args: {
           _action: string
