@@ -13,6 +13,7 @@ import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload
 import { PointsBlock } from "@/components/PointsBlock";
 import enparaQr from "@/assets/enpara-qr.png";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/lib/cart-store";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import {
