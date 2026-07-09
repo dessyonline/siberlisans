@@ -18,7 +18,7 @@ export const createOrder = createServerFn({ method: "POST" })
     const { supabase, userId, claims } = context;
     const { data: product, error: pErr } = await supabase
       .from("products")
-      .select("id, name, price_try, active, manual_fulfillment, unlimited_stock")
+      .select("id, name, price_try, active, manual_fulfillment, unlimited_stock, source, external_id, external_price")
       .eq("id", data.productId)
       .single();
     if (pErr || !product || !product.active) throw new Error("Ürün bulunamadı.");
@@ -31,7 +31,6 @@ export const createOrder = createServerFn({ method: "POST" })
         .eq("product_id", product.id)
         .eq("status", "available");
       if (!count || count === 0) {
-        // Admin'e "stok tükendi, alıcı bekliyor" uyarısı gönder (fire-and-forget)
         try {
           const { notifyTelegram, outOfStockAlertMessage } = await import("@/lib/telegram.server");
           await notifyTelegram(outOfStockAlertMessage({
@@ -44,6 +43,46 @@ export const createOrder = createServerFn({ method: "POST" })
         );
       }
     }
+
+    // Uniquelisans canlı stok/bakiye kontrolü (fail-open: API erişilemezse engellemez)
+    if (product.source === "uniquelisans" && product.external_id) {
+      try {
+        const { ulCheckAvailability, ulGetBalance } = await import("@/lib/uniquelisans.server");
+        const avail = await ulCheckAvailability(Number(product.external_id));
+        if (!avail.ok) {
+          try {
+            const { notifyTelegram, outOfStockAlertMessage } = await import("@/lib/telegram.server");
+            await notifyTelegram(outOfStockAlertMessage({
+              productName: `${product.name} (Uniquelisans)`,
+              userEmail: (claims as { email?: string } | null)?.email ?? null,
+            }));
+          } catch { /* ignore */ }
+          throw new Error(
+            `"${product.name}" tedarikçide (Uniquelisans) şu an stokta yok. Kısa süre içinde tekrar dener misin?`,
+          );
+        }
+        const cost = Number(avail.amount ?? product.external_price ?? 0);
+        if (cost > 0) {
+          const bal = await ulGetBalance();
+          if (bal !== null && bal < cost) {
+            try {
+              const { notifyTelegram } = await import("@/lib/telegram.server");
+              await notifyTelegram(
+                `⚠️ Uniquelisans bakiyesi yetersiz — ${bal.toFixed(2)} < ${cost.toFixed(2)} · Ürün: ${product.name}`,
+              );
+            } catch { /* ignore */ }
+            throw new Error(
+              "Tedarikçi tarafında geçici bir aksaklık var, siparişini biraz sonra tekrar deneyebilir misin? Yöneticiye bildirim gönderildi.",
+            );
+          }
+        }
+      } catch (e) {
+        // Bilinçli olarak fırlatılan mesajları yukarı taşı
+        if (e instanceof Error && /Uniquelisans|stokta yok|tedarikçi/i.test(e.message)) throw e;
+        console.error("[uniquelisans] preflight", (e as Error).message);
+      }
+    }
+
 
     const referenceCode = genRef();
     const { data: order, error } = await supabase
