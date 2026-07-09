@@ -190,10 +190,12 @@ type Row = {
   manual_fulfillment: boolean | null;
   stock_hint: number | null;
   unlimited_stock: boolean | null;
+  supplier_out_of_stock: boolean | null;
   created_at: string;
   sort_order?: number | null;
   tier?: string | null;
   license_keys: { status: string }[] | null;
+
 };
 
 // Kategori grupları — talep sırasına göre: AI en önce, sonra görsel/office...
