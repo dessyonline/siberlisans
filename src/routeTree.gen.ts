@@ -65,6 +65,7 @@ import { Route as AuthenticatedAdminCaprazSatisRouteImport } from './routes/_aut
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin/blog'
 import { Route as AuthenticatedAdminBildirimlerRouteImport } from './routes/_authenticated/admin/bildirimler'
 import { Route as AuthenticatedAdminAyarlarRouteImport } from './routes/_authenticated/admin/ayarlar'
+import { Route as ApiPublicHooksUniquelisansCatalogRouteImport } from './routes/api/public/hooks/uniquelisans-catalog'
 import { Route as ApiPublicHooksSyncUniquelisansRouteImport } from './routes/api/public/hooks/sync-uniquelisans'
 import { Route as ApiPublicHooksShopierRouteImport } from './routes/api/public/hooks/shopier'
 import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
@@ -370,6 +371,12 @@ const AuthenticatedAdminAyarlarRoute =
     path: '/ayarlar',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const ApiPublicHooksUniquelisansCatalogRoute =
+  ApiPublicHooksUniquelisansCatalogRouteImport.update({
+    id: '/api/public/hooks/uniquelisans-catalog',
+    path: '/api/public/hooks/uniquelisans-catalog',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksSyncUniquelisansRoute =
   ApiPublicHooksSyncUniquelisansRouteImport.update({
     id: '/api/public/hooks/sync-uniquelisans',
@@ -454,6 +461,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
+  '/api/public/hooks/uniquelisans-catalog': typeof ApiPublicHooksUniquelisansCatalogRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -514,6 +522,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
+  '/api/public/hooks/uniquelisans-catalog': typeof ApiPublicHooksUniquelisansCatalogRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -577,6 +586,7 @@ export interface FileRoutesById {
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
+  '/api/public/hooks/uniquelisans-catalog': typeof ApiPublicHooksUniquelisansCatalogRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -640,6 +650,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/shopier'
     | '/api/public/hooks/sync-uniquelisans'
+    | '/api/public/hooks/uniquelisans-catalog'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -700,6 +711,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/shopier'
     | '/api/public/hooks/sync-uniquelisans'
+    | '/api/public/hooks/uniquelisans-catalog'
   id:
     | '__root__'
     | '/'
@@ -762,6 +774,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/shopier'
     | '/api/public/hooks/sync-uniquelisans'
+    | '/api/public/hooks/uniquelisans-catalog'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -795,6 +808,7 @@ export interface RootRouteChildren {
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
   ApiPublicHooksShopierRoute: typeof ApiPublicHooksShopierRoute
   ApiPublicHooksSyncUniquelisansRoute: typeof ApiPublicHooksSyncUniquelisansRoute
+  ApiPublicHooksUniquelisansCatalogRoute: typeof ApiPublicHooksUniquelisansCatalogRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1191,6 +1205,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAyarlarRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/api/public/hooks/uniquelisans-catalog': {
+      id: '/api/public/hooks/uniquelisans-catalog'
+      path: '/api/public/hooks/uniquelisans-catalog'
+      fullPath: '/api/public/hooks/uniquelisans-catalog'
+      preLoaderRoute: typeof ApiPublicHooksUniquelisansCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/sync-uniquelisans': {
       id: '/api/public/hooks/sync-uniquelisans'
       path: '/api/public/hooks/sync-uniquelisans'
@@ -1335,6 +1356,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,
   ApiPublicHooksShopierRoute: ApiPublicHooksShopierRoute,
   ApiPublicHooksSyncUniquelisansRoute: ApiPublicHooksSyncUniquelisansRoute,
+  ApiPublicHooksUniquelisansCatalogRoute:
+    ApiPublicHooksUniquelisansCatalogRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
