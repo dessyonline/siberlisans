@@ -47,12 +47,22 @@ function AdminSubscriptions() {
       const { data, error } = await supabase
         .from("subscriptions")
         .select(
-          "id, status, auto_renew, interval_days, price_try, next_renewal_at, last_renewed_at, failure_count, user_id, product:products(name, slug), profile:profiles(email, display_name)",
+          "id, status, auto_renew, interval_days, price_try, next_renewal_at, last_renewed_at, failure_count, user_id, product:products(name, slug)",
         )
         .order("next_renewal_at", { ascending: true })
         .limit(500);
       if (error) throw error;
-      return (data ?? []) as unknown as Row[];
+      const rows = (data ?? []) as unknown as Omit<Row, "profile">[];
+      const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
+      let profilesById: Record<string, { email: string | null; display_name: string | null }> = {};
+      if (userIds.length > 0) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, email, display_name")
+          .in("id", userIds);
+        profilesById = Object.fromEntries((profs ?? []).map((p) => [p.id, { email: p.email, display_name: p.display_name }]));
+      }
+      return rows.map<Row>((r) => ({ ...r, profile: profilesById[r.user_id] ?? null }));
     },
     staleTime: 15_000,
   });
