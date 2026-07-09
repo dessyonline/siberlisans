@@ -1700,6 +1700,9 @@ function CrossSellOffer({ orderId, orderStatus, categories, excludeSlugs }: { or
                   slug: product.slug,
                   name: product.name,
                   priceTry: discounted,
+                  originalPriceTry: original,
+                  discountTry: Math.max(0, original - discounted),
+                  discountLabel: "çapraz satış indirimi",
                   imageUrl: product.image_url ?? null,
                 });
                 toast.success("sepete eklendi");
