@@ -71,10 +71,48 @@ function Payment() {
   const setFieldsFn = useServerFn(setOrderCheckoutFields);
 
   const payWithWalletFn = useServerFn(payOrderWithWallet);
+  const removeItemFn = useServerFn(removeItemFromOrder);
+  const cancelOrderFn = useServerFn(cancelPendingOrder);
   const [payingWallet, setPayingWallet] = useState(false);
   const [mfaGateOpen, setMfaGateOpen] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
+  const [removingItemId, setRemovingItemId] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleRemoveItem = async (itemId: string) => {
+    if (!confirm("Bu ürünü siparişten çıkarmak istediğine emin misin?")) return;
+    setRemovingItemId(itemId);
+    try {
+      const res = await removeItemFn({ data: { orderId, itemId } });
+      if (res.itemsLeft === 0) {
+        toast.success("Sipariş iptal edildi");
+        navigate({ to: "/urunler" });
+        return;
+      }
+      toast.success("Ürün çıkarıldı");
+      qc.invalidateQueries({ queryKey: ["order", orderId] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setRemovingItemId(null);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!confirm("Siparişi iptal etmek istediğine emin misin? Bu işlem geri alınamaz.")) return;
+    setCancelling(true);
+    try {
+      await cancelOrderFn({ data: { orderId } });
+      toast.success("Sipariş iptal edildi");
+      navigate({ to: "/urunler" });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setCancelling(false);
+    }
+  };
+
 
   const runWalletPay = async () => {
     setPayingWallet(true);
