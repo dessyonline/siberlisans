@@ -150,6 +150,15 @@ export const createOrder = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
+    // Aktif flash indirimi otomatik uygula
+    try {
+      await applyFlashDiscountToOrder(supabase, order.id, [
+        { productId: product.id, quantity: 1, unitPriceTry: Number(product.price_try) },
+      ]);
+    } catch (e) {
+      console.error("[flash] apply", (e as Error).message);
+    }
+
     // Telegram bildirimi burada gönderilmiyor — sadece dekont yüklendiğinde
     // veya ödeme onaylandığında gönderiliyor (spam'ı önlemek için).
 
