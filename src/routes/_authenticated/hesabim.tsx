@@ -86,6 +86,8 @@ function MyAccount() {
               deliveryType: (k.product?.delivery_type ?? o.product?.delivery_type ?? "key") as DeliveryType,
               keyValue: k.key_value,
               activationToken: k.activation_token,
+              expiresAt: k.expires_at,
+              durationDays: k.duration_days,
               date: o.created_at,
               orderId: o.id,
             })),
