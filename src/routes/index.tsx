@@ -38,6 +38,7 @@ import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge"
 import { applyFlash } from "@/lib/flash-sales";
 import { useAuth } from "@/lib/auth-context";
 import { Wallet } from "lucide-react";
+import { AdminEditBadge } from "@/components/AdminEditBadge";
 
 export const Route = createFileRoute("/")({
   component: Index,
