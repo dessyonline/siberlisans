@@ -969,7 +969,7 @@ export const addItemToOrder = createServerFn({ method: "POST" })
     } as any);
     if (error) throw new Error(error.message);
     const row = Array.isArray(rows) ? rows[0] : rows;
-    return { orderId: row?.order_id as string, totalTry: Number(row?.total_try ?? 0) };
+    return { orderId: row?.out_order_id as string, totalTry: Number(row?.out_total_try ?? 0) };
   });
 
 const removeItemInput = z.object({

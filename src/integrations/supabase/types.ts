@@ -1366,8 +1366,8 @@ export type Database = {
       add_item_to_order: {
         Args: { _order_id: string; _product_id: string; _quantity?: number }
         Returns: {
-          order_id: string
-          total_try: number
+          out_order_id: string
+          out_total_try: number
         }[]
       }
       admin_adjust_wallet: {
