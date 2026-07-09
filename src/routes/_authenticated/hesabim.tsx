@@ -349,6 +349,8 @@ type KeyRow = {
   deliveryType: DeliveryType;
   keyValue: string;
   activationToken: string | null;
+  expiresAt: string | null;
+  durationDays: number | null;
   date: string;
   orderId: string;
 };
