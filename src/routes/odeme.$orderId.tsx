@@ -330,31 +330,42 @@ function Payment() {
 
       {/* Stepper rail */}
       <div className="glass-card rounded-b-lg rounded-t-none p-3 sm:p-5 scan-line">
-        <ol className="grid grid-cols-3 gap-1.5 sm:gap-2">
+        <ol className="flex items-stretch gap-1.5 sm:gap-3">
           {STEPS.map((s, i) => {
             const done = i < stepIndex || order.status === "approved";
             const active = i === stepIndex && order.status !== "approved";
             return (
-              <li key={s.key} className="relative min-w-0">
+              <li key={s.key} className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-1">
                 <div
-                  className={`rounded-md border p-2 sm:p-3 font-mono transition-all ${
+                  className={`relative flex-1 min-w-0 rounded-md border p-2 sm:p-3 font-mono transition-all ${
                     active
-                      ? "border-primary/60 bg-primary/5 neon-glow"
+                      ? "border-primary/70 bg-primary/10 neon-glow"
                       : done
-                      ? "border-primary/30 bg-primary/[0.02]"
+                      ? "border-primary/40 bg-primary/5"
                       : "border-border/40 opacity-60"
                   }`}
                 >
                   <div className="flex items-center gap-1 sm:gap-2 text-[9px] sm:text-[10px] tracking-widest text-muted-foreground">
-                    <span>[{String(i + 1).padStart(2, "0")}/03]</span>
+                    <span className={active ? "text-primary" : ""}>[{String(i + 1).padStart(2, "0")}/03]</span>
                     {done && <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />}
-                    {active && <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse shrink-0" />}
+                    {active && (
+                      <span className="ml-auto flex items-center gap-1 text-primary text-[9px] uppercase">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                        <span className="hidden sm:inline">canlı</span>
+                      </span>
+                    )}
                   </div>
-                  <div className={`mt-1 text-[11px] sm:text-sm break-all ${active ? "neon-text" : done ? "text-primary" : ""}`}>
+                  <div className={`mt-1 text-[11px] sm:text-sm break-words ${active ? "neon-text font-semibold" : done ? "text-primary" : ""}`}>
                     ./{s.label}
                   </div>
                   <div className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 break-words">{s.sub}</div>
                 </div>
+                {i < STEPS.length - 1 && (
+                  <ArrowRight
+                    className={`h-3 w-3 sm:h-4 sm:w-4 shrink-0 ${done ? "text-primary" : "text-border/60"}`}
+                    aria-hidden
+                  />
+                )}
               </li>
             );
           })}
