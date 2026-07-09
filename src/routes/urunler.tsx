@@ -551,6 +551,7 @@ function ProductCard({ product: p }: { product: Row }) {
           <Zap className="h-3 w-3" /> -%{percent}
         </div>
       )}
+      <AdminEditBadge productId={p.id} />
 
       <div className="relative p-4 flex flex-col flex-1">
         {/* Top row: category + badges */}
