@@ -407,10 +407,26 @@ function Payment() {
                   </div>
                 ))}
               </div>
-              <div className="mt-3 flex items-center justify-between border-t border-primary/20 pt-3 font-mono text-sm">
-                <span className="text-muted-foreground uppercase text-[10px] tracking-widest">toplam</span>
-                <span className="text-primary text-base neon-text-glow">₺{Number(order.price_try).toLocaleString("tr-TR")}</span>
-              </div>
+              {(() => {
+                const discs = Array.isArray(order.discount) ? order.discount : (order.discount ? [order.discount] : []);
+                const totalDisc = discs.reduce((s, d) => s + Number((d as { discount_try?: number })?.discount_try ?? 0), 0);
+                const orig = Number(order.price_try);
+                const final = Math.max(0, orig - totalDisc);
+                return (
+                  <div className="mt-3 flex items-center justify-between border-t border-primary/20 pt-3 font-mono text-sm">
+                    <span className="text-muted-foreground uppercase text-[10px] tracking-widest">ödenecek</span>
+                    <span className="flex items-center gap-2">
+                      {totalDisc > 0 && (
+                        <span className="text-[11px] text-muted-foreground line-through">₺{orig.toLocaleString("tr-TR")}</span>
+                      )}
+                      <span className="text-primary text-base neon-text-glow">₺{final.toLocaleString("tr-TR")}</span>
+                      {totalDisc > 0 && (
+                        <span className="rounded border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">−₺{totalDisc.toLocaleString("tr-TR")}</span>
+                      )}
+                    </span>
+                  </div>
+                );
+              })()}
             </section>
           )}
 
