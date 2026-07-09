@@ -382,14 +382,18 @@ function KeysAdmin() {
           const pct = total ? Math.round((avail / total) * 100) : 0;
           const low = avail === 0 ? "empty" : avail < 3 ? "low" : "ok";
           return (
-            <button
+            <div
               key={p.id}
-              onClick={() => setProductId(p.id)}
-              className={`text-left glass-card rounded-lg p-4 transition-all hover:border-primary/60 hover:neon-glow ${
+              className={`relative glass-card rounded-lg p-4 transition-all hover:border-primary/60 hover:neon-glow ${
                 productId === p.id ? "border-primary/60 neon-glow" : ""
               } ${low === "empty" ? "border-destructive/40" : low === "low" ? "border-warn/40" : ""}`}
             >
-              <div className="flex items-center justify-between gap-2">
+              <button
+                onClick={() => setProductId(p.id)}
+                className="absolute inset-0 rounded-lg"
+                aria-label={`${p.name} seç`}
+              />
+              <div className="relative flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 font-mono">
                   <Package className="h-4 w-4 text-primary" />
                   <span className="font-semibold text-sm">{p.name}</span>
@@ -397,7 +401,7 @@ function KeysAdmin() {
                 {low === "empty" && <AlertTriangle className="h-4 w-4 text-destructive" />}
                 {low === "low" && <AlertTriangle className="h-4 w-4 text-warn" />}
               </div>
-              <div className="mt-3 flex items-end gap-3 font-mono">
+              <div className="relative mt-3 flex items-end gap-3 font-mono">
                 <div>
                   <div className={`text-3xl ${low === "empty" ? "text-destructive" : low === "low" ? "text-warn" : "neon-text"}`}>
                     {avail}
@@ -408,7 +412,7 @@ function KeysAdmin() {
                   / {total} · <span className="text-cyan">{assigned}</span> satılmış
                 </div>
               </div>
-              <div className="mt-3 h-1.5 rounded-full bg-muted/40 overflow-hidden">
+              <div className="relative mt-3 h-1.5 rounded-full bg-muted/40 overflow-hidden">
                 <div
                   className={`h-full transition-all ${
                     low === "empty" ? "bg-destructive" : low === "low" ? "bg-warn" : "bg-primary"
@@ -416,12 +420,30 @@ function KeysAdmin() {
                   style={{ width: `${pct}%` }}
                 />
               </div>
-              <div className="mt-2 flex items-center justify-between font-mono text-[10px] text-muted-foreground">
+              <div className="relative mt-2 flex items-center justify-between font-mono text-[10px] text-muted-foreground">
                 <span>/{p.slug}</span>
                 <span className="text-primary/80">{DELIVERY_HINTS[(p.delivery_type ?? "key") as DeliveryType].title.toLowerCase()}</span>
                 <span>{p.active ? "aktif" : "pasif"}</span>
               </div>
-            </button>
+              {avail > 0 && (
+                <button
+                  onClick={async (e) => {
+                    e.stopPropagation();
+                    if (!confirm(`${p.name}: ${avail} adet müsait (satılmamış) key silinecek. Emin misin?`)) return;
+                    const { data, error } = await supabase.rpc("admin_purge_available_keys", { _product_id: p.id });
+                    if (error) return toast.error(error.message);
+                    toast.success(`${data ?? 0} key silindi`);
+                    qc.invalidateQueries({ queryKey: ["admin-pool"] });
+                    qc.invalidateQueries({ queryKey: ["license-keys-recent"] });
+                  }}
+                  className="relative mt-3 inline-flex items-center gap-1 rounded border border-destructive/40 bg-destructive/5 px-2 py-1 text-[10px] font-mono text-destructive hover:bg-destructive/15 transition"
+                  title="Müsait (satılmamış) key'leri sil"
+                >
+                  <Trash2 className="h-3 w-3" />
+                  müsaitleri temizle ({avail})
+                </button>
+              )}
+            </div>
           );
         })}
       </div>
