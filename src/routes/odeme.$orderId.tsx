@@ -323,6 +323,29 @@ function Payment() {
         />
       )}
 
+      {(order.status === "pending" || order.status === "reviewing") && (
+        <CrossSellOffer
+          categories={
+            isCartOrder
+              ? (orderItems
+                  .map((i) => (i.product as { category?: string | null } | null)?.category ?? null)
+                  .filter(Boolean) as string[])
+              : [
+                  ((order.product as { category?: string | null } | null)?.category ?? null),
+                ].filter(Boolean) as string[]
+          }
+          excludeSlugs={
+            isCartOrder
+              ? (orderItems
+                  .map((i) => (i.product as { slug?: string | null } | null)?.slug ?? null)
+                  .filter(Boolean) as string[])
+              : [((order.product as { slug?: string | null } | null)?.slug ?? null)].filter(Boolean) as string[]
+          }
+        />
+      )}
+
+
+
 
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
