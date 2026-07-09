@@ -205,6 +205,7 @@ function SiteHeader() {
         <nav className="hidden md:flex items-center gap-6 font-mono text-sm">
           <Link to="/" className="text-muted-foreground hover:text-primary">./anasayfa</Link>
           <Link to="/urunler" className="text-muted-foreground hover:text-primary">./ürünler</Link>
+          <Link to="/paketler" className="text-muted-foreground hover:text-primary">./paketler</Link>
           <Link to="/blog" className="text-muted-foreground hover:text-primary">./blog</Link>
           <Link to="/nasil-calisir" className="text-muted-foreground hover:text-primary">./nasıl-çalışır</Link>
           <Link to="/sss" className="text-muted-foreground hover:text-primary">./SSS</Link>
@@ -326,6 +327,7 @@ function SiteFooter() {
             <div className="text-primary/80 mb-2">./keşfet</div>
             <ul className="space-y-1 text-muted-foreground">
               <li><Link to="/urunler" className="hover:text-primary">Ürünler</Link></li>
+              <li><Link to="/paketler" className="hover:text-primary">Paketler</Link></li>
               <li><Link to="/blog" className="hover:text-primary">Blog</Link></li>
               <li><Link to="/nasil-calisir" className="hover:text-primary">Nasıl çalışır</Link></li>
               <li><Link to="/sss" className="hover:text-primary">SSS</Link></li>
