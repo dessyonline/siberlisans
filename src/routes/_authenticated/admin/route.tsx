@@ -20,6 +20,7 @@ import {
   Boxes,
   LifeBuoy,
   Sparkles,
+  Bell,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -47,6 +48,7 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
   { to: "/admin/keyler", label: "key havuzu", icon: KeyRound },
   { to: "/admin/lisanslar", label: "lisanslar", icon: ShieldCheck },
   { to: "/admin/kullanicilar", label: "kullanıcılar", icon: Users },
+  { to: "/admin/bildirimler", label: "bildirimler", icon: Bell },
   { to: "/admin/promosyonlar", label: "promosyonlar", icon: Ticket },
   { to: "/admin/kuponlar", label: "kuponlar", icon: Ticket },
   { to: "/admin/kampanyalar", label: "kampanyalar", icon: Megaphone },

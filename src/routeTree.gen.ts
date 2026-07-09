@@ -63,6 +63,7 @@ import { Route as AuthenticatedAdminDestekRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminCuzdanRouteImport } from './routes/_authenticated/admin/cuzdan'
 import { Route as AuthenticatedAdminCaprazSatisRouteImport } from './routes/_authenticated/admin/capraz-satis'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin/blog'
+import { Route as AuthenticatedAdminBildirimlerRouteImport } from './routes/_authenticated/admin/bildirimler'
 import { Route as AuthenticatedAdminAyarlarRouteImport } from './routes/_authenticated/admin/ayarlar'
 import { Route as ApiPublicHooksSyncUniquelisansRouteImport } from './routes/api/public/hooks/sync-uniquelisans'
 import { Route as ApiPublicHooksShopierRouteImport } from './routes/api/public/hooks/shopier'
@@ -357,6 +358,12 @@ const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
   path: '/blog',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminBildirimlerRoute =
+  AuthenticatedAdminBildirimlerRouteImport.update({
+    id: '/bildirimler',
+    path: '/bildirimler',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminAyarlarRoute =
   AuthenticatedAdminAyarlarRouteImport.update({
     id: '/ayarlar',
@@ -423,6 +430,7 @@ export interface FileRoutesByFullPath {
   '/urun/$slug': typeof UrunSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
+  '/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/capraz-satis': typeof AuthenticatedAdminCaprazSatisRoute
   '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
@@ -482,6 +490,7 @@ export interface FileRoutesByTo {
   '/urun/$slug': typeof UrunSlugRoute
   '/blog': typeof BlogIndexRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
+  '/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/capraz-satis': typeof AuthenticatedAdminCaprazSatisRoute
   '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
@@ -544,6 +553,7 @@ export interface FileRoutesById {
   '/urun/$slug': typeof UrunSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/_authenticated/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
+  '/_authenticated/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/_authenticated/admin/capraz-satis': typeof AuthenticatedAdminCaprazSatisRoute
   '/_authenticated/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
@@ -606,6 +616,7 @@ export interface FileRouteTypes {
     | '/urun/$slug'
     | '/blog/'
     | '/admin/ayarlar'
+    | '/admin/bildirimler'
     | '/admin/blog'
     | '/admin/capraz-satis'
     | '/admin/cuzdan'
@@ -665,6 +676,7 @@ export interface FileRouteTypes {
     | '/urun/$slug'
     | '/blog'
     | '/admin/ayarlar'
+    | '/admin/bildirimler'
     | '/admin/blog'
     | '/admin/capraz-satis'
     | '/admin/cuzdan'
@@ -726,6 +738,7 @@ export interface FileRouteTypes {
     | '/urun/$slug'
     | '/blog/'
     | '/_authenticated/admin/ayarlar'
+    | '/_authenticated/admin/bildirimler'
     | '/_authenticated/admin/blog'
     | '/_authenticated/admin/capraz-satis'
     | '/_authenticated/admin/cuzdan'
@@ -1164,6 +1177,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminBlogRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/bildirimler': {
+      id: '/_authenticated/admin/bildirimler'
+      path: '/bildirimler'
+      fullPath: '/admin/bildirimler'
+      preLoaderRoute: typeof AuthenticatedAdminBildirimlerRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/ayarlar': {
       id: '/_authenticated/admin/ayarlar'
       path: '/ayarlar'
@@ -1204,6 +1224,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAyarlarRoute: typeof AuthenticatedAdminAyarlarRoute
+  AuthenticatedAdminBildirimlerRoute: typeof AuthenticatedAdminBildirimlerRoute
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
   AuthenticatedAdminCaprazSatisRoute: typeof AuthenticatedAdminCaprazSatisRoute
   AuthenticatedAdminCuzdanRoute: typeof AuthenticatedAdminCuzdanRoute
@@ -1228,6 +1249,7 @@ interface AuthenticatedAdminRouteRouteChildren {
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
     AuthenticatedAdminAyarlarRoute: AuthenticatedAdminAyarlarRoute,
+    AuthenticatedAdminBildirimlerRoute: AuthenticatedAdminBildirimlerRoute,
     AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
     AuthenticatedAdminCaprazSatisRoute: AuthenticatedAdminCaprazSatisRoute,
     AuthenticatedAdminCuzdanRoute: AuthenticatedAdminCuzdanRoute,
