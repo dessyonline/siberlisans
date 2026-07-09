@@ -8,10 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { toast } from "sonner";
-import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck, RefreshCw } from "lucide-react";
+import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck, RefreshCw, Users, Trophy } from "lucide-react";
 import { TierCard } from "@/components/TierCard";
 import { AVATARS, UserAvatar } from "@/components/UserAvatar";
 import { SubscriptionsBlock } from "@/components/SubscriptionsBlock";
+import { BadgesBlock } from "@/components/BadgesBlock";
+import { AffiliateBlock } from "@/components/AffiliateBlock";
+import { TransferButton } from "@/components/TransferButton";
 
 export const Route = createFileRoute("/_authenticated/hesabim")({
   component: MyAccount,
@@ -160,8 +163,12 @@ function MyAccount() {
 
 
 
+      <div className="mt-4">
+        <BadgesBlock />
+      </div>
+
       <Tabs defaultValue="orders" className="mt-6 md:mt-8">
-        <TabsList className="grid w-full grid-cols-4 font-mono h-auto">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 font-mono h-auto">
           <TabsTrigger value="orders" className="text-[11px] sm:text-sm py-2">
             <ShoppingCart className="mr-1 h-3.5 w-3.5 shrink-0" />
             <span className="truncate">siparişler</span>
@@ -174,9 +181,17 @@ function MyAccount() {
             <RefreshCw className="mr-1 h-3.5 w-3.5 shrink-0" />
             <span className="truncate">abonelikler</span>
           </TabsTrigger>
+          <TabsTrigger value="partner" className="text-[11px] sm:text-sm py-2">
+            <Users className="mr-1 h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">partner</span>
+          </TabsTrigger>
           <TabsTrigger value="profile" className="text-[11px] sm:text-sm py-2">
             <UserIcon className="mr-1 h-3.5 w-3.5 shrink-0" />
             <span className="truncate">profil</span>
+          </TabsTrigger>
+          <TabsTrigger value="badges" className="text-[11px] sm:text-sm py-2">
+            <Trophy className="mr-1 h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">rozetler</span>
           </TabsTrigger>
         </TabsList>
 
@@ -189,8 +204,14 @@ function MyAccount() {
         <TabsContent value="subs" className="mt-6">
           <SubscriptionsBlock />
         </TabsContent>
+        <TabsContent value="partner" className="mt-6">
+          <AffiliateBlock />
+        </TabsContent>
         <TabsContent value="profile" className="mt-6">
           <ProfileTab userId={user?.id ?? ""} email={user?.email ?? ""} onSignOut={signOut} />
+        </TabsContent>
+        <TabsContent value="badges" className="mt-6">
+          <BadgesBlock />
         </TabsContent>
       </Tabs>
     </div>
