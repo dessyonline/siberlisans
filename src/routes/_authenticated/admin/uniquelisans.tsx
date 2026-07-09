@@ -145,7 +145,8 @@ function UniquelisansPage() {
               className="w-full rounded border border-primary/30 bg-background/40 px-3 py-2 font-mono text-sm"
             />
             <div className="mt-1 font-mono text-[11px] text-muted-foreground">
-              örn. alış 50 ₺ → satış <b className="text-primary">{fmt(50 * (1 + markup / 100))} ₺</b> · kar <b className="text-primary">{fmt(50 * markup / 100)} ₺</b>
+              örn. alış 50 ₺ → satış <b className="text-primary">{fmt(Math.max(50 * (1 + markup / 100), 50 + MIN_PROFIT_TL))} ₺</b> · kar <b className="text-primary">{fmt(Math.max(50 * markup / 100, MIN_PROFIT_TL))} ₺</b>
+              <span className="ml-1 text-amber-500">(min. kar ₺{MIN_PROFIT_TL} garanti)</span>
             </div>
           </div>
 
