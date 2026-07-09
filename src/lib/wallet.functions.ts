@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // Sabit paketler
-export const TOPUP_PACKAGES = [100, 250, 500, 1000] as const;
+export const TOPUP_PACKAGES = [250, 500, 1000, 2000] as const;
 
 function genRef() {
   const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
