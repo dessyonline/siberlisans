@@ -208,7 +208,7 @@ function Payment() {
     quantity: number;
     unit_price_try: number;
     product_name_snapshot: string;
-    product: { name: string; delivery_type: string; manual_fulfillment: boolean; unlimited_stock: boolean } | null;
+    product: { name: string; slug?: string | null; image_url?: string | null; duration?: string | null; delivery_type: string; manual_fulfillment: boolean; unlimited_stock: boolean } | null;
   }>;
   const isCartOrder = orderItems.length > 0;
   const deliveredKeys = (order.keys ?? [])
