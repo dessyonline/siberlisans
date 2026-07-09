@@ -588,28 +588,31 @@ export type Database = {
           code_snapshot: string
           created_at: string
           discount_try: number
+          id: string
           order_id: string
-          promo_code_id: string
+          promo_code_id: string | null
         }
         Insert: {
           code_snapshot: string
           created_at?: string
           discount_try: number
+          id?: string
           order_id: string
-          promo_code_id: string
+          promo_code_id?: string | null
         }
         Update: {
           code_snapshot?: string
           created_at?: string
           discount_try?: number
+          id?: string
           order_id?: string
-          promo_code_id?: string
+          promo_code_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "order_discounts_order_id_fkey"
             columns: ["order_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
