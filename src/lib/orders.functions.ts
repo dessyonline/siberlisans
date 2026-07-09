@@ -150,6 +150,15 @@ export const createOrder = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
+    // Aktif flash indirimi otomatik uygula
+    try {
+      await applyFlashDiscountToOrder(supabase, order.id, [
+        { productId: product.id, quantity: 1, unitPriceTry: Number(product.price_try) },
+      ]);
+    } catch (e) {
+      console.error("[flash] apply", (e as Error).message);
+    }
+
     // Telegram bildirimi burada gönderilmiyor — sadece dekont yüklendiğinde
     // veya ödeme onaylandığında gönderiliyor (spam'ı önlemek için).
 
@@ -295,6 +304,26 @@ export const createCartOrder = createServerFn({ method: "POST" })
 
     const row = Array.isArray(rows) ? rows[0] : rows;
     if (!row?.order_id) throw new Error("Sipariş oluşturulamadı.");
+
+    // Aktif flash indirimlerini order_discounts'a yaz
+    try {
+      const { data: prods } = await supabase
+        .from("products")
+        .select("id, price_try")
+        .in("id", data.items.map((i) => i.productId));
+      const priceMap = new Map<string, number>((prods ?? []).map((p) => [p.id, Number(p.price_try)]));
+      await applyFlashDiscountToOrder(
+        supabase,
+        row.order_id as string,
+        data.items.map((i) => ({
+          productId: i.productId,
+          quantity: i.quantity,
+          unitPriceTry: priceMap.get(i.productId) ?? 0,
+        })),
+      );
+    } catch (e) {
+      console.error("[flash] apply cart", (e as Error).message);
+    }
 
     // Telegram bildirimi burada gönderilmiyor — sadece dekont yüklendiğinde
     // veya ödeme onaylandığında gönderiliyor (spam'ı önlemek için).
@@ -873,3 +902,50 @@ export const deletePromoCode = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+
+/**
+ * Sipariş için aktif flash indirimlerini order_discounts tablosuna yazar.
+ * Kupon akışıyla uyumlu (SUM(discount_try) final fiyattan düşülüyor).
+ */
+async function applyFlashDiscountToOrder(
+  supabase: import("@supabase/supabase-js").SupabaseClient,
+  orderId: string,
+  items: Array<{ productId: string; quantity: number; unitPriceTry: number }>,
+): Promise<void> {
+  if (items.length === 0) return;
+  const nowIso = new Date().toISOString();
+  const { data: sales } = await supabase
+    // biome-ignore lint/suspicious/noExplicitAny: table not in generated types
+    .from("flash_sales" as any)
+    .select("id, product_id, discount_type, discount_value, ends_at")
+    .in("product_id", items.map((i) => i.productId))
+    .eq("is_active", true)
+    .lte("starts_at", nowIso)
+    .gt("ends_at", nowIso);
+  const rows = (sales ?? []) as Array<{
+    id: string; product_id: string; discount_type: "percent" | "amount"; discount_value: number;
+  }>;
+  if (rows.length === 0) return;
+  const bestByProduct = new Map<string, { saleId: string; saved: number }>();
+  for (const it of items) {
+    const applicable = rows.filter((r) => r.product_id === it.productId);
+    if (applicable.length === 0) continue;
+    let best: { saleId: string; saved: number } | null = null;
+    for (const r of applicable) {
+      const raw = r.discount_type === "percent"
+        ? it.unitPriceTry * (Number(r.discount_value) / 100)
+        : Number(r.discount_value);
+      const perUnit = Math.max(0, Math.min(it.unitPriceTry, raw));
+      const saved = Math.round(perUnit * it.quantity * 100) / 100;
+      if (saved > 0 && (!best || saved > best.saved)) best = { saleId: r.id, saved };
+    }
+    if (best) bestByProduct.set(it.productId, best);
+  }
+  const inserts = Array.from(bestByProduct.values()).map((v) => ({
+    order_id: orderId,
+    code_snapshot: `FLASH-${v.saleId.slice(0, 8)}`,
+    discount_try: v.saved,
+  }));
+  if (inserts.length === 0) return;
+  await supabase.from("order_discounts").insert(inserts);
+}

@@ -5,6 +5,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProductLogo } from "@/components/ProductLogo";
+import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
+import { applyFlash } from "@/lib/flash-sales";
 import {
   Search, X, Sparkles, TrendingUp, Zap, ShieldCheck, ArrowRight, Package, Star, Crown,
 } from "lucide-react";
@@ -504,7 +506,8 @@ function ProductCard({ product: p }: { product: Row }) {
   const stock = liveStock > 0 ? liveStock : (p.stock_hint ?? 0);
   const soldOut = !manual && !unlimited && stock === 0;
 
-
+  const flashSale = useActiveFlashSale(p.id);
+  const { final, saved, percent, hasSale } = applyFlash(Number(p.price_try), flashSale);
 
   const isNew = (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7;
   const epic = p.tier === "epic";
@@ -513,6 +516,12 @@ function ProductCard({ product: p }: { product: Row }) {
     <div className={`group relative rounded-xl overflow-hidden flex flex-col glass-card-hover ${epic ? "epic-card border border-transparent" : "glass-card border border-border/60"}`}>
       {epic && <div className="pointer-events-none absolute inset-0 epic-shimmer" aria-hidden />}
       <div className="pointer-events-none absolute inset-0 cyber-grid opacity-20" aria-hidden />
+
+      {hasSale && (
+        <div className="absolute top-2 left-2 z-10 inline-flex items-center gap-1 rounded-full bg-warn text-warn-foreground px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider shadow-[0_0_18px_oklch(0.78_0.18_75/0.55)] animate-pulse">
+          <Zap className="h-3 w-3" /> -%{percent}
+        </div>
+      )}
 
       <div className="relative p-4 flex flex-col flex-1">
         {/* Top row: category + badges */}
@@ -555,19 +564,34 @@ function ProductCard({ product: p }: { product: Row }) {
           <span className="rounded-full bg-primary/10 text-primary border border-primary/30 px-2.5 py-1">
             {DUR[p.duration] ?? p.duration}
           </span>
+          {hasSale && <FlashSaleBadge sale={flashSale} />}
         </div>
 
         <CyberStockLoader stock={stock} manual={manual} unlimited={unlimited} soldOut={soldOut} />
-
-
 
         {/* Price + CTA */}
         <div className="mt-auto pt-4 flex items-end justify-between gap-3">
           <div className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 shadow-[0_0_20px_oklch(0.82_0.20_145/0.18)]">
             <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-primary/70 mb-0.5">fiyat</div>
-            <div className={`font-mono text-3xl leading-none font-bold tracking-tight neon-text ${epic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "text-primary"}`}>
-              ₺{Number(p.price_try).toLocaleString("tr-TR")}
-            </div>
+            {hasSale ? (
+              <div className="flex items-baseline gap-2">
+                <div className={`font-mono text-3xl leading-none font-bold tracking-tight neon-text ${epic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "text-primary"}`}>
+                  ₺{final.toLocaleString("tr-TR")}
+                </div>
+                <div className="font-mono text-xs text-muted-foreground line-through">
+                  ₺{Number(p.price_try).toLocaleString("tr-TR")}
+                </div>
+              </div>
+            ) : (
+              <div className={`font-mono text-3xl leading-none font-bold tracking-tight neon-text ${epic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "text-primary"}`}>
+                ₺{Number(p.price_try).toLocaleString("tr-TR")}
+              </div>
+            )}
+            {hasSale && (
+              <div className="mt-0.5 font-mono text-[9px] uppercase tracking-wider text-warn">
+                ₺{saved.toLocaleString("tr-TR")} tasarruf
+              </div>
+            )}
           </div>
           <Button asChild size="sm" className="font-mono bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_oklch(0.82_0.20_145/0.35)] transition-all">
             <Link to="/urun/$slug" params={{ slug: p.slug }} className="flex items-center gap-1">

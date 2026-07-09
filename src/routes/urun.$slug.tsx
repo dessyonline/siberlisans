@@ -121,6 +121,23 @@ function ProductDetail() {
   });
 
   const flashSale = useActiveFlashSale(product?.id);
+  const flash = (() => {
+    const price = Number(product?.price_try ?? 0);
+    if (!flashSale) return { final: price, saved: 0, percent: 0, hasSale: false };
+    const raw =
+      flashSale.discount_type === "percent"
+        ? price * (Number(flashSale.discount_value) / 100)
+        : Number(flashSale.discount_value);
+    const saved = Math.max(0, Math.min(price, Math.round(raw * 100) / 100));
+    const final = Math.max(0, Math.round((price - saved) * 100) / 100);
+    const percent =
+      flashSale.discount_type === "percent"
+        ? Number(flashSale.discount_value)
+        : price > 0
+          ? Math.round((saved / price) * 100)
+          : 0;
+    return { final, saved, percent, hasSale: saved > 0 };
+  })();
 
   const handleBuy = async () => {
     if (!user) {
@@ -146,7 +163,7 @@ function ProductDetail() {
       productId: product.id,
       slug: product.slug,
       name: product.name,
-      priceTry: Number(product.price_try),
+      priceTry: flash.hasSale ? flash.final : Number(product.price_try),
       imageUrl: product.image_url ?? null,
     });
     toast.success("Sepete eklendi");
@@ -327,10 +344,21 @@ function ProductDetail() {
                     <div className="font-mono text-[9px] uppercase tracking-[0.28em] text-primary/70">
                       final_price
                     </div>
-                    <div className="font-mono text-sm sm:text-base text-primary neon-text-glow">
-                      ₺{Number(product.price_try).toLocaleString("tr-TR")}
+                    <div className="font-mono text-sm sm:text-base text-primary neon-text-glow flex items-baseline gap-2">
+                      {flash.hasSale && (
+                        <span className="text-[10px] text-muted-foreground line-through">
+                          ₺{Number(product.price_try).toLocaleString("tr-TR")}
+                        </span>
+                      )}
+                      <span>₺{(flash.hasSale ? flash.final : Number(product.price_try)).toLocaleString("tr-TR")}</span>
+                      {flash.hasSale && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded border border-warn/40 bg-warn/10 text-warn font-semibold">
+                          -%{flash.percent}
+                        </span>
+                      )}
                     </div>
                   </div>
+
 
                   {/* MRZ-like footer */}
                   <div className="mt-2 font-mono text-[9px] text-primary/70 tracking-[0.15em] break-all border-t border-primary/15 pt-1.5">
@@ -625,8 +653,13 @@ function ProductDetail() {
             <div className="font-mono text-[10px] text-muted-foreground truncate">
               <span className="text-primary">&gt;</span> {product.name}
             </div>
-            <div className="font-mono text-lg neon-text leading-none">
-              ₺{Number(product.price_try).toLocaleString("tr-TR")}
+            <div className="font-mono text-lg neon-text leading-none flex items-baseline gap-2">
+              {flash.hasSale && (
+                <span className="text-[10px] text-muted-foreground line-through">
+                  ₺{Number(product.price_try).toLocaleString("tr-TR")}
+                </span>
+              )}
+              <span>₺{(flash.hasSale ? flash.final : Number(product.price_try)).toLocaleString("tr-TR")}</span>
             </div>
           </div>
           <Button

@@ -34,6 +34,8 @@ import {
 import { ProductCardSkeleton } from "@/components/Skeleton";
 import { ProductLogo } from "@/components/ProductLogo";
 import { UserAvatar } from "@/components/UserAvatar";
+import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
+import { applyFlash } from "@/lib/flash-sales";
 import { useAuth } from "@/lib/auth-context";
 import { Wallet } from "lucide-react";
 
@@ -752,8 +754,11 @@ function ProductCard({
   const isNew = p.created_at
     ? (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7
     : false;
-  const showStockBar = !manual && !unlimited && stock > 0 && stock <= 10;
   const epic = p.tier === "epic";
+
+  const flashSale = useActiveFlashSale(p.id);
+  const { final, saved, percent, hasSale } = applyFlash(Number(p.price_try), flashSale);
+
   return (
     <div
       className={`glass-card glass-card-hover rounded-xl p-5 flex flex-col group relative overflow-hidden ${
@@ -770,6 +775,11 @@ function ProductCard({
           <div className="pointer-events-none absolute inset-0 opacity-70 bg-[radial-gradient(circle_at_20%_10%,rgba(217,166,52,0.18),transparent_55%),radial-gradient(circle_at_85%_90%,rgba(155,89,255,0.16),transparent_55%)]" aria-hidden />
           <div className="pointer-events-none absolute inset-0 epic-shimmer" aria-hidden />
         </>
+      )}
+      {hasSale && (
+        <div className="absolute top-2 left-2 z-10 inline-flex items-center gap-1 rounded-full bg-warn text-warn-foreground px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider shadow-[0_0_18px_oklch(0.78_0.18_75/0.55)] animate-pulse">
+          <Zap className="h-3 w-3" /> -%{percent}
+        </div>
       )}
       {/* corner shine on hover */}
       <div className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" aria-hidden />
@@ -809,6 +819,7 @@ function ProductCard({
         <span className="rounded-md bg-muted/40 text-muted-foreground border border-border px-2 py-0.5">
           {DURATION_LABEL[p.duration] ?? p.duration}
         </span>
+        {hasSale && <FlashSaleBadge sale={flashSale} />}
       </div>
 
       <CyberStockLoader stock={stock} manual={manual} unlimited={unlimited} soldOut={soldOut} />
@@ -816,9 +827,25 @@ function ProductCard({
       <div className="relative mt-auto pt-5 flex items-end justify-between">
         <div className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 shadow-[0_0_20px_oklch(0.82_0.20_145/0.18)]">
           <div className="text-[9px] uppercase tracking-[0.25em] text-primary/70 font-mono mb-0.5">fiyat</div>
-          <div className={`font-mono text-3xl font-bold tracking-tight neon-text ${epic ? "text-[oklch(0.88_0.15_75)] epic-text-glow" : "text-primary"}`}>
-            ₺{Number(p.price_try).toLocaleString("tr-TR")}
-          </div>
+          {hasSale ? (
+            <div className="flex items-baseline gap-2">
+              <div className={`font-mono text-3xl font-bold tracking-tight neon-text ${epic ? "text-[oklch(0.88_0.15_75)] epic-text-glow" : "text-primary"}`}>
+                ₺{final.toLocaleString("tr-TR")}
+              </div>
+              <div className="font-mono text-xs text-muted-foreground line-through">
+                ₺{Number(p.price_try).toLocaleString("tr-TR")}
+              </div>
+            </div>
+          ) : (
+            <div className={`font-mono text-3xl font-bold tracking-tight neon-text ${epic ? "text-[oklch(0.88_0.15_75)] epic-text-glow" : "text-primary"}`}>
+              ₺{Number(p.price_try).toLocaleString("tr-TR")}
+            </div>
+          )}
+          {hasSale && (
+            <div className="mt-0.5 font-mono text-[9px] uppercase tracking-wider text-warn">
+              ₺{saved.toLocaleString("tr-TR")} tasarruf
+            </div>
+          )}
         </div>
         <Button asChild size="sm" disabled={soldOut} className={epic ? "bg-[oklch(0.78_0.16_75)] hover:bg-[oklch(0.72_0.16_75)] text-black" : ""}>
           <Link to="/urun/$slug" params={{ slug: p.slug }}>
