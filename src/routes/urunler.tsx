@@ -20,7 +20,7 @@ export const Route = createFileRoute("/urunler")({
       {
         name: "description",
         content:
-          "Windows, Office, Adobe, ChatGPT, Midjourney ve daha fazlası. Havale/EFT ile anında teslim edilen orijinal lisans anahtarları.",
+          "Windows, Office, Adobe, ChatGPT, Midjourney ve daha fazlası. Anında teslim edilen orijinal lisans anahtarları — güvenli ödeme, otomatik aktivasyon.",
       },
       { property: "og:title", content: "Lisans Kataloğu — SiberPHP" },
       {
@@ -28,8 +28,33 @@ export const Route = createFileRoute("/urunler")({
         content: "Anında teslim edilen orijinal yazılım lisansları — Windows, Office, Adobe, AI araçları ve daha fazlası.",
       },
       { property: "og:url", content: "https://siberlisans.lovable.app/urunler" },
+      { property: "og:type", content: "website" },
     ],
     links: [{ rel: "canonical", href: "https://siberlisans.lovable.app/urunler" }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "Lisans Kataloğu — SiberPHP",
+          url: "https://siberlisans.lovable.app/urunler",
+          description: "Windows, Office, Adobe, ChatGPT, Midjourney ve daha fazlası — anında teslim.",
+          inLanguage: "tr-TR",
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "Anasayfa", item: "https://siberlisans.lovable.app/" },
+            { "@type": "ListItem", position: 2, name: "Lisanslar", item: "https://siberlisans.lovable.app/urunler" },
+          ],
+        }),
+      },
+    ],
   }),
 });
 
