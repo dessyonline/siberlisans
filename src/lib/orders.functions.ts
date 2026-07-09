@@ -18,10 +18,14 @@ export const createOrder = createServerFn({ method: "POST" })
     const { supabase, userId, claims } = context;
     const { data: product, error: pErr } = await supabase
       .from("products")
-      .select("id, name, price_try, active, manual_fulfillment, unlimited_stock, source, external_id, external_price")
+      .select("id, name, price_try, active, manual_fulfillment, unlimited_stock, source, external_id, external_price, supplier_out_of_stock")
       .eq("id", data.productId)
       .single();
     if (pErr || !product || !product.active) throw new Error("Ürün bulunamadı.");
+    if (product.supplier_out_of_stock) {
+      throw new Error(`"${product.name}" tedarikçide geçici olarak stokta yok. Stok döndüğünde otomatik olarak tekrar satışa açılacak.`);
+    }
+
 
     // Stok ön-kontrolü: manuel değil ve sınırsız değilse, havuzda kullanılabilir key var mı?
     // Uniquelisans ürünleri için havuz boşsa API'den çekileceği için bu kontrolü atlıyoruz;
