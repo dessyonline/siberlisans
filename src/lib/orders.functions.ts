@@ -126,12 +126,56 @@ export const createCartOrder = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => cartOrderInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, claims } = context;
+
+    // Uniquelisans canlı stok/bakiye ön-kontrolü (fail-open)
+    try {
+      const { data: prods } = await supabase
+        .from("products")
+        .select("id, name, source, external_id, external_price")
+        .in("id", data.items.map((i) => i.productId));
+      const ulProds = (prods ?? []).filter(
+        (p) => p.source === "uniquelisans" && p.external_id,
+      );
+      if (ulProds.length > 0) {
+        const { ulCheckAvailability, ulGetBalance } = await import("@/lib/uniquelisans.server");
+        let totalCost = 0;
+        for (const p of ulProds) {
+          const qty = data.items.find((i) => i.productId === p.id)?.quantity ?? 1;
+          const avail = await ulCheckAvailability(Number(p.external_id));
+          if (!avail.ok) {
+            throw new Error(
+              `"${p.name}" tedarikçide (Uniquelisans) şu an stokta yok. Sepetten çıkarıp tekrar dener misin?`,
+            );
+          }
+          totalCost += Number(avail.amount ?? p.external_price ?? 0) * qty;
+        }
+        if (totalCost > 0) {
+          const bal = await ulGetBalance();
+          if (bal !== null && bal < totalCost) {
+            try {
+              const { notifyTelegram } = await import("@/lib/telegram.server");
+              await notifyTelegram(
+                `⚠️ Uniquelisans bakiyesi yetersiz (sepet) — ${bal.toFixed(2)} < ${totalCost.toFixed(2)}`,
+              );
+            } catch { /* ignore */ }
+            throw new Error(
+              "Tedarikçi tarafında geçici bir aksaklık var, sepetini biraz sonra tekrar deneyebilir misin?",
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (e instanceof Error && /stokta yok|tedarikçi/i.test(e.message)) throw e;
+      console.error("[uniquelisans] cart preflight", (e as Error).message);
+    }
+
     const { data: rows, error } = await supabase.rpc("create_cart_order", {
       _items: data.items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
       // biome-ignore lint/suspicious/noExplicitAny: rpc signature updated
       _coupon_code: (data.couponCode ?? null) as any,
     } as never);
     if (error) throw new Error(error.message);
+
     const row = Array.isArray(rows) ? rows[0] : rows;
     if (!row?.order_id) throw new Error("Sipariş oluşturulamadı.");
 
