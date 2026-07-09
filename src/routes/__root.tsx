@@ -35,6 +35,7 @@ import { CartDrawer } from "../components/CartDrawer";
 import { NotificationBell } from "../components/NotificationBell";
 import { UserAvatar } from "../components/UserAvatar";
 import { IpChangeGuard } from "../components/security/IpChangeGuard";
+import { SocialPopup } from "../components/SocialPopup";
 import { useQuery } from "@tanstack/react-query";
 
 function NotFoundComponent() {
