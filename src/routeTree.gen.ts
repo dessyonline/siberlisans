@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UrunlerRouteImport } from './routes/urunler'
 import { Route as SssRouteImport } from './routes/sss'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
 import { Route as KvkkRouteImport } from './routes/kvkk'
 import { Route as KosullarRouteImport } from './routes/kosullar'
@@ -84,6 +85,11 @@ const SssRoute = SssRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NasilCalisirRoute = NasilCalisirRouteImport.update({
@@ -410,6 +416,7 @@ export interface FileRoutesByFullPath {
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/nasil-calisir': typeof NasilCalisirRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
@@ -472,6 +479,7 @@ export interface FileRoutesByTo {
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/nasil-calisir': typeof NasilCalisirRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
@@ -535,6 +543,7 @@ export interface FileRoutesById {
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/nasil-calisir': typeof NasilCalisirRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
@@ -599,6 +608,7 @@ export interface FileRouteTypes {
     | '/kosullar'
     | '/kvkk'
     | '/nasil-calisir'
+    | '/robots.txt'
     | '/sitemap.xml'
     | '/sss'
     | '/urunler'
@@ -661,6 +671,7 @@ export interface FileRouteTypes {
     | '/kosullar'
     | '/kvkk'
     | '/nasil-calisir'
+    | '/robots.txt'
     | '/sitemap.xml'
     | '/sss'
     | '/urunler'
@@ -723,6 +734,7 @@ export interface FileRouteTypes {
     | '/kosullar'
     | '/kvkk'
     | '/nasil-calisir'
+    | '/robots.txt'
     | '/sitemap.xml'
     | '/sss'
     | '/urunler'
@@ -787,6 +799,7 @@ export interface RootRouteChildren {
   KosullarRoute: typeof KosullarRoute
   KvkkRoute: typeof KvkkRoute
   NasilCalisirRoute: typeof NasilCalisirRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SssRoute: typeof SssRoute
   UrunlerRoute: typeof UrunlerRoute
@@ -832,6 +845,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nasil-calisir': {
@@ -1334,6 +1354,7 @@ const rootRouteChildren: RootRouteChildren = {
   KosullarRoute: KosullarRoute,
   KvkkRoute: KvkkRoute,
   NasilCalisirRoute: NasilCalisirRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SssRoute: SssRoute,
   UrunlerRoute: UrunlerRoute,
