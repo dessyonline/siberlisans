@@ -9,7 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Upload, AlertTriangle, CheckCircle2, Database, Package, Search, X, FileUp } from "lucide-react";
+import { Upload, AlertTriangle, CheckCircle2, Database, Package, Search, X, FileUp, UserCheck, Copy, ExternalLink } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/admin/keyler")({
   component: KeysAdmin,
@@ -114,6 +115,44 @@ function KeysAdmin() {
       );
     });
   }, [keys, search, statusFilter, productId]);
+
+  const { data: assignedKeys } = useQuery({
+    queryKey: ["admin-assigned-keys"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_list_assigned_keys", { _limit: 200 });
+      if (error) throw error;
+      return (data ?? []) as Array<{
+        key_id: string;
+        key_value: string;
+        product_id: string;
+        product_name: string | null;
+        order_id: string | null;
+        reference_code: string | null;
+        order_status: string | null;
+        user_email: string | null;
+        assigned_at: string | null;
+        activated_at: string | null;
+        expires_at: string | null;
+        revoked: boolean;
+      }>;
+    },
+    refetchInterval: 30000,
+  });
+
+  const [assignedSearch, setAssignedSearch] = useState("");
+  const filteredAssigned = useMemo(() => {
+    const q = assignedSearch.trim().toLowerCase();
+    return (assignedKeys ?? []).filter((r) => {
+      if (productId && r.product_id !== productId) return false;
+      if (!q) return true;
+      return (
+        r.key_value.toLowerCase().includes(q) ||
+        (r.reference_code ?? "").toLowerCase().includes(q) ||
+        (r.user_email ?? "").toLowerCase().includes(q) ||
+        (r.product_name ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [assignedKeys, assignedSearch, productId]);
 
   const doImport = async () => {
     if (!productId) return toast.error("Ürün seçin");
@@ -243,7 +282,88 @@ function KeysAdmin() {
         </div>
       </div>
 
-      {/* POOL OVERVIEW */}
+      {/* ATANMIŞ KEYLER */}
+      <div className="mt-5 glass-card rounded-lg p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <div className="font-mono text-sm">
+            <span className="text-muted-foreground">$ </span>
+            <span className="neon-text">atanmış keyler</span>
+            <span className="ml-2 text-xs text-muted-foreground">
+              ({filteredAssigned.length}/{(assignedKeys ?? []).length})
+            </span>
+          </div>
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              value={assignedSearch}
+              onChange={(e) => setAssignedSearch(e.target.value)}
+              placeholder="key / ref / email / ürün…"
+              className="pl-7 pr-7 h-8 font-mono text-xs"
+            />
+            {assignedSearch && (
+              <button onClick={() => setAssignedSearch("")} className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-muted-foreground hover:text-foreground">
+                <X className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="space-y-1 max-h-[500px] overflow-auto">
+          {filteredAssigned.map((r) => (
+            <div key={r.key_id} className="grid grid-cols-[1fr_auto] gap-2 items-center border-b border-border/40 py-1.5 font-mono text-xs">
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <UserCheck className="h-3 w-3 text-cyan shrink-0" />
+                  <code className="break-all truncate">{r.key_value}</code>
+                  <button
+                    onClick={() => { navigator.clipboard.writeText(r.key_value); toast.success("Key kopyalandı"); }}
+                    className="text-muted-foreground hover:text-primary shrink-0"
+                  >
+                    <Copy className="h-3 w-3" />
+                  </button>
+                </div>
+                <div className="text-[10px] text-muted-foreground mt-0.5 flex flex-wrap gap-x-2 gap-y-0.5">
+                  <span>{r.product_name ?? "—"}</span>
+                  {r.reference_code && (
+                    <Link
+                      to="/admin/siparisler"
+                      className="text-primary hover:underline inline-flex items-center gap-0.5"
+                    >
+                      {r.reference_code} <ExternalLink className="h-2.5 w-2.5" />
+                    </Link>
+                  )}
+                  {r.user_email && <span>· {r.user_email}</span>}
+                  {r.assigned_at && (
+                    <span>
+                      · {new Date(r.assigned_at).toLocaleString("tr-TR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="text-right shrink-0 space-y-0.5">
+                {r.revoked ? (
+                  <span className="text-destructive">iptal</span>
+                ) : r.activated_at ? (
+                  <span className="text-primary">aktive</span>
+                ) : (
+                  <span className="text-muted-foreground">bekliyor</span>
+                )}
+                {r.expires_at && (
+                  <div className="text-[10px] text-muted-foreground">
+                    bitiş {new Date(r.expires_at).toLocaleDateString("tr-TR")}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+          {filteredAssigned.length === 0 && (
+            <div className="text-center text-muted-foreground font-mono py-6">
+              {assignedSearch || productId ? "eşleşen atanmış key yok" : "henüz atanmış key yok"}
+            </div>
+          )}
+        </div>
+      </div>
+
+
       <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {(pool ?? []).map((p) => {
           const avail = p.license_keys.filter((k) => k.status === "available").length;
