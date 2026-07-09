@@ -785,9 +785,9 @@ export const importLicenseKeys = createServerFn({ method: "POST" })
     }));
     const { error, count } = await supabase
       .from("license_keys")
-      .upsert(rows, { onConflict: "key_value", ignoreDuplicates: true, count: "exact" });
+      .upsert(rows, { onConflict: "product_id,key_value", ignoreDuplicates: true, count: "exact" });
     if (error) throw new Error(error.message);
-    return { inserted: count ?? rows.length };
+    return { inserted: count ?? rows.length, submitted: rows.length };
   });
 
 const productInput = z.object({
