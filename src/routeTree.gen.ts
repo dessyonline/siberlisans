@@ -13,6 +13,7 @@ import { Route as UrunlerRouteImport } from './routes/urunler'
 import { Route as SssRouteImport } from './routes/sss'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as PaketlerRouteImport } from './routes/paketler'
 import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
 import { Route as KvkkRouteImport } from './routes/kvkk'
 import { Route as KosullarRouteImport } from './routes/kosullar'
@@ -46,6 +47,8 @@ import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedBildirimlerRouteImport } from './routes/_authenticated/bildirimler'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
+import { Route as AuthenticatedFaturaOrderIdRouteImport } from './routes/_authenticated/fatura.$orderId'
 import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
 import { Route as AuthenticatedAdminUniquelisansRouteImport } from './routes/_authenticated/admin/uniquelisans'
 import { Route as AuthenticatedAdminTedarikciLogRouteImport } from './routes/_authenticated/admin/tedarikci-log'
@@ -92,6 +95,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaketlerRoute = PaketlerRouteImport.update({
+  id: '/paketler',
+  path: '/paketler',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NasilCalisirRoute = NasilCalisirRouteImport.update({
@@ -261,6 +269,17 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const ApiPublicSitemapDotxmlRoute = ApiPublicSitemapDotxmlRouteImport.update({
+  id: '/api/public/sitemap.xml',
+  path: '/api/public/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedFaturaOrderIdRoute =
+  AuthenticatedFaturaOrderIdRouteImport.update({
+    id: '/fatura/$orderId',
+    path: '/fatura/$orderId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminUrunlerRoute =
   AuthenticatedAdminUrunlerRouteImport.update({
     id: '/urunler',
@@ -430,6 +449,7 @@ export interface FileRoutesByFullPath {
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/nasil-calisir': typeof NasilCalisirRoute
+  '/paketler': typeof PaketlerRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
@@ -478,6 +498,8 @@ export interface FileRoutesByFullPath {
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
+  '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
+  '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
@@ -495,6 +517,7 @@ export interface FileRoutesByTo {
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/nasil-calisir': typeof NasilCalisirRoute
+  '/paketler': typeof PaketlerRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
@@ -542,6 +565,8 @@ export interface FileRoutesByTo {
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
+  '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
+  '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
@@ -561,6 +586,7 @@ export interface FileRoutesById {
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/nasil-calisir': typeof NasilCalisirRoute
+  '/paketler': typeof PaketlerRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
@@ -609,6 +635,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/_authenticated/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/_authenticated/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
+  '/_authenticated/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
+  '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
@@ -628,6 +656,7 @@ export interface FileRouteTypes {
     | '/kosullar'
     | '/kvkk'
     | '/nasil-calisir'
+    | '/paketler'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/sss'
@@ -676,6 +705,8 @@ export interface FileRouteTypes {
     | '/admin/tedarikci-log'
     | '/admin/uniquelisans'
     | '/admin/urunler'
+    | '/fatura/$orderId'
+    | '/api/public/sitemap.xml'
     | '/admin/'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
@@ -693,6 +724,7 @@ export interface FileRouteTypes {
     | '/kosullar'
     | '/kvkk'
     | '/nasil-calisir'
+    | '/paketler'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/sss'
@@ -740,6 +772,8 @@ export interface FileRouteTypes {
     | '/admin/tedarikci-log'
     | '/admin/uniquelisans'
     | '/admin/urunler'
+    | '/fatura/$orderId'
+    | '/api/public/sitemap.xml'
     | '/admin'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
@@ -758,6 +792,7 @@ export interface FileRouteTypes {
     | '/kosullar'
     | '/kvkk'
     | '/nasil-calisir'
+    | '/paketler'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/sss'
@@ -806,6 +841,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/tedarikci-log'
     | '/_authenticated/admin/uniquelisans'
     | '/_authenticated/admin/urunler'
+    | '/_authenticated/fatura/$orderId'
+    | '/api/public/sitemap.xml'
     | '/_authenticated/admin/'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
@@ -825,6 +862,7 @@ export interface RootRouteChildren {
   KosullarRoute: typeof KosullarRoute
   KvkkRoute: typeof KvkkRoute
   NasilCalisirRoute: typeof NasilCalisirRoute
+  PaketlerRoute: typeof PaketlerRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SssRoute: typeof SssRoute
@@ -843,6 +881,7 @@ export interface RootRouteChildren {
   SiparisRefRoute: typeof SiparisRefRoute
   UrunSlugRoute: typeof UrunSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
+  ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
   ApiPublicHooksShopierRoute: typeof ApiPublicHooksShopierRoute
@@ -879,6 +918,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/paketler': {
+      id: '/paketler'
+      path: '/paketler'
+      fullPath: '/paketler'
+      preLoaderRoute: typeof PaketlerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nasil-calisir': {
@@ -1111,6 +1157,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/api/public/sitemap.xml': {
+      id: '/api/public/sitemap.xml'
+      path: '/api/public/sitemap.xml'
+      fullPath: '/api/public/sitemap.xml'
+      preLoaderRoute: typeof ApiPublicSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/fatura/$orderId': {
+      id: '/_authenticated/fatura/$orderId'
+      path: '/fatura/$orderId'
+      fullPath: '/fatura/$orderId'
+      preLoaderRoute: typeof AuthenticatedFaturaOrderIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/admin/urunler': {
       id: '/_authenticated/admin/urunler'
@@ -1370,6 +1430,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGuvenlikRoute: typeof AuthenticatedGuvenlikRoute
   AuthenticatedHesabimRoute: typeof AuthenticatedHesabimRoute
   AuthenticatedKriptoYukleRoute: typeof AuthenticatedKriptoYukleRoute
+  AuthenticatedFaturaOrderIdRoute: typeof AuthenticatedFaturaOrderIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -1382,6 +1443,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGuvenlikRoute: AuthenticatedGuvenlikRoute,
   AuthenticatedHesabimRoute: AuthenticatedHesabimRoute,
   AuthenticatedKriptoYukleRoute: AuthenticatedKriptoYukleRoute,
+  AuthenticatedFaturaOrderIdRoute: AuthenticatedFaturaOrderIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -1397,6 +1459,7 @@ const rootRouteChildren: RootRouteChildren = {
   KosullarRoute: KosullarRoute,
   KvkkRoute: KvkkRoute,
   NasilCalisirRoute: NasilCalisirRoute,
+  PaketlerRoute: PaketlerRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SssRoute: SssRoute,
@@ -1415,6 +1478,7 @@ const rootRouteChildren: RootRouteChildren = {
   SiparisRefRoute: SiparisRefRoute,
   UrunSlugRoute: UrunSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
+  ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
   ApiPublicHooksAbandonmentReminderRoute:
     ApiPublicHooksAbandonmentReminderRoute,
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,

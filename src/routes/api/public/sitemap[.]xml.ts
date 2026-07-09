@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 
-export const Route = createFileRoute("/api/public/sitemap[.]xml")({
+export const Route = createFileRoute("/api/public/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
@@ -12,7 +12,7 @@ export const Route = createFileRoute("/api/public/sitemap[.]xml")({
         });
         const [prods, posts, bundles] = await Promise.all([
           s.from("products").select("slug, updated_at").eq("active", true),
-          s.from("blog_posts").select("slug, updated_at").eq("published", true),
+          s.from("blog_posts").select("slug, updated_at").not("published_at", "is", null),
           s.from("product_bundles").select("slug, created_at").eq("active", true),
         ]);
         const rows: { url: string; lastmod?: string }[] = [
@@ -24,7 +24,7 @@ export const Route = createFileRoute("/api/public/sitemap[.]xml")({
           { url: "/davet" },
         ];
         for (const p of prods.data ?? []) rows.push({ url: `/urun/${p.slug}`, lastmod: p.updated_at });
-        for (const p of posts.data ?? []) rows.push({ url: `/blog/${p.slug}`, lastmod: p.updated_at });
+        for (const p of posts.data ?? []) rows.push({ url: `/blog/${p.slug}`, lastmod: p.updated_at ?? undefined });
         for (const b of bundles.data ?? []) rows.push({ url: `/paket/${b.slug}`, lastmod: b.created_at });
 
         const xml =
