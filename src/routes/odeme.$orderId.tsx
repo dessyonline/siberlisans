@@ -501,10 +501,10 @@ function Payment() {
                     <PointsBlock
                       orderId={orderId}
                       originalPrice={Number(order.price_try)}
-                      hasOtherDiscount={discountTry > 0 && !(codeSnap ?? "").startsWith("PUAN-")}
+                      hasOtherDiscount={discountTry > 0}
                       appliedPointsAmount={
-                        (codeSnap ?? "").startsWith("PUAN-")
-                          ? Number((codeSnap ?? "").slice(5)) || null
+                        pointsRow?.code_snapshot
+                          ? Number(pointsRow.code_snapshot.slice(5)) || null
                           : null
                       }
                     />
