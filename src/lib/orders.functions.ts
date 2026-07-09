@@ -971,3 +971,43 @@ export const addItemToOrder = createServerFn({ method: "POST" })
     const row = Array.isArray(rows) ? rows[0] : rows;
     return { orderId: row?.order_id as string, totalTry: Number(row?.total_try ?? 0) };
   });
+
+const removeItemInput = z.object({
+  orderId: z.string().uuid(),
+  itemId: z.string().uuid(),
+});
+
+export const removeItemFromOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => removeItemInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase.rpc("remove_item_from_order", {
+      _order_id: data.orderId,
+      _item_id: data.itemId,
+    // biome-ignore lint/suspicious/noExplicitAny: rpc typing
+    } as any);
+    if (error) throw new Error(error.message);
+    const row = Array.isArray(rows) ? rows[0] : rows;
+    return {
+      orderId: row?.order_id as string,
+      totalTry: Number(row?.total_try ?? 0),
+      itemsLeft: Number(row?.items_left ?? 0),
+    };
+  });
+
+const cancelOrderInput = z.object({ orderId: z.string().uuid() });
+
+export const cancelPendingOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => cancelOrderInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { error } = await supabase.rpc("cancel_pending_order", {
+      _order_id: data.orderId,
+    // biome-ignore lint/suspicious/noExplicitAny: rpc typing
+    } as any);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
