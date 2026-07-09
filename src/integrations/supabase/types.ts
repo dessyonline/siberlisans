@@ -1398,6 +1398,23 @@ export type Database = {
         }[]
       }
       admin_force_delete_license: { Args: { _id: string }; Returns: boolean }
+      admin_list_assigned_keys: {
+        Args: { _limit?: number }
+        Returns: {
+          activated_at: string
+          assigned_at: string
+          expires_at: string
+          key_id: string
+          key_value: string
+          order_id: string
+          order_status: string
+          product_id: string
+          product_name: string
+          reference_code: string
+          revoked: boolean
+          user_email: string
+        }[]
+      }
       admin_low_stock_products: {
         Args: never
         Returns: {
