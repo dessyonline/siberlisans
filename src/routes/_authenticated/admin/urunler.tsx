@@ -620,6 +620,7 @@ function ProductsAdmin() {
                   <Toggle checked={editing.manual_fulfillment ?? false} onChange={(v) => setEditing((p) => ({ ...p!, manual_fulfillment: v }))} label="manuel teslimat" />
                   <Toggle checked={editing.featured ?? false} onChange={(v) => setEditing((p) => ({ ...p!, featured: v }))} label="öne çıkan ⭐" />
                   <Toggle checked={editing.unlimited_stock ?? false} onChange={(v) => setEditing((p) => ({ ...p!, unlimited_stock: v }))} label="sınırsız stok ∞" />
+                  <Toggle checked={editing.requires_email ?? false} onChange={(v) => setEditing((p) => ({ ...p!, requires_email: v }))} label="mail tanımlı lisans ✉" />
                 </div>
                 <div>
                   <Label className="font-mono text-xs">seviye</Label>
