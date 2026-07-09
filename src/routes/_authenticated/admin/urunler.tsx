@@ -61,6 +61,7 @@ type Product = {
   tier: "standard" | "epic";
   image_url: string | null;
   shopier_url: string | null;
+  requires_email: boolean;
 };
 
 type Filter = "all" | "active" | "inactive" | "featured" | "epic" | "low" | "empty";
