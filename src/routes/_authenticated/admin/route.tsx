@@ -46,6 +46,8 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
   { to: "/admin/siparisler", label: "siparişler", icon: ShoppingCart },
   { to: "/admin/abonelikler", label: "abonelikler", icon: RefreshCw },
   { to: "/admin/urunler", label: "ürünler", icon: Package },
+  { to: "/admin/paketler", label: "paketler", icon: Package },
+  { to: "/admin/partner", label: "partner", icon: Users },
   { to: "/admin/populer", label: "popüler seçimler", icon: Star },
   { to: "/admin/keyler", label: "key havuzu", icon: KeyRound },
   { to: "/admin/lisanslar", label: "lisanslar", icon: ShieldCheck },
