@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { toast } from "sonner";
-import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck } from "lucide-react";
+import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck, RefreshCw } from "lucide-react";
 import { TierCard } from "@/components/TierCard";
 import { AVATARS, UserAvatar } from "@/components/UserAvatar";
+import { SubscriptionsBlock } from "@/components/SubscriptionsBlock";
 
 export const Route = createFileRoute("/_authenticated/hesabim")({
   component: MyAccount,
@@ -160,7 +161,7 @@ function MyAccount() {
 
 
       <Tabs defaultValue="orders" className="mt-6 md:mt-8">
-        <TabsList className="grid w-full grid-cols-3 font-mono h-auto">
+        <TabsList className="grid w-full grid-cols-4 font-mono h-auto">
           <TabsTrigger value="orders" className="text-[11px] sm:text-sm py-2">
             <ShoppingCart className="mr-1 h-3.5 w-3.5 shrink-0" />
             <span className="truncate">siparişler</span>
@@ -168,6 +169,10 @@ function MyAccount() {
           <TabsTrigger value="keys" className="text-[11px] sm:text-sm py-2">
             <KeyRound className="mr-1 h-3.5 w-3.5 shrink-0" />
             <span className="truncate">anahtarlar</span>
+          </TabsTrigger>
+          <TabsTrigger value="subs" className="text-[11px] sm:text-sm py-2">
+            <RefreshCw className="mr-1 h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">abonelikler</span>
           </TabsTrigger>
           <TabsTrigger value="profile" className="text-[11px] sm:text-sm py-2">
             <UserIcon className="mr-1 h-3.5 w-3.5 shrink-0" />
@@ -180,6 +185,9 @@ function MyAccount() {
         </TabsContent>
         <TabsContent value="keys" className="mt-6">
           <KeysTab keys={approvedKeys} />
+        </TabsContent>
+        <TabsContent value="subs" className="mt-6">
+          <SubscriptionsBlock />
         </TabsContent>
         <TabsContent value="profile" className="mt-6">
           <ProfileTab userId={user?.id ?? ""} email={user?.email ?? ""} onSignOut={signOut} />

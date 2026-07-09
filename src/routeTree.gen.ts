@@ -66,8 +66,10 @@ import { Route as AuthenticatedAdminCaprazSatisRouteImport } from './routes/_aut
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin/blog'
 import { Route as AuthenticatedAdminBildirimlerRouteImport } from './routes/_authenticated/admin/bildirimler'
 import { Route as AuthenticatedAdminAyarlarRouteImport } from './routes/_authenticated/admin/ayarlar'
+import { Route as AuthenticatedAdminAboneliklerRouteImport } from './routes/_authenticated/admin/abonelikler'
 import { Route as ApiPublicHooksUniquelisansCatalogRouteImport } from './routes/api/public/hooks/uniquelisans-catalog'
 import { Route as ApiPublicHooksSyncUniquelisansRouteImport } from './routes/api/public/hooks/sync-uniquelisans'
+import { Route as ApiPublicHooksSubscriptionsRenewRouteImport } from './routes/api/public/hooks/subscriptions-renew'
 import { Route as ApiPublicHooksShopierRouteImport } from './routes/api/public/hooks/shopier'
 import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
 import { Route as ApiPublicHooksAbandonmentReminderRouteImport } from './routes/api/public/hooks/abandonment-reminder'
@@ -377,6 +379,12 @@ const AuthenticatedAdminAyarlarRoute =
     path: '/ayarlar',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminAboneliklerRoute =
+  AuthenticatedAdminAboneliklerRouteImport.update({
+    id: '/abonelikler',
+    path: '/abonelikler',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const ApiPublicHooksUniquelisansCatalogRoute =
   ApiPublicHooksUniquelisansCatalogRouteImport.update({
     id: '/api/public/hooks/uniquelisans-catalog',
@@ -387,6 +395,12 @@ const ApiPublicHooksSyncUniquelisansRoute =
   ApiPublicHooksSyncUniquelisansRouteImport.update({
     id: '/api/public/hooks/sync-uniquelisans',
     path: '/api/public/hooks/sync-uniquelisans',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksSubscriptionsRenewRoute =
+  ApiPublicHooksSubscriptionsRenewRouteImport.update({
+    id: '/api/public/hooks/subscriptions-renew',
+    path: '/api/public/hooks/subscriptions-renew',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksShopierRoute = ApiPublicHooksShopierRouteImport.update({
@@ -443,6 +457,7 @@ export interface FileRoutesByFullPath {
   '/siparis/$ref': typeof SiparisRefRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/blog/': typeof BlogIndexRoute
+  '/admin/abonelikler': typeof AuthenticatedAdminAboneliklerRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
   '/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
@@ -467,6 +482,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
+  '/api/public/hooks/subscriptions-renew': typeof ApiPublicHooksSubscriptionsRenewRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
   '/api/public/hooks/uniquelisans-catalog': typeof ApiPublicHooksUniquelisansCatalogRoute
 }
@@ -505,6 +521,7 @@ export interface FileRoutesByTo {
   '/siparis/$ref': typeof SiparisRefRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/blog': typeof BlogIndexRoute
+  '/admin/abonelikler': typeof AuthenticatedAdminAboneliklerRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
   '/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
@@ -529,6 +546,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
+  '/api/public/hooks/subscriptions-renew': typeof ApiPublicHooksSubscriptionsRenewRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
   '/api/public/hooks/uniquelisans-catalog': typeof ApiPublicHooksUniquelisansCatalogRoute
 }
@@ -570,6 +588,7 @@ export interface FileRoutesById {
   '/siparis/$ref': typeof SiparisRefRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/blog/': typeof BlogIndexRoute
+  '/_authenticated/admin/abonelikler': typeof AuthenticatedAdminAboneliklerRoute
   '/_authenticated/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
   '/_authenticated/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
@@ -594,6 +613,7 @@ export interface FileRoutesById {
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
+  '/api/public/hooks/subscriptions-renew': typeof ApiPublicHooksSubscriptionsRenewRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
   '/api/public/hooks/uniquelisans-catalog': typeof ApiPublicHooksUniquelisansCatalogRoute
 }
@@ -635,6 +655,7 @@ export interface FileRouteTypes {
     | '/siparis/$ref'
     | '/urun/$slug'
     | '/blog/'
+    | '/admin/abonelikler'
     | '/admin/ayarlar'
     | '/admin/bildirimler'
     | '/admin/blog'
@@ -659,6 +680,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/shopier'
+    | '/api/public/hooks/subscriptions-renew'
     | '/api/public/hooks/sync-uniquelisans'
     | '/api/public/hooks/uniquelisans-catalog'
   fileRoutesByTo: FileRoutesByTo
@@ -697,6 +719,7 @@ export interface FileRouteTypes {
     | '/siparis/$ref'
     | '/urun/$slug'
     | '/blog'
+    | '/admin/abonelikler'
     | '/admin/ayarlar'
     | '/admin/bildirimler'
     | '/admin/blog'
@@ -721,6 +744,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/shopier'
+    | '/api/public/hooks/subscriptions-renew'
     | '/api/public/hooks/sync-uniquelisans'
     | '/api/public/hooks/uniquelisans-catalog'
   id:
@@ -761,6 +785,7 @@ export interface FileRouteTypes {
     | '/siparis/$ref'
     | '/urun/$slug'
     | '/blog/'
+    | '/_authenticated/admin/abonelikler'
     | '/_authenticated/admin/ayarlar'
     | '/_authenticated/admin/bildirimler'
     | '/_authenticated/admin/blog'
@@ -785,6 +810,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/shopier'
+    | '/api/public/hooks/subscriptions-renew'
     | '/api/public/hooks/sync-uniquelisans'
     | '/api/public/hooks/uniquelisans-catalog'
   fileRoutesById: FileRoutesById
@@ -820,6 +846,7 @@ export interface RootRouteChildren {
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
   ApiPublicHooksShopierRoute: typeof ApiPublicHooksShopierRoute
+  ApiPublicHooksSubscriptionsRenewRoute: typeof ApiPublicHooksSubscriptionsRenewRoute
   ApiPublicHooksSyncUniquelisansRoute: typeof ApiPublicHooksSyncUniquelisansRoute
   ApiPublicHooksUniquelisansCatalogRoute: typeof ApiPublicHooksUniquelisansCatalogRoute
 }
@@ -1225,6 +1252,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAyarlarRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/abonelikler': {
+      id: '/_authenticated/admin/abonelikler'
+      path: '/abonelikler'
+      fullPath: '/admin/abonelikler'
+      preLoaderRoute: typeof AuthenticatedAdminAboneliklerRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/api/public/hooks/uniquelisans-catalog': {
       id: '/api/public/hooks/uniquelisans-catalog'
       path: '/api/public/hooks/uniquelisans-catalog'
@@ -1237,6 +1271,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/hooks/sync-uniquelisans'
       fullPath: '/api/public/hooks/sync-uniquelisans'
       preLoaderRoute: typeof ApiPublicHooksSyncUniquelisansRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/subscriptions-renew': {
+      id: '/api/public/hooks/subscriptions-renew'
+      path: '/api/public/hooks/subscriptions-renew'
+      fullPath: '/api/public/hooks/subscriptions-renew'
+      preLoaderRoute: typeof ApiPublicHooksSubscriptionsRenewRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/shopier': {
@@ -1264,6 +1305,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedAdminRouteRouteChildren {
+  AuthenticatedAdminAboneliklerRoute: typeof AuthenticatedAdminAboneliklerRoute
   AuthenticatedAdminAyarlarRoute: typeof AuthenticatedAdminAyarlarRoute
   AuthenticatedAdminBildirimlerRoute: typeof AuthenticatedAdminBildirimlerRoute
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
@@ -1289,6 +1331,7 @@ interface AuthenticatedAdminRouteRouteChildren {
 
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
+    AuthenticatedAdminAboneliklerRoute: AuthenticatedAdminAboneliklerRoute,
     AuthenticatedAdminAyarlarRoute: AuthenticatedAdminAyarlarRoute,
     AuthenticatedAdminBildirimlerRoute: AuthenticatedAdminBildirimlerRoute,
     AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
@@ -1376,6 +1419,7 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicHooksAbandonmentReminderRoute,
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,
   ApiPublicHooksShopierRoute: ApiPublicHooksShopierRoute,
+  ApiPublicHooksSubscriptionsRenewRoute: ApiPublicHooksSubscriptionsRenewRoute,
   ApiPublicHooksSyncUniquelisansRoute: ApiPublicHooksSyncUniquelisansRoute,
   ApiPublicHooksUniquelisansCatalogRoute:
     ApiPublicHooksUniquelisansCatalogRoute,
