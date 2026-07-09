@@ -44,7 +44,7 @@ export const Route = createFileRoute("/")({
 const DURATION_LABEL: Record<string, string> = {
   monthly: "aylık",
   yearly: "yıllık",
-  lifetime: "ömürlük",
+  lifetime: "sınırsız",
 };
 
 // Category → icon + accent color (oklch tokens) for cyber recent-items

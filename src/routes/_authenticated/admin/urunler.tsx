@@ -568,7 +568,7 @@ function ProductsAdmin() {
                       <option value="weekly">haftalık</option>
                       <option value="monthly">aylık</option>
                       <option value="yearly">yıllık</option>
-                      <option value="lifetime">ömürlük</option>
+                      <option value="lifetime">sınırsız</option>
                     </select>
                   </div>
                   <Field label="fiyat (₺)" value={editing.price_try == null ? "" : String(editing.price_try)} onChange={(v) => setEditing((p) => ({ ...p!, price_try: v === "" ? 0 : Number(v) }))} type="number" />

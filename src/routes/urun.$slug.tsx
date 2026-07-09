@@ -81,7 +81,7 @@ export const Route = createFileRoute("/urun/$slug")({
   },
 });
 
-const DUR: Record<string, string> = { monthly: "aylık", yearly: "yıllık", lifetime: "ömürlük" };
+const DUR: Record<string, string> = { monthly: "aylık", yearly: "yıllık", lifetime: "sınırsız" };
 
 function ProductDetail() {
   const { slug } = Route.useParams();

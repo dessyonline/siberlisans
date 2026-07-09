@@ -31,7 +31,7 @@ export const Route = createFileRoute("/urunler")({
   }),
 });
 
-const DUR: Record<string, string> = { monthly: "aylık", yearly: "yıllık", lifetime: "ömürlük" };
+const DUR: Record<string, string> = { monthly: "aylık", yearly: "yıllık", lifetime: "sınırsız" };
 
 
 // Cyber "stock load" progress — segmented cells + shimmer, state-aware
