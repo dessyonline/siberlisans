@@ -1508,13 +1508,39 @@ function CrossSellOffer({ categories, excludeSlugs }: { categories: string[]; ex
             )}
           </div>
         </div>
-        <Link
-          to="/urun/$slug"
-          params={{ slug: product.slug }}
-          className="shrink-0 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-4 py-2.5 font-mono text-sm hover:bg-primary/90 neon-glow"
-        >
-          hemen incele <ArrowRight className="h-4 w-4" />
-        </Link>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
+          <Button
+            onClick={() => {
+              addToCart({
+                productId: product.id,
+                slug: product.slug,
+                name: product.name,
+                priceTry: discounted,
+                imageUrl: product.image_url ?? null,
+              });
+              if (rule.promo_code) {
+                try {
+                  navigator.clipboard?.writeText(rule.promo_code);
+                  toast.success(`sepete eklendi · kupon panoya kopyalandı: ${rule.promo_code}`);
+                } catch {
+                  toast.success("sepete eklendi");
+                }
+              } else {
+                toast.success("sepete eklendi");
+              }
+            }}
+            className="font-mono neon-glow"
+          >
+            <Sparkles className="h-4 w-4 mr-1" /> sepete ekle
+          </Button>
+          <Link
+            to="/urun/$slug"
+            params={{ slug: product.slug }}
+            className="text-center font-mono text-xs text-muted-foreground hover:text-primary underline underline-offset-4"
+          >
+            detay →
+          </Link>
+        </div>
       </div>
     </section>
   );
