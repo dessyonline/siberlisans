@@ -191,7 +191,7 @@ async function notifyStockBack(
     const notifRows = rows.map((r) => ({
       user_id: r.user_id,
       title: "Beklediğin ürün stokta!",
-      message: `${productName} tekrar satışta. Hemen sipariş verebilirsin.`,
+      body: `${productName} tekrar satışta. Hemen sipariş verebilirsin.`,
       type: "stock_back",
       link: `/urun/${productId}`,
     }));
