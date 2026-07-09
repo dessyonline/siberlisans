@@ -163,7 +163,7 @@ function ProductDetail() {
       productId: product.id,
       slug: product.slug,
       name: product.name,
-      priceTry: Number(product.price_try),
+      priceTry: flash.hasSale ? flash.final : Number(product.price_try),
       imageUrl: product.image_url ?? null,
     });
     toast.success("Sepete eklendi");
