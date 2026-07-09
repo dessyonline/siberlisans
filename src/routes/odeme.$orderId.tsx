@@ -486,22 +486,44 @@ function Payment() {
                 })}
               </div>
               {(() => {
-                const discs = Array.isArray(order.discount) ? order.discount : (order.discount ? [order.discount] : []);
-                const totalDisc = discs.reduce((s, d) => s + Number((d as { discount_try?: number })?.discount_try ?? 0), 0);
+                const discs = (Array.isArray(order.discount) ? order.discount : (order.discount ? [order.discount] : [])) as Array<{ discount_try?: number; code_snapshot?: string | null }>;
                 const orig = Number(order.price_try);
-                const final = Math.max(0, orig - totalDisc);
+                const flashDisc = discs.filter((d) => (d.code_snapshot ?? "").startsWith("FLASH-")).reduce((s, d) => s + Number(d.discount_try ?? 0), 0);
+                const pointDisc = discs.filter((d) => (d.code_snapshot ?? "").startsWith("PUAN-")).reduce((s, d) => s + Number(d.discount_try ?? 0), 0);
+                const couponDisc = discs.filter((d) => {
+                  const c = d.code_snapshot ?? "";
+                  return c && !c.startsWith("FLASH-") && !c.startsWith("PUAN-");
+                }).reduce((s, d) => s + Number(d.discount_try ?? 0), 0);
+                const totalDisc = flashDisc + pointDisc + couponDisc;
+                const finalAmt = Math.max(0, orig - totalDisc);
+                const walletBal = Number(wallet?.balance_try ?? 0);
+                const walletCovers = walletBal >= finalAmt && finalAmt > 0;
                 return (
-                  <div className="mt-3 flex items-center justify-between border-t border-primary/20 pt-3 font-mono text-sm">
-                    <span className="text-muted-foreground uppercase text-[10px] tracking-widest">ödenecek</span>
-                    <span className="flex items-center gap-2">
-                      {totalDisc > 0 && (
-                        <span className="text-[11px] text-muted-foreground line-through">₺{orig.toLocaleString("tr-TR")}</span>
-                      )}
-                      <span className="text-primary text-base neon-text-glow">₺{final.toLocaleString("tr-TR")}</span>
-                      {totalDisc > 0 && (
-                        <span className="rounded border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">−₺{totalDisc.toLocaleString("tr-TR")}</span>
-                      )}
-                    </span>
+                  <div className="mt-3 space-y-1.5 border-t border-primary/20 pt-3 font-mono text-xs">
+                    <Row2 label="ara toplam" value={`₺${orig.toLocaleString("tr-TR")}`} />
+                    {flashDisc > 0 && (
+                      <Row2 label="⚡ flaş indirim" value={`−₺${flashDisc.toLocaleString("tr-TR")}`} accent="warn" />
+                    )}
+                    {couponDisc > 0 && (
+                      <Row2 label="🎟 kupon" value={`−₺${couponDisc.toLocaleString("tr-TR")}`} accent="primary" />
+                    )}
+                    {pointDisc > 0 && (
+                      <Row2 label="⭐ puan indirimi" value={`−₺${pointDisc.toLocaleString("tr-TR")}`} accent="primary" />
+                    )}
+                    <div className="flex items-center justify-between border-t border-primary/20 pt-2 mt-1">
+                      <span className="text-muted-foreground uppercase tracking-widest text-[10px]">ödenecek</span>
+                      <span className="flex items-center gap-2">
+                        {totalDisc > 0 && (
+                          <span className="text-[11px] text-muted-foreground line-through">₺{orig.toLocaleString("tr-TR")}</span>
+                        )}
+                        <span className="text-primary text-lg neon-text-glow">₺{finalAmt.toLocaleString("tr-TR")}</span>
+                      </span>
+                    </div>
+                    {walletCovers && order.status === "pending" && (
+                      <div className="mt-1 text-[10px] text-primary/80">
+                        ✓ mevcut cüzdan bakiyen ({walletBal.toLocaleString("tr-TR")} ₺) yeterli · tek tıkla ödeyebilirsin
+                      </div>
+                    )}
                   </div>
                 );
               })()}
@@ -1077,6 +1099,38 @@ function DeliveryBlock({
           </Link>
         </Button>
       </div>
+
+      {revealed && (
+        <div className="mt-4 rounded-md border border-border/60 bg-background/40 p-3">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+            $ ./ihtiyacın var mı? — anlık destek
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <a
+              href="https://wa.me/905555555555"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/40 bg-emerald-500/5 px-3 py-1.5 font-mono text-xs text-emerald-400 hover:bg-emerald-500/10 hover:shadow-[0_0_12px_rgba(16,185,129,0.35)] transition"
+            >
+              <MessageCircle className="h-3.5 w-3.5" /> whatsapp
+            </a>
+            <a
+              href="https://t.me/siberphp"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-md border border-sky-500/40 bg-sky-500/5 px-3 py-1.5 font-mono text-xs text-sky-400 hover:bg-sky-500/10 hover:shadow-[0_0_12px_rgba(14,165,233,0.35)] transition"
+            >
+              <Send className="h-3.5 w-3.5" /> telegram
+            </a>
+            <Link
+              to="/destek"
+              className="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/5 px-3 py-1.5 font-mono text-xs text-primary hover:bg-primary/10 transition"
+            >
+              <Terminal className="h-3.5 w-3.5" /> canlı destek bileti
+            </Link>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -1151,6 +1205,16 @@ function LiveMonitor({
           <span className="terminal-caret" />
         </div>
       </div>
+    </div>
+  );
+}
+
+function Row2({ label, value, accent }: { label: string; value: string; accent?: "warn" | "primary" }) {
+  const cls = accent === "warn" ? "text-warn" : accent === "primary" ? "text-primary" : "text-foreground";
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={`font-mono ${cls}`}>{value}</span>
     </div>
   );
 }
@@ -1502,15 +1566,24 @@ function WalletPayBlock({
         </>
       ) : (
         <>
-          <div className="mt-3 text-sm text-muted-foreground">
-            Bu sipariş için <b className="text-foreground">{amount} TL</b> bakiye gerekiyor. Havale ile aşağıdan devam edebilir veya cüzdanına yükleme yapabilirsin.
+          <div className="mt-3 rounded-md border border-warn/40 bg-warn/5 p-3 font-mono text-xs">
+            <div className="flex items-center gap-1.5 text-warn mb-1.5">
+              <XCircle className="h-3.5 w-3.5" /> yetersiz bakiye
+            </div>
+            <div className="text-muted-foreground leading-relaxed">
+              Sipariş için <span className="text-foreground">₺{amount.toLocaleString("tr-TR")}</span> gerekli · mevcut <span className="text-foreground">₺{balance.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <br />
+              eksik: <span className="text-warn font-bold">₺{Math.max(0, amount - balance).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
           </div>
-          <Link
-            to="/cuzdan"
-            className="mt-3 inline-flex items-center gap-1 font-mono text-sm text-primary hover:underline"
-          >
-            cüzdana yükleme yap <ArrowRight className="h-3 w-3" />
-          </Link>
+          <Button asChild className="mt-3 w-full font-mono neon-glow">
+            <Link to="/cuzdan">
+              cüzdana ₺{Math.max(0, amount - balance).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}+ yükle <ArrowRight className="ml-2 h-3.5 w-3.5" />
+            </Link>
+          </Button>
+          <p className="mt-2 text-[11px] text-muted-foreground font-mono">
+            ya da yukarıdaki Shopier ile kart / havale ile öde.
+          </p>
         </>
       )}
     </section>
