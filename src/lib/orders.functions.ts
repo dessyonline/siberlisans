@@ -284,13 +284,7 @@ export const createCartOrder = createServerFn({ method: "POST" })
       console.error("[uniquelisans] cart preflight", (e as Error).message);
     }
 
-          }
-        }
-      }
-    } catch (e) {
-      if (e instanceof Error && /stokta yok|tedarikçi/i.test(e.message)) throw e;
-      console.error("[uniquelisans] cart preflight", (e as Error).message);
-    }
+
 
     const { data: rows, error } = await supabase.rpc("create_cart_order", {
       _items: data.items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
