@@ -1351,16 +1351,21 @@ function CheckoutFieldsCard({
 }) {
   const [values, setValues] = useState<Record<string, string>>(initial);
   const [busy, setBusy] = useState(false);
-  const labelize = (n: string) => n.replace(/_/g, " ");
+  const labelize = (n: string) => {
+    if (n === "license_email") return "lisansın tanımlanacağı e-posta";
+    return n.replace(/_/g, " ");
+  };
+  const hasEmailField = fields.some((f) => f.name === "license_email");
   const missing = fields.filter((f) => f.required !== false && !((values[f.name] ?? "").trim()));
   return (
     <section className={`mt-4 glass-card rounded-xl p-4 sm:p-5 ${saved ? "border-primary/40" : "border-cyan/40"}`}>
       <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-cyan">
-        <KeyRound className="h-3.5 w-3.5" /> ürün bilgileri · ref: {orderId.slice(0, 8)}
+        <KeyRound className="h-3.5 w-3.5" /> {hasEmailField ? "mail tanımlı lisans · e-posta gerekli" : "ürün bilgileri"} · ref: {orderId.slice(0, 8)}
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        Bu ürün otomatik tedarik edilir. Aşağıdaki bilgileri girmen gerekiyor — bunlar
-        onay sonrası tedarikçiye iletilir ve teslim buna göre yapılır.
+        {hasEmailField
+          ? "Bu lisans senin verdiğin e-posta adresine tanımlanır. Kullanmak istediğin e-postayı doğru gir — teslim onaydan sonra bu adrese yapılır."
+          : "Bu ürün otomatik tedarik edilir. Aşağıdaki bilgileri girmen gerekiyor — bunlar onay sonrası tedarikçiye iletilir ve teslim buna göre yapılır."}
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {fields.map((f) => (
