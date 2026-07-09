@@ -12,7 +12,8 @@ import { MessageSquareText, Trash2 } from "lucide-react";
 
 type Review = {
   id: string;
-  user_id: string;
+  masked_user: string;
+  is_mine: boolean;
   rating: number;
   comment: string | null;
   created_at: string;
@@ -31,17 +32,14 @@ export function ReviewsSection({ productId }: { productId: string }) {
     queryKey: ["reviews", productId],
     queryFn: async () => {
       const { data, error } = await supabase
-        // biome-ignore lint/suspicious/noExplicitAny: table not in generated types
-        .from("product_reviews" as any)
-        .select("id, user_id, rating, comment, created_at")
-        .eq("product_id", productId)
-        .order("created_at", { ascending: false });
+        // biome-ignore lint/suspicious/noExplicitAny: function not in generated types
+        .rpc("list_product_reviews" as any, { _product_id: productId });
       if (error) throw error;
       return (data ?? []) as unknown as Review[];
     },
   });
 
-  const mine = user ? reviews.find((r) => r.user_id === user.id) : undefined;
+  const mine = user ? reviews.find((r) => r.is_mine) : undefined;
   const hasReviewed = !!mine;
 
   // eligibility check: any approved order or order_items for this product+user
@@ -154,7 +152,7 @@ export function ReviewsSection({ productId }: { productId: string }) {
                 <div className="flex items-center gap-2">
                   <StarRating value={r.rating} />
                   <span className="font-mono text-xs text-muted-foreground">
-                    kullanıcı · {r.user_id.slice(0, 6)}
+                    kullanıcı · {r.masked_user}
                   </span>
                 </div>
                 <span className="font-mono text-[10px] text-muted-foreground/70">
