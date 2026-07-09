@@ -63,7 +63,7 @@ function MyAccount() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, status, price_try, reference_code, created_at, product:products(name, slug, delivery_type), items:order_items(quantity, product_name_snapshot, product:products(slug, delivery_type)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, slug, delivery_type)))"
+          "id, status, price_try, reference_code, created_at, product:products(name, slug, delivery_type), items:order_items(quantity, product_name_snapshot, product:products(slug, delivery_type)), keys:order_keys(license_key:license_keys(key_value, activation_token, expires_at, duration_days, product:products(name, slug, delivery_type)))"
         )
         .eq("user_id", user!.id)
         .order("created_at", { ascending: false });
