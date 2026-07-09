@@ -40,7 +40,7 @@ function AdminPartner() {
         await supabase.from("wallets").upsert({ user_id: row.user_id, balance_try: bal });
         await supabase.from("wallet_transactions").insert({
           user_id: row.user_id,
-          kind: "credit",
+          kind: "refund",
           amount_try: Number(row.amount_try),
           balance_after: bal,
           note: "Partner ödeme talebi reddi - iade",
