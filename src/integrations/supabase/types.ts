@@ -1655,6 +1655,7 @@ export type Database = {
         }[]
       }
       remove_promo_code: { Args: { _order_id: string }; Returns: undefined }
+      send_license_renewal_reminders: { Args: never; Returns: undefined }
       spend_points: {
         Args: { _amount: number; _order_id: string }
         Returns: {
