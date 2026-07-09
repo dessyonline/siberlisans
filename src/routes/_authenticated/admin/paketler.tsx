@@ -24,7 +24,7 @@ type BundleRow = {
   items: {
     product_id: string;
     quantity: number;
-    product: { name: string; price_try: number } | null;
+    product: { name: string; price_try: number; cost_try: number | null } | null;
   }[];
 };
 
@@ -36,7 +36,7 @@ function AdminBundles() {
       const { data } = await supabase
         .from("product_bundles")
         .select(
-          "*, items:product_bundle_items(product_id, quantity, product:products(name, price_try))",
+          "*, items:product_bundle_items(product_id, quantity, product:products(name, price_try, cost_try))",
         )
         .order("created_at", { ascending: false });
       return (data ?? []) as unknown as BundleRow[];
@@ -47,7 +47,7 @@ function AdminBundles() {
     queryFn: async () => {
       const { data } = await supabase
         .from("products")
-        .select("id, name, price_try")
+        .select("id, name, price_try, cost_try")
         .eq("active", true)
         .order("name");
       return data ?? [];
