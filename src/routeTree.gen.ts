@@ -31,6 +31,7 @@ import { Route as ApiValidateRouteImport } from './routes/api/validate'
 import { Route as ApiSourceCodeRouteImport } from './routes/api/source-code'
 import { Route as ApiRevokeRouteImport } from './routes/api/revoke'
 import { Route as ApiRemoveWatermarkRouteImport } from './routes/api/remove-watermark'
+import { Route as ApiNotificationsRouteImport } from './routes/api/notifications'
 import { Route as ApiApprovePlanRouteImport } from './routes/api/approve-plan'
 import { Route as ApiActivateRouteImport } from './routes/api/activate'
 import { Route as AktivasyonTokenRouteImport } from './routes/aktivasyon.$token'
@@ -175,6 +176,11 @@ const ApiRevokeRoute = ApiRevokeRouteImport.update({
 const ApiRemoveWatermarkRoute = ApiRemoveWatermarkRouteImport.update({
   id: '/api/remove-watermark',
   path: '/api/remove-watermark',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiNotificationsRoute = ApiNotificationsRouteImport.update({
+  id: '/api/notifications',
+  path: '/api/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiApprovePlanRoute = ApiApprovePlanRouteImport.update({
@@ -405,6 +411,7 @@ export interface FileRoutesByFullPath {
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
   '/api/approve-plan': typeof ApiApprovePlanRoute
+  '/api/notifications': typeof ApiNotificationsRoute
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
   '/api/source-code': typeof ApiSourceCodeRoute
@@ -463,6 +470,7 @@ export interface FileRoutesByTo {
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
   '/api/approve-plan': typeof ApiApprovePlanRoute
+  '/api/notifications': typeof ApiNotificationsRoute
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
   '/api/source-code': typeof ApiSourceCodeRoute
@@ -524,6 +532,7 @@ export interface FileRoutesById {
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
   '/api/approve-plan': typeof ApiApprovePlanRoute
+  '/api/notifications': typeof ApiNotificationsRoute
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
   '/api/source-code': typeof ApiSourceCodeRoute
@@ -585,6 +594,7 @@ export interface FileRouteTypes {
     | '/aktivasyon/$token'
     | '/api/activate'
     | '/api/approve-plan'
+    | '/api/notifications'
     | '/api/remove-watermark'
     | '/api/revoke'
     | '/api/source-code'
@@ -643,6 +653,7 @@ export interface FileRouteTypes {
     | '/aktivasyon/$token'
     | '/api/activate'
     | '/api/approve-plan'
+    | '/api/notifications'
     | '/api/remove-watermark'
     | '/api/revoke'
     | '/api/source-code'
@@ -703,6 +714,7 @@ export interface FileRouteTypes {
     | '/aktivasyon/$token'
     | '/api/activate'
     | '/api/approve-plan'
+    | '/api/notifications'
     | '/api/remove-watermark'
     | '/api/revoke'
     | '/api/source-code'
@@ -755,6 +767,7 @@ export interface RootRouteChildren {
   AktivasyonTokenRoute: typeof AktivasyonTokenRoute
   ApiActivateRoute: typeof ApiActivateRoute
   ApiApprovePlanRoute: typeof ApiApprovePlanRoute
+  ApiNotificationsRoute: typeof ApiNotificationsRoute
   ApiRemoveWatermarkRoute: typeof ApiRemoveWatermarkRoute
   ApiRevokeRoute: typeof ApiRevokeRoute
   ApiSourceCodeRoute: typeof ApiSourceCodeRoute
@@ -925,6 +938,13 @@ declare module '@tanstack/react-router' {
       path: '/api/remove-watermark'
       fullPath: '/api/remove-watermark'
       preLoaderRoute: typeof ApiRemoveWatermarkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/notifications': {
+      id: '/api/notifications'
+      path: '/api/notifications'
+      fullPath: '/api/notifications'
+      preLoaderRoute: typeof ApiNotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/approve-plan': {
@@ -1277,6 +1297,7 @@ const rootRouteChildren: RootRouteChildren = {
   AktivasyonTokenRoute: AktivasyonTokenRoute,
   ApiActivateRoute: ApiActivateRoute,
   ApiApprovePlanRoute: ApiApprovePlanRoute,
+  ApiNotificationsRoute: ApiNotificationsRoute,
   ApiRemoveWatermarkRoute: ApiRemoveWatermarkRoute,
   ApiRevokeRoute: ApiRevokeRoute,
   ApiSourceCodeRoute: ApiSourceCodeRoute,
