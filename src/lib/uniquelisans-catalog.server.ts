@@ -1,6 +1,7 @@
 // Server-only: Uniquelisans tam katalog senkronu.
 // Route dosyalarından ve server function handler'larından DİNAMİK import ile çağrılır.
 import { resolveLogoUrl } from "@/lib/logo-resolver";
+import { notifyTelegram } from "@/lib/telegram.server";
 
 const DEFAULT_URL = "https://bayi.uniquelisans.com/api";
 
@@ -120,6 +121,10 @@ export async function runUniquelisansCatalogSync(
             const { error } = await supabase.from("products").update(patch).eq("id", prev.id);
             if (error) { res.failed++; continue; }
             res.updated++;
+            // Stok geri geldiğinde: adminlere Telegram + abone kullanıcılara bildirim
+            if (patch.supplier_out_of_stock === false) {
+              await notifyStockBack(supabase, prev.id, p.name, p.stock_count ?? null);
+            }
           } else if (opts.import_new) {
             const baseSlug = slugify(p.name) || `ul-${p.id}`;
             let slug = baseSlug;
