@@ -1177,6 +1177,16 @@ function LiveMonitor({
   );
 }
 
+function Row2({ label, value, accent }: { label: string; value: string; accent?: "warn" | "primary" }) {
+  const cls = accent === "warn" ? "text-warn" : accent === "primary" ? "text-primary" : "text-foreground";
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={`font-mono ${cls}`}>{value}</span>
+    </div>
+  );
+}
+
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-border/60 bg-background/40 p-2">
