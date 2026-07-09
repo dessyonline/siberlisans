@@ -1566,15 +1566,24 @@ function WalletPayBlock({
         </>
       ) : (
         <>
-          <div className="mt-3 text-sm text-muted-foreground">
-            Bu sipariş için <b className="text-foreground">{amount} TL</b> bakiye gerekiyor. Havale ile aşağıdan devam edebilir veya cüzdanına yükleme yapabilirsin.
+          <div className="mt-3 rounded-md border border-warn/40 bg-warn/5 p-3 font-mono text-xs">
+            <div className="flex items-center gap-1.5 text-warn mb-1.5">
+              <XCircle className="h-3.5 w-3.5" /> yetersiz bakiye
+            </div>
+            <div className="text-muted-foreground leading-relaxed">
+              Sipariş için <span className="text-foreground">₺{amount.toLocaleString("tr-TR")}</span> gerekli · mevcut <span className="text-foreground">₺{balance.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <br />
+              eksik: <span className="text-warn font-bold">₺{Math.max(0, amount - balance).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
           </div>
-          <Link
-            to="/cuzdan"
-            className="mt-3 inline-flex items-center gap-1 font-mono text-sm text-primary hover:underline"
-          >
-            cüzdana yükleme yap <ArrowRight className="h-3 w-3" />
-          </Link>
+          <Button asChild className="mt-3 w-full font-mono neon-glow">
+            <Link to="/cuzdan">
+              cüzdana ₺{Math.max(0, amount - balance).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}+ yükle <ArrowRight className="ml-2 h-3.5 w-3.5" />
+            </Link>
+          </Button>
+          <p className="mt-2 text-[11px] text-muted-foreground font-mono">
+            ya da yukarıdaki Shopier ile kart / havale ile öde.
+          </p>
         </>
       )}
     </section>
