@@ -258,10 +258,7 @@ export const ulImportedProducts = createServerFn({ method: "GET" })
 
 /**
  * Uniquelisans tam katalog senkronu (günlük cron için).
- * - Tüm kategorileri/alt kategorileri gezer, tüm ürünleri listeler.
- * - Zaten içe aktarılmış ürünlerde: external_price, price_try (markup ile), stock_hint,
- *   unlimited_stock günceller; stok tükendiyse pasifleştirir; geri geldiyse reactivate=true iken açar.
- * - Yeni ürünleri PASİF olarak içe aktarır (admin son onay verir).
+ * Ağır iş `uniquelisans-catalog.server.ts` içinde; burada sadece admin auth ve dinamik import.
  */
 const catalogSyncInput = z.object({
   markup_percent: z.number().min(0).max(500).default(DEFAULT_MARKUP_PERCENT),
@@ -269,126 +266,12 @@ const catalogSyncInput = z.object({
   reactivate: z.boolean().default(true),
 }).default({ markup_percent: DEFAULT_MARKUP_PERCENT, import_new: true, reactivate: true });
 
-export async function runUniquelisansCatalogSync(
-  supabase: {
-    from: (t: string) => {
-      select: (c: string) => {
-        eq?: (k: string, v: string) => { maybeSingle: () => Promise<{ data: unknown }> };
-      } & Promise<{ data: unknown }>;
-      update: (p: Record<string, unknown>) => { eq: (k: string, v: string) => Promise<{ error: unknown }> };
-      insert: (p: Record<string, unknown>) => Promise<{ error: unknown }>;
-    };
-  },
-  opts: { markup_percent: number; import_new: boolean; reactivate: boolean },
-) {
-  // 1) Kategori listesi
-  const catsBody = await ul("/categories");
-  const categories = (catsBody.categories ?? []) as Array<{
-    id: number; name: string;
-    subcategories: Array<{ id: number; category_id: number; name: string }>;
-  }>;
-
-  // 2) Var olan içe aktarılmış ürünleri harita olarak al
-  const { data: existingRows } = await (supabase.from("products").select(
-    "id, external_id, active, image_url, price_try, external_price, stock_hint",
-  ) as unknown as { eq: (k: string, v: string) => Promise<{ data: Array<{
-    id: string; external_id: string | null; active: boolean; image_url: string | null;
-    price_try: number; external_price: number | null; stock_hint: number | null;
-  }> }> }).eq("source", "uniquelisans");
-  const existing = new Map<string, {
-    id: string; active: boolean; image_url: string | null;
-    price_try: number; external_price: number | null; stock_hint: number | null;
-  }>();
-  for (const r of existingRows ?? []) {
-    if (r.external_id) existing.set(String(r.external_id), r);
-  }
-
-  let scanned = 0, inserted = 0, updated = 0, reactivated = 0, hidden = 0, price_changed = 0, failed = 0;
-
-  for (const cat of categories) {
-    const subs = cat.subcategories?.length ? cat.subcategories : [{ id: 0, category_id: cat.id, name: cat.name }];
-    for (const sub of subs) {
-      try {
-        const params: Record<string, number> = { category_id: cat.id };
-        if (sub.id) params.sub_category_id = sub.id;
-        const listBody = await ul("/products", params);
-        const products = (listBody.products ?? []) as Array<{
-          id: number; name: string; description: string; amount: number;
-          is_stock: boolean; stock_count: number | null; is_automatic_delivery: boolean;
-        }>;
-
-        for (const p of products) {
-          scanned++;
-          const key = String(p.id);
-          const finalPrice = Math.max(1, Math.round(p.amount * (1 + opts.markup_percent / 100)));
-          const outOfStock = !p.is_automatic_delivery
-            && typeof p.stock_count === "number"
-            && p.stock_count <= 0;
-
-          const prev = existing.get(key);
-          if (prev) {
-            const patch: Record<string, unknown> = {
-              external_price: p.amount,
-              stock_hint: p.stock_count ?? null,
-              unlimited_stock: !!p.is_automatic_delivery,
-            };
-            // Alış fiyatı değiştiyse satış fiyatını markup ile yenile
-            if (Number(prev.external_price ?? 0) !== p.amount) {
-              patch.price_try = finalPrice;
-              price_changed++;
-            }
-            if (outOfStock && prev.active) {
-              patch.active = false;
-              hidden++;
-            } else if (!outOfStock && !prev.active && opts.reactivate) {
-              patch.active = true;
-              reactivated++;
-            }
-            const { error } = await supabase.from("products").update(patch).eq("id", prev.id);
-            if (error) { failed++; continue; }
-            updated++;
-          } else if (opts.import_new) {
-            // Yeni ürün: PASİF olarak ekle (admin son onay verir)
-            const baseSlug = slugify(p.name) || `ul-${p.id}`;
-            let slug = baseSlug;
-            for (let i = 2; i < 20; i++) {
-              const { data: exists } = await supabase.from("products").select("id").eq!("slug", slug).maybeSingle();
-              if (!exists) break;
-              slug = `${baseSlug}-${i}`;
-            }
-            const { error } = await supabase.from("products").insert({
-              name: p.name,
-              description: p.description ?? "",
-              slug,
-              price_try: finalPrice,
-              external_price: p.amount,
-              category: cat.name || "Dijital Ürünler",
-              active: false,
-              manual_fulfillment: true,
-              unlimited_stock: !!p.is_automatic_delivery,
-              source: "uniquelisans",
-              external_id: key,
-              stock_hint: p.stock_count ?? null,
-              image_url: resolveLogoUrl(p.name),
-            });
-            if (error) { failed++; continue; }
-            inserted++;
-          }
-        }
-      } catch {
-        failed++;
-      }
-    }
-  }
-
-  return { scanned, inserted, updated, price_changed, hidden, reactivated, failed };
-}
-
 export const ulSyncCatalog = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => catalogSyncInput.parse(d))
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
+    const { runUniquelisansCatalogSync } = await import("@/lib/uniquelisans-catalog.server");
     return await runUniquelisansCatalogSync(supabase as never, data);
   });
