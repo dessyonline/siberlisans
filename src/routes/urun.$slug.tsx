@@ -241,6 +241,8 @@ function ProductDetail() {
   const supplierOOS = !!(product as { supplier_out_of_stock?: boolean }).supplier_out_of_stock;
   const manual = !!product.manual_fulfillment;
   const soldOut = supplierOOS || (!manual && !unlimited && stock === 0);
+  const isEpic = (product as { tier?: string | null }).tier === "epic";
+
 
   const bullets = (product.description ?? "")
     .split("|")
