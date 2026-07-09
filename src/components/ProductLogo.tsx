@@ -58,6 +58,9 @@ export function ProductLogo({
           src={current}
           alt={decorative ? "" : `${name} logosu`}
           loading={loading}
+          decoding="async"
+          width={256}
+          height={256}
           className={imgClassName}
           onError={() => setIndex((next) => next + 1)}
         />
