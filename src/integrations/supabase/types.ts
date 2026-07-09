@@ -236,6 +236,42 @@ export type Database = {
         }
         Relationships: []
       }
+      cross_sell_rules: {
+        Row: {
+          active: boolean
+          created_at: string
+          discount_percent: number
+          from_category: string
+          id: string
+          note: string | null
+          promo_code: string | null
+          to_category: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          discount_percent: number
+          from_category: string
+          id?: string
+          note?: string | null
+          promo_code?: string | null
+          to_category: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          discount_percent?: number
+          from_category?: string
+          id?: string
+          note?: string | null
+          promo_code?: string | null
+          to_category?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       crypto_deposits: {
         Row: {
           amount_try: number
