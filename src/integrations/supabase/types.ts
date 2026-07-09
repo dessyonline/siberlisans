@@ -684,19 +684,19 @@ export type Database = {
         Row: {
           delivered_at: string
           id: string
-          license_key_id: string
+          license_key_id: string | null
           order_id: string
         }
         Insert: {
           delivered_at?: string
           id?: string
-          license_key_id: string
+          license_key_id?: string | null
           order_id: string
         }
         Update: {
           delivered_at?: string
           id?: string
-          license_key_id?: string
+          license_key_id?: string | null
           order_id?: string
         }
         Relationships: [
