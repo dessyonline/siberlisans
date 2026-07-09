@@ -226,17 +226,32 @@ function AuthPage() {
                 </Button>
               </TabsContent>
               <TabsContent value="signup" className="space-y-4 mt-4">
-                {refCode && (
+                {refCode ? (
                   <div className="flex items-center gap-2 rounded-md border border-primary/40 bg-primary/5 p-2.5 text-xs font-mono text-primary">
-                    <Gift className="h-4 w-4" />
+                    <Gift className="h-4 w-4 shrink-0" />
                     <span>
-                      Davet kodu: <span className="font-bold">{refCode}</span> · 300₺+ ilk siparişinde ₺10 bakiye kazanırsın
+                      Davet kodu: <span className="font-bold">{refCode}</span> · 300₺+ ilk siparişinde ikinize de ₺10 bakiye
                     </span>
                   </div>
-                )}
+                ) : null}
                 <Field label="görünen ad" value={displayName} onChange={setDisplayName} />
                 <Field label="e-posta" value={email} onChange={setEmail} type="email" autoComplete="email" />
                 <Field label="şifre (min 6)" value={password} onChange={setPassword} type="password" autoComplete="new-password" />
+                {!urlRef && (
+                  <div className="space-y-1.5">
+                    <Label className="font-mono text-xs text-muted-foreground flex items-center gap-1.5">
+                      <Gift className="h-3 w-3 text-primary" />
+                      davet kodu <span className="text-muted-foreground/60">(opsiyonel)</span>
+                    </Label>
+                    <Input
+                      value={manualRef}
+                      onChange={(e) => setManualRef(e.target.value.toUpperCase())}
+                      placeholder="örn: SIBER123"
+                      maxLength={20}
+                      className="font-mono uppercase tracking-wider"
+                    />
+                  </div>
+                )}
 
                 {/* CAPTCHA */}
                 <div className="space-y-1.5">
