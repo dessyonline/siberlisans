@@ -1489,6 +1489,7 @@ export type Database = {
         Returns: number
       }
       bump_orders_count: { Args: { _order_id: string }; Returns: undefined }
+      cancel_pending_order: { Args: { _order_id: string }; Returns: boolean }
       check_low_stock_after_assign: {
         Args: { _product_id: string }
         Returns: {
@@ -1612,6 +1613,14 @@ export type Database = {
       reject_topup: {
         Args: { _note: string; _topup_id: string }
         Returns: undefined
+      }
+      remove_item_from_order: {
+        Args: { _item_id: string; _order_id: string }
+        Returns: {
+          items_left: number
+          order_id: string
+          total_try: number
+        }[]
       }
       remove_promo_code: { Args: { _order_id: string }; Returns: undefined }
       spend_points: {

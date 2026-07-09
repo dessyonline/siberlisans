@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
-import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode, finalizeFreeOrder, setOrderCheckoutFields, addItemToOrder } from "@/lib/orders.functions";
+import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode, finalizeFreeOrder, setOrderCheckoutFields, addItemToOrder, removeItemFromOrder, cancelPendingOrder } from "@/lib/orders.functions";
 import { payOrderWithWallet } from "@/lib/wallet.functions";
 import { MfaGateDialog } from "@/components/security/MfaGateDialog";
 import { Input } from "@/components/ui/input";
@@ -38,6 +38,8 @@ import {
   Ticket,
   Tag,
   Crown,
+  Trash2,
+  X,
 } from "lucide-react";
 
 
@@ -61,7 +63,7 @@ function Payment() {
   const { orderId } = Route.useParams();
   const { user } = useAuth();
   const qc = useQueryClient();
-  const navigate = useNavigate(); void navigate;
+  const navigate = useNavigate();
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const markPaidFn = useServerFn(markOrderPaid);
@@ -69,10 +71,48 @@ function Payment() {
   const setFieldsFn = useServerFn(setOrderCheckoutFields);
 
   const payWithWalletFn = useServerFn(payOrderWithWallet);
+  const removeItemFn = useServerFn(removeItemFromOrder);
+  const cancelOrderFn = useServerFn(cancelPendingOrder);
   const [payingWallet, setPayingWallet] = useState(false);
   const [mfaGateOpen, setMfaGateOpen] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
+  const [removingItemId, setRemovingItemId] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleRemoveItem = async (itemId: string) => {
+    if (!confirm("Bu ürünü siparişten çıkarmak istediğine emin misin?")) return;
+    setRemovingItemId(itemId);
+    try {
+      const res = await removeItemFn({ data: { orderId, itemId } });
+      if (res.itemsLeft === 0) {
+        toast.success("Sipariş iptal edildi");
+        navigate({ to: "/urunler" });
+        return;
+      }
+      toast.success("Ürün çıkarıldı");
+      qc.invalidateQueries({ queryKey: ["order", orderId] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setRemovingItemId(null);
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!confirm("Siparişi iptal etmek istediğine emin misin? Bu işlem geri alınamaz.")) return;
+    setCancelling(true);
+    try {
+      await cancelOrderFn({ data: { orderId } });
+      toast.success("Sipariş iptal edildi");
+      navigate({ to: "/urunler" });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setCancelling(false);
+    }
+  };
+
 
   const runWalletPay = async () => {
     setPayingWallet(true);
@@ -429,6 +469,18 @@ function Payment() {
                       )}
                       <div className="neon-text">₺{itemFinal.toLocaleString("tr-TR")}</div>
                     </div>
+                    {isCartOrder && order.status === "pending" && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveItem(it.id)}
+                        disabled={removingItemId === it.id}
+                        className="ml-1 shrink-0 rounded border border-destructive/40 bg-destructive/5 p-1.5 text-destructive/80 hover:bg-destructive/10 hover:text-destructive disabled:opacity-40"
+                        aria-label="ürünü çıkar"
+                        title="Bu ürünü siparişten çıkar"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
                   </div>
                   );
                 })}
@@ -455,6 +507,25 @@ function Payment() {
               })()}
             </section>
           )}
+
+          {order.status === "pending" && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/50 bg-background/40 px-3 py-2 font-mono text-xs">
+              <span className="text-muted-foreground">
+                Fikrin değiştiyse siparişi iptal edebilirsin — ödeme yapılmadan iade yok.
+              </span>
+              <button
+                type="button"
+                onClick={handleCancelOrder}
+                disabled={cancelling}
+                className="inline-flex items-center gap-1.5 rounded border border-destructive/40 bg-destructive/5 px-2.5 py-1 text-destructive hover:bg-destructive/10 disabled:opacity-40"
+              >
+                <X className="h-3 w-3" />
+                {cancelling ? "iptal ediliyor…" : "siparişi iptal et"}
+              </button>
+            </div>
+          )}
+
+
 
           {order.status === "approved" && deliveredKeys.length > 0 && (
             <div className="space-y-3">

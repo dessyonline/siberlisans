@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Minus, Plus, Trash2, ShoppingCart, KeyRound, ArrowRight, Ticket, X } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingCart, KeyRound, ArrowRight, Ticket, X, Package } from "lucide-react";
 import { useCart, selectCartTotal } from "@/lib/cart-store";
 import { useAuth } from "@/lib/auth-context";
 import { createCartOrder } from "@/lib/orders.functions";
@@ -94,6 +94,18 @@ export function CartDrawer() {
               <ShoppingCart className="mx-auto mb-3 h-10 w-10 text-primary/40" />
               <div>Sepetin boş</div>
               <div className="mt-1 text-xs text-primary/60">$ ekle bir şeyler --now</div>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="mt-4 font-mono"
+                onClick={close}
+              >
+                <Link to="/urunler">
+                  <Package className="mr-2 h-3.5 w-3.5" />
+                  ürünlere göz at
+                </Link>
+              </Button>
             </div>
           )}
           {items.map((it) => (
