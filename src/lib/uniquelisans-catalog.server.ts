@@ -1,6 +1,7 @@
 // Server-only: Uniquelisans tam katalog senkronu.
 // Route dosyalarından ve server function handler'larından DİNAMİK import ile çağrılır.
 import { resolveLogoUrl } from "@/lib/logo-resolver";
+import { notifyTelegram } from "@/lib/telegram.server";
 
 const DEFAULT_URL = "https://bayi.uniquelisans.com/api";
 
@@ -120,6 +121,10 @@ export async function runUniquelisansCatalogSync(
             const { error } = await supabase.from("products").update(patch).eq("id", prev.id);
             if (error) { res.failed++; continue; }
             res.updated++;
+            // Stok geri geldiğinde: adminlere Telegram + abone kullanıcılara bildirim
+            if (patch.supplier_out_of_stock === false) {
+              await notifyStockBack(supabase, prev.id, p.name, p.stock_count ?? null);
+            }
           } else if (opts.import_new) {
             const baseSlug = slugify(p.name) || `ul-${p.id}`;
             let slug = baseSlug;
@@ -156,4 +161,45 @@ export async function runUniquelisansCatalogSync(
   }
 
   return res;
+}
+
+async function notifyStockBack(
+  supabase: SB,
+  productId: string,
+  productName: string,
+  stockCount: number | null,
+): Promise<void> {
+  try {
+    // Adminlere Telegram bildirimi
+    const stockLine = stockCount !== null ? ` (stok: ${stockCount})` : "";
+    await notifyTelegram(
+      `✅ <b>Stok yenilendi</b>\n<b>${productName}</b>${stockLine}\nSatışlar tekrar açık.`,
+    );
+  } catch { /* telegram opsiyonel */ }
+
+  try {
+    // Abone kullanıcılara bildirim
+    const { data: subs } = await supabase
+      .from("stock_notifications")
+      .select("id, user_id")
+      .eq("product_id", productId)
+      .is("notified_at", null);
+
+    const rows = (subs ?? []) as Array<{ id: string; user_id: string }>;
+    if (rows.length === 0) return;
+
+    const notifRows = rows.map((r) => ({
+      user_id: r.user_id,
+      title: "Beklediğin ürün stokta!",
+      body: `${productName} tekrar satışta. Hemen sipariş verebilirsin.`,
+      type: "stock_back",
+      link: `/urun/${productId}`,
+    }));
+    await supabase.from("notifications").insert(notifRows);
+
+    await supabase
+      .from("stock_notifications")
+      .update({ notified_at: new Date().toISOString() })
+      .in("id", rows.map((r) => r.id));
+  } catch { /* bildirim başarısız olsa dahi sync devam etsin */ }
 }

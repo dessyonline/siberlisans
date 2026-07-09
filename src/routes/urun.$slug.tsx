@@ -7,7 +7,9 @@ import { useServerFn } from "@tanstack/react-start";
 import { createOrder } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Info, ShieldCheck, Zap, CheckCircle2, X, KeyRound, Lock, ArrowLeft, Terminal, Cpu, Wifi, Crown, Sparkles, Landmark, Package, RefreshCw, HelpCircle, Users, Clock, ShoppingCart } from "lucide-react";
+import { Info, ShieldCheck, Zap, CheckCircle2, X, KeyRound, Lock, ArrowLeft, Terminal, Cpu, Wifi, Crown, Sparkles, Landmark, Package, RefreshCw, HelpCircle, Users, Clock, ShoppingCart, BellRing, BellOff } from "lucide-react";
+import { subscribeStockNotify, unsubscribeStockNotify, isSubscribedToStock } from "@/lib/stock-notify.functions";
+import { useQueryClient } from "@tanstack/react-query";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useCart } from "@/lib/cart-store";
 import { FavoriteButton } from "@/components/FavoriteButton";
@@ -532,6 +534,11 @@ function ProductDetail() {
                 <FavoriteButton productId={product.id} />
 
               </div>
+              {soldOut && (
+                <div className="mt-4 hidden md:block">
+                  <StockNotifyButton productId={product.id} productName={product.name} />
+                </div>
+              )}
               <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center hidden md:block">
                 <span className="text-primary/60">//</span> kredi kartı KABUL EDİLMEZ · sadece banka transferi
               </p>
@@ -735,6 +742,11 @@ function ProductDetail() {
             <span className="relative">{loading ? "…" : soldOut ? "tükendi" : "$ satın al"}</span>
           </Button>
         </div>
+        {soldOut && (
+          <div className="mx-auto max-w-2xl mt-2">
+            <StockNotifyButton productId={product.id} productName={product.name} compact />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -766,5 +778,67 @@ function StockBadge({ stock, manual, unlimited }: { stock: number; manual: boole
     <div className="flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 font-mono text-xs text-emerald-500">
       <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" /> Mevcut Stok
     </div>
+  );
+}
+
+function StockNotifyButton({ productId, productName, compact }: { productId: string; productName: string; compact?: boolean }) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const subscribeFn = useServerFn(subscribeStockNotify);
+  const unsubscribeFn = useServerFn(unsubscribeStockNotify);
+  const checkFn = useServerFn(isSubscribedToStock);
+  const [pending, setPending] = useState(false);
+
+  const { data: status } = useQuery({
+    queryKey: ["stock-notify", productId, user?.id ?? "anon"],
+    enabled: !!user,
+    queryFn: () => checkFn({ data: { productId } }),
+  });
+  const subscribed = !!status?.subscribed;
+
+  const onClick = async () => {
+    if (!user) {
+      toast("Haber almak için giriş yap");
+      navigate({ to: "/auth" });
+      return;
+    }
+    setPending(true);
+    try {
+      if (subscribed) {
+        await unsubscribeFn({ data: { productId } });
+        toast.success("Stok bildirimi iptal edildi");
+      } else {
+        await subscribeFn({ data: { productId, email: user.email ?? undefined } });
+        toast.success(`${productName} stoğa gelince haber vereceğiz`);
+      }
+      await qc.invalidateQueries({ queryKey: ["stock-notify", productId] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return (
+    <Button
+      onClick={onClick}
+      disabled={pending}
+      variant="outline"
+      size={compact ? "sm" : "lg"}
+      className={`font-mono w-full border-warn/50 bg-warn/10 text-warn hover:bg-warn/20 hover:text-warn shadow-[0_0_20px_oklch(0.80_0.18_75/0.25)] ${compact ? "h-9 text-[11px]" : ""}`}
+    >
+      {subscribed ? (
+        <>
+          <BellOff className={`${compact ? "h-3.5 w-3.5 mr-1.5" : "h-4 w-4 mr-2"}`} />
+          <span>stok geldiğinde <span className="text-primary">haber ver</span> — abonesin ✓ (iptal et)</span>
+        </>
+      ) : (
+        <>
+          <BellRing className={`${compact ? "h-3.5 w-3.5 mr-1.5" : "h-4 w-4 mr-2"} animate-pulse`} />
+          <span>{pending ? "..." : compact ? "stoğa gelince haber ver" : "$ stok geldiğinde haber ver"}</span>
+        </>
+      )}
+    </Button>
   );
 }
