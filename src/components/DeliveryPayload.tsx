@@ -78,6 +78,23 @@ export function DeliveryPayload({
     );
   }
 
+  // URL key (ör. sınırsız stok davet linki) — link olarak render et
+  const isUrl = /^https?:\/\//i.test(keyValue.trim());
+  if (isUrl) {
+    return (
+      <a
+        href={keyValue}
+        target="_blank"
+        rel="noreferrer"
+        className="flex items-center gap-2 rounded border border-primary/30 bg-primary/5 px-3 py-2 font-mono text-primary text-sm hover:bg-primary/10"
+      >
+        <LinkIcon className="h-4 w-4" />
+        <span className="flex-1 break-all truncate">{keyValue}</span>
+        <ExternalLink className="h-3.5 w-3.5" />
+      </a>
+    );
+  }
+
   // default: key
   const isLovable = /^(SIBER|LVBL)-/i.test(keyValue);
   return (
@@ -101,6 +118,7 @@ export function DeliveryPayload({
     </div>
   );
 }
+
 
 function downloadLovableUserscript(licenseKey: string) {
   const script = `// ==UserScript==
