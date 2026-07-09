@@ -93,7 +93,10 @@ export async function runUniquelisansCatalogSync(
         for (const p of products) {
           res.scanned++;
           const key = String(p.id);
-          const finalPrice = Math.max(1, Math.round(p.amount * (1 + opts.markup_percent / 100)));
+          const MIN_PROFIT_TL = 200;
+          const marked = Math.round(p.amount * (1 + opts.markup_percent / 100));
+          const floor = Math.round(p.amount + MIN_PROFIT_TL);
+          const finalPrice = Math.max(1, marked, floor);
           const outOfStock = !p.is_automatic_delivery
             && typeof p.stock_count === "number"
             && p.stock_count <= 0;

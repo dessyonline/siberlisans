@@ -126,7 +126,7 @@ export const ulImportProduct = createServerFn({ method: "POST" })
     };
     if (!detail) throw new Error("Ürün bulunamadı.");
 
-    const finalPrice = Math.max(1, Math.round(detail.amount * (1 + data.markup_percent / 100)));
+    const finalPrice = priceWithFloor(detail.amount, data.markup_percent);
     const baseSlug = slugify(detail.name) || `ul-${detail.id}`;
     let slug = baseSlug;
     // slug çakışırsa suffix ekle
