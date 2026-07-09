@@ -336,8 +336,26 @@ export const createCartOrder = createServerFn({ method: "POST" })
       console.error("[flash] apply cart", (e as Error).message);
     }
 
-    // Telegram bildirimi burada gönderilmiyor — sadece dekont yüklendiğinde
-    // veya ödeme onaylandığında gönderiliyor (spam'ı önlemek için).
+    // Yeni sepet siparişi bildirimi (admin)
+    try {
+      const { data: prods } = await supabase
+        .from("products")
+        .select("id, name")
+        .in("id", data.items.map((i) => i.productId));
+      const nameMap = new Map<string, string>((prods ?? []).map((p) => [p.id, p.name]));
+      const itemsText = data.items
+        .map((i) => `• ${nameMap.get(i.productId) ?? "—"} × ${i.quantity}`)
+        .join("\n");
+      const { notifyTelegram, cartOrderCreatedMessage } = await import("@/lib/telegram.server");
+      await notifyTelegram(cartOrderCreatedMessage({
+        reference: row.reference_code as string,
+        itemsText,
+        itemCount: data.items.reduce((a, b) => a + b.quantity, 0),
+        totalTry: Number(row.total_try),
+        userEmail: (claims as { email?: string } | null)?.email ?? null,
+        couponCode: data.couponCode ?? null,
+      }));
+    } catch (e) { console.error("[notify] cartOrderCreated", (e as Error).message); }
 
 
     return {
