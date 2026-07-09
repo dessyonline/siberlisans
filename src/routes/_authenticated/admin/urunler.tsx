@@ -98,6 +98,18 @@ function ProductsAdmin() {
   const [filter, setFilter] = useState<Filter>("all");
   const upsertFn = useServerFn(upsertProduct);
   const deleteFn = useServerFn(deleteProduct);
+  const searchParams = Route.useSearch();
+  const navigate = Route.useNavigate();
+
+  // ?edit=<uuid> ile gelindiğinde ilgili ürünün düzenleme diyaloğunu otomatik aç.
+  useEffect(() => {
+    if (!searchParams.edit || !products) return;
+    const target = (products as Product[]).find((p) => p.id === searchParams.edit);
+    if (target) {
+      setEditing(target);
+      navigate({ search: {} as never, replace: true });
+    }
+  }, [searchParams.edit, products, navigate]);
 
   const stats = useMemo(() => {
     const list = products ?? [];
