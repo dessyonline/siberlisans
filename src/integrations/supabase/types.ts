@@ -640,7 +640,7 @@ export type Database = {
           created_at: string
           id: string
           order_id: string
-          product_id: string
+          product_id: string | null
           product_name_snapshot: string
           quantity: number
           unit_price_try: number
@@ -649,7 +649,7 @@ export type Database = {
           created_at?: string
           id?: string
           order_id: string
-          product_id: string
+          product_id?: string | null
           product_name_snapshot: string
           quantity?: number
           unit_price_try: number
@@ -658,7 +658,7 @@ export type Database = {
           created_at?: string
           id?: string
           order_id?: string
-          product_id?: string
+          product_id?: string | null
           product_name_snapshot?: string
           quantity?: number
           unit_price_try?: number
