@@ -305,6 +305,26 @@ export const createCartOrder = createServerFn({ method: "POST" })
     const row = Array.isArray(rows) ? rows[0] : rows;
     if (!row?.order_id) throw new Error("Sipariş oluşturulamadı.");
 
+    // Aktif flash indirimlerini order_discounts'a yaz
+    try {
+      const { data: prods } = await supabase
+        .from("products")
+        .select("id, price_try")
+        .in("id", data.items.map((i) => i.productId));
+      const priceMap = new Map<string, number>((prods ?? []).map((p) => [p.id, Number(p.price_try)]));
+      await applyFlashDiscountToOrder(
+        supabase,
+        row.order_id as string,
+        data.items.map((i) => ({
+          productId: i.productId,
+          quantity: i.quantity,
+          unitPriceTry: priceMap.get(i.productId) ?? 0,
+        })),
+      );
+    } catch (e) {
+      console.error("[flash] apply cart", (e as Error).message);
+    }
+
     // Telegram bildirimi burada gönderilmiyor — sadece dekont yüklendiğinde
     // veya ödeme onaylandığında gönderiliyor (spam'ı önlemek için).
 
