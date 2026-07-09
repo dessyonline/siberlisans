@@ -1027,6 +1027,66 @@ export type Database = {
           },
         ]
       }
+      supplier_check_logs: {
+        Row: {
+          balance: number | null
+          balance_ok: boolean | null
+          block_reason: string | null
+          blocked: boolean
+          context: string | null
+          created_at: string
+          error: string | null
+          external_id: string | null
+          id: string
+          is_stock: boolean | null
+          product_id: string | null
+          product_name: string | null
+          source: string
+          stock_count: number | null
+          stock_ok: boolean | null
+          supplier_amount: number | null
+          user_id: string | null
+        }
+        Insert: {
+          balance?: number | null
+          balance_ok?: boolean | null
+          block_reason?: string | null
+          blocked?: boolean
+          context?: string | null
+          created_at?: string
+          error?: string | null
+          external_id?: string | null
+          id?: string
+          is_stock?: boolean | null
+          product_id?: string | null
+          product_name?: string | null
+          source?: string
+          stock_count?: number | null
+          stock_ok?: boolean | null
+          supplier_amount?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          balance?: number | null
+          balance_ok?: boolean | null
+          block_reason?: string | null
+          blocked?: boolean
+          context?: string | null
+          created_at?: string
+          error?: string | null
+          external_id?: string | null
+          id?: string
+          is_stock?: boolean | null
+          product_id?: string | null
+          product_name?: string | null
+          source?: string
+          stock_count?: number | null
+          stock_ok?: boolean | null
+          supplier_amount?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       support_messages: {
         Row: {
           body: string

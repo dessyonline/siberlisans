@@ -46,10 +46,25 @@ export const createOrder = createServerFn({ method: "POST" })
 
     // Uniquelisans canlı stok/bakiye kontrolü (fail-open: API erişilemezse engellemez)
     if (product.source === "uniquelisans" && product.external_id) {
+      const { ulCheckAvailability, ulGetBalance, logSupplierCheck } = await import(
+        "@/lib/uniquelisans.server"
+      );
       try {
-        const { ulCheckAvailability, ulGetBalance } = await import("@/lib/uniquelisans.server");
         const avail = await ulCheckAvailability(Number(product.external_id));
         if (!avail.ok) {
+          await logSupplierCheck({
+            user_id: userId,
+            product_id: product.id,
+            product_name: product.name,
+            external_id: product.external_id,
+            stock_ok: false,
+            stock_count: avail.stock_count ?? null,
+            is_stock: avail.is_stock ?? null,
+            supplier_amount: avail.amount ?? null,
+            blocked: true,
+            block_reason: "out_of_stock",
+            context: "single_order",
+          });
           try {
             const { notifyTelegram, outOfStockAlertMessage } = await import("@/lib/telegram.server");
             await notifyTelegram(outOfStockAlertMessage({
@@ -62,26 +77,63 @@ export const createOrder = createServerFn({ method: "POST" })
           );
         }
         const cost = Number(avail.amount ?? product.external_price ?? 0);
-        if (cost > 0) {
-          const bal = await ulGetBalance();
-          if (bal !== null && bal < cost) {
-            try {
-              const { notifyTelegram } = await import("@/lib/telegram.server");
-              await notifyTelegram(
-                `⚠️ Uniquelisans bakiyesi yetersiz — ${bal.toFixed(2)} < ${cost.toFixed(2)} · Ürün: ${product.name}`,
-              );
-            } catch { /* ignore */ }
-            throw new Error(
-              "Tedarikçi tarafında geçici bir aksaklık var, siparişini biraz sonra tekrar deneyebilir misin? Yöneticiye bildirim gönderildi.",
+        const bal = cost > 0 ? await ulGetBalance() : null;
+        const balanceOk = bal === null || cost <= 0 ? null : bal >= cost;
+        if (balanceOk === false) {
+          await logSupplierCheck({
+            user_id: userId,
+            product_id: product.id,
+            product_name: product.name,
+            external_id: product.external_id,
+            stock_ok: true,
+            stock_count: avail.stock_count ?? null,
+            is_stock: avail.is_stock ?? null,
+            supplier_amount: cost,
+            balance: bal,
+            balance_ok: false,
+            blocked: true,
+            block_reason: "insufficient_balance",
+            context: "single_order",
+          });
+          try {
+            const { notifyTelegram } = await import("@/lib/telegram.server");
+            await notifyTelegram(
+              `⚠️ Uniquelisans bakiyesi yetersiz — ${(bal ?? 0).toFixed(2)} < ${cost.toFixed(2)} · Ürün: ${product.name}`,
             );
-          }
+          } catch { /* ignore */ }
+          throw new Error(
+            "Tedarikçi tarafında geçici bir aksaklık var, siparişini biraz sonra tekrar deneyebilir misin? Yöneticiye bildirim gönderildi.",
+          );
         }
+        await logSupplierCheck({
+          user_id: userId,
+          product_id: product.id,
+          product_name: product.name,
+          external_id: product.external_id,
+          stock_ok: true,
+          stock_count: avail.stock_count ?? null,
+          is_stock: avail.is_stock ?? null,
+          supplier_amount: cost || null,
+          balance: bal,
+          balance_ok: balanceOk,
+          blocked: false,
+          context: "single_order",
+        });
       } catch (e) {
-        // Bilinçli olarak fırlatılan mesajları yukarı taşı
         if (e instanceof Error && /Uniquelisans|stokta yok|tedarikçi/i.test(e.message)) throw e;
         console.error("[uniquelisans] preflight", (e as Error).message);
+        await logSupplierCheck({
+          user_id: userId,
+          product_id: product.id,
+          product_name: product.name,
+          external_id: product.external_id,
+          blocked: false,
+          context: "single_order",
+          error: (e as Error).message,
+        });
       }
     }
+
 
 
     const referenceCode = genRef();
@@ -128,6 +180,7 @@ export const createCartOrder = createServerFn({ method: "POST" })
     const { supabase, claims } = context;
 
     // Uniquelisans canlı stok/bakiye ön-kontrolü (fail-open)
+    const userId = (context as { userId?: string }).userId ?? null;
     try {
       const { data: prods } = await supabase
         .from("products")
@@ -137,37 +190,101 @@ export const createCartOrder = createServerFn({ method: "POST" })
         (p) => p.source === "uniquelisans" && p.external_id,
       );
       if (ulProds.length > 0) {
-        const { ulCheckAvailability, ulGetBalance } = await import("@/lib/uniquelisans.server");
+        const { ulCheckAvailability, ulGetBalance, logSupplierCheck } = await import(
+          "@/lib/uniquelisans.server"
+        );
         let totalCost = 0;
+        const checked: Array<{
+          p: typeof ulProds[number];
+          qty: number;
+          amount: number;
+          stock_count: number | null;
+          is_stock: boolean | null;
+        }> = [];
         for (const p of ulProds) {
           const qty = data.items.find((i) => i.productId === p.id)?.quantity ?? 1;
           const avail = await ulCheckAvailability(Number(p.external_id));
           if (!avail.ok) {
+            await logSupplierCheck({
+              user_id: userId,
+              product_id: p.id,
+              product_name: p.name,
+              external_id: p.external_id,
+              stock_ok: false,
+              stock_count: avail.stock_count ?? null,
+              is_stock: avail.is_stock ?? null,
+              supplier_amount: avail.amount ?? null,
+              blocked: true,
+              block_reason: "out_of_stock",
+              context: "cart_order",
+            });
             throw new Error(
               `"${p.name}" tedarikçide (Uniquelisans) şu an stokta yok. Sepetten çıkarıp tekrar dener misin?`,
             );
           }
-          totalCost += Number(avail.amount ?? p.external_price ?? 0) * qty;
+          const amt = Number(avail.amount ?? p.external_price ?? 0);
+          totalCost += amt * qty;
+          checked.push({
+            p,
+            qty,
+            amount: amt,
+            stock_count: avail.stock_count ?? null,
+            is_stock: avail.is_stock ?? null,
+          });
         }
-        if (totalCost > 0) {
-          const bal = await ulGetBalance();
-          if (bal !== null && bal < totalCost) {
-            try {
-              const { notifyTelegram } = await import("@/lib/telegram.server");
-              await notifyTelegram(
-                `⚠️ Uniquelisans bakiyesi yetersiz (sepet) — ${bal.toFixed(2)} < ${totalCost.toFixed(2)}`,
-              );
-            } catch { /* ignore */ }
-            throw new Error(
-              "Tedarikçi tarafında geçici bir aksaklık var, sepetini biraz sonra tekrar deneyebilir misin?",
-            );
+        const bal = totalCost > 0 ? await ulGetBalance() : null;
+        const balanceOk = bal === null || totalCost <= 0 ? null : bal >= totalCost;
+        if (balanceOk === false) {
+          for (const c of checked) {
+            await logSupplierCheck({
+              user_id: userId,
+              product_id: c.p.id,
+              product_name: c.p.name,
+              external_id: c.p.external_id,
+              stock_ok: true,
+              stock_count: c.stock_count,
+              is_stock: c.is_stock,
+              supplier_amount: c.amount || null,
+              balance: bal,
+              balance_ok: false,
+              blocked: true,
+              block_reason: "insufficient_balance",
+              context: "cart_order",
+            });
           }
+          try {
+            const { notifyTelegram } = await import("@/lib/telegram.server");
+            await notifyTelegram(
+              `⚠️ Uniquelisans bakiyesi yetersiz (sepet) — ${(bal ?? 0).toFixed(2)} < ${totalCost.toFixed(2)}`,
+            );
+          } catch { /* ignore */ }
+          throw new Error(
+            "Tedarikçi tarafında geçici bir aksaklık var, sepetini biraz sonra tekrar deneyebilir misin?",
+          );
+        }
+        for (const c of checked) {
+          await logSupplierCheck({
+            user_id: userId,
+            product_id: c.p.id,
+            product_name: c.p.name,
+            external_id: c.p.external_id,
+            stock_ok: true,
+            stock_count: c.stock_count,
+            is_stock: c.is_stock,
+            supplier_amount: c.amount || null,
+            balance: bal,
+            balance_ok: balanceOk,
+            blocked: false,
+            context: "cart_order",
+          });
         }
       }
     } catch (e) {
       if (e instanceof Error && /stokta yok|tedarikçi/i.test(e.message)) throw e;
       console.error("[uniquelisans] cart preflight", (e as Error).message);
     }
+
+
 
     const { data: rows, error } = await supabase.rpc("create_cart_order", {
       _items: data.items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
