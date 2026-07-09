@@ -13,6 +13,7 @@ import { Route as UrunlerRouteImport } from './routes/urunler'
 import { Route as SssRouteImport } from './routes/sss'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as PaketlerRouteImport } from './routes/paketler'
 import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
 import { Route as KvkkRouteImport } from './routes/kvkk'
 import { Route as KosullarRouteImport } from './routes/kosullar'
@@ -46,6 +47,8 @@ import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedBildirimlerRouteImport } from './routes/_authenticated/bildirimler'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
+import { Route as AuthenticatedFaturaOrderIdRouteImport } from './routes/_authenticated/fatura.$orderId'
 import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
 import { Route as AuthenticatedAdminUniquelisansRouteImport } from './routes/_authenticated/admin/uniquelisans'
 import { Route as AuthenticatedAdminTedarikciLogRouteImport } from './routes/_authenticated/admin/tedarikci-log'
@@ -53,6 +56,8 @@ import { Route as AuthenticatedAdminSiparislerRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminShopierRouteImport } from './routes/_authenticated/admin/shopier'
 import { Route as AuthenticatedAdminPromosyonlarRouteImport } from './routes/_authenticated/admin/promosyonlar'
 import { Route as AuthenticatedAdminPopulerRouteImport } from './routes/_authenticated/admin/populer'
+import { Route as AuthenticatedAdminPartnerRouteImport } from './routes/_authenticated/admin/partner'
+import { Route as AuthenticatedAdminPaketlerRouteImport } from './routes/_authenticated/admin/paketler'
 import { Route as AuthenticatedAdminLisanslarRouteImport } from './routes/_authenticated/admin/lisanslar'
 import { Route as AuthenticatedAdminKuponlarRouteImport } from './routes/_authenticated/admin/kuponlar'
 import { Route as AuthenticatedAdminKullanicilarRouteImport } from './routes/_authenticated/admin/kullanicilar'
@@ -92,6 +97,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaketlerRoute = PaketlerRouteImport.update({
+  id: '/paketler',
+  path: '/paketler',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NasilCalisirRoute = NasilCalisirRouteImport.update({
@@ -261,6 +271,17 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const ApiPublicSitemapDotxmlRoute = ApiPublicSitemapDotxmlRouteImport.update({
+  id: '/api/public/sitemap.xml',
+  path: '/api/public/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedFaturaOrderIdRoute =
+  AuthenticatedFaturaOrderIdRouteImport.update({
+    id: '/fatura/$orderId',
+    path: '/fatura/$orderId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminUrunlerRoute =
   AuthenticatedAdminUrunlerRouteImport.update({
     id: '/urunler',
@@ -301,6 +322,18 @@ const AuthenticatedAdminPopulerRoute =
   AuthenticatedAdminPopulerRouteImport.update({
     id: '/populer',
     path: '/populer',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPartnerRoute =
+  AuthenticatedAdminPartnerRouteImport.update({
+    id: '/partner',
+    path: '/partner',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPaketlerRoute =
+  AuthenticatedAdminPaketlerRouteImport.update({
+    id: '/paketler',
+    path: '/paketler',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 const AuthenticatedAdminLisanslarRoute =
@@ -430,6 +463,7 @@ export interface FileRoutesByFullPath {
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/nasil-calisir': typeof NasilCalisirRoute
+  '/paketler': typeof PaketlerRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
@@ -471,6 +505,8 @@ export interface FileRoutesByFullPath {
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
   '/admin/kuponlar': typeof AuthenticatedAdminKuponlarRoute
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
+  '/admin/paketler': typeof AuthenticatedAdminPaketlerRoute
+  '/admin/partner': typeof AuthenticatedAdminPartnerRoute
   '/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
   '/admin/shopier': typeof AuthenticatedAdminShopierRoute
@@ -478,6 +514,8 @@ export interface FileRoutesByFullPath {
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
+  '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
+  '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
@@ -495,6 +533,7 @@ export interface FileRoutesByTo {
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/nasil-calisir': typeof NasilCalisirRoute
+  '/paketler': typeof PaketlerRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
@@ -535,6 +574,8 @@ export interface FileRoutesByTo {
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
   '/admin/kuponlar': typeof AuthenticatedAdminKuponlarRoute
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
+  '/admin/paketler': typeof AuthenticatedAdminPaketlerRoute
+  '/admin/partner': typeof AuthenticatedAdminPartnerRoute
   '/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
   '/admin/shopier': typeof AuthenticatedAdminShopierRoute
@@ -542,6 +583,8 @@ export interface FileRoutesByTo {
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
+  '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
+  '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
@@ -561,6 +604,7 @@ export interface FileRoutesById {
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/nasil-calisir': typeof NasilCalisirRoute
+  '/paketler': typeof PaketlerRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
@@ -602,6 +646,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
   '/_authenticated/admin/kuponlar': typeof AuthenticatedAdminKuponlarRoute
   '/_authenticated/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
+  '/_authenticated/admin/paketler': typeof AuthenticatedAdminPaketlerRoute
+  '/_authenticated/admin/partner': typeof AuthenticatedAdminPartnerRoute
   '/_authenticated/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/_authenticated/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
   '/_authenticated/admin/shopier': typeof AuthenticatedAdminShopierRoute
@@ -609,6 +655,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/_authenticated/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/_authenticated/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
+  '/_authenticated/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
+  '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
@@ -628,6 +676,7 @@ export interface FileRouteTypes {
     | '/kosullar'
     | '/kvkk'
     | '/nasil-calisir'
+    | '/paketler'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/sss'
@@ -669,6 +718,8 @@ export interface FileRouteTypes {
     | '/admin/kullanicilar'
     | '/admin/kuponlar'
     | '/admin/lisanslar'
+    | '/admin/paketler'
+    | '/admin/partner'
     | '/admin/populer'
     | '/admin/promosyonlar'
     | '/admin/shopier'
@@ -676,6 +727,8 @@ export interface FileRouteTypes {
     | '/admin/tedarikci-log'
     | '/admin/uniquelisans'
     | '/admin/urunler'
+    | '/fatura/$orderId'
+    | '/api/public/sitemap.xml'
     | '/admin/'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
@@ -693,6 +746,7 @@ export interface FileRouteTypes {
     | '/kosullar'
     | '/kvkk'
     | '/nasil-calisir'
+    | '/paketler'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/sss'
@@ -733,6 +787,8 @@ export interface FileRouteTypes {
     | '/admin/kullanicilar'
     | '/admin/kuponlar'
     | '/admin/lisanslar'
+    | '/admin/paketler'
+    | '/admin/partner'
     | '/admin/populer'
     | '/admin/promosyonlar'
     | '/admin/shopier'
@@ -740,6 +796,8 @@ export interface FileRouteTypes {
     | '/admin/tedarikci-log'
     | '/admin/uniquelisans'
     | '/admin/urunler'
+    | '/fatura/$orderId'
+    | '/api/public/sitemap.xml'
     | '/admin'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
@@ -758,6 +816,7 @@ export interface FileRouteTypes {
     | '/kosullar'
     | '/kvkk'
     | '/nasil-calisir'
+    | '/paketler'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/sss'
@@ -799,6 +858,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/kullanicilar'
     | '/_authenticated/admin/kuponlar'
     | '/_authenticated/admin/lisanslar'
+    | '/_authenticated/admin/paketler'
+    | '/_authenticated/admin/partner'
     | '/_authenticated/admin/populer'
     | '/_authenticated/admin/promosyonlar'
     | '/_authenticated/admin/shopier'
@@ -806,6 +867,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/tedarikci-log'
     | '/_authenticated/admin/uniquelisans'
     | '/_authenticated/admin/urunler'
+    | '/_authenticated/fatura/$orderId'
+    | '/api/public/sitemap.xml'
     | '/_authenticated/admin/'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
@@ -825,6 +888,7 @@ export interface RootRouteChildren {
   KosullarRoute: typeof KosullarRoute
   KvkkRoute: typeof KvkkRoute
   NasilCalisirRoute: typeof NasilCalisirRoute
+  PaketlerRoute: typeof PaketlerRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SssRoute: typeof SssRoute
@@ -843,6 +907,7 @@ export interface RootRouteChildren {
   SiparisRefRoute: typeof SiparisRefRoute
   UrunSlugRoute: typeof UrunSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
+  ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
   ApiPublicHooksShopierRoute: typeof ApiPublicHooksShopierRoute
@@ -879,6 +944,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/paketler': {
+      id: '/paketler'
+      path: '/paketler'
+      fullPath: '/paketler'
+      preLoaderRoute: typeof PaketlerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nasil-calisir': {
@@ -1112,6 +1184,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/api/public/sitemap.xml': {
+      id: '/api/public/sitemap.xml'
+      path: '/api/public/sitemap.xml'
+      fullPath: '/api/public/sitemap.xml'
+      preLoaderRoute: typeof ApiPublicSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/fatura/$orderId': {
+      id: '/_authenticated/fatura/$orderId'
+      path: '/fatura/$orderId'
+      fullPath: '/fatura/$orderId'
+      preLoaderRoute: typeof AuthenticatedFaturaOrderIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin/urunler': {
       id: '/_authenticated/admin/urunler'
       path: '/urunler'
@@ -1159,6 +1245,20 @@ declare module '@tanstack/react-router' {
       path: '/populer'
       fullPath: '/admin/populer'
       preLoaderRoute: typeof AuthenticatedAdminPopulerRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/partner': {
+      id: '/_authenticated/admin/partner'
+      path: '/partner'
+      fullPath: '/admin/partner'
+      preLoaderRoute: typeof AuthenticatedAdminPartnerRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/paketler': {
+      id: '/_authenticated/admin/paketler'
+      path: '/paketler'
+      fullPath: '/admin/paketler'
+      preLoaderRoute: typeof AuthenticatedAdminPaketlerRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/lisanslar': {
@@ -1319,6 +1419,8 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminKullanicilarRoute: typeof AuthenticatedAdminKullanicilarRoute
   AuthenticatedAdminKuponlarRoute: typeof AuthenticatedAdminKuponlarRoute
   AuthenticatedAdminLisanslarRoute: typeof AuthenticatedAdminLisanslarRoute
+  AuthenticatedAdminPaketlerRoute: typeof AuthenticatedAdminPaketlerRoute
+  AuthenticatedAdminPartnerRoute: typeof AuthenticatedAdminPartnerRoute
   AuthenticatedAdminPopulerRoute: typeof AuthenticatedAdminPopulerRoute
   AuthenticatedAdminPromosyonlarRoute: typeof AuthenticatedAdminPromosyonlarRoute
   AuthenticatedAdminShopierRoute: typeof AuthenticatedAdminShopierRoute
@@ -1345,6 +1447,8 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminKullanicilarRoute: AuthenticatedAdminKullanicilarRoute,
     AuthenticatedAdminKuponlarRoute: AuthenticatedAdminKuponlarRoute,
     AuthenticatedAdminLisanslarRoute: AuthenticatedAdminLisanslarRoute,
+    AuthenticatedAdminPaketlerRoute: AuthenticatedAdminPaketlerRoute,
+    AuthenticatedAdminPartnerRoute: AuthenticatedAdminPartnerRoute,
     AuthenticatedAdminPopulerRoute: AuthenticatedAdminPopulerRoute,
     AuthenticatedAdminPromosyonlarRoute: AuthenticatedAdminPromosyonlarRoute,
     AuthenticatedAdminShopierRoute: AuthenticatedAdminShopierRoute,
@@ -1370,6 +1474,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedGuvenlikRoute: typeof AuthenticatedGuvenlikRoute
   AuthenticatedHesabimRoute: typeof AuthenticatedHesabimRoute
   AuthenticatedKriptoYukleRoute: typeof AuthenticatedKriptoYukleRoute
+  AuthenticatedFaturaOrderIdRoute: typeof AuthenticatedFaturaOrderIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -1382,6 +1487,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedGuvenlikRoute: AuthenticatedGuvenlikRoute,
   AuthenticatedHesabimRoute: AuthenticatedHesabimRoute,
   AuthenticatedKriptoYukleRoute: AuthenticatedKriptoYukleRoute,
+  AuthenticatedFaturaOrderIdRoute: AuthenticatedFaturaOrderIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -1397,6 +1503,7 @@ const rootRouteChildren: RootRouteChildren = {
   KosullarRoute: KosullarRoute,
   KvkkRoute: KvkkRoute,
   NasilCalisirRoute: NasilCalisirRoute,
+  PaketlerRoute: PaketlerRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SssRoute: SssRoute,
@@ -1415,6 +1522,7 @@ const rootRouteChildren: RootRouteChildren = {
   SiparisRefRoute: SiparisRefRoute,
   UrunSlugRoute: UrunSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
+  ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
   ApiPublicHooksAbandonmentReminderRoute:
     ApiPublicHooksAbandonmentReminderRoute,
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,

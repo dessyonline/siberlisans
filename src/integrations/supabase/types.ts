@@ -14,6 +14,72 @@ export type Database = {
   }
   public: {
     Tables: {
+      affiliate_payouts: {
+        Row: {
+          admin_note: string | null
+          amount_try: number
+          created_at: string
+          destination: string | null
+          id: string
+          method: string
+          processed_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          amount_try: number
+          created_at?: string
+          destination?: string | null
+          id?: string
+          method?: string
+          processed_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          amount_try?: number
+          created_at?: string
+          destination?: string | null
+          id?: string
+          method?: string
+          processed_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      badges: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          rule_key: string | null
+          threshold: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id: string
+          name: string
+          rule_key?: string | null
+          threshold?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          rule_key?: string | null
+          threshold?: number | null
+        }
+        Relationships: []
+      }
       bank_accounts: {
         Row: {
           active: boolean
@@ -491,6 +557,47 @@ export type Database = {
           },
         ]
       }
+      license_transfers: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          from_user_id: string
+          id: string
+          order_id: string
+          status: string
+          to_email: string | null
+          to_user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          from_user_id: string
+          id?: string
+          order_id: string
+          status?: string
+          to_email?: string | null
+          to_user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          from_user_id?: string
+          id?: string
+          order_id?: string
+          status?: string
+          to_email?: string | null
+          to_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "license_transfers_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       low_stock_alerts: {
         Row: {
           last_available: number
@@ -799,6 +906,72 @@ export type Database = {
           },
         ]
       }
+      product_bundle_items: {
+        Row: {
+          bundle_id: string
+          product_id: string
+          quantity: number
+        }
+        Insert: {
+          bundle_id: string
+          product_id: string
+          quantity?: number
+        }
+        Update: {
+          bundle_id?: string
+          product_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_bundle_items_bundle_id_fkey"
+            columns: ["bundle_id"]
+            isOneToOne: false
+            referencedRelation: "product_bundles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_bundle_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_bundles: {
+        Row: {
+          active: boolean
+          created_at: string | null
+          description: string | null
+          discount_percent: number
+          id: string
+          name: string
+          price_try: number
+          slug: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string | null
+          description?: string | null
+          discount_percent?: number
+          id?: string
+          name: string
+          price_try: number
+          slug: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string | null
+          description?: string | null
+          discount_percent?: number
+          id?: string
+          name?: string
+          price_try?: number
+          slug?: string
+        }
+        Relationships: []
+      }
       product_reviews: {
         Row: {
           comment: string | null
@@ -945,6 +1118,8 @@ export type Database = {
           id: string
           last_seen_at: string | null
           last_seen_ip: string | null
+          last_streak_at: string | null
+          login_streak: number
           referral_bonus_paid: boolean
           referral_code: string | null
           referred_by: string | null
@@ -960,6 +1135,8 @@ export type Database = {
           id: string
           last_seen_at?: string | null
           last_seen_ip?: string | null
+          last_streak_at?: string | null
+          login_streak?: number
           referral_bonus_paid?: boolean
           referral_code?: string | null
           referred_by?: string | null
@@ -975,6 +1152,8 @@ export type Database = {
           id?: string
           last_seen_at?: string | null
           last_seen_ip?: string | null
+          last_streak_at?: string | null
+          login_streak?: number
           referral_bonus_paid?: boolean
           referral_code?: string | null
           referred_by?: string | null
@@ -1280,6 +1459,32 @@ export type Database = {
         }
         Relationships: []
       }
+      user_badges: {
+        Row: {
+          badge_id: string
+          earned_at: string | null
+          user_id: string
+        }
+        Insert: {
+          badge_id: string
+          earned_at?: string | null
+          user_id: string
+        }
+        Update: {
+          badge_id?: string
+          earned_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "badges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_points_ledger: {
         Row: {
           balance_after: number
@@ -1575,6 +1780,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      affiliate_stats: {
+        Args: { _user_id: string }
+        Returns: {
+          active_referred_count: number
+          pending: number
+          referred_count: number
+          total_earned: number
+          total_paid: number
+        }[]
+      }
       apply_promo_code: {
         Args: { _code: string; _order_id: string }
         Returns: {
@@ -1611,6 +1826,13 @@ export type Database = {
           _user_id: string
         }
         Returns: number
+      }
+      bump_login_streak: {
+        Args: never
+        Returns: {
+          bonus_points: number
+          streak: number
+        }[]
       }
       bump_orders_count: { Args: { _order_id: string }; Returns: undefined }
       cancel_pending_order: { Args: { _order_id: string }; Returns: boolean }
@@ -1752,6 +1974,7 @@ export type Database = {
         }
         Returns: string
       }
+      recompute_badges: { Args: { _user_id: string }; Returns: undefined }
       refund_order_to_wallet: { Args: { _order_id: string }; Returns: number }
       refund_points_discount: { Args: { _order_id: string }; Returns: number }
       reject_topup: {
@@ -1774,6 +1997,10 @@ export type Database = {
           order_id: string
           outcome: string
         }[]
+      }
+      request_affiliate_payout: {
+        Args: { _amount: number; _destination: string; _method: string }
+        Returns: string
       }
       send_license_renewal_reminders: { Args: never; Returns: undefined }
       set_subscription_auto_renew: {
@@ -1801,6 +2028,10 @@ export type Database = {
           ip_changed: boolean
           previous_ip: string
         }[]
+      }
+      transfer_order: {
+        Args: { _order_id: string; _to_email: string }
+        Returns: string
       }
       validate_coupon: {
         Args: { _code: string; _subtotal: number }
