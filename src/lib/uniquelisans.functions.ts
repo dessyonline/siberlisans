@@ -6,6 +6,14 @@ import { resolveLogoUrl } from "@/lib/logo-resolver";
 const DEFAULT_URL = "https://bayi.uniquelisans.com/api";
 // Varsayılan markup (admin isterse import ederken override eder)
 export const DEFAULT_MARKUP_PERCENT = 20;
+// Her ürünün üstünde minimum kar (TL) — DB trigger'i de bunu zorunlu tutar.
+export const MIN_PROFIT_TL = 200;
+
+function priceWithFloor(cost: number, markupPercent: number): number {
+  const marked = Math.round(cost * (1 + markupPercent / 100));
+  const floor = Math.round(cost + MIN_PROFIT_TL);
+  return Math.max(1, marked, floor);
+}
 
 function slugify(s: string) {
   return s
@@ -118,7 +126,7 @@ export const ulImportProduct = createServerFn({ method: "POST" })
     };
     if (!detail) throw new Error("Ürün bulunamadı.");
 
-    const finalPrice = Math.max(1, Math.round(detail.amount * (1 + data.markup_percent / 100)));
+    const finalPrice = priceWithFloor(detail.amount, data.markup_percent);
     const baseSlug = slugify(detail.name) || `ul-${detail.id}`;
     let slug = baseSlug;
     // slug çakışırsa suffix ekle

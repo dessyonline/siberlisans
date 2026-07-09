@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProductLogo } from "@/components/ProductLogo";
+import { AdminEditBadge } from "@/components/AdminEditBadge";
 import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
 import { applyFlash } from "@/lib/flash-sales";
 import {
@@ -551,6 +552,7 @@ function ProductCard({ product: p }: { product: Row }) {
           <Zap className="h-3 w-3" /> -%{percent}
         </div>
       )}
+      <AdminEditBadge productId={p.id} />
 
       <div className="relative p-4 flex flex-col flex-1">
         {/* Top row: category + badges */}

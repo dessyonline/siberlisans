@@ -38,6 +38,7 @@ import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge"
 import { applyFlash } from "@/lib/flash-sales";
 import { useAuth } from "@/lib/auth-context";
 import { Wallet } from "lucide-react";
+import { AdminEditBadge } from "@/components/AdminEditBadge";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -781,6 +782,7 @@ function ProductCard({
           <Zap className="h-3 w-3" /> -%{percent}
         </div>
       )}
+      <AdminEditBadge productId={p.id} />
       {/* corner shine on hover */}
       <div className="pointer-events-none absolute -top-24 -right-24 h-48 w-48 rounded-full bg-primary/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" aria-hidden />
 

@@ -50,7 +50,9 @@ function UniquelisansPage() {
   const [catId, setCatId] = useState<number | null>(null);
   const [subId, setSubId] = useState<number | null>(null);
   const [markup, setMarkup] = useState<number>(DEFAULT_MARKUP_PERCENT);
+  const [rowMarkup, setRowMarkup] = useState<Record<number, number>>({});
   const [importing, setImporting] = useState<number | null>(null);
+  const MIN_PROFIT_TL = 200;
 
   const currentCat = categories?.find((c) => c.id === catId);
 
@@ -62,11 +64,12 @@ function UniquelisansPage() {
 
   async function onImport(externalId: number) {
     setImporting(externalId);
+    const effMarkup = rowMarkup[externalId] ?? markup;
     try {
       const res = await importFn({
         data: {
           external_id: externalId,
-          markup_percent: markup,
+          markup_percent: effMarkup,
           category: currentCat?.name,
           active: false,
         },
@@ -142,7 +145,8 @@ function UniquelisansPage() {
               className="w-full rounded border border-primary/30 bg-background/40 px-3 py-2 font-mono text-sm"
             />
             <div className="mt-1 font-mono text-[11px] text-muted-foreground">
-              örn. alış 50 ₺ → satış <b className="text-primary">{fmt(50 * (1 + markup / 100))} ₺</b> · kar <b className="text-primary">{fmt(50 * markup / 100)} ₺</b>
+              örn. alış 50 ₺ → satış <b className="text-primary">{fmt(Math.max(50 * (1 + markup / 100), 50 + MIN_PROFIT_TL))} ₺</b> · kar <b className="text-primary">{fmt(Math.max(50 * markup / 100, MIN_PROFIT_TL))} ₺</b>
+              <span className="ml-1 text-amber-500">(min. kar ₺{MIN_PROFIT_TL} garanti)</span>
             </div>
           </div>
 
@@ -157,7 +161,11 @@ function UniquelisansPage() {
             <div className="space-y-2">
               {products.map((p) => {
                 const already = importedIds.has(String(p.id));
-                const finalPrice = Math.round(p.amount * (1 + markup / 100));
+                const effMarkup = rowMarkup[p.id] ?? markup;
+                const marked = Math.round(p.amount * (1 + effMarkup / 100));
+                const floor = Math.round(p.amount + MIN_PROFIT_TL);
+                const finalPrice = Math.max(1, marked, floor);
+                const flooredByMin = finalPrice > marked;
                 return (
                   <div key={p.id} className="glass-card rounded-lg p-3 flex flex-wrap items-center gap-3 justify-between">
                     <div className="min-w-0 flex-1">
@@ -188,18 +196,35 @@ function UniquelisansPage() {
                         <span>alış: <b>{fmt(p.amount)} ₺</b></span>
                         <span>satış: <b className="text-primary">{fmt(finalPrice)} ₺</b></span>
                         <span className="text-primary">kar: <b>{fmt(finalPrice - p.amount)} ₺</b> {p.amount > 0 && <span className="text-muted-foreground">(%{fmt(((finalPrice - p.amount) / p.amount) * 100)})</span>}</span>
+                        {flooredByMin && (
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/30">
+                            min. kar ₺{MIN_PROFIT_TL} uygulandı
+                          </span>
+                        )}
                       </div>
-
                     </div>
-                    <Button
-                      size="sm"
-                      onClick={() => onImport(p.id)}
-                      disabled={importing === p.id}
-                      variant={already ? "outline" : "default"}
-                    >
-                      {importing === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-                      <span className="ml-1">{already ? "güncelle" : "içe aktar"}</span>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
+                        kar%
+                        <input
+                          type="number"
+                          min={0}
+                          max={500}
+                          value={effMarkup}
+                          onChange={(e) => setRowMarkup((r) => ({ ...r, [p.id]: Number(e.target.value) }))}
+                          className="w-16 rounded border border-primary/30 bg-background/40 px-1.5 py-1 font-mono text-xs"
+                        />
+                      </label>
+                      <Button
+                        size="sm"
+                        onClick={() => onImport(p.id)}
+                        disabled={importing === p.id}
+                        variant={already ? "outline" : "default"}
+                      >
+                        {importing === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                        <span className="ml-1">{already ? "güncelle" : "içe aktar"}</span>
+                      </Button>
+                    </div>
                   </div>
                 );
               })}
