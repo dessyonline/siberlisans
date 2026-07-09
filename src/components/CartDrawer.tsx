@@ -94,6 +94,18 @@ export function CartDrawer() {
               <ShoppingCart className="mx-auto mb-3 h-10 w-10 text-primary/40" />
               <div>Sepetin boş</div>
               <div className="mt-1 text-xs text-primary/60">$ ekle bir şeyler --now</div>
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="mt-4 font-mono"
+                onClick={close}
+              >
+                <Link to="/urunler">
+                  <Package className="mr-2 h-3.5 w-3.5" />
+                  ürünlere göz at
+                </Link>
+              </Button>
             </div>
           )}
           {items.map((it) => (
