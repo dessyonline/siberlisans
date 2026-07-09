@@ -160,7 +160,11 @@ function UniquelisansPage() {
             <div className="space-y-2">
               {products.map((p) => {
                 const already = importedIds.has(String(p.id));
-                const finalPrice = Math.round(p.amount * (1 + markup / 100));
+                const effMarkup = rowMarkup[p.id] ?? markup;
+                const marked = Math.round(p.amount * (1 + effMarkup / 100));
+                const floor = Math.round(p.amount + MIN_PROFIT_TL);
+                const finalPrice = Math.max(1, marked, floor);
+                const flooredByMin = finalPrice > marked;
                 return (
                   <div key={p.id} className="glass-card rounded-lg p-3 flex flex-wrap items-center gap-3 justify-between">
                     <div className="min-w-0 flex-1">
@@ -191,18 +195,35 @@ function UniquelisansPage() {
                         <span>alış: <b>{fmt(p.amount)} ₺</b></span>
                         <span>satış: <b className="text-primary">{fmt(finalPrice)} ₺</b></span>
                         <span className="text-primary">kar: <b>{fmt(finalPrice - p.amount)} ₺</b> {p.amount > 0 && <span className="text-muted-foreground">(%{fmt(((finalPrice - p.amount) / p.amount) * 100)})</span>}</span>
+                        {flooredByMin && (
+                          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-500 border border-amber-500/30">
+                            min. kar ₺{MIN_PROFIT_TL} uygulandı
+                          </span>
+                        )}
                       </div>
-
                     </div>
-                    <Button
-                      size="sm"
-                      onClick={() => onImport(p.id)}
-                      disabled={importing === p.id}
-                      variant={already ? "outline" : "default"}
-                    >
-                      {importing === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-                      <span className="ml-1">{already ? "güncelle" : "içe aktar"}</span>
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <label className="flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
+                        kar%
+                        <input
+                          type="number"
+                          min={0}
+                          max={500}
+                          value={effMarkup}
+                          onChange={(e) => setRowMarkup((r) => ({ ...r, [p.id]: Number(e.target.value) }))}
+                          className="w-16 rounded border border-primary/30 bg-background/40 px-1.5 py-1 font-mono text-xs"
+                        />
+                      </label>
+                      <Button
+                        size="sm"
+                        onClick={() => onImport(p.id)}
+                        disabled={importing === p.id}
+                        variant={already ? "outline" : "default"}
+                      >
+                        {importing === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
+                        <span className="ml-1">{already ? "güncelle" : "içe aktar"}</span>
+                      </Button>
+                    </div>
                   </div>
                 );
               })}
