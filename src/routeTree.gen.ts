@@ -28,7 +28,10 @@ import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as BakiyeYukleTopupIdRouteImport } from './routes/bakiye-yukle.$topupId'
 import { Route as ApiValidateRouteImport } from './routes/api/validate'
+import { Route as ApiSourceCodeRouteImport } from './routes/api/source-code'
 import { Route as ApiRevokeRouteImport } from './routes/api/revoke'
+import { Route as ApiRemoveWatermarkRouteImport } from './routes/api/remove-watermark'
+import { Route as ApiApprovePlanRouteImport } from './routes/api/approve-plan'
 import { Route as ApiActivateRouteImport } from './routes/api/activate'
 import { Route as AktivasyonTokenRouteImport } from './routes/aktivasyon.$token'
 import { Route as AuthenticatedKriptoYukleRouteImport } from './routes/_authenticated/kripto-yukle'
@@ -159,9 +162,24 @@ const ApiValidateRoute = ApiValidateRouteImport.update({
   path: '/api/validate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSourceCodeRoute = ApiSourceCodeRouteImport.update({
+  id: '/api/source-code',
+  path: '/api/source-code',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiRevokeRoute = ApiRevokeRouteImport.update({
   id: '/api/revoke',
   path: '/api/revoke',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRemoveWatermarkRoute = ApiRemoveWatermarkRouteImport.update({
+  id: '/api/remove-watermark',
+  path: '/api/remove-watermark',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiApprovePlanRoute = ApiApprovePlanRouteImport.update({
+  id: '/api/approve-plan',
+  path: '/api/approve-plan',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiActivateRoute = ApiActivateRouteImport.update({
@@ -386,7 +404,10 @@ export interface FileRoutesByFullPath {
   '/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
+  '/api/approve-plan': typeof ApiApprovePlanRoute
+  '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
+  '/api/source-code': typeof ApiSourceCodeRoute
   '/api/validate': typeof ApiValidateRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -441,7 +462,10 @@ export interface FileRoutesByTo {
   '/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
+  '/api/approve-plan': typeof ApiApprovePlanRoute
+  '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
+  '/api/source-code': typeof ApiSourceCodeRoute
   '/api/validate': typeof ApiValidateRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -499,7 +523,10 @@ export interface FileRoutesById {
   '/_authenticated/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
+  '/api/approve-plan': typeof ApiApprovePlanRoute
+  '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
+  '/api/source-code': typeof ApiSourceCodeRoute
   '/api/validate': typeof ApiValidateRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
@@ -557,7 +584,10 @@ export interface FileRouteTypes {
     | '/kripto-yukle'
     | '/aktivasyon/$token'
     | '/api/activate'
+    | '/api/approve-plan'
+    | '/api/remove-watermark'
     | '/api/revoke'
+    | '/api/source-code'
     | '/api/validate'
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
@@ -612,7 +642,10 @@ export interface FileRouteTypes {
     | '/kripto-yukle'
     | '/aktivasyon/$token'
     | '/api/activate'
+    | '/api/approve-plan'
+    | '/api/remove-watermark'
     | '/api/revoke'
+    | '/api/source-code'
     | '/api/validate'
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
@@ -669,7 +702,10 @@ export interface FileRouteTypes {
     | '/_authenticated/kripto-yukle'
     | '/aktivasyon/$token'
     | '/api/activate'
+    | '/api/approve-plan'
+    | '/api/remove-watermark'
     | '/api/revoke'
+    | '/api/source-code'
     | '/api/validate'
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
@@ -718,7 +754,10 @@ export interface RootRouteChildren {
   UrunlerRoute: typeof UrunlerRoute
   AktivasyonTokenRoute: typeof AktivasyonTokenRoute
   ApiActivateRoute: typeof ApiActivateRoute
+  ApiApprovePlanRoute: typeof ApiApprovePlanRoute
+  ApiRemoveWatermarkRoute: typeof ApiRemoveWatermarkRoute
   ApiRevokeRoute: typeof ApiRevokeRoute
+  ApiSourceCodeRoute: typeof ApiSourceCodeRoute
   ApiValidateRoute: typeof ApiValidateRoute
   BakiyeYukleTopupIdRoute: typeof BakiyeYukleTopupIdRoute
   BlogSlugRoute: typeof BlogSlugRoute
@@ -867,11 +906,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiValidateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/source-code': {
+      id: '/api/source-code'
+      path: '/api/source-code'
+      fullPath: '/api/source-code'
+      preLoaderRoute: typeof ApiSourceCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/revoke': {
       id: '/api/revoke'
       path: '/api/revoke'
       fullPath: '/api/revoke'
       preLoaderRoute: typeof ApiRevokeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/remove-watermark': {
+      id: '/api/remove-watermark'
+      path: '/api/remove-watermark'
+      fullPath: '/api/remove-watermark'
+      preLoaderRoute: typeof ApiRemoveWatermarkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/approve-plan': {
+      id: '/api/approve-plan'
+      path: '/api/approve-plan'
+      fullPath: '/api/approve-plan'
+      preLoaderRoute: typeof ApiApprovePlanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/activate': {
@@ -1216,7 +1276,10 @@ const rootRouteChildren: RootRouteChildren = {
   UrunlerRoute: UrunlerRoute,
   AktivasyonTokenRoute: AktivasyonTokenRoute,
   ApiActivateRoute: ApiActivateRoute,
+  ApiApprovePlanRoute: ApiApprovePlanRoute,
+  ApiRemoveWatermarkRoute: ApiRemoveWatermarkRoute,
   ApiRevokeRoute: ApiRevokeRoute,
+  ApiSourceCodeRoute: ApiSourceCodeRoute,
   ApiValidateRoute: ApiValidateRoute,
   BakiyeYukleTopupIdRoute: BakiyeYukleTopupIdRoute,
   BlogSlugRoute: BlogSlugRoute,
