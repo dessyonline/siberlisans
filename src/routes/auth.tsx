@@ -228,7 +228,7 @@ function AuthPage() {
                   <div className="flex items-center gap-2 rounded-md border border-primary/40 bg-primary/5 p-2.5 text-xs font-mono text-primary">
                     <Gift className="h-4 w-4" />
                     <span>
-                      Davet kodu: <span className="font-bold">{refCode}</span> · İlk siparişinde ₺25 bakiye kazanırsın
+                      Davet kodu: <span className="font-bold">{refCode}</span> · 300₺+ ilk siparişinde ₺10 bakiye kazanırsın
                     </span>
                   </div>
                 )}
