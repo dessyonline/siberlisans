@@ -45,6 +45,8 @@ type Order = {
           | {
               key_value: string;
               activation_token: string | null;
+              expires_at: string | null;
+              duration_days: number | null;
               product: { name: string; slug: string; delivery_type: string } | null;
             }
           | null;
