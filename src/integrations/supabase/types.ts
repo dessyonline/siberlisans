@@ -1350,6 +1350,13 @@ export type Database = {
         }[]
       }
       activate_license: { Args: { _hwid: string; _key: string }; Returns: Json }
+      add_item_to_order: {
+        Args: { _order_id: string; _product_id: string; _quantity?: number }
+        Returns: {
+          order_id: string
+          total_try: number
+        }[]
+      }
       admin_adjust_wallet: {
         Args: { _delta: number; _note: string; _user_id: string }
         Returns: number

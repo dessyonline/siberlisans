@@ -949,3 +949,25 @@ async function applyFlashDiscountToOrder(
   if (inserts.length === 0) return;
   await supabase.from("order_discounts").insert(inserts);
 }
+
+const addItemInput = z.object({
+  orderId: z.string().uuid(),
+  productId: z.string().uuid(),
+  quantity: z.number().int().min(1).max(20).default(1),
+});
+
+export const addItemToOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => addItemInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: rows, error } = await supabase.rpc("add_item_to_order", {
+      _order_id: data.orderId,
+      _product_id: data.productId,
+      _quantity: data.quantity,
+    // biome-ignore lint/suspicious/noExplicitAny: rpc typing
+    } as any);
+    if (error) throw new Error(error.message);
+    const row = Array.isArray(rows) ? rows[0] : rows;
+    return { orderId: row?.order_id as string, totalTry: Number(row?.total_try ?? 0) };
+  });

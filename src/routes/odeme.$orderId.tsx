@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
-import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode, finalizeFreeOrder, setOrderCheckoutFields } from "@/lib/orders.functions";
+import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode, finalizeFreeOrder, setOrderCheckoutFields, addItemToOrder } from "@/lib/orders.functions";
 import { payOrderWithWallet } from "@/lib/wallet.functions";
 import { MfaGateDialog } from "@/components/security/MfaGateDialog";
 import { Input } from "@/components/ui/input";
@@ -326,6 +326,8 @@ function Payment() {
 
       {(order.status === "pending" || order.status === "reviewing") && (
         <CrossSellOffer
+          orderId={orderId}
+          orderStatus={order.status}
           categories={
             isCartOrder
               ? (orderItems
@@ -407,10 +409,26 @@ function Payment() {
                   </div>
                 ))}
               </div>
-              <div className="mt-3 flex items-center justify-between border-t border-primary/20 pt-3 font-mono text-sm">
-                <span className="text-muted-foreground uppercase text-[10px] tracking-widest">toplam</span>
-                <span className="text-primary text-base neon-text-glow">₺{Number(order.price_try).toLocaleString("tr-TR")}</span>
-              </div>
+              {(() => {
+                const discs = Array.isArray(order.discount) ? order.discount : (order.discount ? [order.discount] : []);
+                const totalDisc = discs.reduce((s, d) => s + Number((d as { discount_try?: number })?.discount_try ?? 0), 0);
+                const orig = Number(order.price_try);
+                const final = Math.max(0, orig - totalDisc);
+                return (
+                  <div className="mt-3 flex items-center justify-between border-t border-primary/20 pt-3 font-mono text-sm">
+                    <span className="text-muted-foreground uppercase text-[10px] tracking-widest">ödenecek</span>
+                    <span className="flex items-center gap-2">
+                      {totalDisc > 0 && (
+                        <span className="text-[11px] text-muted-foreground line-through">₺{orig.toLocaleString("tr-TR")}</span>
+                      )}
+                      <span className="text-primary text-base neon-text-glow">₺{final.toLocaleString("tr-TR")}</span>
+                      {totalDisc > 0 && (
+                        <span className="rounded border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">−₺{totalDisc.toLocaleString("tr-TR")}</span>
+                      )}
+                    </span>
+                  </div>
+                );
+              })()}
             </section>
           )}
 
@@ -462,11 +480,18 @@ function Payment() {
           {(order.status === "pending" || order.status === "reviewing") && (
             <>
               {(() => {
-                const disc = Array.isArray(order.discount) ? order.discount[0] : order.discount;
-                const discountTry = Number(disc?.discount_try ?? 0);
-                const codeSnap = disc?.code_snapshot ?? null;
-                const finalAmount = Math.max(0, Number(order.price_try) - discountTry);
-                const isFree = finalAmount <= 0 && discountTry > 0;
+                const discs = (Array.isArray(order.discount) ? order.discount : (order.discount ? [order.discount] : [])) as Array<{ discount_try: number; code_snapshot: string | null }>;
+                // Kupon indirimi = FLASH-/PUAN- ile başlamayan tek satır
+                const couponRow = discs.find((d) => {
+                  const c = d.code_snapshot ?? "";
+                  return c && !c.startsWith("FLASH-") && !c.startsWith("PUAN-");
+                }) ?? null;
+                const pointsRow = discs.find((d) => (d.code_snapshot ?? "").startsWith("PUAN-")) ?? null;
+                const totalDisc = discs.reduce((s, d) => s + Number(d.discount_try ?? 0), 0);
+                const discountTry = Number(couponRow?.discount_try ?? 0);
+                const codeSnap = couponRow?.code_snapshot ?? null;
+                const finalAmount = Math.max(0, Number(order.price_try) - totalDisc);
+                const isFree = finalAmount <= 0 && totalDisc > 0;
                 return (
                   <>
                     <PromoBlock
@@ -478,10 +503,10 @@ function Payment() {
                     <PointsBlock
                       orderId={orderId}
                       originalPrice={Number(order.price_try)}
-                      hasOtherDiscount={discountTry > 0 && !(codeSnap ?? "").startsWith("PUAN-")}
+                      hasOtherDiscount={discountTry > 0}
                       appliedPointsAmount={
-                        (codeSnap ?? "").startsWith("PUAN-")
-                          ? Number((codeSnap ?? "").slice(5)) || null
+                        pointsRow?.code_snapshot
+                          ? Number(pointsRow.code_snapshot.slice(5)) || null
                           : null
                       }
                     />
@@ -1472,8 +1497,12 @@ function CheckoutFieldsCard({
   );
 }
 
-function CrossSellOffer({ categories, excludeSlugs }: { categories: string[]; excludeSlugs: string[] }) {
+function CrossSellOffer({ orderId, orderStatus, categories, excludeSlugs }: { orderId: string; orderStatus: string; categories: string[]; excludeSlugs: string[] }) {
   const addToCart = useCart((s) => s.addItem);
+  const qc = useQueryClient();
+  const addToOrderFn = useServerFn(addItemToOrder);
+  const [adding, setAdding] = useState(false);
+  const canAddToOrder = orderStatus === "pending";
   const { data: offer } = useQuery({
     queryKey: ["cross-sell-offer", categories.sort().join("|")],
     enabled: categories.length > 0,
@@ -1549,30 +1578,42 @@ function CrossSellOffer({ categories, excludeSlugs }: { categories: string[]; ex
           </div>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
-          <Button
-            onClick={() => {
-              addToCart({
-                productId: product.id,
-                slug: product.slug,
-                name: product.name,
-                priceTry: discounted,
-                imageUrl: product.image_url ?? null,
-              });
-              if (rule.promo_code) {
+          {canAddToOrder ? (
+            <Button
+              disabled={adding}
+              onClick={async () => {
+                setAdding(true);
                 try {
-                  navigator.clipboard?.writeText(rule.promo_code);
-                  toast.success(`sepete eklendi · kupon panoya kopyalandı: ${rule.promo_code}`);
-                } catch {
-                  toast.success("sepete eklendi");
+                  await addToOrderFn({ data: { orderId, productId: product.id, quantity: 1 } });
+                  await qc.invalidateQueries({ queryKey: ["order", orderId] });
+                  toast.success("bu siparişe eklendi · toplam güncellendi");
+                } catch (e) {
+                  toast.error((e as Error).message);
+                } finally {
+                  setAdding(false);
                 }
-              } else {
+              }}
+              className="font-mono neon-glow"
+            >
+              <Sparkles className="h-4 w-4 mr-1" /> {adding ? "ekleniyor…" : "bu siparişe ekle"}
+            </Button>
+          ) : (
+            <Button
+              onClick={() => {
+                addToCart({
+                  productId: product.id,
+                  slug: product.slug,
+                  name: product.name,
+                  priceTry: discounted,
+                  imageUrl: product.image_url ?? null,
+                });
                 toast.success("sepete eklendi");
-              }
-            }}
-            className="font-mono neon-glow"
-          >
-            <Sparkles className="h-4 w-4 mr-1" /> sepete ekle
-          </Button>
+              }}
+              className="font-mono neon-glow"
+            >
+              <Sparkles className="h-4 w-4 mr-1" /> sepete ekle
+            </Button>
+          )}
           <Link
             to="/urun/$slug"
             params={{ slug: product.slug }}
@@ -1585,6 +1626,7 @@ function CrossSellOffer({ categories, excludeSlugs }: { categories: string[]; ex
     </section>
   );
 }
+
 
 
 
