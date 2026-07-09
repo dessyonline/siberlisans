@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { listBundles } from "@/lib/bundles.functions";
 import { Package } from "lucide-react";
 
-export const Route = createFileRoute("/paketler")({
+export const Route = createFileRoute("/paketler/")({
   component: BundlesPage,
   loader: () => listBundles(),
   head: () => ({

@@ -13,7 +13,6 @@ import { Route as UrunlerRouteImport } from './routes/urunler'
 import { Route as SssRouteImport } from './routes/sss'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
-import { Route as PaketlerRouteImport } from './routes/paketler'
 import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
 import { Route as KvkkRouteImport } from './routes/kvkk'
 import { Route as KosullarRouteImport } from './routes/kosullar'
@@ -23,6 +22,7 @@ import { Route as GizlilikRouteImport } from './routes/gizlilik'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PaketlerIndexRouteImport } from './routes/paketler.index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
 import { Route as SiparisRefRouteImport } from './routes/siparis.$ref'
@@ -100,11 +100,6 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PaketlerRoute = PaketlerRouteImport.update({
-  id: '/paketler',
-  path: '/paketler',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const NasilCalisirRoute = NasilCalisirRouteImport.update({
   id: '/nasil-calisir',
   path: '/nasil-calisir',
@@ -149,6 +144,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PaketlerIndexRoute = PaketlerIndexRouteImport.update({
+  id: '/paketler/',
+  path: '/paketler/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
   id: '/blog/',
   path: '/blog/',
@@ -165,9 +165,9 @@ const SiparisRefRoute = SiparisRefRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const PaketlerSlugRoute = PaketlerSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => PaketlerRoute,
+  id: '/paketler/$slug',
+  path: '/paketler/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const OdemeOrderIdRoute = OdemeOrderIdRouteImport.update({
   id: '/odeme/$orderId',
@@ -469,7 +469,6 @@ export interface FileRoutesByFullPath {
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/nasil-calisir': typeof NasilCalisirRoute
-  '/paketler': typeof PaketlerRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
@@ -498,6 +497,7 @@ export interface FileRoutesByFullPath {
   '/siparis/$ref': typeof SiparisRefRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/blog/': typeof BlogIndexRoute
+  '/paketler/': typeof PaketlerIndexRoute
   '/admin/abonelikler': typeof AuthenticatedAdminAboneliklerRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
   '/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
@@ -540,7 +540,6 @@ export interface FileRoutesByTo {
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/nasil-calisir': typeof NasilCalisirRoute
-  '/paketler': typeof PaketlerRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
@@ -568,6 +567,7 @@ export interface FileRoutesByTo {
   '/siparis/$ref': typeof SiparisRefRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/blog': typeof BlogIndexRoute
+  '/paketler': typeof PaketlerIndexRoute
   '/admin/abonelikler': typeof AuthenticatedAdminAboneliklerRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
   '/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
@@ -612,7 +612,6 @@ export interface FileRoutesById {
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/nasil-calisir': typeof NasilCalisirRoute
-  '/paketler': typeof PaketlerRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
@@ -641,6 +640,7 @@ export interface FileRoutesById {
   '/siparis/$ref': typeof SiparisRefRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/blog/': typeof BlogIndexRoute
+  '/paketler/': typeof PaketlerIndexRoute
   '/_authenticated/admin/abonelikler': typeof AuthenticatedAdminAboneliklerRoute
   '/_authenticated/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
   '/_authenticated/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
@@ -685,7 +685,6 @@ export interface FileRouteTypes {
     | '/kosullar'
     | '/kvkk'
     | '/nasil-calisir'
-    | '/paketler'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/sss'
@@ -714,6 +713,7 @@ export interface FileRouteTypes {
     | '/siparis/$ref'
     | '/urun/$slug'
     | '/blog/'
+    | '/paketler/'
     | '/admin/abonelikler'
     | '/admin/ayarlar'
     | '/admin/bildirimler'
@@ -756,7 +756,6 @@ export interface FileRouteTypes {
     | '/kosullar'
     | '/kvkk'
     | '/nasil-calisir'
-    | '/paketler'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/sss'
@@ -784,6 +783,7 @@ export interface FileRouteTypes {
     | '/siparis/$ref'
     | '/urun/$slug'
     | '/blog'
+    | '/paketler'
     | '/admin/abonelikler'
     | '/admin/ayarlar'
     | '/admin/bildirimler'
@@ -827,7 +827,6 @@ export interface FileRouteTypes {
     | '/kosullar'
     | '/kvkk'
     | '/nasil-calisir'
-    | '/paketler'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/sss'
@@ -856,6 +855,7 @@ export interface FileRouteTypes {
     | '/siparis/$ref'
     | '/urun/$slug'
     | '/blog/'
+    | '/paketler/'
     | '/_authenticated/admin/abonelikler'
     | '/_authenticated/admin/ayarlar'
     | '/_authenticated/admin/bildirimler'
@@ -900,7 +900,6 @@ export interface RootRouteChildren {
   KosullarRoute: typeof KosullarRoute
   KvkkRoute: typeof KvkkRoute
   NasilCalisirRoute: typeof NasilCalisirRoute
-  PaketlerRoute: typeof PaketlerRouteWithChildren
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SssRoute: typeof SssRoute
@@ -916,9 +915,11 @@ export interface RootRouteChildren {
   BakiyeYukleTopupIdRoute: typeof BakiyeYukleTopupIdRoute
   BlogSlugRoute: typeof BlogSlugRoute
   OdemeOrderIdRoute: typeof OdemeOrderIdRoute
+  PaketlerSlugRoute: typeof PaketlerSlugRoute
   SiparisRefRoute: typeof SiparisRefRoute
   UrunSlugRoute: typeof UrunSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
+  PaketlerIndexRoute: typeof PaketlerIndexRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
@@ -956,13 +957,6 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/paketler': {
-      id: '/paketler'
-      path: '/paketler'
-      fullPath: '/paketler'
-      preLoaderRoute: typeof PaketlerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nasil-calisir': {
@@ -1028,6 +1022,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/paketler/': {
+      id: '/paketler/'
+      path: '/paketler'
+      fullPath: '/paketler/'
+      preLoaderRoute: typeof PaketlerIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/': {
       id: '/blog/'
       path: '/blog'
@@ -1051,10 +1052,10 @@ declare module '@tanstack/react-router' {
     }
     '/paketler/$slug': {
       id: '/paketler/$slug'
-      path: '/$slug'
+      path: '/paketler/$slug'
       fullPath: '/paketler/$slug'
       preLoaderRoute: typeof PaketlerSlugRouteImport
-      parentRoute: typeof PaketlerRoute
+      parentRoute: typeof rootRouteImport
     }
     '/odeme/$orderId': {
       id: '/odeme/$orderId'
@@ -1512,18 +1513,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
-interface PaketlerRouteChildren {
-  PaketlerSlugRoute: typeof PaketlerSlugRoute
-}
-
-const PaketlerRouteChildren: PaketlerRouteChildren = {
-  PaketlerSlugRoute: PaketlerSlugRoute,
-}
-
-const PaketlerRouteWithChildren = PaketlerRoute._addFileChildren(
-  PaketlerRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -1534,7 +1523,6 @@ const rootRouteChildren: RootRouteChildren = {
   KosullarRoute: KosullarRoute,
   KvkkRoute: KvkkRoute,
   NasilCalisirRoute: NasilCalisirRoute,
-  PaketlerRoute: PaketlerRouteWithChildren,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SssRoute: SssRoute,
@@ -1550,9 +1538,11 @@ const rootRouteChildren: RootRouteChildren = {
   BakiyeYukleTopupIdRoute: BakiyeYukleTopupIdRoute,
   BlogSlugRoute: BlogSlugRoute,
   OdemeOrderIdRoute: OdemeOrderIdRoute,
+  PaketlerSlugRoute: PaketlerSlugRoute,
   SiparisRefRoute: SiparisRefRoute,
   UrunSlugRoute: UrunSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
+  PaketlerIndexRoute: PaketlerIndexRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
   ApiPublicHooksAbandonmentReminderRoute:
     ApiPublicHooksAbandonmentReminderRoute,
