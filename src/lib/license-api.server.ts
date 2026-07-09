@@ -84,11 +84,29 @@ export async function guardReplay(
   return null;
 }
 
+/** Deterministic per-license/HWID unlock key (base64, 32 bytes). */
+export function deriveUnlockKey(license_key: string, hwid: string): string {
+  const secret = process.env.LICENSE_HMAC_SECRET;
+  if (!secret) throw new Error("LICENSE_HMAC_SECRET is not configured.");
+  const raw = createHmac("sha256", secret)
+    .update("unlock:v1|" + license_key + "|" + hwid)
+    .digest();
+  return raw.toString("base64");
+}
+
 export async function logEvent(
   supabaseAdmin: { from: (t: string) => { insert: (r: unknown) => Promise<unknown> } },
   entry: {
     license_key: string;
-    event: "activate" | "validate" | "revoke" | "fail" | "admin_create" | "admin_revoke";
+    event:
+      | "activate"
+      | "validate"
+      | "revoke"
+      | "fail"
+      | "admin_create"
+      | "admin_revoke"
+      | "unlock"
+      | "tampering";
     hwid?: string | null;
     ip?: string | null;
     user_agent?: string | null;
