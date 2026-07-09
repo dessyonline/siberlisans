@@ -1478,6 +1478,7 @@ function PromoBlock({
   const removeFn = useServerFn(removePromoCode);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   const isPointsCode = (appliedCode ?? "").startsWith("PUAN-");
   if (isPointsCode) return null;
   const hasDiscount = discountTry > 0 && !!appliedCode;
@@ -1487,13 +1488,15 @@ function PromoBlock({
   const apply = async () => {
     if (!code.trim()) return;
     setBusy(true);
+    setErr(null);
     try {
       const res = await applyFn({ data: { orderId, code: code.trim() } });
       toast.success(`Kod uygulandı: −₺${res.discountTry.toLocaleString("tr-TR")}`);
       setCode("");
       qc.invalidateQueries({ queryKey: ["order", orderId] });
     } catch (e) {
-      toast.error((e as Error).message);
+      const msg = (e as Error).message || "Kod uygulanamadı";
+      setErr(msg);
     } finally {
       setBusy(false);
     }
@@ -1535,20 +1538,29 @@ function PromoBlock({
           </Button>
         </div>
       ) : (
-        <div className="mt-3 flex gap-2">
-          <Input
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="KODUNUZ"
-            className="font-mono uppercase"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") apply();
-            }}
-          />
-          <Button onClick={apply} disabled={busy || !code.trim()}>
-            uygula
-          </Button>
-        </div>
+        <>
+          <div className="mt-3 flex gap-2">
+            <Input
+              value={code}
+              onChange={(e) => { setCode(e.target.value.toUpperCase()); if (err) setErr(null); }}
+              placeholder="KODUNUZ"
+              className={`font-mono uppercase ${err ? "border-destructive/60 focus-visible:ring-destructive/40" : ""}`}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") apply();
+              }}
+              aria-invalid={!!err}
+            />
+            <Button onClick={apply} disabled={busy || !code.trim()}>
+              {busy ? "…" : err ? "tekrar dene" : "uygula"}
+            </Button>
+          </div>
+          {err && (
+            <div className="mt-2 flex items-start gap-1.5 rounded-md border border-destructive/40 bg-destructive/5 p-2 font-mono text-[11px] text-destructive">
+              <XCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+              <span className="leading-relaxed">{err}</span>
+            </div>
+          )}
+        </>
       )}
     </section>
   );
