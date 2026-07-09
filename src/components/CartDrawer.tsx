@@ -1,15 +1,23 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Minus, Plus, Trash2, ShoppingCart, KeyRound, ArrowRight, Ticket, X, Package } from "lucide-react";
-import { useCart, selectCartTotal } from "@/lib/cart-store";
+import { supabase } from "@/integrations/supabase/client";
+import { useCart } from "@/lib/cart-store";
 import { useAuth } from "@/lib/auth-context";
 import { createCartOrder } from "@/lib/orders.functions";
 import { validateCoupon } from "@/lib/coupons.functions";
+import { applyFlash, type FlashSaleLite } from "@/lib/flash-sales";
+
+type CartPricing = {
+  priceTry: number;
+  sale: (FlashSaleLite & { product_id: string }) | null;
+};
 
 export function CartDrawer() {
   const isOpen = useCart((s) => s.isOpen);
@@ -18,7 +26,6 @@ export function CartDrawer() {
   const setQuantity = useCart((s) => s.setQuantity);
   const removeItem = useCart((s) => s.removeItem);
   const clear = useCart((s) => s.clear);
-  const total = useCart(selectCartTotal);
   const { user } = useAuth();
   const navigate = useNavigate();
   const createCartOrderFn = useServerFn(createCartOrder);
@@ -28,6 +35,59 @@ export function CartDrawer() {
   const [coupon, setCoupon] = useState<{ code: string; discount: number } | null>(null);
   const [checking, setChecking] = useState(false);
 
+  const productIds = items.map((i) => i.productId).sort();
+  const { data: livePricing } = useQuery({
+    queryKey: ["cart-live-pricing", productIds.join("|")],
+    enabled: productIds.length > 0,
+    queryFn: async () => {
+      const nowIso = new Date().toISOString();
+      const [productsRes, salesRes] = await Promise.all([
+        supabase.from("products").select("id, price_try").in("id", productIds),
+        supabase
+          .from("flash_sales" as any)
+          .select("id, product_id, discount_type, discount_value, ends_at, label")
+          .in("product_id", productIds)
+          .eq("is_active", true)
+          .lte("starts_at", nowIso)
+          .gt("ends_at", nowIso)
+          .order("ends_at", { ascending: true }),
+      ]);
+
+      if (productsRes.error) throw productsRes.error;
+      if (salesRes.error) throw salesRes.error;
+
+      const firstSaleByProduct = new Map<string, FlashSaleLite & { product_id: string }>();
+      for (const sale of (salesRes.data ?? []) as unknown as Array<FlashSaleLite & { product_id: string }>) {
+        if (!firstSaleByProduct.has(sale.product_id)) firstSaleByProduct.set(sale.product_id, sale);
+      }
+
+      return Object.fromEntries(
+        (productsRes.data ?? []).map((p) => [
+          p.id,
+          {
+            priceTry: Number(p.price_try),
+            sale: firstSaleByProduct.get(p.id) ?? null,
+          } satisfies CartPricing,
+        ]),
+      ) as Record<string, CartPricing>;
+    },
+  });
+
+  const pricedItems = items.map((it) => {
+    const live = livePricing?.[it.productId];
+    const storedOriginal = Number(it.originalPriceTry ?? (it.discountTry ? it.priceTry + it.discountTry : it.priceTry));
+    const original = Number(live?.priceTry ?? storedOriginal);
+    const flash = applyFlash(original, live?.sale ?? null);
+    const storedDiscount = Number(it.discountTry ?? 0);
+    const unitFinal = live ? (flash.hasSale ? flash.final : original) : Math.max(0, it.priceTry);
+    const unitSaved = Math.max(0, Math.round((original - unitFinal) * 100) / 100);
+    const discountLabel = live?.sale?.label ?? it.discountLabel ?? (storedDiscount > 0 ? "flash indirim" : null);
+    return { ...it, original, unitFinal, unitSaved, discountLabel };
+  });
+
+  const subtotal = pricedItems.reduce((sum, i) => sum + i.original * i.quantity, 0);
+  const total = pricedItems.reduce((sum, i) => sum + i.unitFinal * i.quantity, 0);
+  const flashDiscountTotal = Math.max(0, subtotal - total);
   const finalTotal = Math.max(0, total - (coupon?.discount ?? 0));
 
   async function applyCoupon() {
@@ -108,7 +168,7 @@ export function CartDrawer() {
               </Button>
             </div>
           )}
-          {items.map((it) => (
+          {pricedItems.map((it) => (
             <div
               key={it.productId}
               className="glass-card rounded-md p-3 flex items-start gap-3 border border-border/50"
@@ -122,9 +182,24 @@ export function CartDrawer() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="font-mono text-sm truncate">{it.name}</div>
-                <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">
-                  ₺{it.priceTry.toLocaleString("tr-TR")} · birim
-                </div>
+                {it.unitSaved > 0 ? (
+                  <div className="mt-1 space-y-0.5 font-mono">
+                    <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                      <span className="text-muted-foreground line-through">₺{it.original.toLocaleString("tr-TR")}</span>
+                      <span className="text-primary font-semibold neon-text">₺{it.unitFinal.toLocaleString("tr-TR")}</span>
+                      <span className="rounded border border-warn/40 bg-warn/10 px-1.5 py-0.5 text-[9px] uppercase text-warn">
+                        -₺{it.unitSaved.toLocaleString("tr-TR")}
+                      </span>
+                    </div>
+                    {it.discountLabel && (
+                      <div className="text-[10px] uppercase tracking-wider text-warn truncate">{it.discountLabel}</div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mt-0.5 font-mono text-[11px] text-muted-foreground">
+                    ₺{it.unitFinal.toLocaleString("tr-TR")} · birim
+                  </div>
+                )}
                 <div className="mt-2 flex items-center gap-2">
                   <div className="inline-flex items-center rounded border border-border/60 bg-background/60">
                     <button
@@ -151,7 +226,7 @@ export function CartDrawer() {
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
                   <div className="ml-auto font-mono text-sm neon-text">
-                    ₺{(it.priceTry * it.quantity).toLocaleString("tr-TR")}
+                    ₺{(it.unitFinal * it.quantity).toLocaleString("tr-TR")}
                   </div>
                 </div>
               </div>
@@ -185,10 +260,22 @@ export function CartDrawer() {
               </div>
             )}
 
-            {coupon && (
+            {(coupon || flashDiscountTotal > 0) && (
               <div className="flex items-center justify-between font-mono text-xs text-muted-foreground">
                 <span>ara toplam</span>
-                <span>₺{total.toLocaleString("tr-TR")}</span>
+                <span>₺{subtotal.toLocaleString("tr-TR")}</span>
+              </div>
+            )}
+            {flashDiscountTotal > 0 && (
+              <div className="flex items-center justify-between font-mono text-xs text-warn">
+                <span>ürün indirimi</span>
+                <span>-₺{flashDiscountTotal.toLocaleString("tr-TR")}</span>
+              </div>
+            )}
+            {coupon && (
+              <div className="flex items-center justify-between font-mono text-xs text-primary">
+                <span>kupon indirimi</span>
+                <span>-₺{coupon.discount.toLocaleString("tr-TR")}</span>
               </div>
             )}
             <div className="flex items-center justify-between font-mono">

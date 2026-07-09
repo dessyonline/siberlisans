@@ -5,7 +5,13 @@ export type CartItem = {
   productId: string;
   slug: string;
   name: string;
+  /** Sepette tahsil edilecek birim fiyat. */
   priceTry: number;
+  /** İndirim öncesi birim fiyat; eski sepet kayıtlarında boş olabilir. */
+  originalPriceTry?: number;
+  /** Birim ürün başına indirim tutarı; eski sepet kayıtlarında boş olabilir. */
+  discountTry?: number;
+  discountLabel?: string | null;
   imageUrl: string | null;
   quantity: number;
 };

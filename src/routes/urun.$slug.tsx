@@ -159,11 +159,15 @@ function ProductDetail() {
 
   const handleAddToCart = () => {
     if (!product) return;
+    const originalPrice = Number(product.price_try);
     addToCart({
       productId: product.id,
       slug: product.slug,
       name: product.name,
-      priceTry: flash.hasSale ? flash.final : Number(product.price_try),
+      priceTry: flash.hasSale ? flash.final : originalPrice,
+      originalPriceTry: flash.hasSale ? originalPrice : undefined,
+      discountTry: flash.hasSale ? flash.saved : undefined,
+      discountLabel: flash.hasSale ? (flashSale?.label ?? "flash indirim") : null,
       imageUrl: product.image_url ?? null,
     });
     toast.success("Sepete eklendi");
