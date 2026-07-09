@@ -742,6 +742,11 @@ function ProductDetail() {
             <span className="relative">{loading ? "…" : soldOut ? "tükendi" : "$ satın al"}</span>
           </Button>
         </div>
+        {soldOut && (
+          <div className="mx-auto max-w-2xl mt-2">
+            <StockNotifyButton productId={product.id} productName={product.name} compact />
+          </div>
+        )}
       </div>
     </div>
   );
