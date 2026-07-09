@@ -590,6 +590,7 @@ export type Database = {
           discount_try: number
           id: string
           order_id: string
+          product_id: string | null
           promo_code_id: string | null
         }
         Insert: {
@@ -598,6 +599,7 @@ export type Database = {
           discount_try: number
           id?: string
           order_id: string
+          product_id?: string | null
           promo_code_id?: string | null
         }
         Update: {
@@ -606,6 +608,7 @@ export type Database = {
           discount_try?: number
           id?: string
           order_id?: string
+          product_id?: string | null
           promo_code_id?: string | null
         }
         Relationships: [
@@ -614,6 +617,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_discounts_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
             referencedColumns: ["id"]
           },
           {
