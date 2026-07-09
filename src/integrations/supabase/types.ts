@@ -1602,6 +1602,17 @@ export type Database = {
           user_id: string
         }[]
       }
+      list_product_reviews: {
+        Args: { _product_id: string }
+        Returns: {
+          comment: string
+          created_at: string
+          id: string
+          is_mine: boolean
+          masked_user: string
+          rating: number
+        }[]
+      }
       mark_abandonment_notified: {
         Args: { _order_id: string }
         Returns: undefined
