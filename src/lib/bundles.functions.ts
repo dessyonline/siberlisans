@@ -22,8 +22,6 @@ export const listBundles = createServerFn({ method: "GET" }).handler(async () =>
 
 // Detail: müşteriye gösterilecek — cost_try'ı ASLA döndürme
 export const getBundleBySlug = createServerFn({ method: "GET" })
-
-export const getBundleBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => {
     const o = d as { slug?: string };
     if (!o?.slug) throw new Error("slug required");
