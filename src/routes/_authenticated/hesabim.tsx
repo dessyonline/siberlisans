@@ -336,11 +336,26 @@ function OrdersTab({ orders, isLoading }: { orders: Order[]; isLoading: boolean 
                   <div className="neon-text text-base font-bold">
                     ₺{Number(o.price_try).toLocaleString("tr-TR")}
                   </div>
-                  <Button asChild size="sm" variant="outline" className="font-mono h-8 text-xs">
-                    <Link to="/odeme/$orderId" params={{ orderId: o.id }}>
-                      detay →
-                    </Link>
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    {o.status === "approved" && (
+                      <>
+                        <Link
+                          to="/fatura/$orderId"
+                          params={{ orderId: o.id }}
+                          className="text-[11px] text-muted-foreground hover:text-primary font-mono"
+                          target="_blank"
+                        >
+                          fatura
+                        </Link>
+                        <TransferButton orderId={o.id} />
+                      </>
+                    )}
+                    <Button asChild size="sm" variant="outline" className="font-mono h-8 text-xs">
+                      <Link to="/odeme/$orderId" params={{ orderId: o.id }}>
+                        detay →
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               </div>
               {validKeys.length > 0 && (
