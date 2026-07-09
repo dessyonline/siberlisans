@@ -50,7 +50,9 @@ function UniquelisansPage() {
   const [catId, setCatId] = useState<number | null>(null);
   const [subId, setSubId] = useState<number | null>(null);
   const [markup, setMarkup] = useState<number>(DEFAULT_MARKUP_PERCENT);
+  const [rowMarkup, setRowMarkup] = useState<Record<number, number>>({});
   const [importing, setImporting] = useState<number | null>(null);
+  const MIN_PROFIT_TL = 200;
 
   const currentCat = categories?.find((c) => c.id === catId);
 
@@ -62,11 +64,12 @@ function UniquelisansPage() {
 
   async function onImport(externalId: number) {
     setImporting(externalId);
+    const effMarkup = rowMarkup[externalId] ?? markup;
     try {
       const res = await importFn({
         data: {
           external_id: externalId,
-          markup_percent: markup,
+          markup_percent: effMarkup,
           category: currentCat?.name,
           active: false,
         },
