@@ -43,6 +43,7 @@ import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
 import { Route as AuthenticatedAdminUniquelisansRouteImport } from './routes/_authenticated/admin/uniquelisans'
+import { Route as AuthenticatedAdminTedarikciLogRouteImport } from './routes/_authenticated/admin/tedarikci-log'
 import { Route as AuthenticatedAdminSiparislerRouteImport } from './routes/_authenticated/admin/siparisler'
 import { Route as AuthenticatedAdminShopierRouteImport } from './routes/_authenticated/admin/shopier'
 import { Route as AuthenticatedAdminPromosyonlarRouteImport } from './routes/_authenticated/admin/promosyonlar'
@@ -238,6 +239,12 @@ const AuthenticatedAdminUniquelisansRoute =
     path: '/uniquelisans',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminTedarikciLogRoute =
+  AuthenticatedAdminTedarikciLogRouteImport.update({
+    id: '/tedarikci-log',
+    path: '/tedarikci-log',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminSiparislerRoute =
   AuthenticatedAdminSiparislerRouteImport.update({
     id: '/siparisler',
@@ -403,6 +410,7 @@ export interface FileRoutesByFullPath {
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
   '/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
+  '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
@@ -457,6 +465,7 @@ export interface FileRoutesByTo {
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
   '/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
+  '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
@@ -514,6 +523,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
   '/_authenticated/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/_authenticated/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
+  '/_authenticated/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/_authenticated/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/_authenticated/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
@@ -571,6 +581,7 @@ export interface FileRouteTypes {
     | '/admin/promosyonlar'
     | '/admin/shopier'
     | '/admin/siparisler'
+    | '/admin/tedarikci-log'
     | '/admin/uniquelisans'
     | '/admin/urunler'
     | '/admin/'
@@ -625,6 +636,7 @@ export interface FileRouteTypes {
     | '/admin/promosyonlar'
     | '/admin/shopier'
     | '/admin/siparisler'
+    | '/admin/tedarikci-log'
     | '/admin/uniquelisans'
     | '/admin/urunler'
     | '/admin'
@@ -681,6 +693,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/promosyonlar'
     | '/_authenticated/admin/shopier'
     | '/_authenticated/admin/siparisler'
+    | '/_authenticated/admin/tedarikci-log'
     | '/_authenticated/admin/uniquelisans'
     | '/_authenticated/admin/urunler'
     | '/_authenticated/admin/'
@@ -959,6 +972,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminUniquelisansRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/tedarikci-log': {
+      id: '/_authenticated/admin/tedarikci-log'
+      path: '/tedarikci-log'
+      fullPath: '/admin/tedarikci-log'
+      preLoaderRoute: typeof AuthenticatedAdminTedarikciLogRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/siparisler': {
       id: '/_authenticated/admin/siparisler'
       path: '/siparisler'
@@ -1119,6 +1139,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminPromosyonlarRoute: typeof AuthenticatedAdminPromosyonlarRoute
   AuthenticatedAdminShopierRoute: typeof AuthenticatedAdminShopierRoute
   AuthenticatedAdminSiparislerRoute: typeof AuthenticatedAdminSiparislerRoute
+  AuthenticatedAdminTedarikciLogRoute: typeof AuthenticatedAdminTedarikciLogRoute
   AuthenticatedAdminUniquelisansRoute: typeof AuthenticatedAdminUniquelisansRoute
   AuthenticatedAdminUrunlerRoute: typeof AuthenticatedAdminUrunlerRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -1142,6 +1163,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminPromosyonlarRoute: AuthenticatedAdminPromosyonlarRoute,
     AuthenticatedAdminShopierRoute: AuthenticatedAdminShopierRoute,
     AuthenticatedAdminSiparislerRoute: AuthenticatedAdminSiparislerRoute,
+    AuthenticatedAdminTedarikciLogRoute: AuthenticatedAdminTedarikciLogRoute,
     AuthenticatedAdminUniquelisansRoute: AuthenticatedAdminUniquelisansRoute,
     AuthenticatedAdminUrunlerRoute: AuthenticatedAdminUrunlerRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
