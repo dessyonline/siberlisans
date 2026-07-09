@@ -780,3 +780,65 @@ function StockBadge({ stock, manual, unlimited }: { stock: number; manual: boole
     </div>
   );
 }
+
+function StockNotifyButton({ productId, productName, compact }: { productId: string; productName: string; compact?: boolean }) {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+  const subscribeFn = useServerFn(subscribeStockNotify);
+  const unsubscribeFn = useServerFn(unsubscribeStockNotify);
+  const checkFn = useServerFn(isSubscribedToStock);
+  const [pending, setPending] = useState(false);
+
+  const { data: status } = useQuery({
+    queryKey: ["stock-notify", productId, user?.id ?? "anon"],
+    enabled: !!user,
+    queryFn: () => checkFn({ data: { productId } }),
+  });
+  const subscribed = !!status?.subscribed;
+
+  const onClick = async () => {
+    if (!user) {
+      toast("Haber almak için giriş yap");
+      navigate({ to: "/auth" });
+      return;
+    }
+    setPending(true);
+    try {
+      if (subscribed) {
+        await unsubscribeFn({ data: { productId } });
+        toast.success("Stok bildirimi iptal edildi");
+      } else {
+        await subscribeFn({ data: { productId, email: user.email ?? undefined } });
+        toast.success(`${productName} stoğa gelince haber vereceğiz`);
+      }
+      await qc.invalidateQueries({ queryKey: ["stock-notify", productId] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return (
+    <Button
+      onClick={onClick}
+      disabled={pending}
+      variant="outline"
+      size={compact ? "sm" : "lg"}
+      className={`font-mono w-full border-warn/50 bg-warn/10 text-warn hover:bg-warn/20 hover:text-warn shadow-[0_0_20px_oklch(0.80_0.18_75/0.25)] ${compact ? "h-9 text-[11px]" : ""}`}
+    >
+      {subscribed ? (
+        <>
+          <BellOff className={`${compact ? "h-3.5 w-3.5 mr-1.5" : "h-4 w-4 mr-2"}`} />
+          <span>stok geldiğinde <span className="text-primary">haber ver</span> — abonesin ✓ (iptal et)</span>
+        </>
+      ) : (
+        <>
+          <BellRing className={`${compact ? "h-3.5 w-3.5 mr-1.5" : "h-4 w-4 mr-2"} animate-pulse`} />
+          <span>{pending ? "..." : compact ? "stoğa gelince haber ver" : "$ stok geldiğinde haber ver"}</span>
+        </>
+      )}
+    </Button>
+  );
+}
