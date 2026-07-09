@@ -53,7 +53,7 @@ export const requestAffiliatePayout = createServerFn({ method: "POST" })
     const { data: id, error } = await context.supabase.rpc("request_affiliate_payout", {
       _amount: data.amount,
       _method: data.method,
-      _destination: data.destination ?? null,
+      _destination: data.destination ?? "",
     });
     if (error) throw new Error(error.message);
     return { id };
