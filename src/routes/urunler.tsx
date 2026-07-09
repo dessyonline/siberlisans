@@ -529,9 +529,11 @@ function ProductsPage() {
 function ProductCard({ product: p }: { product: Row }) {
   const manual = !!p.manual_fulfillment;
   const unlimited = !!p.unlimited_stock;
+  const supplierOOS = !!p.supplier_out_of_stock;
   const liveStock = (p.license_keys ?? []).filter((k) => k.status === "available").length;
   const stock = liveStock > 0 ? liveStock : (p.stock_hint ?? 0);
-  const soldOut = !manual && !unlimited && stock === 0;
+  const soldOut = supplierOOS || (!manual && !unlimited && stock === 0);
+
 
   const flashSale = useActiveFlashSale(p.id);
   const { final, saved, percent, hasSale } = applyFlash(Number(p.price_try), flashSale);
