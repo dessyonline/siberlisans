@@ -351,8 +351,37 @@ function SiteFooter() {
             </ul>
           </div>
         </div>
-        <div className="mt-6 pt-4 border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-2 text-muted-foreground text-[11px]">
+        <div className="mt-6 pt-4 border-t border-border/40 flex flex-col gap-3 sm:flex-row items-center justify-between text-muted-foreground text-[11px]">
           <div>© {new Date().getFullYear()} SiberPHP — Tüm hakları saklıdır.</div>
+          <div className="flex items-center gap-2">
+            <a
+              href="https://youtube.com/@siberphp"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="YouTube · @siberphp"
+              className="rounded-md border border-border/50 bg-background/40 p-1.5 text-muted-foreground transition hover:text-red-500 hover:border-red-500/50 hover:shadow-[0_0_12px_rgba(239,68,68,0.35)]"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.6 3.6 12 3.6 12 3.6s-7.6 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.8.5 9.4.5 9.4.5s7.6 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+            </a>
+            <a
+              href="https://instagram.com/siber.php"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram · @siber.php"
+              className="rounded-md border border-border/50 bg-background/40 p-1.5 text-muted-foreground transition hover:text-pink-500 hover:border-pink-500/50 hover:shadow-[0_0_12px_rgba(236,72,153,0.35)]"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden><path d="M12 2.2c3.2 0 3.6 0 4.8.1 1.2 0 1.9.2 2.3.4.6.2 1 .5 1.5 1s.8.9 1 1.5c.2.4.4 1.1.4 2.3 0 1.2.1 1.6.1 4.8s0 3.6-.1 4.8c0 1.2-.2 1.9-.4 2.3-.2.6-.5 1-1 1.5s-.9.8-1.5 1c-.4.2-1.1.4-2.3.4-1.2 0-1.6.1-4.8.1s-3.6 0-4.8-.1c-1.2 0-1.9-.2-2.3-.4a4 4 0 0 1-1.5-1 4 4 0 0 1-1-1.5c-.2-.4-.4-1.1-.4-2.3 0-1.2-.1-1.6-.1-4.8s0-3.6.1-4.8c0-1.2.2-1.9.4-2.3.2-.6.5-1 1-1.5s.9-.8 1.5-1c.4-.2 1.1-.4 2.3-.4 1.2 0 1.6-.1 4.8-.1zm0 2c-3.2 0-3.5 0-4.7.1-1.1.1-1.7.2-2.1.4-.5.2-.9.4-1.3.8-.4.4-.6.8-.8 1.3-.2.4-.3 1-.4 2.1 0 1.2-.1 1.5-.1 4.7s0 3.5.1 4.7c.1 1.1.2 1.7.4 2.1.2.5.4.9.8 1.3s.8.6 1.3.8c.4.2 1 .3 2.1.4 1.2 0 1.5.1 4.7.1s3.5 0 4.7-.1c1.1-.1 1.7-.2 2.1-.4.5-.2.9-.4 1.3-.8s.6-.8.8-1.3c.2-.4.3-1 .4-2.1 0-1.2.1-1.5.1-4.7s0-3.5-.1-4.7c-.1-1.1-.2-1.7-.4-2.1-.2-.5-.4-.9-.8-1.3s-.8-.6-1.3-.8c-.4-.2-1-.3-2.1-.4-1.2 0-1.5-.1-4.7-.1zm0 3.4a4.4 4.4 0 1 1 0 8.8 4.4 4.4 0 0 1 0-8.8zm0 7.3a2.9 2.9 0 1 0 0-5.8 2.9 2.9 0 0 0 0 5.8zm5.6-7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+            </a>
+            <a
+              href="https://tiktok.com/@siberphp"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="TikTok · @siberphp"
+              className="rounded-md border border-border/50 bg-background/40 p-1.5 text-muted-foreground transition hover:text-cyan-400 hover:border-cyan-400/50 hover:shadow-[0_0_12px_rgba(34,211,238,0.35)]"
+            >
+              <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43V8.36a8.16 8.16 0 0 0 4.77 1.52V6.43a4.85 4.85 0 0 1-1.84-.35z"/></svg>
+            </a>
+          </div>
           <div className="text-primary/60">$ powered_by_secure_infra --v2</div>
         </div>
       </div>
