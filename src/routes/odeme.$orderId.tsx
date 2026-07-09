@@ -1099,6 +1099,38 @@ function DeliveryBlock({
           </Link>
         </Button>
       </div>
+
+      {revealed && (
+        <div className="mt-4 rounded-md border border-border/60 bg-background/40 p-3">
+          <div className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
+            $ ./ihtiyacın var mı? — anlık destek
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <a
+              href="https://wa.me/905555555555"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/40 bg-emerald-500/5 px-3 py-1.5 font-mono text-xs text-emerald-400 hover:bg-emerald-500/10 hover:shadow-[0_0_12px_rgba(16,185,129,0.35)] transition"
+            >
+              <MessageCircle className="h-3.5 w-3.5" /> whatsapp
+            </a>
+            <a
+              href="https://t.me/siberphp"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-md border border-sky-500/40 bg-sky-500/5 px-3 py-1.5 font-mono text-xs text-sky-400 hover:bg-sky-500/10 hover:shadow-[0_0_12px_rgba(14,165,233,0.35)] transition"
+            >
+              <Send className="h-3.5 w-3.5" /> telegram
+            </a>
+            <Link
+              to="/destek"
+              className="inline-flex items-center gap-1.5 rounded-md border border-primary/40 bg-primary/5 px-3 py-1.5 font-mono text-xs text-primary hover:bg-primary/10 transition"
+            >
+              <Terminal className="h-3.5 w-3.5" /> canlı destek bileti
+            </Link>
+          </div>
+        </div>
+      )}
     </section>
   );
 }
