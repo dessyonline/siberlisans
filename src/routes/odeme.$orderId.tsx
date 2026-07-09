@@ -1578,30 +1578,42 @@ function CrossSellOffer({ orderId, orderStatus, categories, excludeSlugs }: { or
           </div>
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
-          <Button
-            onClick={() => {
-              addToCart({
-                productId: product.id,
-                slug: product.slug,
-                name: product.name,
-                priceTry: discounted,
-                imageUrl: product.image_url ?? null,
-              });
-              if (rule.promo_code) {
+          {canAddToOrder ? (
+            <Button
+              disabled={adding}
+              onClick={async () => {
+                setAdding(true);
                 try {
-                  navigator.clipboard?.writeText(rule.promo_code);
-                  toast.success(`sepete eklendi · kupon panoya kopyalandı: ${rule.promo_code}`);
-                } catch {
-                  toast.success("sepete eklendi");
+                  await addToOrderFn({ data: { orderId, productId: product.id, quantity: 1 } });
+                  await qc.invalidateQueries({ queryKey: ["order", orderId] });
+                  toast.success("bu siparişe eklendi · toplam güncellendi");
+                } catch (e) {
+                  toast.error((e as Error).message);
+                } finally {
+                  setAdding(false);
                 }
-              } else {
+              }}
+              className="font-mono neon-glow"
+            >
+              <Sparkles className="h-4 w-4 mr-1" /> {adding ? "ekleniyor…" : "bu siparişe ekle"}
+            </Button>
+          ) : (
+            <Button
+              onClick={() => {
+                addToCart({
+                  productId: product.id,
+                  slug: product.slug,
+                  name: product.name,
+                  priceTry: discounted,
+                  imageUrl: product.image_url ?? null,
+                });
                 toast.success("sepete eklendi");
-              }
-            }}
-            className="font-mono neon-glow"
-          >
-            <Sparkles className="h-4 w-4 mr-1" /> sepete ekle
-          </Button>
+              }}
+              className="font-mono neon-glow"
+            >
+              <Sparkles className="h-4 w-4 mr-1" /> sepete ekle
+            </Button>
+          )}
           <Link
             to="/urun/$slug"
             params={{ slug: product.slug }}
@@ -1614,6 +1626,7 @@ function CrossSellOffer({ orderId, orderStatus, categories, excludeSlugs }: { or
     </section>
   );
 }
+
 
 
 
