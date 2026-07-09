@@ -478,11 +478,18 @@ function Payment() {
           {(order.status === "pending" || order.status === "reviewing") && (
             <>
               {(() => {
-                const disc = Array.isArray(order.discount) ? order.discount[0] : order.discount;
-                const discountTry = Number(disc?.discount_try ?? 0);
-                const codeSnap = disc?.code_snapshot ?? null;
-                const finalAmount = Math.max(0, Number(order.price_try) - discountTry);
-                const isFree = finalAmount <= 0 && discountTry > 0;
+                const discs = (Array.isArray(order.discount) ? order.discount : (order.discount ? [order.discount] : [])) as Array<{ discount_try: number; code_snapshot: string | null }>;
+                // Kupon indirimi = FLASH-/PUAN- ile başlamayan tek satır
+                const couponRow = discs.find((d) => {
+                  const c = d.code_snapshot ?? "";
+                  return c && !c.startsWith("FLASH-") && !c.startsWith("PUAN-");
+                }) ?? null;
+                const pointsRow = discs.find((d) => (d.code_snapshot ?? "").startsWith("PUAN-")) ?? null;
+                const totalDisc = discs.reduce((s, d) => s + Number(d.discount_try ?? 0), 0);
+                const discountTry = Number(couponRow?.discount_try ?? 0);
+                const codeSnap = couponRow?.code_snapshot ?? null;
+                const finalAmount = Math.max(0, Number(order.price_try) - totalDisc);
+                const isFree = finalAmount <= 0 && totalDisc > 0;
                 return (
                   <>
                     <PromoBlock
