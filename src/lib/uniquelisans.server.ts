@@ -138,4 +138,46 @@ export async function ulGetBalance(): Promise<number | null> {
   }
 }
 
+/** Admin panel loglarına Uniquelisans stok/bakiye kontrol sonucunu yazar. */
+export async function logSupplierCheck(entry: {
+  user_id?: string | null;
+  product_id?: string | null;
+  product_name?: string | null;
+  external_id?: string | number | null;
+  stock_ok?: boolean | null;
+  stock_count?: number | null;
+  is_stock?: boolean | null;
+  supplier_amount?: number | null;
+  balance?: number | null;
+  balance_ok?: boolean | null;
+  blocked: boolean;
+  block_reason?: string | null;
+  context: "single_order" | "cart_order";
+  error?: string | null;
+}): Promise<void> {
+  try {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    await supabaseAdmin.from("supplier_check_logs").insert({
+      source: "uniquelisans",
+      user_id: entry.user_id ?? null,
+      product_id: entry.product_id ?? null,
+      product_name: entry.product_name ?? null,
+      external_id: entry.external_id != null ? String(entry.external_id) : null,
+      stock_ok: entry.stock_ok ?? null,
+      stock_count: entry.stock_count ?? null,
+      is_stock: entry.is_stock ?? null,
+      supplier_amount: entry.supplier_amount ?? null,
+      balance: entry.balance ?? null,
+      balance_ok: entry.balance_ok ?? null,
+      blocked: entry.blocked,
+      block_reason: entry.block_reason ?? null,
+      context: entry.context,
+      error: entry.error ?? null,
+    });
+  } catch (e) {
+    console.error("[supplier_check_log]", (e as Error).message);
+  }
+}
+
+
 
