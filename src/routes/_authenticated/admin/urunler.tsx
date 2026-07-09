@@ -201,6 +201,7 @@ function ProductsAdmin() {
           tier: p.tier,
           image_url: p.image_url && p.image_url.trim() !== "" ? p.image_url : null,
           shopier_url: p.shopier_url && p.shopier_url.trim() !== "" ? p.shopier_url : null,
+          requires_email: p.requires_email,
         },
       });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
