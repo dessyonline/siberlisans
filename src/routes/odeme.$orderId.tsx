@@ -1065,24 +1065,49 @@ function DeliveryBlock({
 }) {
   const [revealed, setRevealed] = useState(false);
 
+  const primaryValue = deliveryType === "link_token" && activationToken
+    ? `${typeof window !== "undefined" ? window.location.origin : ""}/aktivasyon/${activationToken}`
+    : keyValue;
+
+  const handleCopyAll = async () => {
+    try {
+      await navigator.clipboard.writeText(primaryValue);
+      toast.success("Teslimat panoya kopyalandı");
+    } catch {
+      toast.error("Kopyalanamadı — manuel seçip kopyala");
+    }
+  };
+
   return (
-    <section className="glass-card rounded-lg p-6 scan-line neon-glow">
-      <div className="flex items-center justify-between">
-        <div>
+    <section className="glass-card rounded-lg p-5 sm:p-6 scan-line neon-glow border-primary/50">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
-            [04/04] · delivery_channel
+            [04/04] · delivery_channel · unlocked
           </div>
-          <h2 className="mt-1 font-mono text-xl neon-text">Lisansın Hazır</h2>
-          <p className="mt-1 font-mono text-xs text-muted-foreground">{product}</p>
+          <h2 className="mt-1 font-mono text-xl sm:text-2xl neon-text truncate">Lisansın Hazır ✓</h2>
+          <p className="mt-1 font-mono text-xs text-muted-foreground truncate">{product}</p>
         </div>
-        <CheckCircle2 className="h-8 w-8 text-primary" />
+        <CheckCircle2 className="h-8 w-8 sm:h-10 sm:w-10 text-primary shrink-0" />
       </div>
 
-      <div className="mt-5 rounded-md border border-primary/40 bg-black/30 p-4">
-        <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
-          $ ./decrypt --{deliveryType}
-        </div>
-        <div className="mt-3">
+      <div className="mt-5 rounded-md border-2 border-primary/50 bg-black/40 p-4 sm:p-5 relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 cyber-grid opacity-20" aria-hidden />
+        <div className="relative">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+              $ ./decrypt --{deliveryType}
+            </div>
+            {revealed && (
+              <button
+                type="button"
+                onClick={handleCopyAll}
+                className="inline-flex items-center gap-1 rounded border border-primary/50 bg-primary/10 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-primary hover:bg-primary/20 transition"
+              >
+                <Copy className="h-3 w-3" /> tümünü kopyala
+              </button>
+            )}
+          </div>
           {revealed ? (
             <DeliveryPayload
               deliveryType={deliveryType}
@@ -1090,7 +1115,7 @@ function DeliveryBlock({
               activationToken={activationToken}
             />
           ) : (
-            <div className="font-mono text-lg sm:text-xl text-primary tracking-widest">
+            <div className="font-mono text-xl sm:text-2xl text-primary tracking-widest">
               ████████-████████-████████
               <span className="terminal-caret" />
             </div>
@@ -1100,7 +1125,7 @@ function DeliveryBlock({
 
       <div className="mt-4 flex flex-wrap gap-2">
         {!revealed && (
-          <Button onClick={() => setRevealed(true)} className="font-mono neon-glow">
+          <Button onClick={() => setRevealed(true)} size="lg" className="font-mono neon-glow flex-1 sm:flex-none">
             <KeyRound className="mr-2 h-4 w-4" /> teslimatı aç
           </Button>
         )}
