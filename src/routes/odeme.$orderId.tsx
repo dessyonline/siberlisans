@@ -486,22 +486,44 @@ function Payment() {
                 })}
               </div>
               {(() => {
-                const discs = Array.isArray(order.discount) ? order.discount : (order.discount ? [order.discount] : []);
-                const totalDisc = discs.reduce((s, d) => s + Number((d as { discount_try?: number })?.discount_try ?? 0), 0);
+                const discs = (Array.isArray(order.discount) ? order.discount : (order.discount ? [order.discount] : [])) as Array<{ discount_try?: number; code_snapshot?: string | null }>;
                 const orig = Number(order.price_try);
-                const final = Math.max(0, orig - totalDisc);
+                const flashDisc = discs.filter((d) => (d.code_snapshot ?? "").startsWith("FLASH-")).reduce((s, d) => s + Number(d.discount_try ?? 0), 0);
+                const pointDisc = discs.filter((d) => (d.code_snapshot ?? "").startsWith("PUAN-")).reduce((s, d) => s + Number(d.discount_try ?? 0), 0);
+                const couponDisc = discs.filter((d) => {
+                  const c = d.code_snapshot ?? "";
+                  return c && !c.startsWith("FLASH-") && !c.startsWith("PUAN-");
+                }).reduce((s, d) => s + Number(d.discount_try ?? 0), 0);
+                const totalDisc = flashDisc + pointDisc + couponDisc;
+                const finalAmt = Math.max(0, orig - totalDisc);
+                const walletBal = Number(wallet?.balance_try ?? 0);
+                const walletCovers = walletBal >= finalAmt && finalAmt > 0;
                 return (
-                  <div className="mt-3 flex items-center justify-between border-t border-primary/20 pt-3 font-mono text-sm">
-                    <span className="text-muted-foreground uppercase text-[10px] tracking-widest">ödenecek</span>
-                    <span className="flex items-center gap-2">
-                      {totalDisc > 0 && (
-                        <span className="text-[11px] text-muted-foreground line-through">₺{orig.toLocaleString("tr-TR")}</span>
-                      )}
-                      <span className="text-primary text-base neon-text-glow">₺{final.toLocaleString("tr-TR")}</span>
-                      {totalDisc > 0 && (
-                        <span className="rounded border border-primary/30 bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">−₺{totalDisc.toLocaleString("tr-TR")}</span>
-                      )}
-                    </span>
+                  <div className="mt-3 space-y-1.5 border-t border-primary/20 pt-3 font-mono text-xs">
+                    <Row2 label="ara toplam" value={`₺${orig.toLocaleString("tr-TR")}`} />
+                    {flashDisc > 0 && (
+                      <Row2 label="⚡ flaş indirim" value={`−₺${flashDisc.toLocaleString("tr-TR")}`} accent="warn" />
+                    )}
+                    {couponDisc > 0 && (
+                      <Row2 label="🎟 kupon" value={`−₺${couponDisc.toLocaleString("tr-TR")}`} accent="primary" />
+                    )}
+                    {pointDisc > 0 && (
+                      <Row2 label="⭐ puan indirimi" value={`−₺${pointDisc.toLocaleString("tr-TR")}`} accent="primary" />
+                    )}
+                    <div className="flex items-center justify-between border-t border-primary/20 pt-2 mt-1">
+                      <span className="text-muted-foreground uppercase tracking-widest text-[10px]">ödenecek</span>
+                      <span className="flex items-center gap-2">
+                        {totalDisc > 0 && (
+                          <span className="text-[11px] text-muted-foreground line-through">₺{orig.toLocaleString("tr-TR")}</span>
+                        )}
+                        <span className="text-primary text-lg neon-text-glow">₺{finalAmt.toLocaleString("tr-TR")}</span>
+                      </span>
+                    </div>
+                    {walletCovers && order.status === "pending" && (
+                      <div className="mt-1 text-[10px] text-primary/80">
+                        ✓ mevcut cüzdan bakiyen ({walletBal.toLocaleString("tr-TR")} ₺) yeterli · tek tıkla ödeyebilirsin
+                      </div>
+                    )}
                   </div>
                 );
               })()}
