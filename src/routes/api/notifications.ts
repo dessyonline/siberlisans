@@ -1,6 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -29,29 +27,25 @@ export const Route = createFileRoute("/api/notifications")({
         }
         const licenseKey = (payload?.license_key ?? "").toString().trim().toUpperCase();
 
-        const supabase = createClient<Database>(
-          process.env.SUPABASE_URL!,
-          process.env.SUPABASE_PUBLISHABLE_KEY!,
-          { auth: { persistSession: false, autoRefreshToken: false } },
-        );
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-        // Resolve license -> user_id via order_keys -> orders
+        // Resolve license -> user_id via license_keys -> order_keys -> orders
         let userId: string | null = null;
         if (licenseKey) {
-          const { data: lk } = await supabase
+          const { data: lk } = await supabaseAdmin
             .from("license_keys")
             .select("id")
             .eq("key_value", licenseKey)
             .maybeSingle();
           if (lk?.id) {
-            const { data: ok } = await supabase
+            const { data: ok } = await supabaseAdmin
               .from("order_keys")
               .select("order_id")
               .eq("license_key_id", lk.id)
               .limit(1)
               .maybeSingle();
             if (ok?.order_id) {
-              const { data: ord } = await supabase
+              const { data: ord } = await supabaseAdmin
                 .from("orders")
                 .select("user_id")
                 .eq("id", ok.order_id)
@@ -61,9 +55,9 @@ export const Route = createFileRoute("/api/notifications")({
           }
         }
 
-        // Global announcements: user_id IS NULL. Plus user's own if resolved.
+        // Global (user_id IS NULL) announcements + this user's notifications
         const filter = userId ? `user_id.is.null,user_id.eq.${userId}` : `user_id.is.null`;
-        const { data: rows } = await supabase
+        const { data: rows } = await supabaseAdmin
           .from("notifications")
           .select("title,body,link,created_at")
           .or(filter)
