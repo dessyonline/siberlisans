@@ -160,6 +160,7 @@ function ProductsAdmin() {
           tier: (editing.tier ?? "standard") as "standard" | "epic",
           image_url: editing.image_url && editing.image_url.trim() !== "" ? editing.image_url : null,
           shopier_url: editing.shopier_url && editing.shopier_url.trim() !== "" ? editing.shopier_url : null,
+          requires_email: editing.requires_email ?? false,
         },
       });
       toast.success("Kaydedildi");
