@@ -622,11 +622,18 @@ function ProductCard({ product: p }: { product: Row }) {
               </div>
             )}
           </div>
-          <Button asChild size="sm" className="font-mono bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_oklch(0.82_0.20_145/0.35)] transition-all">
-            <Link to="/urun/$slug" params={{ slug: p.slug }} className="flex items-center gap-1">
-              Satın al <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </Button>
+          {supplierOOS ? (
+            <Button size="sm" disabled className="font-mono opacity-60 cursor-not-allowed" title="Tedarikçide geçici olarak stokta yok">
+              Stok yok
+            </Button>
+          ) : (
+            <Button asChild size="sm" className="font-mono bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_oklch(0.82_0.20_145/0.35)] transition-all">
+              <Link to="/urun/$slug" params={{ slug: p.slug }} className="flex items-center gap-1">
+                Satın al <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          )}
+
         </div>
       </div>
     </div>
