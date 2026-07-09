@@ -493,6 +493,61 @@ export const approveOrder = createServerFn({ method: "POST" })
         );
       }
 
+      // Havuz-önceliği: UL ürünü olsa bile lokal havuzda "available" key varsa
+      // API'yi çağırmadan doğrudan havuzdan teslim et (bakiye harcamamak için).
+      {
+        const { data: pooled } = await supabase
+          .from("license_keys")
+          .select("id, key_value")
+          .eq("product_id", product.id)
+          .eq("status", "available")
+          .order("created_at", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+        if (pooled?.id) {
+          const { error: upErr } = await supabase
+            .from("license_keys")
+            .update({
+              status: "assigned",
+              assigned_order_id: data.orderId,
+              assigned_at: new Date().toISOString(),
+            })
+            .eq("id", pooled.id)
+            .eq("status", "available"); // race guard
+          if (!upErr) {
+            await supabase.from("order_keys").insert({ order_id: data.orderId, license_key_id: pooled.id });
+            await supabase
+              .from("orders")
+              .update({
+                status: "approved",
+                approved_at: new Date().toISOString(),
+                external_delivery_data: pooled.key_value,
+                external_status: "pool",
+                admin_note: "Havuzdan otomatik teslim (UL API çağrılmadı).",
+              })
+              .eq("id", data.orderId);
+            try {
+              if (ord?.user_id) {
+                await supabase.rpc("push_notification" as never, {
+                  _user_id: ord.user_id,
+                  _type: "order_approved",
+                  _title: "Siparişin onaylandı 🎉",
+                  _body: `Ref: ${ord.reference_code} · Bilgilerin hesabında hazır.`,
+                  _link: "/hesabim",
+                } as never);
+                await supabase.rpc("process_referral_bonus" as never, { _user_id: ord.user_id } as never);
+              }
+            } catch { /* ignore */ }
+            try {
+              const { notifyTelegram } = await import("@/lib/telegram.server");
+              await notifyTelegram(`✅ Havuzdan teslim (UL ürünü) — Ref: ${ord?.reference_code}`);
+            } catch { /* ignore */ }
+            return { ok: true, source: "pool" as const };
+          }
+          // update başarısızsa API akışına düş
+        }
+      }
+
       const { ulBuy } = await import("@/lib/uniquelisans.server");
       let resp;
       try {
