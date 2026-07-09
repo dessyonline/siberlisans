@@ -1434,6 +1434,7 @@ function CheckoutFieldsCard({
 }
 
 function CrossSellOffer({ categories, excludeSlugs }: { categories: string[]; excludeSlugs: string[] }) {
+  const addToCart = useCart((s) => s.addItem);
   const { data: offer } = useQuery({
     queryKey: ["cross-sell-offer", categories.sort().join("|")],
     enabled: categories.length > 0,
