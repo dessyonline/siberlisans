@@ -19,3 +19,23 @@ export const listBundles = createServerFn({ method: "GET" }).handler(async () =>
   if (error) throw new Error(error.message);
   return data ?? [];
 });
+
+export const getBundleBySlug = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => {
+    const o = d as { slug?: string };
+    if (!o?.slug) throw new Error("slug required");
+    return { slug: String(o.slug) };
+  })
+  .handler(async ({ data }) => {
+    const s = publicClient();
+    const { data: row, error } = await s
+      .from("product_bundles")
+      .select(
+        "id, slug, name, description, price_try, discount_percent, active, items:product_bundle_items(quantity, product:products(id, name, slug, price_try, image_url))",
+      )
+      .eq("slug", data.slug)
+      .eq("active", true)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    return row;
+  });

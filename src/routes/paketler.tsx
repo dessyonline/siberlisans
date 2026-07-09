@@ -87,7 +87,8 @@ function BundlesPage() {
                   )}
                 </div>
                 <Link
-                  to="/lisanslar"
+                  to="/paketler/$slug"
+                  params={{ slug: b.slug }}
                   className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90"
                 >
                   incele
