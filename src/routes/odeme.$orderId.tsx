@@ -50,9 +50,9 @@ export const Route = createFileRoute("/odeme/$orderId")({
 type StepKey = "init" | "payment" | "delivery";
 
 const STEPS: { key: StepKey; label: string; sub: string }[] = [
-  { key: "init", label: "sipariş", sub: "referans oluşturuldu" },
-  { key: "payment", label: "ödeme", sub: "bakiye / shopier" },
-  { key: "delivery", label: "teslimat", sub: "ürün / key" },
+  { key: "init", label: "yöntem seç", sub: "bakiye / shopier" },
+  { key: "payment", label: "onayla", sub: "ödemeyi tamamla" },
+  { key: "delivery", label: "teslim", sub: "lisansını al" },
 ];
 
 
