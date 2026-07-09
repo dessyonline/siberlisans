@@ -63,7 +63,7 @@ function DavetPage() {
       try {
         await navigator.share({
           title: "SiberPHP — Güvenli lisans dağıtım sistemi",
-          text: "Bu davet linki ile kayıt olursan ikimize de ₺25 bakiye!",
+          text: "Bu davet linki ile kayıt olursan ikinize de ₺10 bakiye (min ₺300 alışverişte)!",
           url: link,
         });
       } catch {
