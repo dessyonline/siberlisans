@@ -508,6 +508,25 @@ function Payment() {
             </section>
           )}
 
+          {order.status === "pending" && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/50 bg-background/40 px-3 py-2 font-mono text-xs">
+              <span className="text-muted-foreground">
+                Fikrin değiştiyse siparişi iptal edebilirsin — ödeme yapılmadan iade yok.
+              </span>
+              <button
+                type="button"
+                onClick={handleCancelOrder}
+                disabled={cancelling}
+                className="inline-flex items-center gap-1.5 rounded border border-destructive/40 bg-destructive/5 px-2.5 py-1 text-destructive hover:bg-destructive/10 disabled:opacity-40"
+              >
+                <X className="h-3 w-3" />
+                {cancelling ? "iptal ediliyor…" : "siparişi iptal et"}
+              </button>
+            </div>
+          )}
+
+
+
           {order.status === "approved" && deliveredKeys.length > 0 && (
             <div className="space-y-3">
               {deliveredKeys.map((k, i) => {
