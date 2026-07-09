@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { upsertProduct, deleteProduct } from "@/lib/orders.functions";
@@ -17,6 +18,7 @@ import { isLegacyClearbitLogo, resolveLogoUrl } from "@/lib/logo-resolver";
 import { ProductLogo } from "@/components/ProductLogo";
 
 export const Route = createFileRoute("/_authenticated/admin/urunler")({
+  validateSearch: (s: Record<string, unknown>) => z.object({ edit: z.string().uuid().optional() }).parse(s),
   component: ProductsAdmin,
 });
 
