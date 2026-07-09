@@ -327,6 +327,7 @@ function SiteFooter() {
             <div className="text-primary/80 mb-2">./keşfet</div>
             <ul className="space-y-1 text-muted-foreground">
               <li><Link to="/urunler" className="hover:text-primary">Ürünler</Link></li>
+              <li><Link to="/paketler" className="hover:text-primary">Paketler</Link></li>
               <li><Link to="/blog" className="hover:text-primary">Blog</Link></li>
               <li><Link to="/nasil-calisir" className="hover:text-primary">Nasıl çalışır</Link></li>
               <li><Link to="/sss" className="hover:text-primary">SSS</Link></li>
