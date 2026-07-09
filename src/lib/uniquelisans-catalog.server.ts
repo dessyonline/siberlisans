@@ -162,3 +162,44 @@ export async function runUniquelisansCatalogSync(
 
   return res;
 }
+
+async function notifyStockBack(
+  supabase: SB,
+  productId: string,
+  productName: string,
+  stockCount: number | null,
+): Promise<void> {
+  try {
+    // Adminlere Telegram bildirimi
+    const stockLine = stockCount !== null ? ` (stok: ${stockCount})` : "";
+    await notifyTelegram(
+      `✅ <b>Stok yenilendi</b>\n<b>${productName}</b>${stockLine}\nSatışlar tekrar açık.`,
+    );
+  } catch { /* telegram opsiyonel */ }
+
+  try {
+    // Abone kullanıcılara bildirim
+    const { data: subs } = await supabase
+      .from("stock_notifications")
+      .select("id, user_id")
+      .eq("product_id", productId)
+      .is("notified_at", null);
+
+    const rows = (subs ?? []) as Array<{ id: string; user_id: string }>;
+    if (rows.length === 0) return;
+
+    const notifRows = rows.map((r) => ({
+      user_id: r.user_id,
+      title: "Beklediğin ürün stokta!",
+      message: `${productName} tekrar satışta. Hemen sipariş verebilirsin.`,
+      type: "stock_back",
+      link: `/urun/${productId}`,
+    }));
+    await supabase.from("notifications").insert(notifRows);
+
+    await supabase
+      .from("stock_notifications")
+      .update({ notified_at: new Date().toISOString() })
+      .in("id", rows.map((r) => r.id));
+  } catch { /* bildirim başarısız olsa dahi sync devam etsin */ }
+}
