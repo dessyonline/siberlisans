@@ -113,7 +113,7 @@ function Payment() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, status, price_try, reference_code, receipt_path, user_note, checkout_fields, created_at, updated_at, approved_at, product:products(name, slug, duration, delivery_type, manual_fulfillment, unlimited_stock, tier, source, required_fields, shopier_url), items:order_items(id, quantity, unit_price_try, product_name_snapshot, product:products(name, slug, delivery_type, manual_fulfillment, unlimited_stock, shopier_url)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, delivery_type))), discount:order_discounts(discount_try, code_snapshot)"
+          "id, status, price_try, reference_code, receipt_path, user_note, checkout_fields, created_at, updated_at, approved_at, product:products(name, slug, duration, delivery_type, manual_fulfillment, unlimited_stock, tier, source, required_fields, shopier_url, requires_email), items:order_items(id, quantity, unit_price_try, product_name_snapshot, product:products(name, slug, delivery_type, manual_fulfillment, unlimited_stock, shopier_url, requires_email)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, delivery_type))), discount:order_discounts(discount_try, code_snapshot)"
         )
         .eq("id", orderId)
         .single();
@@ -230,10 +230,21 @@ function Payment() {
 
   // Uniquelisans kaynaklı ürünler: müşteri gerekli bilgileri girmezse admin API'den satın alamaz
   const productSource = (order.product as { source?: string | null } | null)?.source ?? null;
-  const requiredFields = ((order.product as { required_fields?: unknown } | null)?.required_fields ?? []) as Array<{
+  const baseRequiredFields = ((order.product as { required_fields?: unknown } | null)?.required_fields ?? []) as Array<{
     name: string; el_type?: string; input_type?: string; required?: boolean;
   }>;
-  const needsCheckoutFields = productSource === "uniquelisans" && Array.isArray(requiredFields) && requiredFields.length > 0;
+  // Ürünlerden herhangi biri "mail tanımlı" ise checkout'ta e-posta iste
+  const requiresEmail = isCartOrder
+    ? orderItems.some((i) => (i.product as { requires_email?: boolean } | null)?.requires_email)
+    : !!(order.product as { requires_email?: boolean } | null)?.requires_email;
+  const emailFieldMerged: Array<{ name: string; el_type?: string; input_type?: string; required?: boolean }> =
+    requiresEmail && !baseRequiredFields.some((f) => f.name === "license_email")
+      ? [{ name: "license_email", input_type: "email", required: true }, ...baseRequiredFields]
+      : baseRequiredFields;
+  const requiredFields = emailFieldMerged;
+  const needsCheckoutFields =
+    (productSource === "uniquelisans" || requiresEmail) &&
+    Array.isArray(requiredFields) && requiredFields.length > 0;
 
 
 
@@ -1340,16 +1351,21 @@ function CheckoutFieldsCard({
 }) {
   const [values, setValues] = useState<Record<string, string>>(initial);
   const [busy, setBusy] = useState(false);
-  const labelize = (n: string) => n.replace(/_/g, " ");
+  const labelize = (n: string) => {
+    if (n === "license_email") return "lisansın tanımlanacağı e-posta";
+    return n.replace(/_/g, " ");
+  };
+  const hasEmailField = fields.some((f) => f.name === "license_email");
   const missing = fields.filter((f) => f.required !== false && !((values[f.name] ?? "").trim()));
   return (
     <section className={`mt-4 glass-card rounded-xl p-4 sm:p-5 ${saved ? "border-primary/40" : "border-cyan/40"}`}>
       <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-cyan">
-        <KeyRound className="h-3.5 w-3.5" /> ürün bilgileri · ref: {orderId.slice(0, 8)}
+        <KeyRound className="h-3.5 w-3.5" /> {hasEmailField ? "mail tanımlı lisans · e-posta gerekli" : "ürün bilgileri"} · ref: {orderId.slice(0, 8)}
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        Bu ürün otomatik tedarik edilir. Aşağıdaki bilgileri girmen gerekiyor — bunlar
-        onay sonrası tedarikçiye iletilir ve teslim buna göre yapılır.
+        {hasEmailField
+          ? "Bu lisans senin verdiğin e-posta adresine tanımlanır. Kullanmak istediğin e-postayı doğru gir — teslim onaydan sonra bu adrese yapılır."
+          : "Bu ürün otomatik tedarik edilir. Aşağıdaki bilgileri girmen gerekiyor — bunlar onay sonrası tedarikçiye iletilir ve teslim buna göre yapılır."}
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         {fields.map((f) => (

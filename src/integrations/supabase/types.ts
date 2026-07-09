@@ -810,6 +810,7 @@ export type Database = {
           orders_count: number
           price_try: number
           required_fields: Json | null
+          requires_email: boolean
           review_count: number
           shopier_url: string | null
           slug: string
@@ -841,6 +842,7 @@ export type Database = {
           orders_count?: number
           price_try: number
           required_fields?: Json | null
+          requires_email?: boolean
           review_count?: number
           shopier_url?: string | null
           slug: string
@@ -872,6 +874,7 @@ export type Database = {
           orders_count?: number
           price_try?: number
           required_fields?: Json | null
+          requires_email?: boolean
           review_count?: number
           shopier_url?: string | null
           slug?: string

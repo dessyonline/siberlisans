@@ -61,6 +61,7 @@ type Product = {
   tier: "standard" | "epic";
   image_url: string | null;
   shopier_url: string | null;
+  requires_email: boolean;
 };
 
 type Filter = "all" | "active" | "inactive" | "featured" | "epic" | "low" | "empty";
@@ -159,6 +160,7 @@ function ProductsAdmin() {
           tier: (editing.tier ?? "standard") as "standard" | "epic",
           image_url: editing.image_url && editing.image_url.trim() !== "" ? editing.image_url : null,
           shopier_url: editing.shopier_url && editing.shopier_url.trim() !== "" ? editing.shopier_url : null,
+          requires_email: editing.requires_email ?? false,
         },
       });
       toast.success("Kaydedildi");
@@ -199,6 +201,7 @@ function ProductsAdmin() {
           tier: p.tier,
           image_url: p.image_url && p.image_url.trim() !== "" ? p.image_url : null,
           shopier_url: p.shopier_url && p.shopier_url.trim() !== "" ? p.shopier_url : null,
+          requires_email: p.requires_email,
         },
       });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
@@ -565,7 +568,7 @@ function ProductsAdmin() {
                       <option value="weekly">haftalık</option>
                       <option value="monthly">aylık</option>
                       <option value="yearly">yıllık</option>
-                      <option value="lifetime">ömürlük</option>
+                      <option value="lifetime">sınırsız</option>
                     </select>
                   </div>
                   <Field label="fiyat (₺)" value={editing.price_try == null ? "" : String(editing.price_try)} onChange={(v) => setEditing((p) => ({ ...p!, price_try: v === "" ? 0 : Number(v) }))} type="number" />
@@ -617,6 +620,7 @@ function ProductsAdmin() {
                   <Toggle checked={editing.manual_fulfillment ?? false} onChange={(v) => setEditing((p) => ({ ...p!, manual_fulfillment: v }))} label="manuel teslimat" />
                   <Toggle checked={editing.featured ?? false} onChange={(v) => setEditing((p) => ({ ...p!, featured: v }))} label="öne çıkan ⭐" />
                   <Toggle checked={editing.unlimited_stock ?? false} onChange={(v) => setEditing((p) => ({ ...p!, unlimited_stock: v }))} label="sınırsız stok ∞" />
+                  <Toggle checked={editing.requires_email ?? false} onChange={(v) => setEditing((p) => ({ ...p!, requires_email: v }))} label="mail tanımlı lisans ✉" />
                 </div>
                 <div>
                   <Label className="font-mono text-xs">seviye</Label>
