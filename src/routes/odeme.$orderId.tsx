@@ -326,6 +326,8 @@ function Payment() {
 
       {(order.status === "pending" || order.status === "reviewing") && (
         <CrossSellOffer
+          orderId={orderId}
+          orderStatus={order.status}
           categories={
             isCartOrder
               ? (orderItems
