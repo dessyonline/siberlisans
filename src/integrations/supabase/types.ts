@@ -1040,6 +1040,109 @@ export type Database = {
           },
         ]
       }
+      subscription_renewal_attempts: {
+        Row: {
+          amount_try: number | null
+          attempted_at: string
+          error_message: string | null
+          id: string
+          order_id: string | null
+          outcome: string
+          subscription_id: string
+        }
+        Insert: {
+          amount_try?: number | null
+          attempted_at?: string
+          error_message?: string | null
+          id?: string
+          order_id?: string | null
+          outcome: string
+          subscription_id: string
+        }
+        Update: {
+          amount_try?: number | null
+          attempted_at?: string
+          error_message?: string | null
+          id?: string
+          order_id?: string | null
+          outcome?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_renewal_attempts_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          auto_renew: boolean
+          canceled_at: string | null
+          created_at: string
+          current_license_key_id: string | null
+          failure_count: number
+          id: string
+          interval_days: number
+          last_attempt_at: string | null
+          last_order_id: string | null
+          last_renewed_at: string | null
+          next_renewal_at: string
+          price_try: number
+          product_id: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_renew?: boolean
+          canceled_at?: string | null
+          created_at?: string
+          current_license_key_id?: string | null
+          failure_count?: number
+          id?: string
+          interval_days: number
+          last_attempt_at?: string | null
+          last_order_id?: string | null
+          last_renewed_at?: string | null
+          next_renewal_at: string
+          price_try: number
+          product_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_renew?: boolean
+          canceled_at?: string | null
+          created_at?: string
+          current_license_key_id?: string | null
+          failure_count?: number
+          id?: string
+          interval_days?: number
+          last_attempt_at?: string | null
+          last_order_id?: string | null
+          last_renewed_at?: string | null
+          next_renewal_at?: string
+          price_try?: number
+          product_id?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_check_logs: {
         Row: {
           balance: number | null
@@ -1511,6 +1614,7 @@ export type Database = {
       }
       bump_orders_count: { Args: { _order_id: string }; Returns: undefined }
       cancel_pending_order: { Args: { _order_id: string }; Returns: boolean }
+      cancel_subscription: { Args: { _sub_id: string }; Returns: boolean }
       check_low_stock_after_assign: {
         Args: { _product_id: string }
         Returns: {
@@ -1629,6 +1733,14 @@ export type Database = {
           license_token: string
         }[]
       }
+      process_due_subscriptions: {
+        Args: never
+        Returns: {
+          failed: number
+          processed: number
+          succeeded: number
+        }[]
+      }
       process_referral_bonus: { Args: { _user_id: string }; Returns: undefined }
       push_notification: {
         Args: {
@@ -1655,7 +1767,19 @@ export type Database = {
         }[]
       }
       remove_promo_code: { Args: { _order_id: string }; Returns: undefined }
+      renew_subscription: {
+        Args: { _sub_id: string }
+        Returns: {
+          license_key: string
+          order_id: string
+          outcome: string
+        }[]
+      }
       send_license_renewal_reminders: { Args: never; Returns: undefined }
+      set_subscription_auto_renew: {
+        Args: { _on: boolean; _sub_id: string }
+        Returns: boolean
+      }
       spend_points: {
         Args: { _amount: number; _order_id: string }
         Returns: {
