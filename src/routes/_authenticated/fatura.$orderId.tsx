@@ -29,7 +29,16 @@ export const Route = createFileRoute("/_authenticated/fatura/$orderId")({
 });
 
 function Invoice() {
-  const o = Route.useLoaderData();
+  const o = Route.useLoaderData() as {
+    id: string;
+    reference_code: string;
+    price_try: number;
+    status: string;
+    created_at: string;
+    buyer_email: string | null;
+    product: { name: string; price_try: number } | null;
+    items: { quantity: number; product_name_snapshot: string; unit_price_try: number }[] | null;
+  };
   useEffect(() => {
     document.body.classList.add("bg-white");
     return () => document.body.classList.remove("bg-white");
@@ -37,7 +46,7 @@ function Invoice() {
 
   const items =
     (o.items ?? []).length > 0
-      ? o.items!.map((it) => ({
+      ? (o.items ?? []).map((it) => ({
           name: it.product_name_snapshot,
           qty: it.quantity,
           unit: Number(it.unit_price_try),

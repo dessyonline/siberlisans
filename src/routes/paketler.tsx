@@ -19,8 +19,11 @@ export const Route = createFileRoute("/paketler")({
   notFoundComponent: () => <div className="p-8 text-center">Bulunamadı</div>,
 });
 
+type BundleItem = { quantity: number; product: { id: string; name: string; slug: string; price_try: number; image_url: string | null } | null };
+type Bundle = { id: string; slug: string; name: string; description: string | null; price_try: number; discount_percent: number; active: boolean; items: BundleItem[] };
+
 function BundlesPage() {
-  const bundles = Route.useLoaderData();
+  const bundles = Route.useLoaderData() as unknown as Bundle[];
 
   return (
     <div className="container py-10 max-w-6xl">
