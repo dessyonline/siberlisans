@@ -63,7 +63,9 @@ function AuthPage() {
   const [captchaInput, setCaptchaInput] = useState("");
   const [signupSent, setSignupSent] = useState<string | null>(null);
   const [mfaMode, setMfaMode] = useState(false);
-  const refCode = search.ref?.toUpperCase() ?? "";
+  const [manualRef, setManualRef] = useState("");
+  const urlRef = search.ref?.toUpperCase() ?? "";
+  const refCode = (urlRef || manualRef.trim().toUpperCase()).slice(0, 20);
 
   useEffect(() => {
     if (user && !mfaMode) navigate({ to: "/hesabim" });
