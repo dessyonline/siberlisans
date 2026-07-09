@@ -119,7 +119,7 @@ function BundleDetail() {
           </div>
 
           <div className="glass-card rounded-lg p-5 h-fit space-y-3">
-            {retailSum > 0 && (
+            {originalSum > 0 && (
               <div className="rounded border border-primary/30 bg-primary/5 p-2 text-center">
                 <div className="text-[10px] font-mono uppercase text-muted-foreground">
                   paket değeri
