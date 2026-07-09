@@ -1497,8 +1497,12 @@ function CheckoutFieldsCard({
   );
 }
 
-function CrossSellOffer({ categories, excludeSlugs }: { categories: string[]; excludeSlugs: string[] }) {
+function CrossSellOffer({ orderId, orderStatus, categories, excludeSlugs }: { orderId: string; orderStatus: string; categories: string[]; excludeSlugs: string[] }) {
   const addToCart = useCart((s) => s.addItem);
+  const qc = useQueryClient();
+  const addToOrderFn = useServerFn(addItemToOrder);
+  const [adding, setAdding] = useState(false);
+  const canAddToOrder = orderStatus === "pending";
   const { data: offer } = useQuery({
     queryKey: ["cross-sell-offer", categories.sort().join("|")],
     enabled: categories.length > 0,
