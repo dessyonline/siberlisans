@@ -57,7 +57,9 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
   { to: "/admin/kripto", label: "kripto", icon: Bitcoin },
   { to: "/admin/shopier", label: "shopier", icon: Wallet },
   { to: "/admin/uniquelisans", label: "uniquelisans", icon: Boxes },
+  { to: "/admin/tedarikci-log", label: "tedarikçi log", icon: ShieldCheck },
   { to: "/admin/ayarlar", label: "ayarlar", icon: Settings },
+
 ];
 
 function AdminLayout() {
