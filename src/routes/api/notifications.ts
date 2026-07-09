@@ -55,12 +55,11 @@ export const Route = createFileRoute("/api/notifications")({
           }
         }
 
-        // Global (user_id IS NULL) announcements + this user's notifications
-        const filter = userId ? `user_id.is.null,user_id.eq.${userId}` : `user_id.is.null`;
+        if (!userId) return json({ notifications: [] });
         const { data: rows } = await supabaseAdmin
           .from("notifications")
           .select("title,body,link,created_at")
-          .or(filter)
+          .eq("user_id", userId)
           .order("created_at", { ascending: false })
           .limit(30);
 
