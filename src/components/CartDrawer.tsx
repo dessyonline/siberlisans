@@ -57,7 +57,7 @@ export function CartDrawer() {
       if (salesRes.error) throw salesRes.error;
 
       const firstSaleByProduct = new Map<string, FlashSaleLite & { product_id: string }>();
-      for (const sale of (salesRes.data ?? []) as Array<FlashSaleLite & { product_id: string }>) {
+      for (const sale of (salesRes.data ?? []) as unknown as Array<FlashSaleLite & { product_id: string }>) {
         if (!firstSaleByProduct.has(sale.product_id)) firstSaleByProduct.set(sale.product_id, sale);
       }
 
