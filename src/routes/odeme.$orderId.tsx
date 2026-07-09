@@ -352,25 +352,64 @@ function Payment() {
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         {/* MAIN CONTENT */}
         <div className="space-y-6">
-          {isCartOrder && (
-            <section className="glass-card rounded-lg p-4 sm:p-5">
-              <div className="font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
-                sipariş içeriği · {orderItems.length} kalem
+          {/* satın alınan ürün(ler) — çapraz satış kartı gibi */}
+          {(isCartOrder || order.product) && (
+            <section className="rounded-lg border border-primary/30 bg-primary/5 p-4 sm:p-5 neon-glow">
+              <div className="flex items-center justify-between mb-3">
+                <div className="font-mono text-[10px] tracking-widest text-primary uppercase flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5" /> satın aldığınız {isCartOrder ? `· ${orderItems.length} kalem` : "ürün"}
+                </div>
+                <div className="font-mono text-[10px] text-muted-foreground">
+                  #{order.reference_code}
+                </div>
               </div>
-              <div className="mt-3 divide-y divide-border/40">
-                {orderItems.map((it) => (
-                  <div key={it.id} className="flex items-center justify-between py-2 font-mono text-sm">
+              <div className="divide-y divide-primary/15">
+                {(isCartOrder
+                  ? orderItems.map((it) => ({
+                      id: it.id,
+                      name: it.product_name_snapshot,
+                      slug: it.product?.slug ?? null,
+                      image: it.product?.image_url ?? null,
+                      duration: it.product?.duration ?? null,
+                      unit: Number(it.unit_price_try),
+                      qty: it.quantity,
+                    }))
+                  : [{
+                      id: order.product!.slug,
+                      name: order.product!.name,
+                      slug: (order.product as { slug?: string | null }).slug ?? null,
+                      image: (order.product as { image_url?: string | null }).image_url ?? null,
+                      duration: (order.product as { duration?: string | null }).duration ?? null,
+                      unit: Number(order.price_try),
+                      qty: 1,
+                    }]
+                ).map((it) => (
+                  <div key={it.id} className="flex items-center gap-3 py-3">
+                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md border border-primary/30 bg-background/40">
+                      {it.image ? (
+                        <img src={it.image} alt={it.name} className="h-full w-full object-cover" loading="lazy" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center font-mono text-[10px] text-muted-foreground">
+                          no img
+                        </div>
+                      )}
+                    </div>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate">{it.product_name_snapshot}</div>
-                      <div className="text-[11px] text-muted-foreground">
-                        ₺{Number(it.unit_price_try).toLocaleString("tr-TR")} × {it.quantity}
+                      <div className="font-mono text-sm truncate">{it.name}</div>
+                      <div className="mt-0.5 flex items-center gap-2 font-mono text-[11px] text-muted-foreground">
+                        {it.duration && <span className="rounded border border-primary/20 bg-primary/5 px-1.5 py-0.5 text-primary/80">{it.duration}</span>}
+                        <span>₺{it.unit.toLocaleString("tr-TR")} × {it.qty}</span>
                       </div>
                     </div>
-                    <div className="ml-3 shrink-0 neon-text">
-                      ₺{(Number(it.unit_price_try) * it.quantity).toLocaleString("tr-TR")}
+                    <div className="ml-2 shrink-0 font-mono text-sm neon-text">
+                      ₺{(it.unit * it.qty).toLocaleString("tr-TR")}
                     </div>
                   </div>
                 ))}
+              </div>
+              <div className="mt-3 flex items-center justify-between border-t border-primary/20 pt-3 font-mono text-sm">
+                <span className="text-muted-foreground uppercase text-[10px] tracking-widest">toplam</span>
+                <span className="text-primary text-base neon-text-glow">₺{Number(order.price_try).toLocaleString("tr-TR")}</span>
               </div>
             </section>
           )}
