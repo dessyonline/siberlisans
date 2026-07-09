@@ -653,8 +653,13 @@ function ProductDetail() {
             <div className="font-mono text-[10px] text-muted-foreground truncate">
               <span className="text-primary">&gt;</span> {product.name}
             </div>
-            <div className="font-mono text-lg neon-text leading-none">
-              ₺{Number(product.price_try).toLocaleString("tr-TR")}
+            <div className="font-mono text-lg neon-text leading-none flex items-baseline gap-2">
+              {flash.hasSale && (
+                <span className="text-[10px] text-muted-foreground line-through">
+                  ₺{Number(product.price_try).toLocaleString("tr-TR")}
+                </span>
+              )}
+              <span>₺{(flash.hasSale ? flash.final : Number(product.price_try)).toLocaleString("tr-TR")}</span>
             </div>
           </div>
           <Button
