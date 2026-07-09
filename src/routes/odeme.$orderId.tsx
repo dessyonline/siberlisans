@@ -38,6 +38,8 @@ import {
   Ticket,
   Tag,
   Crown,
+  Trash2,
+  X,
 } from "lucide-react";
 
 
