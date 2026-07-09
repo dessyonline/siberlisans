@@ -54,19 +54,22 @@ export async function runUniquelisansCatalogSync(
   }>;
 
   const { data: existingRows } = await supabase.from("products")
-    .select("id, external_id, active, image_url, price_try, external_price, stock_hint")
+    .select("id, external_id, active, image_url, price_try, external_price, stock_hint, supplier_out_of_stock")
     .eq("source", "uniquelisans");
 
   const existing = new Map<string, {
     id: string; active: boolean; image_url: string | null;
     price_try: number; external_price: number | null; stock_hint: number | null;
+    supplier_out_of_stock: boolean | null;
   }>();
   for (const r of (existingRows ?? []) as Array<{
     id: string; external_id: string | null; active: boolean; image_url: string | null;
     price_try: number; external_price: number | null; stock_hint: number | null;
+    supplier_out_of_stock: boolean | null;
   }>) {
     if (r.external_id) existing.set(String(r.external_id), r);
   }
+
 
   const res: CatalogSyncResult = {
     scanned: 0, inserted: 0, updated: 0, price_changed: 0, hidden: 0, reactivated: 0, failed: 0,
