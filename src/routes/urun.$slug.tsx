@@ -344,10 +344,21 @@ function ProductDetail() {
                     <div className="font-mono text-[9px] uppercase tracking-[0.28em] text-primary/70">
                       final_price
                     </div>
-                    <div className="font-mono text-sm sm:text-base text-primary neon-text-glow">
-                      ₺{Number(product.price_try).toLocaleString("tr-TR")}
+                    <div className="font-mono text-sm sm:text-base text-primary neon-text-glow flex items-baseline gap-2">
+                      {flash.hasSale && (
+                        <span className="text-[10px] text-muted-foreground line-through">
+                          ₺{Number(product.price_try).toLocaleString("tr-TR")}
+                        </span>
+                      )}
+                      <span>₺{(flash.hasSale ? flash.final : Number(product.price_try)).toLocaleString("tr-TR")}</span>
+                      {flash.hasSale && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded border border-warn/40 bg-warn/10 text-warn font-semibold">
+                          -%{flash.percent}
+                        </span>
+                      )}
                     </div>
                   </div>
+
 
                   {/* MRZ-like footer */}
                   <div className="mt-2 font-mono text-[9px] text-primary/70 tracking-[0.15em] break-all border-t border-primary/15 pt-1.5">
