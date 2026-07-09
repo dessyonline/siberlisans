@@ -492,6 +492,39 @@ export type Database = {
           },
         ]
       }
+      license_events: {
+        Row: {
+          created_at: string
+          detail: string | null
+          event: string
+          hwid: string | null
+          id: number
+          ip: string | null
+          license_key: string
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          event: string
+          hwid?: string | null
+          id?: number
+          ip?: string | null
+          license_key: string
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          event?: string
+          hwid?: string | null
+          id?: number
+          ip?: string | null
+          license_key?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       license_keys: {
         Row: {
           activated_at: string | null
@@ -556,6 +589,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      license_nonces: {
+        Row: {
+          created_at: string
+          license_key: string
+          nonce: string
+        }
+        Insert: {
+          created_at?: string
+          license_key: string
+          nonce: string
+        }
+        Update: {
+          created_at?: string
+          license_key?: string
+          nonce?: string
+        }
+        Relationships: []
       }
       license_transfers: {
         Row: {
@@ -1720,6 +1771,19 @@ export type Database = {
         Args: { _delta: number; _note: string; _user_id: string }
         Returns: number
       }
+      admin_create_license_key: {
+        Args: {
+          _duration_days?: number
+          _email?: string
+          _key_value?: string
+          _product_id: string
+        }
+        Returns: {
+          expires_at: string
+          id: string
+          key_value: string
+        }[]
+      }
       admin_daily_revenue: {
         Args: { _days?: number }
         Returns: {
@@ -1784,6 +1848,10 @@ export type Database = {
       }
       admin_purge_available_keys: {
         Args: { _product_id: string }
+        Returns: number
+      }
+      admin_revoke_license_key: {
+        Args: { _key_value: string }
         Returns: number
       }
       admin_set_license: {
@@ -1894,6 +1962,7 @@ export type Database = {
           product_name: string
         }[]
       }
+      cleanup_license_nonces: { Args: never; Returns: undefined }
       compute_tier: {
         Args: { _points: number }
         Returns: Database["public"]["Enums"]["user_tier"]
