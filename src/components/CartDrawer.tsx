@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Minus, Plus, Trash2, ShoppingCart, KeyRound, ArrowRight, Ticket, X } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingCart, KeyRound, ArrowRight, Ticket, X, Package } from "lucide-react";
 import { useCart, selectCartTotal } from "@/lib/cart-store";
 import { useAuth } from "@/lib/auth-context";
 import { createCartOrder } from "@/lib/orders.functions";
