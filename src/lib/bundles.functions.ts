@@ -31,7 +31,7 @@ export const getBundleBySlug = createServerFn({ method: "GET" })
     const { data: row, error } = await s
       .from("product_bundles")
       .select(
-        "id, slug, name, description, price_try, discount_percent, active, items:product_bundle_items(quantity, product:products(id, name, slug, price_try, image_url, short_description))",
+        "id, slug, name, description, price_try, discount_percent, active, items:product_bundle_items(quantity, product:products(id, name, slug, price_try, image_url))",
       )
       .eq("slug", data.slug)
       .eq("active", true)
