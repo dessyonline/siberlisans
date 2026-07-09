@@ -119,19 +119,31 @@ function BundleDetail() {
           </div>
 
           <div className="glass-card rounded-lg p-5 h-fit space-y-3">
-            {saved > 0 && (
-              <div className="text-sm text-muted-foreground line-through">
-                ₺{originalSum.toFixed(0)}
+            {originalSum > 0 && (
+              <div className="rounded border border-primary/30 bg-primary/5 p-2 text-center">
+                <div className="text-[10px] font-mono uppercase text-muted-foreground">
+                  paket değeri
+                </div>
+                <div className="text-lg font-bold text-primary line-through decoration-destructive/70">
+                  ₺{originalSum.toFixed(0)}
+                </div>
               </div>
             )}
             <div className="text-4xl font-bold text-primary">
               ₺{Number(b.price_try).toFixed(0)}
             </div>
             {saved > 0 && (
-              <div className="text-sm text-primary/80 font-mono">
-                ₺{saved.toFixed(0)} tasarruf
+              <div className="text-sm font-mono">
+                <span className="text-primary">₺{saved.toFixed(0)} tasarruf</span>{" "}
+                <span className="text-muted-foreground">
+                  (%{originalSum > 0 ? ((saved / originalSum) * 100).toFixed(0) : 0})
+                </span>
               </div>
             )}
+            <div className="text-[11px] text-muted-foreground border-t border-border/30 pt-2">
+              Bu paket <b>₺{originalSum.toFixed(0)}</b> değerinde{" "}
+              <b>{items.reduce((s, i) => s + i.quantity, 0)} ürün</b> içerir.
+            </div>
             <Button onClick={buyBundle} className="w-full mt-2">
               <ShoppingCart className="h-4 w-4 mr-2" /> Paketi Al
             </Button>
