@@ -381,7 +381,123 @@ function Dashboard() {
 
       <UserActivityPanel />
 
+      <CostRevenueChart />
+
       <ProfitabilityPanel />
+    </div>
+  );
+}
+
+function CostRevenueChart() {
+  const { data } = useQuery({
+    queryKey: ["admin-cost-revenue-14d"],
+    queryFn: async () => {
+      const since = new Date();
+      since.setDate(since.getDate() - 13);
+      since.setHours(0, 0, 0, 0);
+      const { data: rows, error } = await supabase
+        .from("orders")
+        .select(
+          "created_at, price_try, product:products(cost_try), items:order_items(quantity, product:products(cost_try))",
+        )
+        .eq("status", "approved")
+        .gte("created_at", since.toISOString());
+      if (error) throw error;
+
+      const days: Record<string, { date: string; revenue: number; cost: number; profit: number }> = {};
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const k = d.toISOString().slice(0, 10);
+        days[k] = { date: k.slice(5), revenue: 0, cost: 0, profit: 0 };
+      }
+      type Row = {
+        created_at: string;
+        price_try: number;
+        product: { cost_try: number | null } | null;
+        items: { quantity: number; product: { cost_try: number | null } | null }[] | null;
+      };
+      let totalRevenue = 0, totalCost = 0;
+      for (const r of (rows ?? []) as Row[]) {
+        const k = new Date(r.created_at).toISOString().slice(0, 10);
+        if (!(k in days)) continue;
+        const revenue = Number(r.price_try) || 0;
+        let cost = 0;
+        if (r.items && r.items.length > 0) {
+          for (const it of r.items) {
+            cost += (Number(it.product?.cost_try) || 0) * (Number(it.quantity) || 0);
+          }
+        } else if (r.product) {
+          cost += Number(r.product.cost_try) || 0;
+        }
+        days[k].revenue += revenue;
+        days[k].cost += cost;
+        days[k].profit += revenue - cost;
+        totalRevenue += revenue;
+        totalCost += cost;
+      }
+      return {
+        chart: Object.values(days),
+        totalRevenue,
+        totalCost,
+        totalProfit: totalRevenue - totalCost,
+      };
+    },
+    refetchInterval: 30000,
+  });
+
+  const totalRevenue = data?.totalRevenue ?? 0;
+  const totalCost = data?.totalCost ?? 0;
+  const totalProfit = data?.totalProfit ?? 0;
+  const margin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+
+  return (
+    <div className="glass-card rounded-xl p-5 min-w-0 overflow-hidden">
+      <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
+        <div>
+          <div className="text-xs text-muted-foreground font-mono">Son 14 gün · API ve manuel ürünlerin maliyeti</div>
+          <div className="text-lg font-semibold">Maliyet & Kâr Grafiği</div>
+        </div>
+        <div className="flex gap-4 text-right font-mono">
+          <div>
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">ciro</div>
+            <div className="text-sm text-primary">₺{totalRevenue.toLocaleString("tr-TR")}</div>
+          </div>
+          <div>
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">maliyet</div>
+            <div className="text-sm text-warn">₺{totalCost.toLocaleString("tr-TR")}</div>
+          </div>
+          <div>
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground">net kâr</div>
+            <div className={`text-sm ${totalProfit >= 0 ? "text-primary" : "text-destructive"}`}>
+              ₺{totalProfit.toLocaleString("tr-TR")} <span className="text-muted-foreground text-[10px]">({margin.toFixed(1)}%)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="h-64">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={data?.chart ?? []} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.24 0.02 220 / 0.5)" vertical={false} />
+            <XAxis dataKey="date" stroke="oklch(0.60 0.02 200)" style={{ fontFamily: "JetBrains Mono Variable", fontSize: 10 }} tickLine={false} axisLine={false} />
+            <YAxis stroke="oklch(0.60 0.02 200)" style={{ fontFamily: "JetBrains Mono Variable", fontSize: 10 }} tickLine={false} axisLine={false} tickFormatter={(v) => `₺${(v / 1000).toFixed(0)}k`} />
+            <Tooltip
+              cursor={{ stroke: "oklch(0.82 0.20 145 / 0.4)", strokeWidth: 1 }}
+              contentStyle={{
+                background: "oklch(0.17 0.015 240)",
+                border: "1px solid oklch(0.28 0.02 220)",
+                borderRadius: 8,
+                fontFamily: "Inter",
+                fontSize: 12,
+              }}
+              formatter={(v: number, k: string) => [`₺${v.toLocaleString("tr-TR")}`, k === "revenue" ? "ciro" : k === "cost" ? "maliyet" : "kâr"]}
+            />
+            <Line type="monotone" dataKey="revenue" stroke="oklch(0.82 0.20 145)" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="cost" stroke="oklch(0.75 0.16 40)" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="profit" stroke="oklch(0.75 0.18 200)" strokeWidth={2} strokeDasharray="4 4" dot={false} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
