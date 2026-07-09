@@ -161,7 +161,7 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
       ok: true as const,
       error: null,
       licenseKey: (row?.license_key as string) ?? null,
-      activationToken: (row?.activation_token as string) ?? null,
+      activationToken: (row?.license_token as string) ?? null,
       balanceAfter: Number(row?.balance_after ?? 0),
     };
   });

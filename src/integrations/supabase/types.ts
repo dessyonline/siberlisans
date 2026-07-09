@@ -1620,9 +1620,9 @@ export type Database = {
       pay_order_with_wallet: {
         Args: { _order_id: string }
         Returns: {
-          activation_token: string
           balance_after: number
           license_key: string
+          license_token: string
         }[]
       }
       process_referral_bonus: { Args: { _user_id: string }; Returns: undefined }
