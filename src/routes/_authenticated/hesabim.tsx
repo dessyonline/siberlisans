@@ -449,18 +449,54 @@ function KeyRowItem({ row }: { row: KeyRow }) {
       toast.error("[!] kopyalanamadı");
     }
   };
+
+  // süre bilgisi
+  const exp = row.expiresAt ? new Date(row.expiresAt) : null;
+  const now = Date.now();
+  const msLeft = exp ? exp.getTime() - now : null;
+  const daysLeft = msLeft != null ? Math.ceil(msLeft / 86_400_000) : null;
+  const expired = daysLeft != null && daysLeft <= 0;
+  const soon = daysLeft != null && daysLeft > 0 && daysLeft <= 7;
+  const totalDays = row.durationDays ?? (exp ? Math.max(1, Math.round((exp.getTime() - new Date(row.date).getTime()) / 86_400_000)) : null);
+  const pct = exp && totalDays ? Math.max(0, Math.min(100, (msLeft! / (totalDays * 86_400_000)) * 100)) : null;
+  const barColor = expired ? "bg-destructive" : soon ? "bg-warn" : "bg-primary";
+  const labelColor = expired ? "text-destructive" : soon ? "text-warn" : "text-muted-foreground";
+
   return (
-    <div className="flex items-center gap-2 rounded-md border border-border/50 bg-background/40 p-2 font-mono text-xs">
-      <div className="min-w-0 flex-1 truncate">
-        <span className="text-muted-foreground mr-2">{isToken ? "link:" : "key:"}</span>
-        <span className="text-foreground break-all">{display}</span>
+    <div className="rounded-md border border-border/50 bg-background/40 p-2 font-mono text-xs space-y-1.5">
+      <div className="flex items-center gap-2">
+        <div className="min-w-0 flex-1 truncate">
+          <span className="text-muted-foreground mr-2">{isToken ? "link:" : "key:"}</span>
+          <span className="text-foreground break-all">{display}</span>
+        </div>
+        <span className="shrink-0 text-[10px] text-muted-foreground">
+          {new Date(row.date).toLocaleDateString("tr-TR", { day: "2-digit", month: "2-digit" })}
+        </span>
+        <Button size="sm" variant="ghost" onClick={copy} className="h-7 w-7 p-0 shrink-0">
+          <Copy className="h-3.5 w-3.5" />
+        </Button>
       </div>
-      <span className="shrink-0 text-[10px] text-muted-foreground">
-        {new Date(row.date).toLocaleDateString("tr-TR", { day: "2-digit", month: "2-digit" })}
-      </span>
-      <Button size="sm" variant="ghost" onClick={copy} className="h-7 w-7 p-0 shrink-0">
-        <Copy className="h-3.5 w-3.5" />
-      </Button>
+      {exp && (
+        <div className="flex items-center gap-2">
+          <div className="flex-1">
+            {pct != null && (
+              <div className="h-1 rounded-full bg-border/40 overflow-hidden">
+                <div className={`h-full ${barColor} transition-all`} style={{ width: `${pct}%` }} />
+              </div>
+            )}
+            <div className={`mt-0.5 text-[10px] ${labelColor}`}>
+              {expired
+                ? `süresi doldu · ${exp.toLocaleDateString("tr-TR")}`
+                : `${daysLeft} gün kaldı · ${exp.toLocaleDateString("tr-TR")}`}
+            </div>
+          </div>
+          {(soon || expired) && row.productSlug && (
+            <Button asChild size="sm" variant="outline" className="h-7 shrink-0 text-[10px] font-mono neon-glow">
+              <Link to="/urun/$slug" params={{ slug: row.productSlug }}>yenile →</Link>
+            </Button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
