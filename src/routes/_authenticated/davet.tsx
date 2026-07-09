@@ -80,8 +80,8 @@ function DavetPage() {
         <div className="font-mono text-[11px] text-muted-foreground">$ ./davet --code={data?.code ?? "…"}</div>
         <h1 className="mt-1.5 font-mono text-2xl md:text-3xl neon-text">Arkadaşını Davet Et</h1>
         <p className="mt-2 text-sm text-muted-foreground max-w-lg">
-          Davet linkinle kayıt olan her arkadaşın ilk siparişini tamamladığında{" "}
-          <span className="text-primary font-mono">ikinize de ₺25 cüzdan bakiyesi</span> yatar.
+          Davet linkinle kayıt olan arkadaşın en az ₺300 tutarında siparişini tamamladığında{" "}
+          <span className="text-primary font-mono">ikinize de ₺10 cüzdan bakiyesi</span> yatar. (En fazla 5 davet.)
         </p>
       </div>
 
