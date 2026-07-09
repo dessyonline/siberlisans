@@ -63,7 +63,7 @@ function Payment() {
   const { orderId } = Route.useParams();
   const { user } = useAuth();
   const qc = useQueryClient();
-  const navigate = useNavigate(); void navigate;
+  const navigate = useNavigate();
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const markPaidFn = useServerFn(markOrderPaid);
