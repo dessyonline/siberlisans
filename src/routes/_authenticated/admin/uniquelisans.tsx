@@ -34,7 +34,9 @@ function UniquelisansPage() {
   const importFn = useServerFn(ulImportProduct);
   const importedFn = useServerFn(ulImportedProducts);
   const syncFn = useServerFn(ulSyncStock);
+  const catalogFn = useServerFn(ulSyncCatalog);
   const [syncing, setSyncing] = useState(false);
+  const [catalogSyncing, setCatalogSyncing] = useState(false);
 
   const { data: balance, refetch: refetchBalance, isFetching: balLoading } = useQuery({
     queryKey: ["ul-balance"],
