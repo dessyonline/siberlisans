@@ -2,37 +2,44 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import { issueLicenseToken } from "@/lib/license-token";
-
-
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
-  "Access-Control-Max-Age": "86400",
-};
-
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json", ...CORS },
-  });
-}
+import {
+  CORS,
+  json,
+  signPayload,
+  guardReplay,
+  logEvent,
+  clientIp,
+} from "@/lib/license-api.server";
 
 export const Route = createFileRoute("/api/validate")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       POST: async ({ request }) => {
-        let payload: { license_key?: string; hwid?: string };
+        let payload: { license_key?: string; hwid?: string; _ts?: number; _nonce?: string };
         try {
           payload = await request.json();
         } catch {
           return json({ valid: false, error: "Geçersiz JSON." }, 400);
         }
-        const license_key = (payload?.license_key ?? "").toString().trim();
+        const license_key = (payload?.license_key ?? "").toString().trim().toUpperCase();
         const hwid = (payload?.hwid ?? "").toString().trim();
         if (!license_key || !hwid) {
           return json({ valid: false, error: "license_key ve hwid gerekli." }, 400);
+        }
+
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const ip = clientIp(request);
+        const ua = request.headers.get("user-agent") ?? "";
+
+        if (payload._ts !== undefined || payload._nonce !== undefined) {
+          const bad = await guardReplay(supabaseAdmin as never, license_key, payload._ts, payload._nonce);
+          if (bad) {
+            await logEvent(supabaseAdmin as never, {
+              license_key, event: "fail", hwid, ip, user_agent: ua, detail: "replay",
+            });
+            return bad;
+          }
         }
 
         const supabase = createClient<Database>(
@@ -45,7 +52,12 @@ export const Route = createFileRoute("/api/validate")({
           _key: license_key,
           _hwid: hwid,
         });
-        if (error) return json({ valid: false, error: error.message }, 500);
+        if (error) {
+          await logEvent(supabaseAdmin as never, {
+            license_key, event: "fail", hwid, ip, user_agent: ua, detail: error.message,
+          });
+          return json({ valid: false, error: error.message }, 500);
+        }
         const result = (data ?? { valid: false, error: "Bilinmeyen hata." }) as Record<string, unknown>;
         if (result.valid) {
           result.payload = "eFNpYmVyUEhQeA==";
@@ -56,6 +68,26 @@ export const Route = createFileRoute("/api/validate")({
           } catch (e) {
             console.error("[api/validate] token sign failed", e instanceof Error ? e.message : e);
           }
+          try {
+            result.hmac = signPayload({
+              key: license_key,
+              hwid,
+              status: result.status ?? "active",
+              days_left: result.days_left ?? null,
+              expires_at: result.expires_at ?? null,
+            });
+          } catch (e) {
+            console.error("[api/validate] hmac sign failed", (e as Error).message);
+          }
+          await logEvent(supabaseAdmin as never, {
+            license_key, event: "validate", hwid, ip, user_agent: ua,
+            detail: `days_left=${result.days_left ?? ""}`,
+          });
+        } else {
+          await logEvent(supabaseAdmin as never, {
+            license_key, event: "fail", hwid, ip, user_agent: ua,
+            detail: (result.error as string) ?? "invalid",
+          });
         }
         return json(result);
       },

@@ -49,6 +49,8 @@ import { Route as AuthenticatedBildirimlerRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
+import { Route as ApiAdminRevokeRouteImport } from './routes/api/admin/revoke'
+import { Route as ApiAdminCreateRouteImport } from './routes/api/admin/create'
 import { Route as AuthenticatedFaturaOrderIdRouteImport } from './routes/_authenticated/fatura.$orderId'
 import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
 import { Route as AuthenticatedAdminUniquelisansRouteImport } from './routes/_authenticated/admin/uniquelisans'
@@ -280,6 +282,16 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
 const ApiPublicSitemapDotxmlRoute = ApiPublicSitemapDotxmlRouteImport.update({
   id: '/api/public/sitemap.xml',
   path: '/api/public/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminRevokeRoute = ApiAdminRevokeRouteImport.update({
+  id: '/api/admin/revoke',
+  path: '/api/admin/revoke',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminCreateRoute = ApiAdminCreateRouteImport.update({
+  id: '/api/admin/create',
+  path: '/api/admin/create',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedFaturaOrderIdRoute =
@@ -522,6 +534,8 @@ export interface FileRoutesByFullPath {
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
+  '/api/admin/create': typeof ApiAdminCreateRoute
+  '/api/admin/revoke': typeof ApiAdminRevokeRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
@@ -592,6 +606,8 @@ export interface FileRoutesByTo {
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
+  '/api/admin/create': typeof ApiAdminCreateRoute
+  '/api/admin/revoke': typeof ApiAdminRevokeRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
@@ -665,6 +681,8 @@ export interface FileRoutesById {
   '/_authenticated/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/_authenticated/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/_authenticated/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
+  '/api/admin/create': typeof ApiAdminCreateRoute
+  '/api/admin/revoke': typeof ApiAdminRevokeRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
@@ -738,6 +756,8 @@ export interface FileRouteTypes {
     | '/admin/uniquelisans'
     | '/admin/urunler'
     | '/fatura/$orderId'
+    | '/api/admin/create'
+    | '/api/admin/revoke'
     | '/api/public/sitemap.xml'
     | '/admin/'
     | '/api/public/hooks/abandonment-reminder'
@@ -808,6 +828,8 @@ export interface FileRouteTypes {
     | '/admin/uniquelisans'
     | '/admin/urunler'
     | '/fatura/$orderId'
+    | '/api/admin/create'
+    | '/api/admin/revoke'
     | '/api/public/sitemap.xml'
     | '/admin'
     | '/api/public/hooks/abandonment-reminder'
@@ -880,6 +902,8 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/uniquelisans'
     | '/_authenticated/admin/urunler'
     | '/_authenticated/fatura/$orderId'
+    | '/api/admin/create'
+    | '/api/admin/revoke'
     | '/api/public/sitemap.xml'
     | '/_authenticated/admin/'
     | '/api/public/hooks/abandonment-reminder'
@@ -920,6 +944,8 @@ export interface RootRouteChildren {
   UrunSlugRoute: typeof UrunSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
   PaketlerIndexRoute: typeof PaketlerIndexRoute
+  ApiAdminCreateRoute: typeof ApiAdminCreateRoute
+  ApiAdminRevokeRoute: typeof ApiAdminRevokeRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
@@ -1209,6 +1235,20 @@ declare module '@tanstack/react-router' {
       path: '/api/public/sitemap.xml'
       fullPath: '/api/public/sitemap.xml'
       preLoaderRoute: typeof ApiPublicSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/revoke': {
+      id: '/api/admin/revoke'
+      path: '/api/admin/revoke'
+      fullPath: '/api/admin/revoke'
+      preLoaderRoute: typeof ApiAdminRevokeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/create': {
+      id: '/api/admin/create'
+      path: '/api/admin/create'
+      fullPath: '/api/admin/create'
+      preLoaderRoute: typeof ApiAdminCreateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/fatura/$orderId': {
@@ -1543,6 +1583,8 @@ const rootRouteChildren: RootRouteChildren = {
   UrunSlugRoute: UrunSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
   PaketlerIndexRoute: PaketlerIndexRoute,
+  ApiAdminCreateRoute: ApiAdminCreateRoute,
+  ApiAdminRevokeRoute: ApiAdminRevokeRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
   ApiPublicHooksAbandonmentReminderRoute:
     ApiPublicHooksAbandonmentReminderRoute,
