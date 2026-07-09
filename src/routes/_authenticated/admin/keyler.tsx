@@ -116,6 +116,44 @@ function KeysAdmin() {
     });
   }, [keys, search, statusFilter, productId]);
 
+  const { data: assignedKeys } = useQuery({
+    queryKey: ["admin-assigned-keys"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_list_assigned_keys", { _limit: 200 });
+      if (error) throw error;
+      return (data ?? []) as Array<{
+        key_id: string;
+        key_value: string;
+        product_id: string;
+        product_name: string | null;
+        order_id: string | null;
+        reference_code: string | null;
+        order_status: string | null;
+        user_email: string | null;
+        assigned_at: string | null;
+        activated_at: string | null;
+        expires_at: string | null;
+        revoked: boolean;
+      }>;
+    },
+    refetchInterval: 30000,
+  });
+
+  const [assignedSearch, setAssignedSearch] = useState("");
+  const filteredAssigned = useMemo(() => {
+    const q = assignedSearch.trim().toLowerCase();
+    return (assignedKeys ?? []).filter((r) => {
+      if (productId && r.product_id !== productId) return false;
+      if (!q) return true;
+      return (
+        r.key_value.toLowerCase().includes(q) ||
+        (r.reference_code ?? "").toLowerCase().includes(q) ||
+        (r.user_email ?? "").toLowerCase().includes(q) ||
+        (r.product_name ?? "").toLowerCase().includes(q)
+      );
+    });
+  }, [assignedKeys, assignedSearch, productId]);
+
   const doImport = async () => {
     if (!productId) return toast.error("Ürün seçin");
     const list = raw.split(/[\r\n,;]+/).map((s) => s.trim()).filter(Boolean);
