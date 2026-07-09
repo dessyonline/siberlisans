@@ -902,3 +902,50 @@ export const deletePromoCode = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+
+/**
+ * Sipariş için aktif flash indirimlerini order_discounts tablosuna yazar.
+ * Kupon akışıyla uyumlu (SUM(discount_try) final fiyattan düşülüyor).
+ */
+async function applyFlashDiscountToOrder(
+  supabase: import("@supabase/supabase-js").SupabaseClient,
+  orderId: string,
+  items: Array<{ productId: string; quantity: number; unitPriceTry: number }>,
+): Promise<void> {
+  if (items.length === 0) return;
+  const nowIso = new Date().toISOString();
+  const { data: sales } = await supabase
+    // biome-ignore lint/suspicious/noExplicitAny: table not in generated types
+    .from("flash_sales" as any)
+    .select("id, product_id, discount_type, discount_value, ends_at")
+    .in("product_id", items.map((i) => i.productId))
+    .eq("is_active", true)
+    .lte("starts_at", nowIso)
+    .gt("ends_at", nowIso);
+  const rows = (sales ?? []) as Array<{
+    id: string; product_id: string; discount_type: "percent" | "amount"; discount_value: number;
+  }>;
+  if (rows.length === 0) return;
+  const bestByProduct = new Map<string, { saleId: string; saved: number }>();
+  for (const it of items) {
+    const applicable = rows.filter((r) => r.product_id === it.productId);
+    if (applicable.length === 0) continue;
+    let best: { saleId: string; saved: number } | null = null;
+    for (const r of applicable) {
+      const raw = r.discount_type === "percent"
+        ? it.unitPriceTry * (Number(r.discount_value) / 100)
+        : Number(r.discount_value);
+      const perUnit = Math.max(0, Math.min(it.unitPriceTry, raw));
+      const saved = Math.round(perUnit * it.quantity * 100) / 100;
+      if (saved > 0 && (!best || saved > best.saved)) best = { saleId: r.id, saved };
+    }
+    if (best) bestByProduct.set(it.productId, best);
+  }
+  const inserts = Array.from(bestByProduct.values()).map((v) => ({
+    order_id: orderId,
+    code_snapshot: `FLASH-${v.saleId.slice(0, 8)}`,
+    discount_try: v.saved,
+  }));
+  if (inserts.length === 0) return;
+  await supabase.from("order_discounts").insert(inserts);
+}
