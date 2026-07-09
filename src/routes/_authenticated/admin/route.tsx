@@ -51,6 +51,7 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
   { to: "/admin/kuponlar", label: "kuponlar", icon: Ticket },
   { to: "/admin/kampanyalar", label: "kampanyalar", icon: Megaphone },
   { to: "/admin/flash", label: "flash indirim", icon: Zap },
+  { to: "/admin/capraz-satis", label: "çapraz satış", icon: Sparkles },
   { to: "/admin/blog", label: "blog", icon: BookOpen },
   { to: "/admin/cuzdan", label: "cüzdan", icon: Wallet },
   { to: "/admin/kripto", label: "kripto", icon: Bitcoin },
