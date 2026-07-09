@@ -161,8 +161,18 @@ function KeysAdmin() {
     setBusy(true);
     try {
       const r = await importFn({ data: { productId, keys: list } });
-      toast.success(`${r.inserted} key eklendi`);
-      setRaw("");
+      if (r.inserted === 0) {
+        toast.error(
+          `Hiç key eklenmedi. Girdiğin ${list.length} satır sistemde zaten mevcut (muhtemelen daha önce satılmış / atanmış). Farklı bir email:şifre veya key ekleyin.`,
+          { duration: 8000 },
+        );
+      } else if (r.inserted < list.length) {
+        toast.success(`${r.inserted}/${list.length} key eklendi — ${list.length - r.inserted} tanesi zaten kayıtlıydı.`);
+        setRaw("");
+      } else {
+        toast.success(`${r.inserted} key eklendi ✓`);
+        setRaw("");
+      }
       qc.invalidateQueries({ queryKey: ["license-keys-recent"] });
       qc.invalidateQueries({ queryKey: ["admin-pool"] });
     } catch (e) { toast.error((e as Error).message); }
