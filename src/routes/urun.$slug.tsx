@@ -121,6 +121,23 @@ function ProductDetail() {
   });
 
   const flashSale = useActiveFlashSale(product?.id);
+  const flash = (() => {
+    const price = Number(product?.price_try ?? 0);
+    if (!flashSale) return { final: price, saved: 0, percent: 0, hasSale: false };
+    const raw =
+      flashSale.discount_type === "percent"
+        ? price * (Number(flashSale.discount_value) / 100)
+        : Number(flashSale.discount_value);
+    const saved = Math.max(0, Math.min(price, Math.round(raw * 100) / 100));
+    const final = Math.max(0, Math.round((price - saved) * 100) / 100);
+    const percent =
+      flashSale.discount_type === "percent"
+        ? Number(flashSale.discount_value)
+        : price > 0
+          ? Math.round((saved / price) * 100)
+          : 0;
+    return { final, saved, percent, hasSale: saved > 0 };
+  })();
 
   const handleBuy = async () => {
     if (!user) {
