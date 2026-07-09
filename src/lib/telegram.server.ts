@@ -134,12 +134,34 @@ export function orderCreatedMessage(o: {
   userEmail?: string | null;
 }): string {
   return [
-    "🆕 <b>Yeni sipariş</b>",
+    "🆕 <b>Yeni sipariş oluşturuldu</b>",
     `📦 Ürün: <b>${esc(o.productName)}</b>`,
-    `💰 Fiyat: ₺${esc(o.priceTry.toLocaleString("tr-TR"))}`,
+    `💰 Tutar: ₺${esc(o.priceTry.toLocaleString("tr-TR"))}`,
     `🔖 Kod: <code>${esc(o.reference)}</code>`,
     o.userEmail ? `👤 Müşteri: ${esc(o.userEmail)}` : null,
     "⏳ Durum: <i>ödeme bekleniyor</i>",
+    `🔗 ${SITE_URL}/admin/siparisler`,
+  ].filter(Boolean).join("\n");
+}
+
+export function cartOrderCreatedMessage(o: {
+  reference: string;
+  itemsText: string;
+  itemCount: number;
+  totalTry: number;
+  userEmail?: string | null;
+  couponCode?: string | null;
+}): string {
+  return [
+    "🛒 <b>Yeni sepet siparişi</b>",
+    `🔖 Kod: <code>${esc(o.reference)}</code>`,
+    `📦 Ürünler (${o.itemCount} adet):`,
+    esc(o.itemsText),
+    `💰 Toplam: <b>₺${esc(o.totalTry.toLocaleString("tr-TR"))}</b>`,
+    o.couponCode ? `🎟 Kupon: <code>${esc(o.couponCode)}</code>` : null,
+    o.userEmail ? `👤 Müşteri: ${esc(o.userEmail)}` : null,
+    "⏳ Durum: <i>ödeme bekleniyor</i>",
+    `🔗 ${SITE_URL}/admin/siparisler`,
   ].filter(Boolean).join("\n");
 }
 
