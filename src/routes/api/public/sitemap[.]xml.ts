@@ -23,9 +23,13 @@ export const Route = createFileRoute("/api/public/sitemap.xml")({
           { url: "/iletisim" },
           { url: "/davet" },
         ];
-        for (const p of prods.data ?? []) rows.push({ url: `/urun/${p.slug}`, lastmod: p.updated_at });
-        for (const p of posts.data ?? []) rows.push(p.updated_at ? { url: `/blog/${p.slug}`, lastmod: p.updated_at } : { url: `/blog/${p.slug}` });
-        for (const b of bundles.data ?? []) rows.push({ url: `/paket/${b.slug}`, lastmod: b.created_at });
+        const push = (url: string, lastmod: string | null | undefined) => {
+          if (lastmod) rows.push({ url, lastmod });
+          else rows.push({ url });
+        };
+        for (const p of prods.data ?? []) push(`/urun/${p.slug}`, p.updated_at);
+        for (const p of posts.data ?? []) push(`/blog/${p.slug}`, p.updated_at);
+        for (const b of (bundles.data ?? []) as { slug: string; created_at: string | null }[]) push(`/paket/${b.slug}`, b.created_at);
 
         const xml =
           `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
