@@ -249,9 +249,29 @@ export const ulImportedProducts = createServerFn({ method: "GET" })
     await assertAdmin(supabase, userId);
     const { data } = await supabase
       .from("products")
-      .select("id, name, slug, price_try, external_id, external_price, active, updated_at")
+      .select("id, name, slug, price_try, external_id, external_price, active, updated_at, stock_hint, unlimited_stock")
       .eq("source", "uniquelisans")
       .order("updated_at", { ascending: false })
-      .limit(200);
+      .limit(500);
     return data ?? [];
+  });
+
+/**
+ * Uniquelisans tam katalog senkronu (günlük cron için).
+ * Ağır iş `uniquelisans-catalog.server.ts` içinde; burada sadece admin auth ve dinamik import.
+ */
+const catalogSyncInput = z.object({
+  markup_percent: z.number().min(0).max(500).default(DEFAULT_MARKUP_PERCENT),
+  import_new: z.boolean().default(true),
+  reactivate: z.boolean().default(true),
+}).default({ markup_percent: DEFAULT_MARKUP_PERCENT, import_new: true, reactivate: true });
+
+export const ulSyncCatalog = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => catalogSyncInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const { runUniquelisansCatalogSync } = await import("@/lib/uniquelisans-catalog.server");
+    return await runUniquelisansCatalogSync(supabase as never, data);
   });

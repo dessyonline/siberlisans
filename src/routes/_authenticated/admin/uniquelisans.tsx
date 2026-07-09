@@ -9,11 +9,12 @@ import {
   ulImportProduct,
   ulImportedProducts,
   ulSyncStock,
+  ulSyncCatalog,
   DEFAULT_MARKUP_PERCENT,
 } from "@/lib/uniquelisans.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Wallet, Loader2, Download, RefreshCw, Package, CheckCircle2 } from "lucide-react";
+import { Wallet, Loader2, Download, RefreshCw, Package, CheckCircle2, Zap } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/uniquelisans")({
   ssr: false,
@@ -33,7 +34,9 @@ function UniquelisansPage() {
   const importFn = useServerFn(ulImportProduct);
   const importedFn = useServerFn(ulImportedProducts);
   const syncFn = useServerFn(ulSyncStock);
+  const catalogFn = useServerFn(ulSyncCatalog);
   const [syncing, setSyncing] = useState(false);
+  const [catalogSyncing, setCatalogSyncing] = useState(false);
 
   const { data: balance, refetch: refetchBalance, isFetching: balLoading } = useQuery({
     queryKey: ["ul-balance"],
@@ -211,49 +214,89 @@ function UniquelisansPage() {
 
       {/* Imported list */}
       <div>
-        <div className="mb-3 flex items-center justify-between gap-2">
-          <div className="font-mono text-xs text-muted-foreground">$ ice_aktarilan_urunler</div>
-          <Button
-            size="sm"
-            variant="outline"
-            disabled={syncing}
-            onClick={async () => {
-              setSyncing(true);
-              try {
-                const r = await syncFn({ data: { reactivate: true } });
-                toast.success(`Kontrol: ${r.checked} · Güncel: ${r.updated} · Gizlenen: ${r.hidden} · Geri açılan: ${r.reactivated}${r.failed ? ` · Hata: ${r.failed}` : ""}`);
-                qc.invalidateQueries({ queryKey: ["ul-imported"] });
-                qc.invalidateQueries({ queryKey: ["admin-products"] });
-              } catch (e) {
-                toast.error((e as Error).message);
-              } finally {
-                setSyncing(false);
-              }
-            }}
-          >
-            {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <RefreshCw className="h-3.5 w-3.5 mr-1" />}
-            stokları senkronize et
-          </Button>
+        <div className="mb-3 flex items-center justify-between gap-2 flex-wrap">
+          <div className="font-mono text-xs text-muted-foreground">$ ice_aktarilan_urunler ({imported?.length ?? 0})</div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={catalogSyncing}
+              onClick={async () => {
+                setCatalogSyncing(true);
+                try {
+                  const r = await catalogFn({ data: { markup_percent: markup, import_new: true, reactivate: true } });
+                  toast.success(
+                    `Katalog: ${r.scanned} tarandı · ${r.inserted} yeni · ${r.updated} güncel · ${r.price_changed} fiyat · ${r.hidden} gizlendi · ${r.reactivated} açıldı${r.failed ? ` · ${r.failed} hata` : ""}`,
+                  );
+                  qc.invalidateQueries({ queryKey: ["ul-imported"] });
+                  qc.invalidateQueries({ queryKey: ["admin-products"] });
+                } catch (e) {
+                  toast.error((e as Error).message);
+                } finally {
+                  setCatalogSyncing(false);
+                }
+              }}
+            >
+              {catalogSyncing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Zap className="h-3.5 w-3.5 mr-1" />}
+              tam katalog senkronu
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={syncing}
+              onClick={async () => {
+                setSyncing(true);
+                try {
+                  const r = await syncFn({ data: { reactivate: true } });
+                  toast.success(`Kontrol: ${r.checked} · Güncel: ${r.updated} · Gizlenen: ${r.hidden} · Geri açılan: ${r.reactivated}${r.failed ? ` · Hata: ${r.failed}` : ""}`);
+                  qc.invalidateQueries({ queryKey: ["ul-imported"] });
+                  qc.invalidateQueries({ queryKey: ["admin-products"] });
+                } catch (e) {
+                  toast.error((e as Error).message);
+                } finally {
+                  setSyncing(false);
+                }
+              }}
+            >
+              {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <RefreshCw className="h-3.5 w-3.5 mr-1" />}
+              stokları senkronize et
+            </Button>
+          </div>
         </div>
         {imported && imported.length > 0 ? (
           <div className="space-y-1.5">
-            {imported.map((p) => (
-              <div key={p.id} className="glass-card rounded-md p-2.5 flex flex-wrap items-center gap-3 text-sm">
-                <Package className="h-4 w-4 text-primary shrink-0" />
-                <div className="min-w-0 flex-1 truncate">{p.name}</div>
-                <div className="font-mono text-xs text-muted-foreground">alış: {fmt(Number(p.external_price ?? 0))} ₺</div>
-                <div className="font-mono text-xs">satış: <b>{fmt(Number(p.price_try))} ₺</b></div>
-                <div className="font-mono text-xs text-primary">
-                  kar: <b>{fmt(Number(p.price_try) - Number(p.external_price ?? 0))} ₺</b>
-                  {Number(p.external_price ?? 0) > 0 && (
-                    <span className="text-muted-foreground"> (%{fmt(((Number(p.price_try) - Number(p.external_price)) / Number(p.external_price)) * 100)})</span>
-                  )}
+            {imported.map((p) => {
+              const stock = (p as { stock_hint?: number | null }).stock_hint;
+              const unlimited = (p as { unlimited_stock?: boolean }).unlimited_stock;
+              const stockLabel = unlimited
+                ? "otomatik"
+                : typeof stock === "number"
+                  ? stock > 0 ? `stok: ${stock}` : "stok yok"
+                  : "manuel";
+              const stockCls = unlimited
+                ? "text-cyan bg-cyan/10 border-cyan/30"
+                : typeof stock === "number" && stock <= 0
+                  ? "text-destructive bg-destructive/10 border-destructive/30"
+                  : "text-primary bg-primary/10 border-primary/30";
+              return (
+                <div key={p.id} className="glass-card rounded-md p-2.5 flex flex-wrap items-center gap-3 text-sm">
+                  <Package className="h-4 w-4 text-primary shrink-0" />
+                  <div className="min-w-0 flex-1 truncate">{p.name}</div>
+                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${stockCls}`}>{stockLabel}</span>
+                  <div className="font-mono text-xs text-muted-foreground">alış: {fmt(Number(p.external_price ?? 0))} ₺</div>
+                  <div className="font-mono text-xs">satış: <b>{fmt(Number(p.price_try))} ₺</b></div>
+                  <div className="font-mono text-xs text-primary">
+                    kar: <b>{fmt(Number(p.price_try) - Number(p.external_price ?? 0))} ₺</b>
+                    {Number(p.external_price ?? 0) > 0 && (
+                      <span className="text-muted-foreground"> (%{fmt(((Number(p.price_try) - Number(p.external_price)) / Number(p.external_price)) * 100)})</span>
+                    )}
+                  </div>
+                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${p.active ? "text-primary bg-primary/10 border-primary/30" : "text-muted-foreground border-muted-foreground/30"}`}>
+                    {p.active ? "aktif" : "pasif"}
+                  </span>
                 </div>
-                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${p.active ? "text-primary bg-primary/10 border-primary/30" : "text-muted-foreground border-muted-foreground/30"}`}>
-                  {p.active ? "aktif" : "pasif"}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="text-sm text-muted-foreground font-mono">henüz içe aktarılan ürün yok</div>
