@@ -24,7 +24,7 @@ export const Route = createFileRoute("/api/public/sitemap.xml")({
           { url: "/davet" },
         ];
         for (const p of prods.data ?? []) rows.push({ url: `/urun/${p.slug}`, lastmod: p.updated_at });
-        for (const p of posts.data ?? []) rows.push({ url: `/blog/${p.slug}`, lastmod: (p.updated_at ?? undefined) as string | undefined });
+        for (const p of posts.data ?? []) rows.push(p.updated_at ? { url: `/blog/${p.slug}`, lastmod: p.updated_at } : { url: `/blog/${p.slug}` });
         for (const b of bundles.data ?? []) rows.push({ url: `/paket/${b.slug}`, lastmod: b.created_at });
 
         const xml =
