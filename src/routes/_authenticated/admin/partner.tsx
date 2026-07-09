@@ -27,18 +27,31 @@ function AdminPartner() {
   });
 
   async function setStatus(id: string, status: "approved" | "rejected" | "paid", note?: string) {
+    // if rejected, refund the amount to user's wallet first
+    if (status === "rejected") {
+      const row = (data ?? []).find((r) => r.id === id);
+      if (row && row.status === "requested") {
+        const { data: w } = await supabase
+          .from("wallets")
+          .select("balance_try")
+          .eq("user_id", row.user_id)
+          .maybeSingle();
+        const bal = Number(w?.balance_try ?? 0) + Number(row.amount_try);
+        await supabase.from("wallets").upsert({ user_id: row.user_id, balance_try: bal });
+        await supabase.from("wallet_transactions").insert({
+          user_id: row.user_id,
+          kind: "credit",
+          amount_try: Number(row.amount_try),
+          balance_after: bal,
+          note: "Partner ödeme talebi reddi - iade",
+        });
+      }
+    }
     const { error } = await supabase
       .from("affiliate_payouts")
       .update({ status, admin_note: note, processed_at: new Date().toISOString() })
       .eq("id", id);
     if (error) return toast.error(error.message);
-    // if rejected, refund wallet
-    if (status === "rejected") {
-      const row = (data ?? []).find((r) => r.id === id);
-      if (row) {
-        await supabase.rpc("admin_refund_payout", { _payout_id: id }).then(() => {});
-      }
-    }
     toast.success("Güncellendi");
     qc.invalidateQueries({ queryKey: ["admin-payouts"] });
   }
