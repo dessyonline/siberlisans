@@ -200,8 +200,51 @@ function AdminBundles() {
         {(bundles ?? []).map((bb) => {
           const isEditing = !!editing[bb.id];
           const e = editing[bb.id];
+          const retailSum = bb.items.reduce(
+            (s, i) => s + (Number(i.product?.price_try) || 0) * i.quantity,
+            0,
+          );
+          const costSum = bb.items.reduce(
+            (s, i) => s + (Number(i.product?.cost_try) || 0) * i.quantity,
+            0,
+          );
+          const margin = Number(bb.price_try) - costSum;
+          const marginPct = costSum > 0 ? (margin / costSum) * 100 : 0;
+          const savings = retailSum - Number(bb.price_try);
+          const loss = margin < 0;
           return (
             <div key={bb.id} className="glass-card rounded-xl p-5">
+              <div
+                className={`mb-3 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs font-mono rounded-lg border p-3 ${
+                  loss ? "border-destructive/50 bg-destructive/5" : "border-primary/30 bg-primary/5"
+                }`}
+              >
+                <div>
+                  <div className="text-muted-foreground">perakende toplam</div>
+                  <div className="text-sm font-semibold">₺{retailSum.toFixed(2)}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">tedarik maliyeti</div>
+                  <div className="text-sm font-semibold">₺{costSum.toFixed(2)}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">paket fiyatı</div>
+                  <div className="text-sm font-semibold">₺{Number(bb.price_try).toFixed(2)}</div>
+                </div>
+                <div>
+                  <div className="text-muted-foreground">
+                    {loss ? "⚠ zarar" : "kâr"} · %{marginPct.toFixed(1)}
+                  </div>
+                  <div
+                    className={`text-sm font-semibold ${loss ? "text-destructive" : "text-primary"}`}
+                  >
+                    {loss ? "-" : "+"}₺{Math.abs(margin).toFixed(2)}
+                  </div>
+                </div>
+                <div className="col-span-2 md:col-span-4 text-[11px] text-muted-foreground pt-1 border-t border-border/30">
+                  müşteri tasarrufu: ₺{Math.max(0, savings).toFixed(2)} ({retailSum > 0 ? ((savings / retailSum) * 100).toFixed(0) : 0}%)
+                </div>
+              </div>
               <div className="flex items-start justify-between gap-2 flex-wrap">
                 {isEditing ? (
                   <div className="grid gap-2 md:grid-cols-2 flex-1">
