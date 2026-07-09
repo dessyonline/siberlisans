@@ -152,7 +152,7 @@ export function ReviewsSection({ productId }: { productId: string }) {
                 <div className="flex items-center gap-2">
                   <StarRating value={r.rating} />
                   <span className="font-mono text-xs text-muted-foreground">
-                    kullanıcı · {r.user_id.slice(0, 6)}
+                    kullanıcı · {r.masked_user}
                   </span>
                 </div>
                 <span className="font-mono text-[10px] text-muted-foreground/70">
