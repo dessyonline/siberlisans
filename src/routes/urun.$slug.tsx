@@ -237,10 +237,11 @@ function ProductDetail() {
 
   const liveStock = (product.license_keys ?? []).filter((k: { status: string }) => k.status === "available").length;
   const stock = liveStock > 0 ? liveStock : (product.stock_hint ?? 0);
-  const manual = !!product.manual_fulfillment;
   const unlimited = !!(product as { unlimited_stock?: boolean }).unlimited_stock;
-  const isEpic = ((product as { tier?: string }).tier ?? "standard") === "epic";
-  const soldOut = !manual && !unlimited && stock === 0;
+  const supplierOOS = !!(product as { supplier_out_of_stock?: boolean }).supplier_out_of_stock;
+  const manual = !!product.manual_fulfillment;
+  const soldOut = supplierOOS || (!manual && !unlimited && stock === 0);
+
   const bullets = (product.description ?? "")
     .split("|")
     .map((s) => s.trim())
