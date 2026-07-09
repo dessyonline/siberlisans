@@ -1432,4 +1432,92 @@ function CheckoutFieldsCard({
   );
 }
 
+function CrossSellOffer({ categories, excludeSlugs }: { categories: string[]; excludeSlugs: string[] }) {
+  const { data: offer } = useQuery({
+    queryKey: ["cross-sell-offer", categories.sort().join("|")],
+    enabled: categories.length > 0,
+    queryFn: async () => {
+      const { data: rules } = await supabase
+        .from("cross_sell_rules" as never)
+        .select("from_category, to_category, discount_percent, promo_code, note")
+        .in("from_category", categories)
+        .eq("active", true);
+      const list = (rules ?? []) as Array<{
+        from_category: string;
+        to_category: string;
+        discount_percent: number;
+        promo_code: string | null;
+        note: string | null;
+      }>;
+      if (list.length === 0) return null;
+      // Pick the highest-discount rule
+      const rule = list.sort((a, b) => b.discount_percent - a.discount_percent)[0];
+      // Fetch a suggested product from to_category (skip already-in-cart slugs)
+      const { data: products } = await supabase
+        .from("products")
+        .select("id, name, slug, price_try, image_url, tier, duration")
+        .eq("active", true)
+        .eq("category", rule.to_category)
+        .not("slug", "in", `(${excludeSlugs.length ? excludeSlugs.map((s) => `"${s}"`).join(",") : '""'})`)
+        .order("sort_order", { ascending: false })
+        .limit(1);
+      const product = products?.[0];
+      if (!product) return null;
+      const original = Number(product.price_try);
+      const discounted = Math.round(original * (1 - rule.discount_percent / 100));
+      return { rule, product, original, discounted };
+    },
+  });
+
+  if (!offer) return null;
+  const { rule, product, original, discounted } = offer;
+
+  return (
+    <section className="mt-4 relative overflow-hidden rounded-xl border border-warn/40 bg-gradient-to-br from-warn/5 via-transparent to-primary/5 p-4 sm:p-5 scan-line">
+      <div className="pointer-events-none absolute inset-0 cyber-grid opacity-30" aria-hidden />
+      <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-4">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {product.image_url && (
+            <img
+              src={product.image_url}
+              alt={product.name}
+              className="h-16 w-16 rounded-lg object-cover border border-border/60 shrink-0"
+              loading="lazy"
+            />
+          )}
+          <div className="min-w-0">
+            <div className="font-mono text-[10px] uppercase tracking-widest text-warn flex items-center gap-1.5">
+              <Sparkles className="h-3 w-3" /> kombo teklif · yanına ekle
+            </div>
+            <div className="mt-0.5 text-base sm:text-lg font-semibold truncate">{product.name}</div>
+            {rule.note && (
+              <div className="text-xs text-muted-foreground truncate">{rule.note}</div>
+            )}
+            <div className="mt-1 flex items-center gap-2 font-mono text-sm">
+              <span className="text-muted-foreground line-through">₺{original.toLocaleString("tr-TR")}</span>
+              <span className="text-primary text-lg font-semibold neon-text">₺{discounted.toLocaleString("tr-TR")}</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded border border-warn/40 bg-warn/10 text-warn font-semibold">
+                %{rule.discount_percent} indirim
+              </span>
+            </div>
+            {rule.promo_code && (
+              <div className="mt-1 text-[11px] font-mono text-muted-foreground">
+                sepette kupon: <span className="text-warn font-semibold">{rule.promo_code}</span>
+              </div>
+            )}
+          </div>
+        </div>
+        <Link
+          to="/urun/$slug"
+          params={{ slug: product.slug }}
+          className="shrink-0 inline-flex items-center gap-1.5 rounded-md bg-primary text-primary-foreground px-4 py-2.5 font-mono text-sm hover:bg-primary/90 neon-glow"
+        >
+          hemen incele <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+    </section>
+  );
+}
+
+
 
