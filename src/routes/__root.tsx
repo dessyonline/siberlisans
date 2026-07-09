@@ -131,6 +131,22 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           name: "SiberPHP",
           url: "https://siberlisans.lovable.app",
           logo: "https://siberlisans.lovable.app/favicon.png",
+          sameAs: [],
+        }),
+      },
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "SiberPHP",
+          url: "https://siberlisans.lovable.app",
+          inLanguage: "tr-TR",
+          potentialAction: {
+            "@type": "SearchAction",
+            target: "https://siberlisans.lovable.app/urunler?search={search_term_string}",
+            "query-input": "required name=search_term_string",
+          },
         }),
       },
     ],

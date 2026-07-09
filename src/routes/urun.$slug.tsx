@@ -75,6 +75,51 @@ export const Route = createFileRoute("/urun/$slug")({
               },
             }),
           },
+          {
+            type: "application/ld+json",
+            children: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: "Anasayfa", item: "https://siberlisans.lovable.app/" },
+                { "@type": "ListItem", position: 2, name: "Lisanslar", item: "https://siberlisans.lovable.app/urunler" },
+                { "@type": "ListItem", position: 3, name: p.name, item: url },
+              ],
+            }),
+          },
+          {
+            type: "application/ld+json",
+            children: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              mainEntity: [
+                {
+                  "@type": "Question",
+                  name: "Ödeme sonrası lisansım ne zaman teslim edilir?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Otomatik teslim ürünlerde ödeme onaylandığı an lisansınız hesabınızda ve e-postanızda görüntülenir. Manuel ürünlerde 5-30 dk içinde teslim edilir.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "Lisans çalışmazsa ne olur?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "24 saat içinde bize ulaşın, ücretsiz olarak yeni bir key ile değiştirilir.",
+                  },
+                },
+                {
+                  "@type": "Question",
+                  name: "Faturamı nasıl alabilirim?",
+                  acceptedAnswer: {
+                    "@type": "Answer",
+                    text: "Ödeme sonrası destek ekibimize yazın, e-fatura veya e-arşiv olarak iletilir.",
+                  },
+                },
+              ],
+            }),
+          },
         ]
       : [];
     return { meta, links: [{ rel: "canonical", href: url }], scripts };
