@@ -190,10 +190,12 @@ type Row = {
   manual_fulfillment: boolean | null;
   stock_hint: number | null;
   unlimited_stock: boolean | null;
+  supplier_out_of_stock: boolean | null;
   created_at: string;
   sort_order?: number | null;
   tier?: string | null;
   license_keys: { status: string }[] | null;
+
 };
 
 // Kategori grupları — talep sırasına göre: AI en önce, sonra görsel/office...
@@ -235,7 +237,7 @@ function ProductsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, created_at, sort_order, tier, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, created_at, sort_order, tier, license_keys(status)")
         .eq("active", true)
         .order("price_try");
       if (error) throw error;
@@ -527,9 +529,11 @@ function ProductsPage() {
 function ProductCard({ product: p }: { product: Row }) {
   const manual = !!p.manual_fulfillment;
   const unlimited = !!p.unlimited_stock;
+  const supplierOOS = !!p.supplier_out_of_stock;
   const liveStock = (p.license_keys ?? []).filter((k) => k.status === "available").length;
   const stock = liveStock > 0 ? liveStock : (p.stock_hint ?? 0);
-  const soldOut = !manual && !unlimited && stock === 0;
+  const soldOut = supplierOOS || (!manual && !unlimited && stock === 0);
+
 
   const flashSale = useActiveFlashSale(p.id);
   const { final, saved, percent, hasSale } = applyFlash(Number(p.price_try), flashSale);
@@ -618,11 +622,18 @@ function ProductCard({ product: p }: { product: Row }) {
               </div>
             )}
           </div>
-          <Button asChild size="sm" className="font-mono bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_oklch(0.82_0.20_145/0.35)] transition-all">
-            <Link to="/urun/$slug" params={{ slug: p.slug }} className="flex items-center gap-1">
-              Satın al <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </Button>
+          {supplierOOS ? (
+            <Button size="sm" disabled className="font-mono opacity-60 cursor-not-allowed" title="Tedarikçide geçici olarak stokta yok">
+              Stok yok
+            </Button>
+          ) : (
+            <Button asChild size="sm" className="font-mono bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_oklch(0.82_0.20_145/0.35)] transition-all">
+              <Link to="/urun/$slug" params={{ slug: p.slug }} className="flex items-center gap-1">
+                Satın al <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          )}
+
         </div>
       </div>
     </div>

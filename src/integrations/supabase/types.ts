@@ -1039,6 +1039,7 @@ export type Database = {
           sort_order: number
           source: string
           stock_hint: number | null
+          supplier_out_of_stock: boolean
           tier: string
           unlimited_stock: boolean
           updated_at: string
@@ -1071,6 +1072,7 @@ export type Database = {
           sort_order?: number
           source?: string
           stock_hint?: number | null
+          supplier_out_of_stock?: boolean
           tier?: string
           unlimited_stock?: boolean
           updated_at?: string
@@ -1103,6 +1105,7 @@ export type Database = {
           sort_order?: number
           source?: string
           stock_hint?: number | null
+          supplier_out_of_stock?: boolean
           tier?: string
           unlimited_stock?: boolean
           updated_at?: string

@@ -54,19 +54,22 @@ export async function runUniquelisansCatalogSync(
   }>;
 
   const { data: existingRows } = await supabase.from("products")
-    .select("id, external_id, active, image_url, price_try, external_price, stock_hint")
+    .select("id, external_id, active, image_url, price_try, external_price, stock_hint, supplier_out_of_stock")
     .eq("source", "uniquelisans");
 
   const existing = new Map<string, {
     id: string; active: boolean; image_url: string | null;
     price_try: number; external_price: number | null; stock_hint: number | null;
+    supplier_out_of_stock: boolean | null;
   }>();
   for (const r of (existingRows ?? []) as Array<{
     id: string; external_id: string | null; active: boolean; image_url: string | null;
     price_try: number; external_price: number | null; stock_hint: number | null;
+    supplier_out_of_stock: boolean | null;
   }>) {
     if (r.external_id) existing.set(String(r.external_id), r);
   }
+
 
   const res: CatalogSyncResult = {
     scanned: 0, inserted: 0, updated: 0, price_changed: 0, hidden: 0, reactivated: 0, failed: 0,
@@ -105,11 +108,13 @@ export async function runUniquelisansCatalogSync(
               patch.price_try = finalPrice;
               res.price_changed++;
             }
-            if (outOfStock && prev.active) {
-              patch.active = false;
+            // Ürünü pasifleştirmek yerine geçici "tedarikçi stok yok" bayrağı ile satışı engelle.
+            // Admin manuel active ayarına dokunmuyoruz — stok dönünce bayrağı temizliyoruz.
+            if (outOfStock && !prev.supplier_out_of_stock) {
+              patch.supplier_out_of_stock = true;
               res.hidden++;
-            } else if (!outOfStock && !prev.active && opts.reactivate) {
-              patch.active = true;
+            } else if (!outOfStock && prev.supplier_out_of_stock) {
+              patch.supplier_out_of_stock = false;
               res.reactivated++;
             }
             const { error } = await supabase.from("products").update(patch).eq("id", prev.id);
@@ -133,6 +138,7 @@ export async function runUniquelisansCatalogSync(
               active: false,
               manual_fulfillment: true,
               unlimited_stock: !!p.is_automatic_delivery,
+              supplier_out_of_stock: outOfStock,
               source: "uniquelisans",
               external_id: key,
               stock_hint: p.stock_count ?? null,
@@ -141,6 +147,7 @@ export async function runUniquelisansCatalogSync(
             if (error) { res.failed++; continue; }
             res.inserted++;
           }
+
         }
       } catch {
         res.failed++;

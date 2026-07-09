@@ -142,7 +142,7 @@ function ProductDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, active, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, tier, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, active, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, tier, license_keys(status)")
         .eq("slug", slug)
         .single();
       if (error) throw error;
@@ -237,10 +237,13 @@ function ProductDetail() {
 
   const liveStock = (product.license_keys ?? []).filter((k: { status: string }) => k.status === "available").length;
   const stock = liveStock > 0 ? liveStock : (product.stock_hint ?? 0);
-  const manual = !!product.manual_fulfillment;
   const unlimited = !!(product as { unlimited_stock?: boolean }).unlimited_stock;
-  const isEpic = ((product as { tier?: string }).tier ?? "standard") === "epic";
-  const soldOut = !manual && !unlimited && stock === 0;
+  const supplierOOS = !!(product as { supplier_out_of_stock?: boolean }).supplier_out_of_stock;
+  const manual = !!product.manual_fulfillment;
+  const soldOut = supplierOOS || (!manual && !unlimited && stock === 0);
+  const isEpic = (product as { tier?: string | null }).tier === "epic";
+
+
   const bullets = (product.description ?? "")
     .split("|")
     .map((s) => s.trim())

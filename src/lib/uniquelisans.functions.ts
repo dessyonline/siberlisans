@@ -136,13 +136,11 @@ export const ulImportProduct = createServerFn({ method: "POST" })
       .eq("external_id", String(detail.id))
       .maybeSingle();
 
-    // Stok kontrolü: SADECE sayısal stok takibi yapılan ürünlerde stock_count <= 0 ise pasif tut.
-    // Manuel teslimli ürünlerde API `is_stock:false, stock_count:null` döndürebilir; bu "stok yok"
-    // değil "stok takibi yok" demektir — o yüzden gizlemeyiz.
+    // Stok kontrolü: SADECE sayısal stok takibi yapılan ürünlerde stock_count <= 0 ise
+    // geçici olarak "tedarikçi stok yok" bayrağı yak. Ürün aktif kalır, sadece satış engellenir.
     const outOfStock = !detail.is_automatic_delivery
       && typeof detail.stock_count === "number"
       && detail.stock_count <= 0;
-    const effectiveActive = outOfStock ? false : data.active;
 
     const payload = {
       name: detail.name,
@@ -150,9 +148,10 @@ export const ulImportProduct = createServerFn({ method: "POST" })
       price_try: finalPrice,
       external_price: detail.amount,
       category: data.category ?? "Dijital Ürünler",
-      active: effectiveActive,
+      active: data.active,
       manual_fulfillment: true, // otomatik teslim kapalı — admin manuel siparişi Uniquelisans'ta açar
       unlimited_stock: !!detail.is_automatic_delivery,
+      supplier_out_of_stock: outOfStock,
       source: "uniquelisans",
       external_id: String(detail.id),
       required_fields: (detail.required_fields ?? []) as never,
@@ -165,12 +164,8 @@ export const ulImportProduct = createServerFn({ method: "POST" })
       const { data: cur } = await supabase.from("products").select("image_url, active").eq("id", existing.id).maybeSingle();
       const updatePayload = { ...payload };
       if (cur?.image_url) delete (updatePayload as Partial<typeof payload>).image_url;
-      // Aktif durumu: stok yoksa zorla pasif; stok varsa admin'in mevcut seçimini bozma
-      if (outOfStock) {
-        updatePayload.active = false;
-      } else if (cur) {
-        updatePayload.active = cur.active;
-      }
+      // Admin'in active seçimini bozma — sadece supplier bayrağını güncelle
+      if (cur) updatePayload.active = cur.active;
       const { error } = await supabase.from("products").update(updatePayload).eq("id", existing.id);
       if (error) throw new Error(error.message);
       return { ok: true as const, productId: existing.id, updated: true, outOfStock };
@@ -185,9 +180,10 @@ export const ulImportProduct = createServerFn({ method: "POST" })
     }
   });
 
+
 // Tüm içe aktarılmış Uniquelisans ürünlerinin stok/fiyatını API ile senkronize et.
-// Stok yoksa (yalnızca sayısal stok takibi olan ürünlerde stock_count <= 0) pasifleştirir.
-// `reactivate` true ise, stokta olan ancak daha önce yanlış gizlenmiş ürünleri geri açar.
+// Stok yoksa "tedarikçi stok yok" bayrağını yakar (ürün aktif kalır, satış engellenir).
+// `reactivate` true ise stok dönen ürünlerin bayrağını temizler.
 const syncInput = z.object({ reactivate: z.boolean().default(false) }).default({ reactivate: false });
 
 export const ulSyncStock = createServerFn({ method: "POST" })
@@ -199,7 +195,7 @@ export const ulSyncStock = createServerFn({ method: "POST" })
 
     const { data: rows } = await supabase
       .from("products")
-      .select("id, external_id, price_try, external_price, active")
+      .select("id, external_id, price_try, external_price, active, supplier_out_of_stock")
       .eq("source", "uniquelisans");
 
     const list = rows ?? [];
@@ -219,16 +215,16 @@ export const ulSyncStock = createServerFn({ method: "POST" })
           && typeof d.stock_count === "number"
           && d.stock_count <= 0;
 
-        const patch: { external_price: number; stock_hint: number | null; unlimited_stock: boolean; active?: boolean } = {
+        const patch: { external_price: number; stock_hint: number | null; unlimited_stock: boolean; supplier_out_of_stock?: boolean } = {
           external_price: d.amount,
           stock_hint: d.stock_count ?? null,
           unlimited_stock: !!d.is_automatic_delivery,
         };
-        if (outOfStock && p.active) {
-          patch.active = false;
+        if (outOfStock && !p.supplier_out_of_stock) {
+          patch.supplier_out_of_stock = true;
           hidden++;
-        } else if (!outOfStock && !p.active && data.reactivate) {
-          patch.active = true;
+        } else if (!outOfStock && p.supplier_out_of_stock && data.reactivate) {
+          patch.supplier_out_of_stock = false;
           reactivated++;
         }
         const { error } = await supabase.from("products").update(patch).eq("id", p.id);
@@ -242,6 +238,7 @@ export const ulSyncStock = createServerFn({ method: "POST" })
     return { checked, updated, hidden, reactivated, failed };
   });
 
+
 export const ulImportedProducts = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -249,7 +246,7 @@ export const ulImportedProducts = createServerFn({ method: "GET" })
     await assertAdmin(supabase, userId);
     const { data } = await supabase
       .from("products")
-      .select("id, name, slug, price_try, external_id, external_price, active, updated_at, stock_hint, unlimited_stock")
+      .select("id, name, slug, price_try, external_id, external_price, active, updated_at, stock_hint, unlimited_stock, supplier_out_of_stock")
       .eq("source", "uniquelisans")
       .order("updated_at", { ascending: false })
       .limit(500);
