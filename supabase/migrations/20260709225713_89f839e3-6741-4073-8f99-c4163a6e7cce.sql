@@ -1,0 +1,2 @@
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS supplier_out_of_stock BOOLEAN NOT NULL DEFAULT FALSE;
+CREATE INDEX IF NOT EXISTS idx_products_supplier_oos ON public.products(supplier_out_of_stock) WHERE supplier_out_of_stock = TRUE;
