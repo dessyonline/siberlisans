@@ -24,7 +24,10 @@ export const createOrder = createServerFn({ method: "POST" })
     if (pErr || !product || !product.active) throw new Error("Ürün bulunamadı.");
 
     // Stok ön-kontrolü: manuel değil ve sınırsız değilse, havuzda kullanılabilir key var mı?
-    if (!product.manual_fulfillment && !product.unlimited_stock) {
+    // Uniquelisans ürünleri için havuz boşsa API'den çekileceği için bu kontrolü atlıyoruz;
+    // UL canlı stok kontrolü aşağıda ayrıca yapılıyor.
+    const isUlProduct = product.source === "uniquelisans" && !!product.external_id;
+    if (!product.manual_fulfillment && !product.unlimited_stock && !isUlProduct) {
       const { count } = await supabase
         .from("license_keys")
         .select("id", { count: "exact", head: true })
