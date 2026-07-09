@@ -32,6 +32,7 @@ import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as BakiyeYukleTopupIdRouteImport } from './routes/bakiye-yukle.$topupId'
 import { Route as ApiValidateRouteImport } from './routes/api/validate'
 import { Route as ApiUnlockRouteImport } from './routes/api/unlock'
+import { Route as ApiTamperingReportRouteImport } from './routes/api/tampering-report'
 import { Route as ApiSourceCodeRouteImport } from './routes/api/source-code'
 import { Route as ApiRevokeRouteImport } from './routes/api/revoke'
 import { Route as ApiRemoveWatermarkRouteImport } from './routes/api/remove-watermark'
@@ -195,6 +196,11 @@ const ApiValidateRoute = ApiValidateRouteImport.update({
 const ApiUnlockRoute = ApiUnlockRouteImport.update({
   id: '/api/unlock',
   path: '/api/unlock',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTamperingReportRoute = ApiTamperingReportRouteImport.update({
+  id: '/api/tampering-report',
+  path: '/api/tampering-report',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiSourceCodeRoute = ApiSourceCodeRouteImport.update({
@@ -507,6 +513,7 @@ export interface FileRoutesByFullPath {
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
   '/api/source-code': typeof ApiSourceCodeRoute
+  '/api/tampering-report': typeof ApiTamperingReportRoute
   '/api/unlock': typeof ApiUnlockRoute
   '/api/validate': typeof ApiValidateRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
@@ -580,6 +587,7 @@ export interface FileRoutesByTo {
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
   '/api/source-code': typeof ApiSourceCodeRoute
+  '/api/tampering-report': typeof ApiTamperingReportRoute
   '/api/unlock': typeof ApiUnlockRoute
   '/api/validate': typeof ApiValidateRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
@@ -656,6 +664,7 @@ export interface FileRoutesById {
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
   '/api/source-code': typeof ApiSourceCodeRoute
+  '/api/tampering-report': typeof ApiTamperingReportRoute
   '/api/unlock': typeof ApiUnlockRoute
   '/api/validate': typeof ApiValidateRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
@@ -732,6 +741,7 @@ export interface FileRouteTypes {
     | '/api/remove-watermark'
     | '/api/revoke'
     | '/api/source-code'
+    | '/api/tampering-report'
     | '/api/unlock'
     | '/api/validate'
     | '/bakiye-yukle/$topupId'
@@ -805,6 +815,7 @@ export interface FileRouteTypes {
     | '/api/remove-watermark'
     | '/api/revoke'
     | '/api/source-code'
+    | '/api/tampering-report'
     | '/api/unlock'
     | '/api/validate'
     | '/bakiye-yukle/$topupId'
@@ -880,6 +891,7 @@ export interface FileRouteTypes {
     | '/api/remove-watermark'
     | '/api/revoke'
     | '/api/source-code'
+    | '/api/tampering-report'
     | '/api/unlock'
     | '/api/validate'
     | '/bakiye-yukle/$topupId'
@@ -947,6 +959,7 @@ export interface RootRouteChildren {
   ApiRemoveWatermarkRoute: typeof ApiRemoveWatermarkRoute
   ApiRevokeRoute: typeof ApiRevokeRoute
   ApiSourceCodeRoute: typeof ApiSourceCodeRoute
+  ApiTamperingReportRoute: typeof ApiTamperingReportRoute
   ApiUnlockRoute: typeof ApiUnlockRoute
   ApiValidateRoute: typeof ApiValidateRoute
   BakiyeYukleTopupIdRoute: typeof BakiyeYukleTopupIdRoute
@@ -1129,6 +1142,13 @@ declare module '@tanstack/react-router' {
       path: '/api/unlock'
       fullPath: '/api/unlock'
       preLoaderRoute: typeof ApiUnlockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tampering-report': {
+      id: '/api/tampering-report'
+      path: '/api/tampering-report'
+      fullPath: '/api/tampering-report'
+      preLoaderRoute: typeof ApiTamperingReportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/source-code': {
@@ -1594,6 +1614,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiRemoveWatermarkRoute: ApiRemoveWatermarkRoute,
   ApiRevokeRoute: ApiRevokeRoute,
   ApiSourceCodeRoute: ApiSourceCodeRoute,
+  ApiTamperingReportRoute: ApiTamperingReportRoute,
   ApiUnlockRoute: ApiUnlockRoute,
   ApiValidateRoute: ApiValidateRoute,
   BakiyeYukleTopupIdRoute: BakiyeYukleTopupIdRoute,
