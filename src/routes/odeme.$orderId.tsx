@@ -114,7 +114,7 @@ function Payment() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, status, price_try, reference_code, receipt_path, user_note, checkout_fields, created_at, updated_at, approved_at, product:products(name, slug, duration, image_url, delivery_type, manual_fulfillment, unlimited_stock, tier, source, required_fields, shopier_url, requires_email, category), items:order_items(id, quantity, unit_price_try, product_name_snapshot, product:products(name, slug, image_url, duration, delivery_type, manual_fulfillment, unlimited_stock, shopier_url, requires_email, category)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, delivery_type))), discount:order_discounts(discount_try, code_snapshot)"
+          "id, product_id, status, price_try, reference_code, receipt_path, user_note, checkout_fields, created_at, updated_at, approved_at, product:products(name, slug, duration, image_url, delivery_type, manual_fulfillment, unlimited_stock, tier, source, required_fields, shopier_url, requires_email, category), items:order_items(id, product_id, quantity, unit_price_try, product_name_snapshot, product:products(name, slug, image_url, duration, delivery_type, manual_fulfillment, unlimited_stock, shopier_url, requires_email, category)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, delivery_type))), discount:order_discounts(product_id, discount_try, code_snapshot)"
         )
         .eq("id", orderId)
         .single();
@@ -205,6 +205,7 @@ function Payment() {
 
   const orderItems = (order.items ?? []) as Array<{
     id: string;
+    product_id: string | null;
     quantity: number;
     unit_price_try: number;
     product_name_snapshot: string;
@@ -228,6 +229,16 @@ function Payment() {
     order.status === "approved" && deliveredKeys.length === 0 && (isManual || isUnlimited);
   const orderTitle = order.product?.name ?? `Sepet siparişi · ${orderItems.length} ürün`;
   const stepIndex = STEPS.findIndex((s) => s.key === currentStep);
+  const discountRows = (Array.isArray(order.discount) ? order.discount : (order.discount ? [order.discount] : [])) as Array<{
+    product_id?: string | null;
+    discount_try?: number | null;
+    code_snapshot?: string | null;
+  }>;
+  const discountsByProduct = discountRows.reduce<Record<string, number>>((acc, d) => {
+    if (!d.product_id) return acc;
+    acc[d.product_id] = (acc[d.product_id] ?? 0) + Number(d.discount_try ?? 0);
+    return acc;
+  }, {});
 
   // Uniquelisans kaynaklı ürünler: müşteri gerekli bilgileri girmezse admin API'den satın alamaz
   const productSource = (order.product as { source?: string | null } | null)?.source ?? null;
@@ -369,6 +380,7 @@ function Payment() {
                 {(isCartOrder
                   ? orderItems.map((it) => ({
                       id: it.id,
+                      productId: it.product_id,
                       name: it.product_name_snapshot,
                       slug: it.product?.slug ?? null,
                       image: it.product?.image_url ?? null,
@@ -378,6 +390,7 @@ function Payment() {
                     }))
                   : [{
                       id: order.product!.slug,
+                      productId: (order as { product_id?: string | null }).product_id ?? null,
                       name: order.product!.name,
                       slug: (order.product as { slug?: string | null }).slug ?? null,
                       image: (order.product as { image_url?: string | null }).image_url ?? null,
@@ -385,7 +398,11 @@ function Payment() {
                       unit: Number(order.price_try),
                       qty: 1,
                     }]
-                ).map((it) => (
+                ).map((it) => {
+                  const itemOriginal = it.unit * it.qty;
+                  const itemDiscount = it.productId ? (discountsByProduct[it.productId] ?? 0) : 0;
+                  const itemFinal = Math.max(0, itemOriginal - itemDiscount);
+                  return (
                   <div key={it.id} className="flex items-center gap-3 py-3">
                     <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md border border-primary/30 bg-background/40">
                       {it.image ? (
@@ -401,13 +418,20 @@ function Payment() {
                       <div className="mt-0.5 flex items-center gap-2 font-mono text-[11px] text-muted-foreground">
                         {it.duration && <span className="rounded border border-primary/20 bg-primary/5 px-1.5 py-0.5 text-primary/80">{it.duration}</span>}
                         <span>₺{it.unit.toLocaleString("tr-TR")} × {it.qty}</span>
+                        {itemDiscount > 0 && (
+                          <span className="rounded border border-warn/40 bg-warn/10 px-1.5 py-0.5 text-warn">−₺{itemDiscount.toLocaleString("tr-TR")}</span>
+                        )}
                       </div>
                     </div>
-                    <div className="ml-2 shrink-0 font-mono text-sm neon-text">
-                      ₺{(it.unit * it.qty).toLocaleString("tr-TR")}
+                    <div className="ml-2 shrink-0 text-right font-mono text-sm">
+                      {itemDiscount > 0 && (
+                        <div className="text-[11px] text-muted-foreground line-through">₺{itemOriginal.toLocaleString("tr-TR")}</div>
+                      )}
+                      <div className="neon-text">₺{itemFinal.toLocaleString("tr-TR")}</div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
               {(() => {
                 const discs = Array.isArray(order.discount) ? order.discount : (order.discount ? [order.discount] : []);
