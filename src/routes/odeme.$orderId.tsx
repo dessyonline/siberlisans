@@ -50,9 +50,9 @@ export const Route = createFileRoute("/odeme/$orderId")({
 type StepKey = "init" | "payment" | "delivery";
 
 const STEPS: { key: StepKey; label: string; sub: string }[] = [
-  { key: "init", label: "sipariş", sub: "referans oluşturuldu" },
-  { key: "payment", label: "ödeme", sub: "bakiye / shopier" },
-  { key: "delivery", label: "teslimat", sub: "ürün / key" },
+  { key: "init", label: "yöntem seç", sub: "bakiye / shopier" },
+  { key: "payment", label: "onayla", sub: "ödemeyi tamamla" },
+  { key: "delivery", label: "teslim", sub: "lisansını al" },
 ];
 
 
@@ -330,31 +330,42 @@ function Payment() {
 
       {/* Stepper rail */}
       <div className="glass-card rounded-b-lg rounded-t-none p-3 sm:p-5 scan-line">
-        <ol className="grid grid-cols-3 gap-1.5 sm:gap-2">
+        <ol className="flex items-stretch gap-1.5 sm:gap-3">
           {STEPS.map((s, i) => {
             const done = i < stepIndex || order.status === "approved";
             const active = i === stepIndex && order.status !== "approved";
             return (
-              <li key={s.key} className="relative min-w-0">
+              <li key={s.key} className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-1">
                 <div
-                  className={`rounded-md border p-2 sm:p-3 font-mono transition-all ${
+                  className={`relative flex-1 min-w-0 rounded-md border p-2 sm:p-3 font-mono transition-all ${
                     active
-                      ? "border-primary/60 bg-primary/5 neon-glow"
+                      ? "border-primary/70 bg-primary/10 neon-glow"
                       : done
-                      ? "border-primary/30 bg-primary/[0.02]"
+                      ? "border-primary/40 bg-primary/5"
                       : "border-border/40 opacity-60"
                   }`}
                 >
                   <div className="flex items-center gap-1 sm:gap-2 text-[9px] sm:text-[10px] tracking-widest text-muted-foreground">
-                    <span>[{String(i + 1).padStart(2, "0")}/03]</span>
+                    <span className={active ? "text-primary" : ""}>[{String(i + 1).padStart(2, "0")}/03]</span>
                     {done && <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />}
-                    {active && <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse shrink-0" />}
+                    {active && (
+                      <span className="ml-auto flex items-center gap-1 text-primary text-[9px] uppercase">
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                        <span className="hidden sm:inline">canlı</span>
+                      </span>
+                    )}
                   </div>
-                  <div className={`mt-1 text-[11px] sm:text-sm break-all ${active ? "neon-text" : done ? "text-primary" : ""}`}>
+                  <div className={`mt-1 text-[11px] sm:text-sm break-words ${active ? "neon-text font-semibold" : done ? "text-primary" : ""}`}>
                     ./{s.label}
                   </div>
                   <div className="text-[9px] sm:text-[10px] text-muted-foreground mt-0.5 break-words">{s.sub}</div>
                 </div>
+                {i < STEPS.length - 1 && (
+                  <ArrowRight
+                    className={`h-3 w-3 sm:h-4 sm:w-4 shrink-0 ${done ? "text-primary" : "text-border/60"}`}
+                    aria-hidden
+                  />
+                )}
               </li>
             );
           })}
@@ -1054,24 +1065,49 @@ function DeliveryBlock({
 }) {
   const [revealed, setRevealed] = useState(false);
 
+  const primaryValue = deliveryType === "link_token" && activationToken
+    ? `${typeof window !== "undefined" ? window.location.origin : ""}/aktivasyon/${activationToken}`
+    : keyValue;
+
+  const handleCopyAll = async () => {
+    try {
+      await navigator.clipboard.writeText(primaryValue);
+      toast.success("Teslimat panoya kopyalandı");
+    } catch {
+      toast.error("Kopyalanamadı — manuel seçip kopyala");
+    }
+  };
+
   return (
-    <section className="glass-card rounded-lg p-6 scan-line neon-glow">
-      <div className="flex items-center justify-between">
-        <div>
+    <section className="glass-card rounded-lg p-5 sm:p-6 scan-line neon-glow border-primary/50">
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
           <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
-            [04/04] · delivery_channel
+            [04/04] · delivery_channel · unlocked
           </div>
-          <h2 className="mt-1 font-mono text-xl neon-text">Lisansın Hazır</h2>
-          <p className="mt-1 font-mono text-xs text-muted-foreground">{product}</p>
+          <h2 className="mt-1 font-mono text-xl sm:text-2xl neon-text truncate">Lisansın Hazır ✓</h2>
+          <p className="mt-1 font-mono text-xs text-muted-foreground truncate">{product}</p>
         </div>
-        <CheckCircle2 className="h-8 w-8 text-primary" />
+        <CheckCircle2 className="h-8 w-8 sm:h-10 sm:w-10 text-primary shrink-0" />
       </div>
 
-      <div className="mt-5 rounded-md border border-primary/40 bg-black/30 p-4">
-        <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
-          $ ./decrypt --{deliveryType}
-        </div>
-        <div className="mt-3">
+      <div className="mt-5 rounded-md border-2 border-primary/50 bg-black/40 p-4 sm:p-5 relative overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 cyber-grid opacity-20" aria-hidden />
+        <div className="relative">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="font-mono text-[10px] tracking-widest text-muted-foreground">
+              $ ./decrypt --{deliveryType}
+            </div>
+            {revealed && (
+              <button
+                type="button"
+                onClick={handleCopyAll}
+                className="inline-flex items-center gap-1 rounded border border-primary/50 bg-primary/10 px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-primary hover:bg-primary/20 transition"
+              >
+                <Copy className="h-3 w-3" /> tümünü kopyala
+              </button>
+            )}
+          </div>
           {revealed ? (
             <DeliveryPayload
               deliveryType={deliveryType}
@@ -1079,7 +1115,7 @@ function DeliveryBlock({
               activationToken={activationToken}
             />
           ) : (
-            <div className="font-mono text-lg sm:text-xl text-primary tracking-widest">
+            <div className="font-mono text-xl sm:text-2xl text-primary tracking-widest">
               ████████-████████-████████
               <span className="terminal-caret" />
             </div>
@@ -1089,7 +1125,7 @@ function DeliveryBlock({
 
       <div className="mt-4 flex flex-wrap gap-2">
         {!revealed && (
-          <Button onClick={() => setRevealed(true)} className="font-mono neon-glow">
+          <Button onClick={() => setRevealed(true)} size="lg" className="font-mono neon-glow flex-1 sm:flex-none">
             <KeyRound className="mr-2 h-4 w-4" /> teslimatı aç
           </Button>
         )}
@@ -1442,6 +1478,7 @@ function PromoBlock({
   const removeFn = useServerFn(removePromoCode);
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   const isPointsCode = (appliedCode ?? "").startsWith("PUAN-");
   if (isPointsCode) return null;
   const hasDiscount = discountTry > 0 && !!appliedCode;
@@ -1451,13 +1488,15 @@ function PromoBlock({
   const apply = async () => {
     if (!code.trim()) return;
     setBusy(true);
+    setErr(null);
     try {
       const res = await applyFn({ data: { orderId, code: code.trim() } });
       toast.success(`Kod uygulandı: −₺${res.discountTry.toLocaleString("tr-TR")}`);
       setCode("");
       qc.invalidateQueries({ queryKey: ["order", orderId] });
     } catch (e) {
-      toast.error((e as Error).message);
+      const msg = (e as Error).message || "Kod uygulanamadı";
+      setErr(msg);
     } finally {
       setBusy(false);
     }
@@ -1499,20 +1538,29 @@ function PromoBlock({
           </Button>
         </div>
       ) : (
-        <div className="mt-3 flex gap-2">
-          <Input
-            value={code}
-            onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="KODUNUZ"
-            className="font-mono uppercase"
-            onKeyDown={(e) => {
-              if (e.key === "Enter") apply();
-            }}
-          />
-          <Button onClick={apply} disabled={busy || !code.trim()}>
-            uygula
-          </Button>
-        </div>
+        <>
+          <div className="mt-3 flex gap-2">
+            <Input
+              value={code}
+              onChange={(e) => { setCode(e.target.value.toUpperCase()); if (err) setErr(null); }}
+              placeholder="KODUNUZ"
+              className={`font-mono uppercase ${err ? "border-destructive/60 focus-visible:ring-destructive/40" : ""}`}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") apply();
+              }}
+              aria-invalid={!!err}
+            />
+            <Button onClick={apply} disabled={busy || !code.trim()}>
+              {busy ? "…" : err ? "tekrar dene" : "uygula"}
+            </Button>
+          </div>
+          {err && (
+            <div className="mt-2 flex items-start gap-1.5 rounded-md border border-destructive/40 bg-destructive/5 p-2 font-mono text-[11px] text-destructive">
+              <XCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+              <span className="leading-relaxed">{err}</span>
+            </div>
+          )}
+        </>
       )}
     </section>
   );
