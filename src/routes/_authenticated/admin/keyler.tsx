@@ -267,9 +267,34 @@ function KeysAdmin() {
                 </select>
               </div>
 
+              <div>
+                <Label className="font-mono text-[11px] text-muted-foreground">teslim tipi</Label>
+                <select
+                  value={currentDT}
+                  disabled={!productId}
+                  onChange={async (e) => {
+                    const newDT = e.target.value as DeliveryType;
+                    const { error } = await supabase
+                      .from("products")
+                      .update({ delivery_type: newDT })
+                      .eq("id", productId);
+                    if (error) return toast.error(error.message);
+                    toast.success(`teslim tipi: ${newDT}`);
+                    qc.invalidateQueries({ queryKey: ["products", "for-keys"] });
+                    qc.invalidateQueries({ queryKey: ["admin-pool"] });
+                  }}
+                  className="mt-1 w-full rounded border border-border bg-input px-3 py-2 font-mono text-sm focus:border-primary/60 focus:outline-none disabled:opacity-50"
+                >
+                  <option value="key">🔑 anahtar / lisans kodu</option>
+                  <option value="account">📧 mail : şifre (hesap)</option>
+                  <option value="link">🔗 aktivasyon linki (URL)</option>
+                  <option value="link_token">🎟️ aktivasyon kodu / token</option>
+                </select>
+              </div>
+
               <div className="rounded border border-primary/20 bg-primary/5 p-3 font-mono text-[11px] leading-relaxed">
                 <div className="text-primary flex items-center gap-1.5 mb-1">
-                  <Zap className="h-3 w-3" /> teslim tipi: {currentDT}
+                  <Zap className="h-3 w-3" /> aktif tip: {currentDT}
                 </div>
                 <div className="text-muted-foreground">{hint.help}</div>
               </div>
