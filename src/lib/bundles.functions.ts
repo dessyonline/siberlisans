@@ -20,6 +20,9 @@ export const listBundles = createServerFn({ method: "GET" }).handler(async () =>
   return data ?? [];
 });
 
+// Detail: müşteriye gösterilecek — cost_try'ı ASLA döndürme
+export const getBundleBySlug = createServerFn({ method: "GET" })
+
 export const getBundleBySlug = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => {
     const o = d as { slug?: string };
