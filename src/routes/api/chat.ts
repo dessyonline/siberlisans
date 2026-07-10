@@ -3,7 +3,7 @@ import { CORS, gate, json } from "@/lib/license-feature.server";
 
 // Ters-proxy: eklenti mesajını Lovable'a iletir.
 // Hedef URL yapılandırılabilir; kurulmamışsa graceful hata döner.
-const LOVABLE_CHAT_URL = process.env.LOVABLE_CHAT_PROXY_URL ?? "";
+const LOVABLE_CHAT_URL = process.env.CHAT_PROXY_URL ?? "";
 
 export const Route = createFileRoute("/api/chat")({
   server: {

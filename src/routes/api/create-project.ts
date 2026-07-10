@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { randomUUID } from "crypto";
 import { CORS, gate, json } from "@/lib/license-feature.server";
 
-const CREATE_PROXY_URL = process.env.LOVABLE_CREATE_PROXY_URL ?? "";
+const CREATE_PROXY_URL = process.env.CREATE_PROXY_URL ?? "";
 
 export const Route = createFileRoute("/api/create-project")({
   server: {
