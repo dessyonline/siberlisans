@@ -93,25 +93,26 @@ export const Route = createFileRoute("/api/chat")({
           return chatJson({ ok: false, error: "Çok fazla istek. Lütfen bekleyin." }, 429, requestId);
         }
 
-        const chatProxyUrl = (process.env.CHAT_PROXY_URL ?? "")
-          .replace(/\/$/, "")
-          .replace(/\/api$/, "");
+        const chatBase = (process.env.CHAT_PROXY_URL ?? "")
+          .replace(/\/+$/, "")
+          .replace(/\/(api\/)?projects$/i, "")
+          .replace(/\/api$/i, "");
         const projectId = (body.projectId as string | undefined)?.toString().trim() ?? "";
 
         // Proxy yapılandırılmamışsa veya projectId yoksa lisans-doğrulandı yanıtı
-        if (!chatProxyUrl || !projectId) {
+        if (!chatBase || !projectId) {
           console.log(
-            `[api/chat][${requestId}] no upstream call: ${chatProxyUrl ? "missing projectId" : "CHAT_PROXY_URL not configured"}`,
+            `[api/chat][${requestId}] no upstream call: ${chatBase ? "missing projectId" : "CHAT_PROXY_URL not configured"}`,
           );
           return chatJson({
             ok: true,
-            response: "Lisans doğrulandı. " + (chatProxyUrl ? "projectId gerekli." : "Chat proxy yapılandırılmadı."),
+            response: "Lisans doğrulandı. " + (chatBase ? "projectId gerekli." : "Chat proxy yapılandırılmadı."),
             data: null,
           }, 200, requestId);
         }
 
         const token = (body.token as string | undefined) ?? "";
-        const target = `${chatProxyUrl}/${projectId}/chat`;
+        const target = `${chatBase}/projects/${projectId}/chat`;
         const targetPath = safePath(target);
         const upstreamBody = cleanProxyBody(body);
         try {

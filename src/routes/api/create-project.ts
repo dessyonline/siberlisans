@@ -14,14 +14,18 @@ export const Route = createFileRoute("/api/create-project")({
         if ("response" in g) return g.response;
         const { body } = g;
 
-        const createProxyUrl = (process.env.CREATE_PROXY_URL ?? "").replace(/\/$/, "").replace(/\/api$/, "");
-        if (!createProxyUrl) {
+        const createBase = (process.env.CREATE_PROXY_URL ?? "")
+          .replace(/\/+$/, "")
+          .replace(/\/(api\/)?projects$/i, "")
+          .replace(/\/api$/i, "");
+        if (!createBase) {
           return json({ ok: true, projectId: randomUUID() });
         }
         const token = (body.token as string | undefined) ?? "";
+        const target = `${createBase}/projects`;
         const upstreamBody = cleanProxyBody(body);
         try {
-          const upstream = await fetch(createProxyUrl, {
+          const upstream = await fetch(target, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
