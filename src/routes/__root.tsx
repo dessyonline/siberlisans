@@ -22,7 +22,7 @@ import {
   Newspaper,
   User as UserIcon,
   LogOut,
-} from "lucide-react";
+  X,
 import { useState } from "react";
 import {
   Sheet,
