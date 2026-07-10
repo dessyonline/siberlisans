@@ -1,9 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CORS, gate, json } from "@/lib/license-feature.server";
+import { CORS, cleanProxyBody, gate, json } from "@/lib/license-feature.server";
 
 // Ters-proxy: eklenti mesajını Lovable'a iletir.
-// Hedef URL yapılandırılabilir; kurulmamışsa graceful hata döner.
-const LOVABLE_CHAT_URL = process.env.CHAT_PROXY_URL ?? "";
 
 export const Route = createFileRoute("/api/chat")({
   server: {
@@ -17,7 +15,8 @@ export const Route = createFileRoute("/api/chat")({
         if ("response" in g) return g.response;
         const { body } = g;
 
-        if (!LOVABLE_CHAT_URL) {
+        const chatProxyUrl = process.env.CHAT_PROXY_URL ?? "";
+        if (!chatProxyUrl) {
           return json({
             ok: true,
             response: "Lisans doğrulandı. Chat proxy yapılandırılmadı.",
@@ -28,7 +27,8 @@ export const Route = createFileRoute("/api/chat")({
         const token = (body.token as string | undefined) ?? "";
         const projectId = (body.projectId as string | undefined) ?? "";
         if (!projectId) return json({ ok: false, error: "projectId gerekli." });
-        const target = `${LOVABLE_CHAT_URL.replace(/\/$/, "")}/${projectId}/chat`;
+        const target = `${chatProxyUrl.replace(/\/$/, "")}/${projectId}/chat`;
+        const upstreamBody = cleanProxyBody(body);
         try {
           const upstream = await fetch(target, {
             method: "POST",
@@ -36,13 +36,7 @@ export const Route = createFileRoute("/api/chat")({
               "Content-Type": "application/json",
               ...(token ? { Authorization: "Bearer " + token } : {}),
             },
-            body: JSON.stringify({
-              message: body.message ?? "",
-              projectId: body.projectId,
-              files: body.files ?? [],
-              optimisticImageUrls: body.optimisticImageUrls ?? [],
-              clientGitSha: body.clientGitSha,
-            }),
+            body: JSON.stringify(upstreamBody),
           });
           const contentType = upstream.headers.get("content-type") ?? "";
           const raw = contentType.includes("application/json")

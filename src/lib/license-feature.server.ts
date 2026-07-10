@@ -10,6 +10,31 @@ export type FeatureBody = Record<string, unknown> & {
   license_key?: string;
 };
 
+const INTERNAL_PROXY_FIELDS = new Set([
+  "licenseKey",
+  "license_key",
+  "email",
+  "token",
+  "projectId",
+]);
+
+export async function readJsonBody(request: Request): Promise<FeatureBody> {
+  const raw = await request.text();
+  if (!raw.trim()) return {};
+  const parsed = JSON.parse(raw) as unknown;
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    throw new Error("JSON object expected");
+  }
+  return parsed as FeatureBody;
+}
+
+export function cleanProxyBody(body: FeatureBody, extraInternalFields: string[] = []): Record<string, unknown> {
+  const blocked = new Set([...INTERNAL_PROXY_FIELDS, ...extraInternalFields]);
+  return Object.fromEntries(
+    Object.entries(body).filter(([, value]) => value !== undefined).filter(([key]) => !blocked.has(key)),
+  );
+}
+
 export function extractLicenseKey(request: Request, body: FeatureBody): string {
   const header = request.headers.get("x-license-key") ?? "";
   const raw = header || (body?.licenseKey ?? body?.license_key ?? "");
@@ -66,7 +91,7 @@ export async function gate(
 > {
   let body: FeatureBody;
   try {
-    body = (await request.json()) as FeatureBody;
+    body = await readJsonBody(request);
   } catch {
     return { response: json({ ok: false, error: "Geçersiz JSON." }, 400) };
   }

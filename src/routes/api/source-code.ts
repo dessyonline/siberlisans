@@ -1,9 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CORS, gate, json } from "@/lib/license-feature.server";
+import { CORS, cleanProxyBody, gate, json } from "@/lib/license-feature.server";
 
 const CORS_ALL = { ...CORS, "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
-const SOURCE_PROXY_URL = process.env.SOURCE_PROXY_URL ?? "";
-
 export const Route = createFileRoute("/api/source-code")({
   server: {
     handlers: {
@@ -17,20 +15,19 @@ export const Route = createFileRoute("/api/source-code")({
         if ("response" in g) return g.response;
         const { body } = g;
 
-        if (!SOURCE_PROXY_URL) {
+        const sourceProxyUrl = process.env.SOURCE_PROXY_URL ?? "";
+        if (!sourceProxyUrl) {
           return json({ ok: true, files: [] });
         }
         const projectId = (body.projectId as string | undefined) ?? "";
         if (!projectId) return json({ ok: false, error: "projectId gerekli." });
-        const target = `${SOURCE_PROXY_URL.replace(/\/$/, "")}/${projectId}/source-code`;
+        const target = `${sourceProxyUrl.replace(/\/$/, "")}/${projectId}/source-code`;
+        const upstreamBody = cleanProxyBody(body);
         try {
           const upstream = await fetch(target, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              projectId: body.projectId,
-              email: body.email,
-            }),
+            body: JSON.stringify(upstreamBody),
           });
           const data = (await upstream.json().catch(() => null)) as
             | { files?: Array<{ path: string; content: string }> }
