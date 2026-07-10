@@ -1081,6 +1081,7 @@ export type Database = {
           manual_fulfillment: boolean
           name: string
           orders_count: number
+          price_locked: boolean
           price_try: number
           required_fields: Json | null
           requires_email: boolean
@@ -1114,6 +1115,7 @@ export type Database = {
           manual_fulfillment?: boolean
           name: string
           orders_count?: number
+          price_locked?: boolean
           price_try: number
           required_fields?: Json | null
           requires_email?: boolean
@@ -1147,6 +1149,7 @@ export type Database = {
           manual_fulfillment?: boolean
           name?: string
           orders_count?: number
+          price_locked?: boolean
           price_try?: number
           required_fields?: Json | null
           requires_email?: boolean

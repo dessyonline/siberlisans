@@ -10,11 +10,12 @@ import {
   ulImportedProducts,
   ulSyncStock,
   ulSyncCatalog,
+  ulUpdateImported,
   DEFAULT_MARKUP_PERCENT,
 } from "@/lib/uniquelisans.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Wallet, Loader2, Download, RefreshCw, Package, CheckCircle2, Zap } from "lucide-react";
+import { Wallet, Loader2, Download, RefreshCw, Package, CheckCircle2, Zap, Lock, Unlock, Check, X, Pencil } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/uniquelisans")({
   ssr: false,
@@ -290,43 +291,179 @@ function UniquelisansPage() {
         </div>
         {imported && imported.length > 0 ? (
           <div className="space-y-1.5">
-            {imported.map((p) => {
-              const stock = (p as { stock_hint?: number | null }).stock_hint;
-              const unlimited = (p as { unlimited_stock?: boolean }).unlimited_stock;
-              const stockLabel = unlimited
-                ? "otomatik"
-                : typeof stock === "number"
-                  ? stock > 0 ? `stok: ${stock}` : "stok yok"
-                  : "manuel";
-              const stockCls = unlimited
-                ? "text-cyan bg-cyan/10 border-cyan/30"
-                : typeof stock === "number" && stock <= 0
-                  ? "text-destructive bg-destructive/10 border-destructive/30"
-                  : "text-primary bg-primary/10 border-primary/30";
-              return (
-                <div key={p.id} className="glass-card rounded-md p-2.5 flex flex-wrap items-center gap-3 text-sm">
-                  <Package className="h-4 w-4 text-primary shrink-0" />
-                  <div className="min-w-0 flex-1 truncate">{p.name}</div>
-                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${stockCls}`}>{stockLabel}</span>
-                  <div className="font-mono text-xs text-muted-foreground">alış: {fmt(Number(p.external_price ?? 0))} ₺</div>
-                  <div className="font-mono text-xs">satış: <b>{fmt(Number(p.price_try))} ₺</b></div>
-                  <div className="font-mono text-xs text-primary">
-                    kar: <b>{fmt(Number(p.price_try) - Number(p.external_price ?? 0))} ₺</b>
-                    {Number(p.external_price ?? 0) > 0 && (
-                      <span className="text-muted-foreground"> (%{fmt(((Number(p.price_try) - Number(p.external_price)) / Number(p.external_price)) * 100)})</span>
-                    )}
-                  </div>
-                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${p.active ? "text-primary bg-primary/10 border-primary/30" : "text-muted-foreground border-muted-foreground/30"}`}>
-                    {p.active ? "aktif" : "pasif"}
-                  </span>
-                </div>
-              );
-            })}
+            {imported.map((p) => (
+              <ImportedRow
+                key={p.id}
+                p={p as ImportedProduct}
+                onChanged={() => qc.invalidateQueries({ queryKey: ["ul-imported"] })}
+              />
+            ))}
           </div>
         ) : (
           <div className="text-sm text-muted-foreground font-mono">henüz içe aktarılan ürün yok</div>
         )}
       </div>
+    </div>
+  );
+}
+
+type ImportedProduct = {
+  id: string;
+  name: string;
+  slug: string;
+  price_try: number;
+  external_price: number | null;
+  active: boolean;
+  stock_hint?: number | null;
+  unlimited_stock?: boolean;
+  supplier_out_of_stock?: boolean | null;
+  price_locked?: boolean | null;
+};
+
+function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => void }) {
+  const updateFn = useServerFn(ulUpdateImported);
+  const [busy, setBusy] = useState<null | "active" | "lock" | "price" | "markup">(null);
+  const [mode, setMode] = useState<"idle" | "price" | "markup">("idle");
+  const cost = Number(p.external_price ?? 0);
+  const currentMarkup = cost > 0 ? Math.round(((Number(p.price_try) - cost) / cost) * 100) : 0;
+  const [priceInput, setPriceInput] = useState<string>(String(Math.round(Number(p.price_try))));
+  const [markupInput, setMarkupInput] = useState<string>(String(currentMarkup));
+
+  const stock = p.stock_hint;
+  const unlimited = p.unlimited_stock;
+  const outOfStock = !!p.supplier_out_of_stock;
+  const stockLabel = unlimited
+    ? "otomatik"
+    : typeof stock === "number"
+      ? stock > 0 ? `stok: ${stock}` : "stok yok"
+      : "manuel";
+  const stockCls = unlimited
+    ? "text-cyan bg-cyan/10 border-cyan/30"
+    : typeof stock === "number" && stock <= 0
+      ? "text-destructive bg-destructive/10 border-destructive/30"
+      : "text-primary bg-primary/10 border-primary/30";
+
+  async function run(kind: "active" | "lock" | "price" | "markup", payload: { id: string; active?: boolean; price_try?: number; markup_percent?: number; price_locked?: boolean }) {
+    setBusy(kind);
+    try {
+      await updateFn({ data: payload });
+      toast.success("güncellendi");
+      setMode("idle");
+      onChanged();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  return (
+    <div className="glass-card rounded-md p-2.5 flex flex-wrap items-center gap-2 text-sm">
+      <Package className="h-4 w-4 text-primary shrink-0" />
+      <div className="min-w-0 flex-1 truncate">{p.name}</div>
+      <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${stockCls}`}>{stockLabel}</span>
+      {outOfStock && (
+        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded border text-destructive bg-destructive/10 border-destructive/30">
+          tedarikçide yok
+        </span>
+      )}
+      <div className="font-mono text-xs text-muted-foreground">alış: {fmt(cost)} ₺</div>
+
+      {mode === "idle" && (
+        <>
+          <div className="font-mono text-xs">satış: <b>{fmt(Number(p.price_try))} ₺</b></div>
+          <div className="font-mono text-xs text-primary">
+            kar: <b>{fmt(Number(p.price_try) - cost)} ₺</b>
+            {cost > 0 && (
+              <span className="text-muted-foreground"> (%{fmt(((Number(p.price_try) - cost) / cost) * 100)})</span>
+            )}
+          </div>
+          <button
+            type="button"
+            title="satış fiyatını düzenle"
+            onClick={() => { setPriceInput(String(Math.round(Number(p.price_try)))); setMode("price"); }}
+            className="p-1 rounded border border-primary/30 hover:bg-primary/10"
+          >
+            <Pencil className="h-3 w-3" />
+          </button>
+          <button
+            type="button"
+            title="kar % düzenle"
+            onClick={() => { setMarkupInput(String(currentMarkup)); setMode("markup"); }}
+            className="px-1.5 py-0.5 rounded border border-primary/30 hover:bg-primary/10 font-mono text-[11px]"
+          >
+            %
+          </button>
+        </>
+      )}
+
+      {mode === "price" && (
+        <div className="flex items-center gap-1">
+          <span className="font-mono text-xs text-muted-foreground">satış ₺</span>
+          <input
+            type="number"
+            min={1}
+            value={priceInput}
+            onChange={(e) => setPriceInput(e.target.value)}
+            className="w-24 rounded border border-primary/30 bg-background/40 px-1.5 py-1 font-mono text-xs"
+          />
+          <Button size="sm" variant="outline" disabled={busy === "price"} onClick={() => {
+            const n = Number(priceInput);
+            if (!Number.isFinite(n) || n <= 0) { toast.error("Geçersiz fiyat"); return; }
+            run("price", { id: p.id, price_try: n });
+          }}>
+            {busy === "price" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setMode("idle")}>
+            <X className="h-3 w-3" />
+          </Button>
+        </div>
+      )}
+
+      {mode === "markup" && (
+        <div className="flex items-center gap-1">
+          <span className="font-mono text-xs text-muted-foreground">kar %</span>
+          <input
+            type="number"
+            min={0}
+            max={500}
+            value={markupInput}
+            onChange={(e) => setMarkupInput(e.target.value)}
+            className="w-16 rounded border border-primary/30 bg-background/40 px-1.5 py-1 font-mono text-xs"
+          />
+          <Button size="sm" variant="outline" disabled={busy === "markup"} onClick={() => {
+            const n = Number(markupInput);
+            if (!Number.isFinite(n) || n < 0) { toast.error("Geçersiz %"); return; }
+            run("markup", { id: p.id, markup_percent: n });
+          }}>
+            {busy === "markup" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setMode("idle")}>
+            <X className="h-3 w-3" />
+          </Button>
+        </div>
+      )}
+
+      <button
+        type="button"
+        title={p.price_locked ? "fiyat kilidi açık — senkronda değişmez" : "senkron fiyatı yeniden yazabilir"}
+        disabled={busy === "lock"}
+        onClick={() => run("lock", { id: p.id, price_locked: !p.price_locked })}
+        className={`p-1 rounded border font-mono text-[10px] flex items-center gap-1 ${p.price_locked ? "text-primary border-primary/40 bg-primary/10" : "text-muted-foreground border-muted-foreground/30"}`}
+      >
+        {busy === "lock" ? <Loader2 className="h-3 w-3 animate-spin" /> : p.price_locked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
+        {p.price_locked ? "kilitli" : "kilitsiz"}
+      </button>
+
+      <button
+        type="button"
+        title={p.active ? "aktif — kapatmak için tıkla" : "pasif — açmak için tıkla"}
+        disabled={busy === "active"}
+        onClick={() => run("active", { id: p.id, active: !p.active })}
+        className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${p.active ? "text-primary bg-primary/10 border-primary/30" : "text-muted-foreground border-muted-foreground/30"}`}
+      >
+        {busy === "active" ? <Loader2 className="h-3 w-3 animate-spin inline" /> : p.active ? "aktif" : "pasif"}
+      </button>
     </div>
   );
 }
