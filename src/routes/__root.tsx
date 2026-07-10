@@ -228,30 +228,9 @@ function SiteHeader() {
 
         {/* Right side actions */}
         <div className="flex items-center gap-1 sm:gap-2">
-          {/* Mobile icon-only quick nav */}
-          <nav className="flex md:hidden items-center gap-1">
-            <Link
-              to="/urunler"
-              aria-label="Ürünler"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10"
-            >
-              <Package className="h-4 w-4" />
-            </Link>
-            <Link
-              to="/nasil-calisir"
-              aria-label="Nasıl çalışır"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10"
-            >
-              <BookOpen className="h-4 w-4" />
-            </Link>
-            <Link
-              to="/sss"
-              aria-label="SSS"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10"
-            >
-              <HelpCircle className="h-4 w-4" />
-            </Link>
-          </nav>
+          {/* Mobile hamburger menu */}
+          <MobileMenu user={user} isAdmin={isAdmin} signOut={signOut} />
+
 
           <CartButton compact />
           <NotificationBell />
