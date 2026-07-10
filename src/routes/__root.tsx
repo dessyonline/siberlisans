@@ -197,7 +197,7 @@ function SiteHeader() {
   const { user, isAdmin, signOut } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-primary/20 bg-background/70 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-primary/20 bg-background/95">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 sm:px-4">
         <Link to="/" className="flex items-center gap-2 font-mono shrink-0">
           <Terminal className="h-5 w-5 text-primary" />
@@ -296,9 +296,9 @@ function HeaderUserBadge({ userId }: { userId: string }) {
 
 
 /**
- * Mobile menu — uses a native <details> element so the toggle works even
- * before (or without) React hydration. The <summary> sits above the backdrop
- * (z-[80]) so tapping it always toggles the panel open/closed natively.
+ * Mobile menu — native <details>/<summary> so open/close works even before
+ * (or without) React hydration. The header no longer creates a containing
+ * block (backdrop-blur removed), so the fixed backdrop + panel fill the viewport.
  */
 function MobileMenu({
   user,
@@ -322,24 +322,24 @@ function MobileMenu({
     <details id="mobile-menu-details" className="md:hidden">
       <summary
         aria-label="Menü"
-        className="relative z-[80] list-none inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none [&::-webkit-details-marker]:hidden"
+        className="relative z-[110] list-none inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none [&::-webkit-details-marker]:hidden"
       >
         <Menu className="h-5 w-5" />
       </summary>
 
-      {/* Backdrop — tap to close (JS) or tap summary again (native fallback) */}
+      {/* Backdrop — click to close */}
       <button
         type="button"
         aria-label="Kapat"
         onClick={closeMenu}
-        className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm"
+        className="fixed inset-0 z-[90] bg-black/70"
       />
 
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Ana menü"
-        className="fixed right-0 top-0 z-[70] h-full w-[280px] sm:w-[320px] bg-background/95 backdrop-blur-xl border-l border-primary/30 shadow-2xl flex flex-col"
+        className="fixed right-0 top-0 z-[100] h-screen w-[280px] sm:w-[320px] bg-background border-l border-primary/30 shadow-2xl flex flex-col"
       >
         <div className="flex items-center justify-between border-b border-primary/20 px-4 py-3">
           <div className="font-mono text-sm">
