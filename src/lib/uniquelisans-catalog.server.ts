@@ -55,18 +55,18 @@ export async function runUniquelisansCatalogSync(
   }>;
 
   const { data: existingRows } = await supabase.from("products")
-    .select("id, external_id, active, image_url, price_try, external_price, stock_hint, supplier_out_of_stock")
+    .select("id, external_id, active, image_url, price_try, external_price, stock_hint, supplier_out_of_stock, price_locked")
     .eq("source", "uniquelisans");
 
   const existing = new Map<string, {
     id: string; active: boolean; image_url: string | null;
     price_try: number; external_price: number | null; stock_hint: number | null;
-    supplier_out_of_stock: boolean | null;
+    supplier_out_of_stock: boolean | null; price_locked: boolean | null;
   }>();
   for (const r of (existingRows ?? []) as Array<{
     id: string; external_id: string | null; active: boolean; image_url: string | null;
     price_try: number; external_price: number | null; stock_hint: number | null;
-    supplier_out_of_stock: boolean | null;
+    supplier_out_of_stock: boolean | null; price_locked: boolean | null;
   }>) {
     if (r.external_id) existing.set(String(r.external_id), r);
   }
