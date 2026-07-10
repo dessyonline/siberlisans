@@ -34,9 +34,12 @@ import { Route as ApiValidateRouteImport } from './routes/api/validate'
 import { Route as ApiUnlockRouteImport } from './routes/api/unlock'
 import { Route as ApiTamperingReportRouteImport } from './routes/api/tampering-report'
 import { Route as ApiSourceCodeRouteImport } from './routes/api/source-code'
+import { Route as ApiSessionRouteImport } from './routes/api/session'
 import { Route as ApiRevokeRouteImport } from './routes/api/revoke'
 import { Route as ApiRemoveWatermarkRouteImport } from './routes/api/remove-watermark'
 import { Route as ApiNotificationsRouteImport } from './routes/api/notifications'
+import { Route as ApiCreateProjectRouteImport } from './routes/api/create-project'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiApprovePlanRouteImport } from './routes/api/approve-plan'
 import { Route as ApiActivateRouteImport } from './routes/api/activate'
 import { Route as AktivasyonTokenRouteImport } from './routes/aktivasyon.$token'
@@ -208,6 +211,11 @@ const ApiSourceCodeRoute = ApiSourceCodeRouteImport.update({
   path: '/api/source-code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSessionRoute = ApiSessionRouteImport.update({
+  id: '/api/session',
+  path: '/api/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiRevokeRoute = ApiRevokeRouteImport.update({
   id: '/api/revoke',
   path: '/api/revoke',
@@ -221,6 +229,16 @@ const ApiRemoveWatermarkRoute = ApiRemoveWatermarkRouteImport.update({
 const ApiNotificationsRoute = ApiNotificationsRouteImport.update({
   id: '/api/notifications',
   path: '/api/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCreateProjectRoute = ApiCreateProjectRouteImport.update({
+  id: '/api/create-project',
+  path: '/api/create-project',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiApprovePlanRoute = ApiApprovePlanRouteImport.update({
@@ -509,9 +527,12 @@ export interface FileRoutesByFullPath {
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
   '/api/approve-plan': typeof ApiApprovePlanRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/create-project': typeof ApiCreateProjectRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
+  '/api/session': typeof ApiSessionRoute
   '/api/source-code': typeof ApiSourceCodeRoute
   '/api/tampering-report': typeof ApiTamperingReportRoute
   '/api/unlock': typeof ApiUnlockRoute
@@ -583,9 +604,12 @@ export interface FileRoutesByTo {
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
   '/api/approve-plan': typeof ApiApprovePlanRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/create-project': typeof ApiCreateProjectRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
+  '/api/session': typeof ApiSessionRoute
   '/api/source-code': typeof ApiSourceCodeRoute
   '/api/tampering-report': typeof ApiTamperingReportRoute
   '/api/unlock': typeof ApiUnlockRoute
@@ -660,9 +684,12 @@ export interface FileRoutesById {
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
   '/api/approve-plan': typeof ApiApprovePlanRoute
+  '/api/chat': typeof ApiChatRoute
+  '/api/create-project': typeof ApiCreateProjectRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
+  '/api/session': typeof ApiSessionRoute
   '/api/source-code': typeof ApiSourceCodeRoute
   '/api/tampering-report': typeof ApiTamperingReportRoute
   '/api/unlock': typeof ApiUnlockRoute
@@ -737,9 +764,12 @@ export interface FileRouteTypes {
     | '/aktivasyon/$token'
     | '/api/activate'
     | '/api/approve-plan'
+    | '/api/chat'
+    | '/api/create-project'
     | '/api/notifications'
     | '/api/remove-watermark'
     | '/api/revoke'
+    | '/api/session'
     | '/api/source-code'
     | '/api/tampering-report'
     | '/api/unlock'
@@ -811,9 +841,12 @@ export interface FileRouteTypes {
     | '/aktivasyon/$token'
     | '/api/activate'
     | '/api/approve-plan'
+    | '/api/chat'
+    | '/api/create-project'
     | '/api/notifications'
     | '/api/remove-watermark'
     | '/api/revoke'
+    | '/api/session'
     | '/api/source-code'
     | '/api/tampering-report'
     | '/api/unlock'
@@ -887,9 +920,12 @@ export interface FileRouteTypes {
     | '/aktivasyon/$token'
     | '/api/activate'
     | '/api/approve-plan'
+    | '/api/chat'
+    | '/api/create-project'
     | '/api/notifications'
     | '/api/remove-watermark'
     | '/api/revoke'
+    | '/api/session'
     | '/api/source-code'
     | '/api/tampering-report'
     | '/api/unlock'
@@ -955,9 +991,12 @@ export interface RootRouteChildren {
   AktivasyonTokenRoute: typeof AktivasyonTokenRoute
   ApiActivateRoute: typeof ApiActivateRoute
   ApiApprovePlanRoute: typeof ApiApprovePlanRoute
+  ApiChatRoute: typeof ApiChatRoute
+  ApiCreateProjectRoute: typeof ApiCreateProjectRoute
   ApiNotificationsRoute: typeof ApiNotificationsRoute
   ApiRemoveWatermarkRoute: typeof ApiRemoveWatermarkRoute
   ApiRevokeRoute: typeof ApiRevokeRoute
+  ApiSessionRoute: typeof ApiSessionRoute
   ApiSourceCodeRoute: typeof ApiSourceCodeRoute
   ApiTamperingReportRoute: typeof ApiTamperingReportRoute
   ApiUnlockRoute: typeof ApiUnlockRoute
@@ -1158,6 +1197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSourceCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/session': {
+      id: '/api/session'
+      path: '/api/session'
+      fullPath: '/api/session'
+      preLoaderRoute: typeof ApiSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/revoke': {
       id: '/api/revoke'
       path: '/api/revoke'
@@ -1177,6 +1223,20 @@ declare module '@tanstack/react-router' {
       path: '/api/notifications'
       fullPath: '/api/notifications'
       preLoaderRoute: typeof ApiNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/create-project': {
+      id: '/api/create-project'
+      path: '/api/create-project'
+      fullPath: '/api/create-project'
+      preLoaderRoute: typeof ApiCreateProjectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/approve-plan': {
@@ -1610,9 +1670,12 @@ const rootRouteChildren: RootRouteChildren = {
   AktivasyonTokenRoute: AktivasyonTokenRoute,
   ApiActivateRoute: ApiActivateRoute,
   ApiApprovePlanRoute: ApiApprovePlanRoute,
+  ApiChatRoute: ApiChatRoute,
+  ApiCreateProjectRoute: ApiCreateProjectRoute,
   ApiNotificationsRoute: ApiNotificationsRoute,
   ApiRemoveWatermarkRoute: ApiRemoveWatermarkRoute,
   ApiRevokeRoute: ApiRevokeRoute,
+  ApiSessionRoute: ApiSessionRoute,
   ApiSourceCodeRoute: ApiSourceCodeRoute,
   ApiTamperingReportRoute: ApiTamperingReportRoute,
   ApiUnlockRoute: ApiUnlockRoute,
