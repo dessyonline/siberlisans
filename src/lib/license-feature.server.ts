@@ -17,27 +17,31 @@ export function extractLicenseKey(request: Request, body: FeatureBody): string {
 }
 
 export async function verifyLicense(license_key: string): Promise<
-  | { ok: true; row: { id: string; status: string; expires_at: string | null; revoked: boolean } }
+  | { ok: true; row: { id: string; status: string; expires_at: string | null; revoked: boolean; activated_at: string | null } }
   | { ok: false; status: number; error: string }
 > {
   if (!license_key) return { ok: false, status: 400, error: "licenseKey gerekli." };
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data, error } = await supabaseAdmin
     .from("license_keys")
-    .select("id,status,expires_at,revoked")
+    .select("id,status,expires_at,revoked,activated_at")
     .eq("key_value", license_key)
     .maybeSingle();
   if (error) return { ok: false, status: 500, error: "Doğrulama hatası." };
   if (!data) return { ok: false, status: 403, error: "Geçersiz veya süresi dolmuş lisans." };
-  // license_keys.status: 'assigned' (satın alınmış) | 'available' | 'revoked'
-  if (data.revoked || data.status === "revoked" || data.status === "available") {
-    return { ok: false, status: 403, error: "Geçersiz veya süresi dolmuş lisans." };
+  // Aktif kabul: revoke edilmemiş + süresi dolmamış + aktive edilmiş (activated_at set)
+  if (data.revoked || data.status === "revoked") {
+    return { ok: false, status: 403, error: "Lisans iptal edilmiş." };
+  }
+  if (!data.activated_at) {
+    return { ok: false, status: 403, error: "Lisans henüz aktive edilmemiş." };
   }
   if (data.expires_at && new Date(data.expires_at).getTime() < Date.now()) {
-    return { ok: false, status: 403, error: "Geçersiz veya süresi dolmuş lisans." };
+    return { ok: false, status: 403, error: "Lisansın süresi dolmuş." };
   }
   return { ok: true, row: data as never };
 }
+
 
 // Simple per-key sliding window rate limit (in-memory, per worker instance).
 const buckets = new Map<string, number[]>();
