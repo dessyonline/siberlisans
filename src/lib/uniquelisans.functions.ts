@@ -289,7 +289,7 @@ export const ulUpdateImported = createServerFn({ method: "POST" })
     if (readErr) throw new Error(readErr.message);
     if (!row) throw new Error("Ürün bulunamadı.");
 
-    const patch: Record<string, unknown> = {};
+    const patch: { active?: boolean; price_try?: number; price_locked?: boolean } = {};
     if (typeof data.active === "boolean") patch.active = data.active;
 
     if (typeof data.price_try === "number") {
