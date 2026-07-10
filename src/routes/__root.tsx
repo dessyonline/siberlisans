@@ -297,9 +297,9 @@ function HeaderUserBadge({ userId }: { userId: string }) {
 
 
 /**
- * Mobile menu — the trigger stays in the header; the backdrop + panel are
- * portalled to <body> so they escape the header's `backdrop-blur` containing
- * block (which would otherwise clip `fixed` children to the header's height).
+ * Mobile menu — native <details>/<summary> so open/close works even before
+ * (or without) React hydration. The header no longer creates a containing
+ * block (backdrop-blur removed), so the fixed backdrop + panel fill the viewport.
  */
 function MobileMenu({
   user,
@@ -310,42 +310,37 @@ function MobileMenu({
   isAdmin: boolean;
   signOut: () => void;
 }) {
-  const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
-
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
-  const close = () => setOpen(false);
   const linkCls =
     "flex items-center gap-3 rounded-md px-3 py-3 font-mono text-sm text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 active:bg-primary/20";
 
-  const panel = open ? (
-    <div className="md:hidden fixed inset-0 z-[100]">
+  const closeMenu = () => {
+    if (typeof document === "undefined") return;
+    const el = document.getElementById("mobile-menu-details") as HTMLDetailsElement | null;
+    if (el) el.open = false;
+  };
+
+  return (
+    <details id="mobile-menu-details" className="md:hidden">
+      <summary
+        aria-label="Menü"
+        className="relative z-[110] list-none inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none [&::-webkit-details-marker]:hidden"
+      >
+        <Menu className="h-5 w-5" />
+      </summary>
+
+      {/* Backdrop — click to close */}
       <button
         type="button"
         aria-label="Kapat"
-        onClick={close}
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        onClick={closeMenu}
+        className="fixed inset-0 z-[90] bg-black/70"
       />
+
       <div
         role="dialog"
         aria-modal="true"
         aria-label="Ana menü"
-        className="absolute right-0 top-0 h-full w-[280px] sm:w-[320px] bg-background/95 backdrop-blur-xl border-l border-primary/30 shadow-2xl flex flex-col"
+        className="fixed right-0 top-0 z-[100] h-screen w-[280px] sm:w-[320px] bg-background border-l border-primary/30 shadow-2xl flex flex-col"
       >
         <div className="flex items-center justify-between border-b border-primary/20 px-4 py-3">
           <div className="font-mono text-sm">
@@ -356,55 +351,40 @@ function MobileMenu({
           <button
             type="button"
             aria-label="Kapat"
-            onClick={close}
+            onClick={closeMenu}
             className="rounded-md p-1 text-muted-foreground hover:text-primary hover:bg-primary/10"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
         <nav className="flex flex-col gap-1 p-3 overflow-y-auto">
-          <Link to="/" onClick={close} className={linkCls}><Home className="h-4 w-4" />anasayfa</Link>
-          <Link to="/urunler" onClick={close} className={linkCls}><Package className="h-4 w-4" />ürünler</Link>
-          <Link to="/paketler" onClick={close} className={linkCls}><Boxes className="h-4 w-4" />paketler</Link>
-          <Link to="/blog" onClick={close} className={linkCls}><Newspaper className="h-4 w-4" />blog</Link>
-          <Link to="/nasil-calisir" onClick={close} className={linkCls}><BookOpen className="h-4 w-4" />nasıl çalışır</Link>
-          <Link to="/sss" onClick={close} className={linkCls}><HelpCircle className="h-4 w-4" />SSS</Link>
+          <Link to="/" onClick={closeMenu} className={linkCls}><Home className="h-4 w-4" />anasayfa</Link>
+          <Link to="/urunler" onClick={closeMenu} className={linkCls}><Package className="h-4 w-4" />ürünler</Link>
+          <Link to="/paketler" onClick={closeMenu} className={linkCls}><Boxes className="h-4 w-4" />paketler</Link>
+          <Link to="/blog" onClick={closeMenu} className={linkCls}><Newspaper className="h-4 w-4" />blog</Link>
+          <Link to="/nasil-calisir" onClick={closeMenu} className={linkCls}><BookOpen className="h-4 w-4" />nasıl çalışır</Link>
+          <Link to="/sss" onClick={closeMenu} className={linkCls}><HelpCircle className="h-4 w-4" />SSS</Link>
           <div className="my-2 border-t border-border/50" />
           {user ? (
             <>
-              <Link to="/hesabim" onClick={close} className={linkCls}><UserIcon className="h-4 w-4" />hesabım</Link>
+              <Link to="/hesabim" onClick={closeMenu} className={linkCls}><UserIcon className="h-4 w-4" />hesabım</Link>
               {isAdmin && (
-                <Link to="/admin" onClick={close} className={linkCls}><LayoutDashboard className="h-4 w-4" />admin</Link>
+                <Link to="/admin" onClick={closeMenu} className={linkCls}><LayoutDashboard className="h-4 w-4" />admin</Link>
               )}
               <button
                 type="button"
-                onClick={() => { close(); signOut(); }}
+                onClick={() => { closeMenu(); signOut(); }}
                 className={linkCls + " text-left w-full"}
               >
                 <LogOut className="h-4 w-4" />çıkış
               </button>
             </>
           ) : (
-            <Link to="/auth" onClick={close} className={linkCls}><LogIn className="h-4 w-4" />giriş</Link>
+            <Link to="/auth" onClick={closeMenu} className={linkCls}><LogIn className="h-4 w-4" />giriş</Link>
           )}
         </nav>
       </div>
-    </div>
-  ) : null;
-
-  return (
-    <>
-      <button
-        type="button"
-        aria-label="Menü"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
-      {mounted && panel ? createPortal(panel, document.body) : null}
-    </>
+    </details>
   );
 }
 
