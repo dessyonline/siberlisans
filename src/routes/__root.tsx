@@ -295,6 +295,10 @@ function HeaderUserBadge({ userId }: { userId: string }) {
 }
 
 
+/**
+ * Mobile menu — uses a native <details> element so it opens/closes even before
+ * (or without) React hydration. Zero JS required for the open toggle.
+ */
 function MobileMenu({
   user,
   isAdmin,
@@ -304,95 +308,87 @@ function MobileMenu({
   isAdmin: boolean;
   signOut: () => void;
 }) {
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    if (!open) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setOpen(false);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open]);
-
   const linkCls =
-    "flex items-center gap-3 rounded-md px-3 py-3 font-mono text-sm text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30";
+    "flex items-center gap-3 rounded-md px-3 py-3 font-mono text-sm text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 active:bg-primary/20";
+
+  const closeMenu = () => {
+    const el = document.getElementById("mobile-menu-details") as HTMLDetailsElement | null;
+    if (el) el.open = false;
+  };
 
   return (
-    <>
+    <details id="mobile-menu-details" className="md:hidden relative">
+      <summary
+        aria-label="Menü"
+        className="list-none inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none [&::-webkit-details-marker]:hidden"
+      >
+        <Menu className="h-5 w-5 group-open:hidden" />
+      </summary>
+
+      {/* Backdrop — click to close by toggling <summary> via label */}
+      <label
+        htmlFor="mobile-menu-toggle-close"
+        className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm cursor-pointer"
+        aria-hidden="true"
+      />
+      {/* Hidden checkbox lets the backdrop close the details on tap */}
       <button
         type="button"
-        aria-label="Menü"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-        className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10"
-      >
-        <Menu className="h-5 w-5" />
-      </button>
+        id="mobile-menu-toggle-close"
+        onClick={closeMenu}
+        aria-label="Menüyü kapat"
+        className="sr-only"
+      />
 
-      {open && (
-        <div className="md:hidden fixed inset-0 z-[70]">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Ana menü"
+        className="fixed right-0 top-0 z-[70] h-full w-[280px] sm:w-[320px] bg-background/95 backdrop-blur-xl border-l border-primary/30 shadow-2xl flex flex-col"
+      >
+        <div className="flex items-center justify-between border-b border-primary/20 px-4 py-3">
+          <div className="font-mono text-sm">
+            <span className="neon-text">Siber</span>
+            <span className="text-foreground">PHP</span>
+            <span className="text-primary animate-pulse">_</span>
+          </div>
           <button
             type="button"
             aria-label="Kapat"
-            onClick={() => setOpen(false)}
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-          />
-          <div
-            role="dialog"
-            aria-modal="true"
-            className="absolute right-0 top-0 h-full w-[280px] sm:w-[320px] bg-background/95 backdrop-blur-xl border-l border-primary/30 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
+            onClick={closeMenu}
+            className="rounded-md p-1 text-muted-foreground hover:text-primary hover:bg-primary/10"
           >
-            <div className="flex items-center justify-between border-b border-primary/20 px-4 py-3">
-              <div className="font-mono text-sm">
-                <span className="neon-text">Siber</span>
-                <span className="text-foreground">PHP</span>
-                <span className="text-primary animate-pulse">_</span>
-              </div>
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <nav className="flex flex-col gap-1 p-3 overflow-y-auto">
+          <Link to="/" onClick={closeMenu} className={linkCls}><Home className="h-4 w-4" />anasayfa</Link>
+          <Link to="/urunler" onClick={closeMenu} className={linkCls}><Package className="h-4 w-4" />ürünler</Link>
+          <Link to="/paketler" onClick={closeMenu} className={linkCls}><Boxes className="h-4 w-4" />paketler</Link>
+          <Link to="/blog" onClick={closeMenu} className={linkCls}><Newspaper className="h-4 w-4" />blog</Link>
+          <Link to="/nasil-calisir" onClick={closeMenu} className={linkCls}><BookOpen className="h-4 w-4" />nasıl çalışır</Link>
+          <Link to="/sss" onClick={closeMenu} className={linkCls}><HelpCircle className="h-4 w-4" />SSS</Link>
+          <div className="my-2 border-t border-border/50" />
+          {user ? (
+            <>
+              <Link to="/hesabim" onClick={closeMenu} className={linkCls}><UserIcon className="h-4 w-4" />hesabım</Link>
+              {isAdmin && (
+                <Link to="/admin" onClick={closeMenu} className={linkCls}><LayoutDashboard className="h-4 w-4" />admin</Link>
+              )}
               <button
                 type="button"
-                aria-label="Kapat"
-                onClick={() => setOpen(false)}
-                className="rounded-md p-1 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                onClick={() => { closeMenu(); signOut(); }}
+                className={linkCls + " text-left w-full"}
               >
-                <X className="h-5 w-5" />
+                <LogOut className="h-4 w-4" />çıkış
               </button>
-            </div>
-            <nav className="flex flex-col gap-1 p-3 overflow-y-auto">
-              <Link to="/" onClick={() => setOpen(false)} className={linkCls}><Home className="h-4 w-4" />anasayfa</Link>
-              <Link to="/urunler" onClick={() => setOpen(false)} className={linkCls}><Package className="h-4 w-4" />ürünler</Link>
-              <Link to="/paketler" onClick={() => setOpen(false)} className={linkCls}><Boxes className="h-4 w-4" />paketler</Link>
-              <Link to="/blog" onClick={() => setOpen(false)} className={linkCls}><Newspaper className="h-4 w-4" />blog</Link>
-              <Link to="/nasil-calisir" onClick={() => setOpen(false)} className={linkCls}><BookOpen className="h-4 w-4" />nasıl çalışır</Link>
-              <Link to="/sss" onClick={() => setOpen(false)} className={linkCls}><HelpCircle className="h-4 w-4" />SSS</Link>
-              <div className="my-2 border-t border-border/50" />
-              {user ? (
-                <>
-                  <Link to="/hesabim" onClick={() => setOpen(false)} className={linkCls}><UserIcon className="h-4 w-4" />hesabım</Link>
-                  {isAdmin && (
-                    <Link to="/admin" onClick={() => setOpen(false)} className={linkCls}><LayoutDashboard className="h-4 w-4" />admin</Link>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => { setOpen(false); signOut(); }}
-                    className={linkCls + " text-left"}
-                  >
-                    <LogOut className="h-4 w-4" />çıkış
-                  </button>
-                </>
-              ) : (
-                <Link to="/auth" onClick={() => setOpen(false)} className={linkCls}><LogIn className="h-4 w-4" />giriş</Link>
-              )}
-            </nav>
-          </div>
-        </div>
-      )}
-    </>
+            </>
+          ) : (
+            <Link to="/auth" onClick={closeMenu} className={linkCls}><LogIn className="h-4 w-4" />giriş</Link>
+          )}
+        </nav>
+      </div>
+    </details>
   );
 }
 
