@@ -15,7 +15,7 @@ export const Route = createFileRoute("/api/chat")({
         if ("response" in g) return g.response;
         const { body } = g;
 
-        const chatProxyUrl = process.env.CHAT_PROXY_URL ?? "";
+        const chatProxyUrl = (process.env.CHAT_PROXY_URL ?? "").replace(/\/$/, "").replace(/\/api$/, "");
         if (!chatProxyUrl) {
           return json({
             ok: true,
@@ -27,7 +27,7 @@ export const Route = createFileRoute("/api/chat")({
         const token = (body.token as string | undefined) ?? "";
         const projectId = (body.projectId as string | undefined) ?? "";
         if (!projectId) return json({ ok: false, error: "projectId gerekli." });
-        const target = `${chatProxyUrl.replace(/\/$/, "")}/${projectId}/chat`;
+        const target = `${chatProxyUrl}/${projectId}/chat`;
         const upstreamBody = cleanProxyBody(body);
         try {
           const upstream = await fetch(target, {
