@@ -16,7 +16,22 @@ import {
   Package,
   BookOpen,
   HelpCircle,
+  Menu,
+  Home,
+  Boxes,
+  Newspaper,
+  User as UserIcon,
+  LogOut,
 } from "lucide-react";
+import { useState } from "react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose,
+} from "../components/ui/sheet";
 
 
 
