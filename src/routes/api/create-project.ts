@@ -14,7 +14,7 @@ export const Route = createFileRoute("/api/create-project")({
         if ("response" in g) return g.response;
         const { body } = g;
 
-        const createProxyUrl = process.env.CREATE_PROXY_URL ?? "";
+        const createProxyUrl = (process.env.CREATE_PROXY_URL ?? "").replace(/\/$/, "").replace(/\/api$/, "");
         if (!createProxyUrl) {
           return json({ ok: true, projectId: randomUUID() });
         }
