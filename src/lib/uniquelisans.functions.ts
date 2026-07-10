@@ -254,11 +254,60 @@ export const ulImportedProducts = createServerFn({ method: "GET" })
     await assertAdmin(supabase, userId);
     const { data } = await supabase
       .from("products")
-      .select("id, name, slug, price_try, external_id, external_price, active, updated_at, stock_hint, unlimited_stock, supplier_out_of_stock")
+      .select("id, name, slug, price_try, external_id, external_price, active, updated_at, stock_hint, unlimited_stock, supplier_out_of_stock, price_locked")
       .eq("source", "uniquelisans")
       .order("updated_at", { ascending: false })
       .limit(500);
     return data ?? [];
+  });
+
+// Admin: içe aktarılmış Uniquelisans ürününü hızlı düzenle
+// - active: aktif/pasif
+// - price_try: manuel satış fiyatı (verildiğinde price_locked = true olur)
+// - markup_percent: alış üstüne %; MIN_PROFIT_TL zemini uygulanır, price_locked = true olur
+// - price_locked: kilidi açıp/kapatmak için
+const updateImportedInput = z.object({
+  id: z.string().uuid(),
+  active: z.boolean().optional(),
+  price_try: z.number().positive().optional(),
+  markup_percent: z.number().min(0).max(500).optional(),
+  price_locked: z.boolean().optional(),
+});
+
+export const ulUpdateImported = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => updateImportedInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+
+    const { data: row, error: readErr } = await supabase
+      .from("products")
+      .select("id, external_price, source")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (readErr) throw new Error(readErr.message);
+    if (!row) throw new Error("Ürün bulunamadı.");
+
+    const patch: Record<string, unknown> = {};
+    if (typeof data.active === "boolean") patch.active = data.active;
+
+    if (typeof data.price_try === "number") {
+      patch.price_try = Math.round(data.price_try);
+      patch.price_locked = true;
+    } else if (typeof data.markup_percent === "number") {
+      const cost = Number(row.external_price ?? 0);
+      patch.price_try = priceWithFloor(cost, data.markup_percent);
+      patch.price_locked = true;
+    }
+
+    if (typeof data.price_locked === "boolean") patch.price_locked = data.price_locked;
+
+    if (Object.keys(patch).length === 0) return { ok: true as const, changed: false };
+
+    const { error } = await supabase.from("products").update(patch).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true as const, changed: true };
   });
 
 /**
