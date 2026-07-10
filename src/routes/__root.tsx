@@ -172,6 +172,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: MOBILE_MENU_SCRIPT }} />
         {children}
         <Scripts />
       </body>
@@ -296,9 +297,8 @@ function HeaderUserBadge({ userId }: { userId: string }) {
 
 
 /**
- * Mobile menu — native <details>/<summary> so open/close works even before
- * (or without) React hydration. The header no longer creates a containing
- * block (backdrop-blur removed), so the fixed backdrop + panel fill the viewport.
+ * Mobile menu — driven by a vanilla script (see MobileMenuScript) that toggles
+ * `html.mm-open`. Zero dependency on React hydration; taps work immediately.
  */
 function MobileMenu({
   user,
@@ -312,34 +312,34 @@ function MobileMenu({
   const linkCls =
     "flex items-center gap-3 rounded-md px-3 py-3 font-mono text-sm text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 active:bg-primary/20";
 
-  const closeMenu = () => {
-    if (typeof document === "undefined") return;
-    const el = document.getElementById("mobile-menu-details") as HTMLDetailsElement | null;
-    if (el) el.open = false;
-  };
-
   return (
-    <details id="mobile-menu-details" className="md:hidden">
-      <summary
-        aria-label="Menü"
-        className="relative z-[110] list-none inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none [&::-webkit-details-marker]:hidden"
-      >
-        <Menu className="h-5 w-5" />
-      </summary>
-
-      {/* Backdrop — click to close */}
+    <>
       <button
         type="button"
-        aria-label="Kapat"
-        onClick={closeMenu}
-        className="fixed inset-0 z-[90] bg-black/70"
+        data-mobile-menu-toggle
+        aria-label="Menü"
+        aria-expanded="false"
+        aria-controls="mobile-menu-panel"
+        className="md:hidden relative z-[110] inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none"
+      >
+        <Menu className="h-5 w-5 pointer-events-none" />
+      </button>
+
+      {/* Backdrop */}
+      <div
+        data-mobile-menu-backdrop
+        aria-hidden="true"
+        className="md:hidden fixed inset-0 z-[90] bg-black/70"
       />
 
+      {/* Panel */}
       <div
+        id="mobile-menu-panel"
+        data-mobile-menu-panel
         role="dialog"
         aria-modal="true"
         aria-label="Ana menü"
-        className="fixed right-0 top-0 z-[100] h-screen w-[280px] sm:w-[320px] bg-background border-l border-primary/30 shadow-2xl flex flex-col"
+        className="md:hidden fixed right-0 top-0 z-[100] h-screen w-[280px] sm:w-[320px] bg-background border-l border-primary/30 shadow-2xl flex-col"
       >
         <div className="flex items-center justify-between border-b border-primary/20 px-4 py-3">
           <div className="font-mono text-sm">
@@ -349,43 +349,63 @@ function MobileMenu({
           </div>
           <button
             type="button"
+            data-mobile-menu-close
             aria-label="Kapat"
-            onClick={closeMenu}
             className="rounded-md p-1 text-muted-foreground hover:text-primary hover:bg-primary/10"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5 pointer-events-none" />
           </button>
         </div>
         <nav className="flex flex-col gap-1 p-3 overflow-y-auto">
-          <Link to="/" onClick={closeMenu} className={linkCls}><Home className="h-4 w-4" />anasayfa</Link>
-          <Link to="/urunler" onClick={closeMenu} className={linkCls}><Package className="h-4 w-4" />ürünler</Link>
-          <Link to="/paketler" onClick={closeMenu} className={linkCls}><Boxes className="h-4 w-4" />paketler</Link>
-          <Link to="/blog" onClick={closeMenu} className={linkCls}><Newspaper className="h-4 w-4" />blog</Link>
-          <Link to="/nasil-calisir" onClick={closeMenu} className={linkCls}><BookOpen className="h-4 w-4" />nasıl çalışır</Link>
-          <Link to="/sss" onClick={closeMenu} className={linkCls}><HelpCircle className="h-4 w-4" />SSS</Link>
+          <Link to="/" data-mobile-menu-close className={linkCls}><Home className="h-4 w-4" />anasayfa</Link>
+          <Link to="/urunler" data-mobile-menu-close className={linkCls}><Package className="h-4 w-4" />ürünler</Link>
+          <Link to="/paketler" data-mobile-menu-close className={linkCls}><Boxes className="h-4 w-4" />paketler</Link>
+          <Link to="/blog" data-mobile-menu-close className={linkCls}><Newspaper className="h-4 w-4" />blog</Link>
+          <Link to="/nasil-calisir" data-mobile-menu-close className={linkCls}><BookOpen className="h-4 w-4" />nasıl çalışır</Link>
+          <Link to="/sss" data-mobile-menu-close className={linkCls}><HelpCircle className="h-4 w-4" />SSS</Link>
           <div className="my-2 border-t border-border/50" />
           {user ? (
             <>
-              <Link to="/hesabim" onClick={closeMenu} className={linkCls}><UserIcon className="h-4 w-4" />hesabım</Link>
+              <Link to="/hesabim" data-mobile-menu-close className={linkCls}><UserIcon className="h-4 w-4" />hesabım</Link>
               {isAdmin && (
-                <Link to="/admin" onClick={closeMenu} className={linkCls}><LayoutDashboard className="h-4 w-4" />admin</Link>
+                <Link to="/admin" data-mobile-menu-close className={linkCls}><LayoutDashboard className="h-4 w-4" />admin</Link>
               )}
               <button
                 type="button"
-                onClick={() => { closeMenu(); signOut(); }}
+                data-mobile-menu-close
+                onClick={() => signOut()}
                 className={linkCls + " text-left w-full"}
               >
                 <LogOut className="h-4 w-4" />çıkış
               </button>
             </>
           ) : (
-            <Link to="/auth" onClick={closeMenu} className={linkCls}><LogIn className="h-4 w-4" />giriş</Link>
+            <Link to="/auth" data-mobile-menu-close className={linkCls}><LogIn className="h-4 w-4" />giriş</Link>
           )}
         </nav>
       </div>
-    </details>
+    </>
   );
 }
+
+const MOBILE_MENU_SCRIPT = `(function(){
+  if (window.__mmInit) return; window.__mmInit = true;
+  function set(v){
+    document.documentElement.classList.toggle('mm-open', v);
+    document.querySelectorAll('[data-mobile-menu-toggle]').forEach(function(b){
+      b.setAttribute('aria-expanded', v ? 'true' : 'false');
+    });
+  }
+  document.addEventListener('click', function(e){
+    var t = e.target && e.target.closest ? e.target.closest('[data-mobile-menu-toggle]') : null;
+    if (t) { e.preventDefault(); set(!document.documentElement.classList.contains('mm-open')); return; }
+    var c = e.target && e.target.closest ? e.target.closest('[data-mobile-menu-close]') : null;
+    if (c) { set(false); return; }
+    var b = e.target && e.target.closest ? e.target.closest('[data-mobile-menu-backdrop]') : null;
+    if (b) { set(false); return; }
+  }, true);
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape') set(false); });
+})();`;
 
 
 

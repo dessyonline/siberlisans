@@ -354,3 +354,10 @@ body > a[class*="lovable"],
     0 0 8px oklch(0.85 0.15 75 / 0.55),
     0 0 24px oklch(0.78 0.16 75 / 0.35);
 }
+
+/* Mobile menu — hydration-independent toggle via <html class="mm-open"> */
+[data-mobile-menu-panel],
+[data-mobile-menu-backdrop] { display: none; }
+html.mm-open [data-mobile-menu-panel] { display: flex; }
+html.mm-open [data-mobile-menu-backdrop] { display: block; }
+html.mm-open body { overflow: hidden; }
