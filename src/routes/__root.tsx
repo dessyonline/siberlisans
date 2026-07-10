@@ -303,6 +303,68 @@ function HeaderUserBadge({ userId }: { userId: string }) {
 }
 
 
+function MobileMenu({
+  user,
+  isAdmin,
+  signOut,
+}: {
+  user: { id: string } | null;
+  isAdmin: boolean;
+  signOut: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const linkCls =
+    "flex items-center gap-3 rounded-md px-3 py-3 font-mono text-sm text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30";
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
+        <button
+          aria-label="Menü"
+          className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+      </SheetTrigger>
+      <SheetContent side="right" className="w-[280px] sm:w-[320px] p-0 bg-background/95 backdrop-blur-xl border-primary/30">
+        <SheetHeader className="border-b border-primary/20 px-4 py-3">
+          <SheetTitle className="font-mono text-sm">
+            <span className="neon-text">Siber</span>
+            <span className="text-foreground">PHP</span>
+            <span className="text-primary animate-pulse">_</span>
+          </SheetTitle>
+        </SheetHeader>
+        <nav className="flex flex-col gap-1 p-3">
+          <SheetClose asChild><Link to="/" className={linkCls}><Home className="h-4 w-4" />anasayfa</Link></SheetClose>
+          <SheetClose asChild><Link to="/urunler" className={linkCls}><Package className="h-4 w-4" />ürünler</Link></SheetClose>
+          <SheetClose asChild><Link to="/paketler" className={linkCls}><Boxes className="h-4 w-4" />paketler</Link></SheetClose>
+          <SheetClose asChild><Link to="/blog" className={linkCls}><Newspaper className="h-4 w-4" />blog</Link></SheetClose>
+          <SheetClose asChild><Link to="/nasil-calisir" className={linkCls}><BookOpen className="h-4 w-4" />nasıl çalışır</Link></SheetClose>
+          <SheetClose asChild><Link to="/sss" className={linkCls}><HelpCircle className="h-4 w-4" />SSS</Link></SheetClose>
+          <div className="my-2 border-t border-border/50" />
+          {user ? (
+            <>
+              <SheetClose asChild><Link to="/hesabim" className={linkCls}><UserIcon className="h-4 w-4" />hesabım</Link></SheetClose>
+              {isAdmin && (
+                <SheetClose asChild><Link to="/admin" className={linkCls}><LayoutDashboard className="h-4 w-4" />admin</Link></SheetClose>
+              )}
+              <button
+                onClick={() => { setOpen(false); signOut(); }}
+                className={linkCls + " text-left"}
+              >
+                <LogOut className="h-4 w-4" />çıkış
+              </button>
+            </>
+          ) : (
+            <SheetClose asChild><Link to="/auth" className={linkCls}><LogIn className="h-4 w-4" />giriş</Link></SheetClose>
+          )}
+        </nav>
+      </SheetContent>
+    </Sheet>
+  );
+}
+
+
+
 function SiteFooter() {
   return (
     <footer className="border-t border-border/60 bg-background/60 backdrop-blur-xl mt-16">
