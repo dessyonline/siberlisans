@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   Terminal,
   ShieldCheck,
@@ -23,15 +23,7 @@ import {
   User as UserIcon,
   LogOut,
   X,
-import { useState } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-  SheetClose,
-} from "../components/ui/sheet";
+} from "lucide-react";
 
 
 
