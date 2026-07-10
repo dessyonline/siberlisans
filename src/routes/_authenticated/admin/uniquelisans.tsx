@@ -291,38 +291,13 @@ function UniquelisansPage() {
         </div>
         {imported && imported.length > 0 ? (
           <div className="space-y-1.5">
-            {imported.map((p) => {
-              const stock = (p as { stock_hint?: number | null }).stock_hint;
-              const unlimited = (p as { unlimited_stock?: boolean }).unlimited_stock;
-              const stockLabel = unlimited
-                ? "otomatik"
-                : typeof stock === "number"
-                  ? stock > 0 ? `stok: ${stock}` : "stok yok"
-                  : "manuel";
-              const stockCls = unlimited
-                ? "text-cyan bg-cyan/10 border-cyan/30"
-                : typeof stock === "number" && stock <= 0
-                  ? "text-destructive bg-destructive/10 border-destructive/30"
-                  : "text-primary bg-primary/10 border-primary/30";
-              return (
-                <div key={p.id} className="glass-card rounded-md p-2.5 flex flex-wrap items-center gap-3 text-sm">
-                  <Package className="h-4 w-4 text-primary shrink-0" />
-                  <div className="min-w-0 flex-1 truncate">{p.name}</div>
-                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${stockCls}`}>{stockLabel}</span>
-                  <div className="font-mono text-xs text-muted-foreground">alış: {fmt(Number(p.external_price ?? 0))} ₺</div>
-                  <div className="font-mono text-xs">satış: <b>{fmt(Number(p.price_try))} ₺</b></div>
-                  <div className="font-mono text-xs text-primary">
-                    kar: <b>{fmt(Number(p.price_try) - Number(p.external_price ?? 0))} ₺</b>
-                    {Number(p.external_price ?? 0) > 0 && (
-                      <span className="text-muted-foreground"> (%{fmt(((Number(p.price_try) - Number(p.external_price)) / Number(p.external_price)) * 100)})</span>
-                    )}
-                  </div>
-                  <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${p.active ? "text-primary bg-primary/10 border-primary/30" : "text-muted-foreground border-muted-foreground/30"}`}>
-                    {p.active ? "aktif" : "pasif"}
-                  </span>
-                </div>
-              );
-            })}
+            {imported.map((p) => (
+              <ImportedRow
+                key={p.id}
+                p={p as ImportedProduct}
+                onChanged={() => qc.invalidateQueries({ queryKey: ["ul-imported"] })}
+              />
+            ))}
           </div>
         ) : (
           <div className="text-sm text-muted-foreground font-mono">henüz içe aktarılan ürün yok</div>
