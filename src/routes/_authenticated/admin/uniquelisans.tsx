@@ -343,7 +343,7 @@ function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => vo
       ? "text-destructive bg-destructive/10 border-destructive/30"
       : "text-primary bg-primary/10 border-primary/30";
 
-  async function run(kind: "active" | "lock" | "price" | "markup", payload: Parameters<typeof updateFn>[0]["data"]) {
+  async function run(kind: "active" | "lock" | "price" | "markup", payload: { id: string; active?: boolean; price_try?: number; markup_percent?: number; price_locked?: boolean }) {
     setBusy(kind);
     try {
       await updateFn({ data: payload });
