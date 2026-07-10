@@ -15,7 +15,7 @@ export const Route = createFileRoute("/api/chat")({
         if ("response" in g) return g.response;
         const { body } = g;
 
-        const chatProxyUrl = process.env.CHAT_PROXY_URL ?? "";
+        const chatProxyUrl = (process.env.CHAT_PROXY_URL ?? "").replace(/\/$/, "").replace(/\/api$/, "");
         if (!chatProxyUrl) {
           return json({
             ok: true,
