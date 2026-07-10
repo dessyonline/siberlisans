@@ -323,15 +323,6 @@ function MobileMenu({
       >
         <Menu className="h-5 w-5" />
       </SheetTrigger>
-      {null && (
-      <SheetTrigger asChild>
-        <button
-          aria-label="Menü"
-          className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10"
-        >
-          <Menu className="h-5 w-5" />
-        </button>
-      </SheetTrigger>
       <SheetContent side="right" className="w-[280px] sm:w-[320px] p-0 bg-background/95 backdrop-blur-xl border-primary/30">
         <SheetHeader className="border-b border-primary/20 px-4 py-3">
           <SheetTitle className="font-mono text-sm">
