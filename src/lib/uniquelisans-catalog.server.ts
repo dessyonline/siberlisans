@@ -109,7 +109,8 @@ export async function runUniquelisansCatalogSync(
               unlimited_stock: !!p.is_automatic_delivery,
             };
             if (Number(prev.external_price ?? 0) !== p.amount) {
-              patch.price_try = finalPrice;
+              // Admin manuel fiyat kilidini koru: price_locked = true ise satış fiyatını yeniden yazma.
+              if (!prev.price_locked) patch.price_try = finalPrice;
               res.price_changed++;
             }
             // Ürünü pasifleştirmek yerine geçici "tedarikçi stok yok" bayrağı ile satışı engelle.
