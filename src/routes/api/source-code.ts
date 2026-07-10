@@ -20,8 +20,11 @@ export const Route = createFileRoute("/api/source-code")({
         if (!SOURCE_PROXY_URL) {
           return json({ ok: true, files: [] });
         }
+        const projectId = (body.projectId as string | undefined) ?? "";
+        if (!projectId) return json({ ok: false, error: "projectId gerekli." });
+        const target = `${SOURCE_PROXY_URL.replace(/\/$/, "")}/${projectId}/source-code`;
         try {
-          const upstream = await fetch(SOURCE_PROXY_URL, {
+          const upstream = await fetch(target, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

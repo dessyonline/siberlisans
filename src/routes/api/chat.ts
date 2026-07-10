@@ -26,8 +26,11 @@ export const Route = createFileRoute("/api/chat")({
         }
 
         const token = (body.token as string | undefined) ?? "";
+        const projectId = (body.projectId as string | undefined) ?? "";
+        if (!projectId) return json({ ok: false, error: "projectId gerekli." });
+        const target = `${LOVABLE_CHAT_URL.replace(/\/$/, "")}/${projectId}/chat`;
         try {
-          const upstream = await fetch(LOVABLE_CHAT_URL, {
+          const upstream = await fetch(target, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
