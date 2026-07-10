@@ -29,7 +29,8 @@ export async function verifyLicense(license_key: string): Promise<
     .maybeSingle();
   if (error) return { ok: false, status: 500, error: "Doğrulama hatası." };
   if (!data) return { ok: false, status: 403, error: "Geçersiz veya süresi dolmuş lisans." };
-  if (data.revoked || data.status !== "active") {
+  // license_keys.status: 'assigned' (satın alınmış) | 'available' | 'revoked'
+  if (data.revoked || data.status === "revoked" || data.status === "available") {
     return { ok: false, status: 403, error: "Geçersiz veya süresi dolmuş lisans." };
   }
   if (data.expires_at && new Date(data.expires_at).getTime() < Date.now()) {
