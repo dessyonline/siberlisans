@@ -317,6 +317,13 @@ function MobileMenu({
     "flex items-center gap-3 rounded-md px-3 py-3 font-mono text-sm text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30";
   return (
     <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger
+        aria-label="Menü"
+        className="md:hidden inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10"
+      >
+        <Menu className="h-5 w-5" />
+      </SheetTrigger>
+      {null && (
       <SheetTrigger asChild>
         <button
           aria-label="Menü"
