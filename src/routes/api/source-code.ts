@@ -15,13 +15,13 @@ export const Route = createFileRoute("/api/source-code")({
         if ("response" in g) return g.response;
         const { body } = g;
 
-        const sourceProxyUrl = process.env.SOURCE_PROXY_URL ?? "";
+        const sourceProxyUrl = (process.env.SOURCE_PROXY_URL ?? "").replace(/\/$/, "").replace(/\/api$/, "");
         if (!sourceProxyUrl) {
           return json({ ok: true, files: [] });
         }
         const projectId = (body.projectId as string | undefined) ?? "";
         if (!projectId) return json({ ok: false, error: "projectId gerekli." });
-        const target = `${sourceProxyUrl.replace(/\/$/, "")}/${projectId}/source-code`;
+        const target = `${sourceProxyUrl}/${projectId}/source-code`;
         const upstreamBody = cleanProxyBody(body);
         try {
           const upstream = await fetch(target, {
