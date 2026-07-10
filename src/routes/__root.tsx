@@ -296,8 +296,9 @@ function HeaderUserBadge({ userId }: { userId: string }) {
 
 
 /**
- * Mobile menu — uses a native <details> element so it opens/closes even before
- * (or without) React hydration. Zero JS required for the open toggle.
+ * Mobile menu — uses a native <details> element so the toggle works even
+ * before (or without) React hydration. The <summary> sits above the backdrop
+ * (z-[80]) so tapping it always toggles the panel open/closed natively.
  */
 function MobileMenu({
   user,
@@ -312,32 +313,26 @@ function MobileMenu({
     "flex items-center gap-3 rounded-md px-3 py-3 font-mono text-sm text-muted-foreground hover:text-primary hover:bg-primary/10 border border-transparent hover:border-primary/30 active:bg-primary/20";
 
   const closeMenu = () => {
+    if (typeof document === "undefined") return;
     const el = document.getElementById("mobile-menu-details") as HTMLDetailsElement | null;
     if (el) el.open = false;
   };
 
   return (
-    <details id="mobile-menu-details" className="md:hidden relative">
+    <details id="mobile-menu-details" className="md:hidden">
       <summary
         aria-label="Menü"
-        className="list-none inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none [&::-webkit-details-marker]:hidden"
+        className="relative z-[80] list-none inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none [&::-webkit-details-marker]:hidden"
       >
-        <Menu className="h-5 w-5 group-open:hidden" />
+        <Menu className="h-5 w-5" />
       </summary>
 
-      {/* Backdrop — click to close by toggling <summary> via label */}
-      <label
-        htmlFor="mobile-menu-toggle-close"
-        className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm cursor-pointer"
-        aria-hidden="true"
-      />
-      {/* Hidden checkbox lets the backdrop close the details on tap */}
+      {/* Backdrop — tap to close (JS) or tap summary again (native fallback) */}
       <button
         type="button"
-        id="mobile-menu-toggle-close"
+        aria-label="Kapat"
         onClick={closeMenu}
-        aria-label="Menüyü kapat"
-        className="sr-only"
+        className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm"
       />
 
       <div
