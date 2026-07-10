@@ -198,7 +198,7 @@ function SiteHeader() {
   const { user, isAdmin, signOut } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-primary/20 bg-background/70 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-primary/20 bg-background/95">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 sm:px-4">
         <Link to="/" className="flex items-center gap-2 font-mono shrink-0">
           <Terminal className="h-5 w-5 text-primary" />
