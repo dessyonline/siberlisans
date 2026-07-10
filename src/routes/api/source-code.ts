@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { CORS, gate, json } from "@/lib/license-feature.server";
 
 const CORS_ALL = { ...CORS, "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
-const SOURCE_PROXY_URL = process.env.LOVABLE_SOURCE_PROXY_URL ?? "";
+const SOURCE_PROXY_URL = process.env.SOURCE_PROXY_URL ?? "";
 
 export const Route = createFileRoute("/api/source-code")({
   server: {
