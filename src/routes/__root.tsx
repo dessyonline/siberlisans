@@ -172,6 +172,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: MOBILE_MENU_SCRIPT }} />
         {children}
         <Scripts />
       </body>
