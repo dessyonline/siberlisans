@@ -7,6 +7,7 @@
 
   let currentHwid = null;
   let currentKey = null;
+  let currentOwner = null; // { email, name }
   let currentExpiresAt = null; // ms
   let currentActivatedAt = null; // ms
   let tickerId = null;
