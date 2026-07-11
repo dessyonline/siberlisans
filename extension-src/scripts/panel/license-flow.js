@@ -181,6 +181,7 @@
       if (r && r.success) {
         currentKey = licenseKey;
         currentExpiresAt = r.expires_at ? new Date(r.expires_at).getTime() : null;
+        currentOwner = (r.owner_email || r.owner_name) ? { email: r.owner_email || null, name: r.owner_name || null } : null;
         // activated_at = now if we just activated
         currentActivatedAt = Date.now();
         await SPLicense.setStored({ [SPLicense.KEYS.activatedAt]: new Date().toISOString() });
