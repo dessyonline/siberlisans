@@ -2255,7 +2255,7 @@ export type Database = {
         | "daily"
         | "weekly"
       key_status: "available" | "assigned" | "revoked"
-      order_status: "pending" | "reviewing" | "approved" | "rejected"
+      order_status: "pending" | "reviewing" | "approved" | "rejected" | "failed"
       promo_type: "percent" | "fixed"
       support_ticket_priority: "low" | "normal" | "high" | "urgent"
       support_ticket_status: "open" | "pending" | "closed"
@@ -2406,7 +2406,7 @@ export const Constants = {
         "weekly",
       ],
       key_status: ["available", "assigned", "revoked"],
-      order_status: ["pending", "reviewing", "approved", "rejected"],
+      order_status: ["pending", "reviewing", "approved", "rejected", "failed"],
       promo_type: ["percent", "fixed"],
       support_ticket_priority: ["low", "normal", "high", "urgent"],
       support_ticket_status: ["open", "pending", "closed"],
