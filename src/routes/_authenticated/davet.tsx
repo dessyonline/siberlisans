@@ -398,19 +398,19 @@ function ShareTemplates({
     () => [
       {
         label: "kısa",
-        text: `SiberPHP'ye özel davet linkim: ${link} — ilk ₺300 alışverişte ikimize de ₺10 bakiye.`,
+        text: `SiberPHP davet linkim: ${link} — ilk ₺300+ siparişinde sana %5 indirim kuponu (max ₺40).`,
       },
       {
         label: "twitter/x",
-        text: `Lisans işini SiberPHP'de hallediyorum, güvenli ve hızlı. Davet linkimle kayıt olursan ilk ₺300+ siparişte ikimize de ₺10 bakiye düşer 👾\n${link}`,
+        text: `Lisans işini SiberPHP'de hallediyorum, güvenli ve hızlı. Davet linkimle kayıt ol, ilk ₺300+ siparişinde %5 indirim kuponu senin olsun 👾\n${link}`,
       },
       {
         label: "whatsapp",
-        text: `Selam! SiberPHP'den anında lisans alabiliyorsun. Bu linkle kayıt ol, ilk ₺300 alışverişinde ikimize de ₺10 cüzdan bakiyesi geliyor: ${link}`,
+        text: `Selam! SiberPHP'den anında lisans alabiliyorsun. Bu linkle kayıt ol, ilk ₺300+ siparişinde %5 (max ₺40) indirim kuponu kazan: ${link}`,
       },
       {
         label: "discord",
-        text: `**${name}** SiberPHP partneri 🎯\n> Bu link ile kayıt ol, ilk ₺300+ siparişte ikimize de ₺10 bakiye.\n${link}`,
+        text: `**${name}** SiberPHP partneri 🎯\n> Bu linkle kayıt ol, ilk ₺300+ siparişinde %5 indirim kuponu (max ₺40) kazan.\n${link}`,
       },
     ],
     [link, name],
