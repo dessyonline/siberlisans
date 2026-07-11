@@ -351,7 +351,18 @@ function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => vo
       ? "text-destructive bg-destructive/10 border-destructive/30"
       : "text-primary bg-primary/10 border-primary/30";
 
-  async function run(kind: typeof busy, payload: Parameters<typeof updateFn>[0]["data"]) {
+  type UpdatePayload = {
+    id: string;
+    active?: boolean;
+    price_try?: number;
+    markup_percent?: number;
+    price_locked?: boolean;
+    retail_price_try?: number | null;
+    retail_price_source_url?: string | null;
+    duration_label?: string | null;
+  };
+
+  async function run(kind: typeof busy, payload: UpdatePayload) {
     setBusy(kind);
     try {
       await updateFn({ data: payload });
