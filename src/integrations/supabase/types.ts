@@ -1117,6 +1117,7 @@ export type Database = {
           delivery_type: Database["public"]["Enums"]["delivery_type"]
           description: string | null
           duration: Database["public"]["Enums"]["duration_type"]
+          duration_label: string | null
           external_id: string | null
           external_price: number | null
           featured: boolean
@@ -1130,6 +1131,9 @@ export type Database = {
           price_try: number
           required_fields: Json | null
           requires_email: boolean
+          retail_price_source_url: string | null
+          retail_price_try: number | null
+          retail_price_updated_at: string | null
           review_count: number
           shopier_url: string | null
           slug: string
@@ -1151,6 +1155,7 @@ export type Database = {
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           duration?: Database["public"]["Enums"]["duration_type"]
+          duration_label?: string | null
           external_id?: string | null
           external_price?: number | null
           featured?: boolean
@@ -1164,6 +1169,9 @@ export type Database = {
           price_try: number
           required_fields?: Json | null
           requires_email?: boolean
+          retail_price_source_url?: string | null
+          retail_price_try?: number | null
+          retail_price_updated_at?: string | null
           review_count?: number
           shopier_url?: string | null
           slug: string
@@ -1185,6 +1193,7 @@ export type Database = {
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           description?: string | null
           duration?: Database["public"]["Enums"]["duration_type"]
+          duration_label?: string | null
           external_id?: string | null
           external_price?: number | null
           featured?: boolean
@@ -1198,6 +1207,9 @@ export type Database = {
           price_try?: number
           required_fields?: Json | null
           requires_email?: boolean
+          retail_price_source_url?: string | null
+          retail_price_try?: number | null
+          retail_price_updated_at?: string | null
           review_count?: number
           shopier_url?: string | null
           slug?: string
