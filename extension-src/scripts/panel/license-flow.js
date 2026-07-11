@@ -7,6 +7,7 @@
 
   let currentHwid = null;
   let currentKey = null;
+  let currentOwner = null; // { email, name }
   let currentExpiresAt = null; // ms
   let currentActivatedAt = null; // ms
   let tickerId = null;
@@ -125,6 +126,18 @@
   function paintActive() {
     $("sp-hwid-short").textContent = SPFingerprint.shortHwid(currentHwid);
     $("sp-key-short").textContent = shortKey(currentKey);
+    const ownerRow = $("sp-owner-row");
+    const ownerEl = $("sp-owner-short");
+    if (ownerRow && ownerEl) {
+      if (currentOwner && (currentOwner.email || currentOwner.name)) {
+        ownerEl.textContent = currentOwner.name
+          ? `${currentOwner.name} · ${currentOwner.email || ""}`.trim().replace(/·\s*$/, "")
+          : currentOwner.email || "—";
+        ownerRow.style.display = "";
+      } else {
+        ownerRow.style.display = "none";
+      }
+    }
     show("sp-active-screen");
     startTicker();
     startRevalidate();
@@ -133,6 +146,7 @@
   function handleValidate(r) {
     if (r && r.valid) {
       currentExpiresAt = r.expires_at ? new Date(r.expires_at).getTime() : null;
+      currentOwner = (r.owner_email || r.owner_name) ? { email: r.owner_email || null, name: r.owner_name || null } : null;
       paintActive();
       return true;
     }
@@ -167,6 +181,7 @@
       if (r && r.success) {
         currentKey = licenseKey;
         currentExpiresAt = r.expires_at ? new Date(r.expires_at).getTime() : null;
+        currentOwner = (r.owner_email || r.owner_name) ? { email: r.owner_email || null, name: r.owner_name || null } : null;
         // activated_at = now if we just activated
         currentActivatedAt = Date.now();
         await SPLicense.setStored({ [SPLicense.KEYS.activatedAt]: new Date().toISOString() });
