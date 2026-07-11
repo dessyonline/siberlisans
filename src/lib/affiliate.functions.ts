@@ -44,16 +44,14 @@ export const requestAffiliatePayout = createServerFn({ method: "POST" })
     z
       .object({
         amount: z.number().min(50),
-        method: z.enum(["wallet", "iban", "crypto"]),
-        destination: z.string().max(300).optional(),
       })
       .parse(v),
   )
   .handler(async ({ data, context }) => {
     const { data: id, error } = await context.supabase.rpc("request_affiliate_payout", {
       _amount: data.amount,
-      _method: data.method,
-      _destination: data.destination ?? "",
+      _method: "wallet",
+      _destination: "",
     });
     if (error) throw new Error(error.message);
     return { id };
