@@ -85,6 +85,34 @@ export const Route = createFileRoute("/api/activate")({
             license_key, event: "activate", hwid, ip, user_agent: ua,
             detail: `days_left=${result.days_left ?? ""}`,
           });
+          // Yeni HWID kaydı — admin'e "kim aktive etti" bildirimi
+          try {
+            const { data: prev } = await (supabaseAdmin as unknown as {
+              from: (t: string) => { select: (c: string) => { eq: (a: string, b: string) => { eq: (a: string, b: string) => { limit: (n: number) => Promise<{ data: Array<{ id: string }> | null }> } } } };
+            })
+              .from("license_events")
+              .select("id")
+              .eq("license_key", license_key)
+              .eq("event", "activate")
+              .limit(2);
+            const firstTime = !prev || prev.length <= 1;
+            if (firstTime) {
+              const { notifyTelegram } = await import("@/lib/telegram.server");
+              const owner = (result.owner_email as string | undefined) ?? "—";
+              const name = (result.owner_name as string | undefined) ?? "";
+              const exp = result.expires_at ? new Date(result.expires_at as string).toLocaleString("tr-TR") : "süresiz";
+              await notifyTelegram(
+                `🔑 <b>Lisans aktive edildi</b>\n` +
+                `<code>${license_key}</code>\n` +
+                `👤 ${name ? name + " · " : ""}${owner}\n` +
+                `🖥 HWID: <code>${hwid.slice(0, 8)}…${hwid.slice(-8)}</code>\n` +
+                `⏰ Bitiş: ${exp}\n` +
+                `🌐 ${ip || "—"}`,
+              );
+            }
+          } catch (e) {
+            console.error("[api/activate] telegram notify failed", (e as Error).message);
+          }
         } else {
           await logEvent(supabaseAdmin as never, {
             license_key, event: "fail", hwid, ip, user_agent: ua,
