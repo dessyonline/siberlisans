@@ -296,6 +296,10 @@
 
 /* Hide the Lovable "Made with" badge in preview/published environments */
 [data-lovable-badge],
+#lovable-badge,
+#lovable-badge-close,
+[id^="lovable-badge"],
+[id*="lovable-badge"],
 .lovable-badge,
 a[href*="lovable.dev"],
 a[href*="lovable.app"][target="_blank"]:has(svg),
