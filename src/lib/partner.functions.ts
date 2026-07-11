@@ -85,17 +85,12 @@ export const getPartnerLanding = createServerFn({ method: "GET" })
       process.env.SUPABASE_PUBLISHABLE_KEY!,
       { auth: { persistSession: false, autoRefreshToken: false } },
     );
-    const code = data.code.trim();
-    const { data: rows } = await sb
-      .from("profiles")
-      .select("display_name, referral_code, partner_slug")
-      .or(`referral_code.eq.${code.toUpperCase()},partner_slug.eq.${code.toLowerCase()}`)
-      .limit(1);
-    const p = rows?.[0];
+    const { data: rows } = await sb.rpc("get_partner_by_code", { _code: data.code.trim() });
+    const p = (rows as Array<{ display_name: string | null; referral_code: string }> | null)?.[0];
     if (!p) return { found: false as const };
     return {
       found: true as const,
       partnerName: p.display_name ?? "SiberPHP Partner",
-      code: p.referral_code as string,
+      code: p.referral_code,
     };
   });
