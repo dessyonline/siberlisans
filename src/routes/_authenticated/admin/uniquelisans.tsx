@@ -13,10 +13,10 @@ import {
   ulUpdateImported,
   DEFAULT_MARKUP_PERCENT,
 } from "@/lib/uniquelisans.functions";
-import { suggestRetailPrice } from "@/lib/retail-price.functions";
+import { suggestRetailPrice, batchSuggestRetailPrices } from "@/lib/retail-price.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Wallet, Loader2, Download, RefreshCw, Package, CheckCircle2, Zap, Lock, Unlock, Check, X, Pencil, Sparkles, ExternalLink } from "lucide-react";
+import { Wallet, Loader2, Download, RefreshCw, Package, CheckCircle2, Zap, Lock, Unlock, Check, X, Pencil, Sparkles, ExternalLink, Wand2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/uniquelisans")({
   ssr: false,
@@ -37,8 +37,10 @@ function UniquelisansPage() {
   const importedFn = useServerFn(ulImportedProducts);
   const syncFn = useServerFn(ulSyncStock);
   const catalogFn = useServerFn(ulSyncCatalog);
+  const batchAiFn = useServerFn(batchSuggestRetailPrices);
   const [syncing, setSyncing] = useState(false);
   const [catalogSyncing, setCatalogSyncing] = useState(false);
+  const [batchAiBusy, setBatchAiBusy] = useState(false);
 
   const { data: balance, refetch: refetchBalance, isFetching: balLoading } = useQuery({
     queryKey: ["ul-balance"],
@@ -287,6 +289,31 @@ function UniquelisansPage() {
             >
               {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <RefreshCw className="h-3.5 w-3.5 mr-1" />}
               stokları senkronize et
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={batchAiBusy}
+              className="border-cyan/40 text-cyan hover:bg-cyan/10"
+              onClick={async () => {
+                setBatchAiBusy(true);
+                try {
+                  const r = await batchAiFn({ data: { force: false, limit: 100 } });
+                  toast.success(
+                    `Toplu AI fiyat: ${r.total} tarandı · ${r.updated} güncel · ${r.skipped} atlandı${r.failed ? ` · ${r.failed} hata` : ""}`,
+                  );
+                  qc.invalidateQueries({ queryKey: ["ul-imported"] });
+                  qc.invalidateQueries({ queryKey: ["admin-products"] });
+                } catch (e) {
+                  toast.error((e as Error).message);
+                } finally {
+                  setBatchAiBusy(false);
+                }
+              }}
+              title="Orijinal fiyatı olmayan tüm içe aktarılmış ürünler için AI ile toplu fiyat çeker"
+            >
+              {batchAiBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Wand2 className="h-3.5 w-3.5 mr-1" />}
+              toplu AI fiyat
             </Button>
           </div>
         </div>
