@@ -22,6 +22,8 @@ import {
   Sparkles,
   Bell,
   RefreshCw,
+  TrendingUp,
+  History,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
