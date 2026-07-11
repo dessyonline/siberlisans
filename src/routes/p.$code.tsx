@@ -118,7 +118,7 @@ function PartnerLanding() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-3 mt-12">
-          <Perk icon={Gift} title="₺10 hoşgeldin" desc="İlk ₺300 alışverişte cüzdan bakiyesi" />
+          <Perk icon={Gift} title="%5 hoşgeldin kuponu" desc="İlk ₺300+ siparişinde otomatik tanımlanır (max ₺40)" />
           <Perk icon={Zap} title="Anında teslim" desc="Ödeme sonrası saniyeler içinde lisans" />
           <Perk icon={Shield} title="Güvenli" desc="HWID koruma + garanti" />
         </div>
@@ -129,8 +129,8 @@ function PartnerLanding() {
             {[
               "Kayıt ol butonuna tıkla, davet kodu otomatik uygulanır",
               "E-posta ile hesap oluştur ve doğrula",
-              "İlk ₺300+ alışverişini tamamla",
-              "₺10 bakiye anında cüzdanına yatar",
+              "%5 indirim kuponun hesabına tanımlansın (90 gün geçerli)",
+              "İlk ₺300+ siparişinde kuponu uygula, indirim anında düşsün",
             ].map((s, i) => (
               <li key={i} className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
