@@ -413,13 +413,13 @@ function ProductDetail() {
                       )}
                     </div>
                   </div>
-                  <div className="mt-1.5 flex justify-end">
+                  <div className="mt-3">
                     <RetailPriceBadge
                       currentPrice={flash.hasSale ? flash.final : Number(product.price_try)}
                       retailPrice={(product as { retail_price_try?: number | null }).retail_price_try}
                       durationLabel={(product as { duration_label?: string | null }).duration_label}
                       sourceUrl={(product as { retail_price_source_url?: string | null }).retail_price_source_url}
-                      size="md"
+                      size="hero"
                     />
                   </div>
 
