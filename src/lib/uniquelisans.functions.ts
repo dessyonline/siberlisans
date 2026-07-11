@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { resolveLogoUrl } from "@/lib/logo-resolver";
+import { writeAuditLog } from "@/lib/admin-audit.functions";
 
 const DEFAULT_URL = "https://bayi.uniquelisans.com/api";
 // Varsayılan markup (admin isterse import ederken override eder)
