@@ -290,6 +290,31 @@ function UniquelisansPage() {
               {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <RefreshCw className="h-3.5 w-3.5 mr-1" />}
               stokları senkronize et
             </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={batchAiBusy}
+              className="border-cyan/40 text-cyan hover:bg-cyan/10"
+              onClick={async () => {
+                setBatchAiBusy(true);
+                try {
+                  const r = await batchAiFn({ data: { force: false, limit: 100 } });
+                  toast.success(
+                    `Toplu AI fiyat: ${r.total} tarandı · ${r.updated} güncel · ${r.skipped} atlandı${r.failed ? ` · ${r.failed} hata` : ""}`,
+                  );
+                  qc.invalidateQueries({ queryKey: ["ul-imported"] });
+                  qc.invalidateQueries({ queryKey: ["admin-products"] });
+                } catch (e) {
+                  toast.error((e as Error).message);
+                } finally {
+                  setBatchAiBusy(false);
+                }
+              }}
+              title="Orijinal fiyatı olmayan tüm içe aktarılmış ürünler için AI ile toplu fiyat çeker"
+            >
+              {batchAiBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Wand2 className="h-3.5 w-3.5 mr-1" />}
+              toplu AI fiyat
+            </Button>
           </div>
         </div>
         {imported && imported.length > 0 ? (
