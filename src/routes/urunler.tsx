@@ -195,6 +195,9 @@ type Row = {
   created_at: string;
   sort_order?: number | null;
   tier?: string | null;
+  retail_price_try?: number | null;
+  retail_price_source_url?: string | null;
+  duration_label?: string | null;
   license_keys: { status: string }[] | null;
 
 };
@@ -238,7 +241,7 @@ function ProductsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, created_at, sort_order, tier, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, created_at, sort_order, tier, retail_price_try, retail_price_source_url, duration_label, license_keys(status)")
         .eq("active", true)
         .order("price_try");
       if (error) throw error;
