@@ -13,16 +13,29 @@ export function AffiliateBlock() {
   const qc = useQueryClient();
   const { data } = useQuery({ queryKey: ["affiliate-stats"], queryFn: () => fn() });
   const [amount, setAmount] = useState(50);
-  const [method, setMethod] = useState<"wallet" | "iban" | "crypto">("iban");
-  const [dest, setDest] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const totalEarned = data?.totalEarned ?? 0;
+  const totalPaid = data?.totalPaid ?? 0;
+  const pendingAmt = data?.pending ?? 0;
+  const available = Math.max(0, totalEarned - totalPaid - pendingAmt);
+  const hasPending = (data?.payouts ?? []).some(
+    (p) => p.status === "pending" || p.status === "approved",
+  );
+
   async function submit() {
+    if (hasPending) {
+      toast.error("Zaten bekleyen bir talebiniz var");
+      return;
+    }
+    if (amount > available) {
+      toast.error(`Talep tutarı kazancınızdan fazla. Uygun: ₺${available}`);
+      return;
+    }
     setBusy(true);
     try {
-      await reqFn({ data: { amount, method, destination: dest } });
+      await reqFn({ data: { amount } });
       toast.success("Talep alındı, admin onayı bekleniyor");
-      setDest("");
       qc.invalidateQueries({ queryKey: ["affiliate-stats"] });
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "hata");
@@ -34,48 +47,44 @@ export function AffiliateBlock() {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        <Stat icon={Coins} label="Toplam Kazanç" value={`${data?.totalEarned ?? 0} pt`} />
-        <Stat icon={Wallet} label="Ödenen" value={`₺${data?.totalPaid ?? 0}`} />
-        <Stat icon={Send} label="Bekleyen" value={`₺${data?.pending ?? 0}`} />
+        <Stat icon={Coins} label="Toplam Kazanç" value={`₺${totalEarned}`} />
+        <Stat icon={Wallet} label="Ödenen" value={`₺${totalPaid}`} />
+        <Stat icon={Send} label="Bekleyen" value={`₺${pendingAmt}`} />
         <Stat icon={Users} label="Davet" value={`${data?.activeReferredCount ?? 0}/${data?.referredCount ?? 0}`} />
       </div>
 
       <div className="glass-card rounded-xl p-5">
-        <div className="text-sm font-semibold mb-3">Ödeme Talebi</div>
-        <div className="grid gap-3 md:grid-cols-3">
-          <div>
+        <div className="text-sm font-semibold mb-1">Cüzdana Ödeme Talebi</div>
+        <div className="text-[11px] font-mono text-muted-foreground mb-3">
+          Talep edilebilir kazanç: <span className="text-primary">₺{available}</span>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
             <label className="text-xs font-mono text-muted-foreground">Tutar (min ₺50)</label>
             <Input
               type="number"
               min={50}
+              max={available}
               value={amount}
               onChange={(e) => setAmount(Number(e.target.value))}
+              disabled={hasPending || available < 50}
             />
           </div>
-          <div>
-            <label className="text-xs font-mono text-muted-foreground">Yöntem</label>
-            <select
-              value={method}
-              onChange={(e) => setMethod(e.target.value as "wallet" | "iban" | "crypto")}
-              className="w-full h-10 rounded-md bg-input border border-border px-3 text-sm"
-            >
-              <option value="iban">IBAN</option>
-              <option value="crypto">USDT (TRC20)</option>
-              <option value="wallet">Cüzdana geri (nakit çekmeden)</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-mono text-muted-foreground">Hedef (IBAN/Adres)</label>
-            <Input value={dest} onChange={(e) => setDest(e.target.value)} placeholder="TR..." />
-          </div>
+          <Button
+            onClick={submit}
+            disabled={busy || amount < 50 || amount > available || hasPending}
+            className="sm:self-end"
+          >
+            Cüzdana aktar
+          </Button>
         </div>
-        <Button onClick={submit} disabled={busy || amount < 50} className="mt-3">
-          Talep gönder
-        </Button>
         <div className="text-[11px] text-muted-foreground mt-2 font-mono">
-          Not: Talep tutarı cüzdanından düşülür, admin onayı ile ödenir. Reddedilirse bakiye iade edilir.
+          {hasPending
+            ? "Bekleyen bir talebiniz var. Sonuçlanana kadar yeni talep açılamaz."
+            : "Onaylandığında tutar doğrudan cüzdanına aktarılır."}
         </div>
       </div>
+
 
       <div className="glass-card rounded-xl p-5">
         <div className="text-sm font-semibold mb-3">Geçmiş Talepler</div>
