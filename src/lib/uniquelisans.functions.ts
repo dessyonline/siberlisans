@@ -255,7 +255,7 @@ export const ulImportedProducts = createServerFn({ method: "GET" })
     await assertAdmin(supabase, userId);
     const { data } = await supabase
       .from("products")
-      .select("id, name, slug, price_try, external_id, external_price, active, updated_at, stock_hint, unlimited_stock, supplier_out_of_stock, price_locked")
+      .select("id, name, slug, price_try, external_id, external_price, active, updated_at, stock_hint, unlimited_stock, supplier_out_of_stock, price_locked, retail_price_try, retail_price_source_url, duration_label")
       .eq("source", "uniquelisans")
       .order("updated_at", { ascending: false })
       .limit(500);
