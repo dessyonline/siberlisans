@@ -297,15 +297,22 @@
 /* Hide the Lovable "Made with" badge in preview/published environments */
 [data-lovable-badge],
 .lovable-badge,
-a[href*="lovable.dev"]:has(> *:is(svg, img)),
+a[href*="lovable.dev"],
+a[href*="lovable.app"][target="_blank"]:has(svg),
 body > div[class*="lovable"],
 body > a[class*="lovable"],
+body > iframe[src*="lovable"],
 *[class*="made-with-lovable"],
-*[class*="lovable-badge"] {
+*[class*="lovable-badge"],
+*[id*="lovable-badge"] {
   display: none !important;
   visibility: hidden !important;
   opacity: 0 !important;
   pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  position: absolute !important;
+  left: -9999px !important;
 }
 
 /* ============ EPIC TIER (destansı) — altın/mor cyber tema ============ */
