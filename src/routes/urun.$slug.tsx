@@ -15,6 +15,7 @@ import { useCart } from "@/lib/cart-store";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ReviewsSection } from "@/components/ReviewsSection";
 import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
+import { RetailPriceBadge } from "@/components/RetailPriceBadge";
 import { ProductLogo } from "@/components/ProductLogo";
 
 const productMetaQuery = (slug: string) => ({
@@ -144,7 +145,7 @@ function ProductDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, active, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, tier, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, active, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, tier, retail_price_try, retail_price_source_url, duration_label, license_keys(status)")
         .eq("slug", slug)
         .single();
       if (error) throw error;
@@ -411,6 +412,15 @@ function ProductDetail() {
                         </span>
                       )}
                     </div>
+                  </div>
+                  <div className="mt-1.5 flex justify-end">
+                    <RetailPriceBadge
+                      currentPrice={flash.hasSale ? flash.final : Number(product.price_try)}
+                      retailPrice={(product as { retail_price_try?: number | null }).retail_price_try}
+                      durationLabel={(product as { duration_label?: string | null }).duration_label}
+                      sourceUrl={(product as { retail_price_source_url?: string | null }).retail_price_source_url}
+                      size="md"
+                    />
                   </div>
 
 

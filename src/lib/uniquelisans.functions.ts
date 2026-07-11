@@ -255,7 +255,7 @@ export const ulImportedProducts = createServerFn({ method: "GET" })
     await assertAdmin(supabase, userId);
     const { data } = await supabase
       .from("products")
-      .select("id, name, slug, price_try, external_id, external_price, active, updated_at, stock_hint, unlimited_stock, supplier_out_of_stock, price_locked")
+      .select("id, name, slug, price_try, external_id, external_price, active, updated_at, stock_hint, unlimited_stock, supplier_out_of_stock, price_locked, retail_price_try, retail_price_source_url, duration_label")
       .eq("source", "uniquelisans")
       .order("updated_at", { ascending: false })
       .limit(500);
@@ -273,6 +273,9 @@ const updateImportedInput = z.object({
   price_try: z.number().positive().optional(),
   markup_percent: z.number().min(0).max(500).optional(),
   price_locked: z.boolean().optional(),
+  retail_price_try: z.number().nonnegative().nullable().optional(),
+  retail_price_source_url: z.string().max(500).nullable().optional(),
+  duration_label: z.string().max(40).nullable().optional(),
 });
 
 export const ulUpdateImported = createServerFn({ method: "POST" })
@@ -290,7 +293,15 @@ export const ulUpdateImported = createServerFn({ method: "POST" })
     if (readErr) throw new Error(readErr.message);
     if (!row) throw new Error("Ürün bulunamadı.");
 
-    const patch: { active?: boolean; price_try?: number; price_locked?: boolean } = {};
+    const patch: {
+      active?: boolean;
+      price_try?: number;
+      price_locked?: boolean;
+      retail_price_try?: number | null;
+      retail_price_source_url?: string | null;
+      duration_label?: string | null;
+      retail_price_updated_at?: string;
+    } = {};
     if (typeof data.active === "boolean") patch.active = data.active;
 
     if (typeof data.price_try === "number") {
@@ -303,6 +314,17 @@ export const ulUpdateImported = createServerFn({ method: "POST" })
     }
 
     if (typeof data.price_locked === "boolean") patch.price_locked = data.price_locked;
+
+    if (data.retail_price_try !== undefined) {
+      patch.retail_price_try = data.retail_price_try === null ? null : Math.round(data.retail_price_try);
+      patch.retail_price_updated_at = new Date().toISOString();
+    }
+    if (data.retail_price_source_url !== undefined) {
+      patch.retail_price_source_url = data.retail_price_source_url || null;
+    }
+    if (data.duration_label !== undefined) {
+      patch.duration_label = data.duration_label || null;
+    }
 
     if (Object.keys(patch).length === 0) return { ok: true as const, changed: false };
 

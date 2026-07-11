@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { ProductLogo } from "@/components/ProductLogo";
 import { AdminEditBadge } from "@/components/AdminEditBadge";
 import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
+import { RetailPriceBadge } from "@/components/RetailPriceBadge";
 import { applyFlash } from "@/lib/flash-sales";
 import {
   Search, X, Sparkles, TrendingUp, Zap, ShieldCheck, ArrowRight, Package, Star, Crown,
@@ -195,6 +196,9 @@ type Row = {
   created_at: string;
   sort_order?: number | null;
   tier?: string | null;
+  retail_price_try?: number | null;
+  retail_price_source_url?: string | null;
+  duration_label?: string | null;
   license_keys: { status: string }[] | null;
 
 };
@@ -238,7 +242,7 @@ function ProductsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, created_at, sort_order, tier, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, created_at, sort_order, tier, retail_price_try, retail_price_source_url, duration_label, license_keys(status)")
         .eq("active", true)
         .order("price_try");
       if (error) throw error;
@@ -623,6 +627,13 @@ function ProductCard({ product: p }: { product: Row }) {
                 ₺{saved.toLocaleString("tr-TR")} tasarruf
               </div>
             )}
+            <div className="mt-1">
+              <RetailPriceBadge
+                currentPrice={hasSale ? final : Number(p.price_try)}
+                retailPrice={p.retail_price_try}
+                durationLabel={p.duration_label}
+              />
+            </div>
           </div>
           {supplierOOS ? (
             <Button size="sm" disabled className="font-mono opacity-60 cursor-not-allowed" title="Tedarikçide geçici olarak stokta yok">
@@ -665,6 +676,9 @@ function HotCard({ product: p }: { product: Row }) {
           <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{p.description ?? p.category}</p>
           <div className="mt-2 font-mono text-sm text-warn">
             ₺{Number(p.price_try).toLocaleString("tr-TR")}
+          </div>
+          <div className="mt-1">
+            <RetailPriceBadge currentPrice={Number(p.price_try)} retailPrice={p.retail_price_try} durationLabel={p.duration_label} />
           </div>
         </div>
         <ArrowRight className="h-4 w-4 shrink-0 text-warn opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5" />
