@@ -199,10 +199,10 @@ function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-primary/20 bg-background/95">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-2 px-3 sm:px-4">
-        <Link to="/" className="flex items-center gap-2 font-mono shrink-0">
-          <Terminal className="h-5 w-5 text-primary" />
-          <span className="text-lg tracking-tight">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-1 px-2 sm:gap-2 sm:px-4">
+        <Link to="/" className="flex items-center gap-1.5 font-mono shrink-0 min-w-0">
+          <Terminal className="h-5 w-5 text-primary shrink-0" />
+          <span className="text-base sm:text-lg tracking-tight truncate">
             <span className="neon-text">Siber</span>
             <span className="text-foreground">PHP</span>
             <span className="text-primary animate-pulse">_</span>
@@ -220,20 +220,21 @@ function SiteHeader() {
         </nav>
 
         {/* Right side actions */}
-        <div className="flex items-center gap-1 sm:gap-2">
+        <div className="flex items-center gap-0.5 sm:gap-2 shrink-0">
           {/* Mobile hamburger menu */}
           <MobileMenu user={user} isAdmin={isAdmin} signOut={signOut} />
 
 
           <CartButton compact />
-          <NotificationBell />
+          <div className="hidden sm:block"><NotificationBell /></div>
+
 
 
 
           {user ? (
             <>
               {isAdmin && (
-                <Button asChild size="sm" variant="outline" className="font-mono px-2 sm:px-3">
+                <Button asChild size="sm" variant="outline" className="hidden sm:inline-flex font-mono px-2 sm:px-3">
                   <Link to="/admin" aria-label="Admin">
                     <LayoutDashboard className="h-4 w-4 sm:mr-1" />
                     <span className="hidden sm:inline">admin</span>
