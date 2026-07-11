@@ -13,9 +13,10 @@ import {
   ulUpdateImported,
   DEFAULT_MARKUP_PERCENT,
 } from "@/lib/uniquelisans.functions";
+import { suggestRetailPrice } from "@/lib/retail-price.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Wallet, Loader2, Download, RefreshCw, Package, CheckCircle2, Zap, Lock, Unlock, Check, X, Pencil } from "lucide-react";
+import { Wallet, Loader2, Download, RefreshCw, Package, CheckCircle2, Zap, Lock, Unlock, Check, X, Pencil, Sparkles, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/uniquelisans")({
   ssr: false,
@@ -318,16 +319,23 @@ type ImportedProduct = {
   unlimited_stock?: boolean;
   supplier_out_of_stock?: boolean | null;
   price_locked?: boolean | null;
+  retail_price_try?: number | null;
+  retail_price_source_url?: string | null;
+  duration_label?: string | null;
 };
 
 function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => void }) {
   const updateFn = useServerFn(ulUpdateImported);
-  const [busy, setBusy] = useState<null | "active" | "lock" | "price" | "markup">(null);
-  const [mode, setMode] = useState<"idle" | "price" | "markup">("idle");
+  const suggestFn = useServerFn(suggestRetailPrice);
+  const [busy, setBusy] = useState<null | "active" | "lock" | "price" | "markup" | "retail" | "ai">(null);
+  const [mode, setMode] = useState<"idle" | "price" | "markup" | "retail">("idle");
   const cost = Number(p.external_price ?? 0);
   const currentMarkup = cost > 0 ? Math.round(((Number(p.price_try) - cost) / cost) * 100) : 0;
   const [priceInput, setPriceInput] = useState<string>(String(Math.round(Number(p.price_try))));
   const [markupInput, setMarkupInput] = useState<string>(String(currentMarkup));
+  const [retailInput, setRetailInput] = useState<string>(String(Math.round(Number(p.retail_price_try ?? 0)) || ""));
+  const [durationInput, setDurationInput] = useState<string>(p.duration_label ?? "");
+  const [sourceInput, setSourceInput] = useState<string>(p.retail_price_source_url ?? "");
 
   const stock = p.stock_hint;
   const unlimited = p.unlimited_stock;
@@ -343,7 +351,7 @@ function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => vo
       ? "text-destructive bg-destructive/10 border-destructive/30"
       : "text-primary bg-primary/10 border-primary/30";
 
-  async function run(kind: "active" | "lock" | "price" | "markup", payload: { id: string; active?: boolean; price_try?: number; markup_percent?: number; price_locked?: boolean }) {
+  async function run(kind: typeof busy, payload: Parameters<typeof updateFn>[0]["data"]) {
     setBusy(kind);
     try {
       await updateFn({ data: payload });
@@ -357,113 +365,154 @@ function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => vo
     }
   }
 
+  async function aiSuggest() {
+    setBusy("ai");
+    try {
+      const r = await suggestFn({ data: { productId: p.id } });
+      if (r.retail_price_try) setRetailInput(String(Math.round(r.retail_price_try)));
+      if (r.duration_label) setDurationInput(r.duration_label);
+      if (r.source_url) setSourceInput(r.source_url);
+      setMode("retail");
+      toast.success(`AI önerisi hazır (güven: %${Math.round((r.confidence ?? 0) * 100)})`);
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  const retail = Number(p.retail_price_try ?? 0);
+  const showRetailChip = retail > Number(p.price_try);
+  const savePct = showRetailChip ? Math.round(((retail - Number(p.price_try)) / retail) * 100) : 0;
+
   return (
-    <div className="glass-card rounded-md p-2.5 flex flex-wrap items-center gap-2 text-sm">
-      <Package className="h-4 w-4 text-primary shrink-0" />
-      <div className="min-w-0 flex-1 truncate">{p.name}</div>
-      <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${stockCls}`}>{stockLabel}</span>
-      {outOfStock && (
-        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded border text-destructive bg-destructive/10 border-destructive/30">
-          tedarikçide yok
-        </span>
-      )}
-      <div className="font-mono text-xs text-muted-foreground">alış: {fmt(cost)} ₺</div>
+    <div className="glass-card rounded-md p-2.5 text-sm space-y-1.5">
+      <div className="flex flex-wrap items-center gap-2">
+        <Package className="h-4 w-4 text-primary shrink-0" />
+        <div className="min-w-0 flex-1 truncate">{p.name}</div>
+        <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${stockCls}`}>{stockLabel}</span>
+        {outOfStock && (
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded border text-destructive bg-destructive/10 border-destructive/30">
+            tedarikçide yok
+          </span>
+        )}
+        <div className="font-mono text-xs text-muted-foreground">alış: {fmt(cost)} ₺</div>
 
-      {mode === "idle" && (
-        <>
-          <div className="font-mono text-xs">satış: <b>{fmt(Number(p.price_try))} ₺</b></div>
-          <div className="font-mono text-xs text-primary">
-            kar: <b>{fmt(Number(p.price_try) - cost)} ₺</b>
-            {cost > 0 && (
-              <span className="text-muted-foreground"> (%{fmt(((Number(p.price_try) - cost) / cost) * 100)})</span>
-            )}
+        {mode === "idle" && (
+          <>
+            <div className="font-mono text-xs">satış: <b>{fmt(Number(p.price_try))} ₺</b></div>
+            <div className="font-mono text-xs text-primary">
+              kar: <b>{fmt(Number(p.price_try) - cost)} ₺</b>
+              {cost > 0 && (
+                <span className="text-muted-foreground"> (%{fmt(((Number(p.price_try) - cost) / cost) * 100)})</span>
+              )}
+            </div>
+            <button type="button" title="satış fiyatını düzenle" onClick={() => { setPriceInput(String(Math.round(Number(p.price_try)))); setMode("price"); }} className="p-1 rounded border border-primary/30 hover:bg-primary/10">
+              <Pencil className="h-3 w-3" />
+            </button>
+            <button type="button" title="kar % düzenle" onClick={() => { setMarkupInput(String(currentMarkup)); setMode("markup"); }} className="px-1.5 py-0.5 rounded border border-primary/30 hover:bg-primary/10 font-mono text-[11px]">
+              %
+            </button>
+          </>
+        )}
+
+        {mode === "price" && (
+          <div className="flex items-center gap-1">
+            <span className="font-mono text-xs text-muted-foreground">satış ₺</span>
+            <input type="number" min={1} value={priceInput} onChange={(e) => setPriceInput(e.target.value)} className="w-24 rounded border border-primary/30 bg-background/40 px-1.5 py-1 font-mono text-xs" />
+            <Button size="sm" variant="outline" disabled={busy === "price"} onClick={() => {
+              const n = Number(priceInput);
+              if (!Number.isFinite(n) || n <= 0) { toast.error("Geçersiz fiyat"); return; }
+              run("price", { id: p.id, price_try: n });
+            }}>
+              {busy === "price" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setMode("idle")}><X className="h-3 w-3" /></Button>
           </div>
-          <button
-            type="button"
-            title="satış fiyatını düzenle"
-            onClick={() => { setPriceInput(String(Math.round(Number(p.price_try)))); setMode("price"); }}
-            className="p-1 rounded border border-primary/30 hover:bg-primary/10"
-          >
-            <Pencil className="h-3 w-3" />
-          </button>
-          <button
-            type="button"
-            title="kar % düzenle"
-            onClick={() => { setMarkupInput(String(currentMarkup)); setMode("markup"); }}
-            className="px-1.5 py-0.5 rounded border border-primary/30 hover:bg-primary/10 font-mono text-[11px]"
-          >
-            %
-          </button>
-        </>
-      )}
+        )}
 
-      {mode === "price" && (
-        <div className="flex items-center gap-1">
-          <span className="font-mono text-xs text-muted-foreground">satış ₺</span>
-          <input
-            type="number"
-            min={1}
-            value={priceInput}
-            onChange={(e) => setPriceInput(e.target.value)}
-            className="w-24 rounded border border-primary/30 bg-background/40 px-1.5 py-1 font-mono text-xs"
-          />
-          <Button size="sm" variant="outline" disabled={busy === "price"} onClick={() => {
-            const n = Number(priceInput);
-            if (!Number.isFinite(n) || n <= 0) { toast.error("Geçersiz fiyat"); return; }
-            run("price", { id: p.id, price_try: n });
-          }}>
-            {busy === "price" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => setMode("idle")}>
-            <X className="h-3 w-3" />
-          </Button>
-        </div>
-      )}
+        {mode === "markup" && (
+          <div className="flex items-center gap-1">
+            <span className="font-mono text-xs text-muted-foreground">kar %</span>
+            <input type="number" min={0} max={500} value={markupInput} onChange={(e) => setMarkupInput(e.target.value)} className="w-16 rounded border border-primary/30 bg-background/40 px-1.5 py-1 font-mono text-xs" />
+            <Button size="sm" variant="outline" disabled={busy === "markup"} onClick={() => {
+              const n = Number(markupInput);
+              if (!Number.isFinite(n) || n < 0) { toast.error("Geçersiz %"); return; }
+              run("markup", { id: p.id, markup_percent: n });
+            }}>
+              {busy === "markup" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setMode("idle")}><X className="h-3 w-3" /></Button>
+          </div>
+        )}
 
-      {mode === "markup" && (
-        <div className="flex items-center gap-1">
-          <span className="font-mono text-xs text-muted-foreground">kar %</span>
-          <input
-            type="number"
-            min={0}
-            max={500}
-            value={markupInput}
-            onChange={(e) => setMarkupInput(e.target.value)}
-            className="w-16 rounded border border-primary/30 bg-background/40 px-1.5 py-1 font-mono text-xs"
-          />
-          <Button size="sm" variant="outline" disabled={busy === "markup"} onClick={() => {
-            const n = Number(markupInput);
-            if (!Number.isFinite(n) || n < 0) { toast.error("Geçersiz %"); return; }
-            run("markup", { id: p.id, markup_percent: n });
-          }}>
-            {busy === "markup" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
-          </Button>
-          <Button size="sm" variant="ghost" onClick={() => setMode("idle")}>
-            <X className="h-3 w-3" />
-          </Button>
-        </div>
-      )}
+        <button type="button" title={p.price_locked ? "fiyat kilidi açık — senkronda değişmez" : "senkron fiyatı yeniden yazabilir"} disabled={busy === "lock"} onClick={() => run("lock", { id: p.id, price_locked: !p.price_locked })} className={`p-1 rounded border font-mono text-[10px] flex items-center gap-1 ${p.price_locked ? "text-primary border-primary/40 bg-primary/10" : "text-muted-foreground border-muted-foreground/30"}`}>
+          {busy === "lock" ? <Loader2 className="h-3 w-3 animate-spin" /> : p.price_locked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
+          {p.price_locked ? "kilitli" : "kilitsiz"}
+        </button>
 
-      <button
-        type="button"
-        title={p.price_locked ? "fiyat kilidi açık — senkronda değişmez" : "senkron fiyatı yeniden yazabilir"}
-        disabled={busy === "lock"}
-        onClick={() => run("lock", { id: p.id, price_locked: !p.price_locked })}
-        className={`p-1 rounded border font-mono text-[10px] flex items-center gap-1 ${p.price_locked ? "text-primary border-primary/40 bg-primary/10" : "text-muted-foreground border-muted-foreground/30"}`}
-      >
-        {busy === "lock" ? <Loader2 className="h-3 w-3 animate-spin" /> : p.price_locked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
-        {p.price_locked ? "kilitli" : "kilitsiz"}
-      </button>
+        <button type="button" title={p.active ? "aktif — kapatmak için tıkla" : "pasif — açmak için tıkla"} disabled={busy === "active"} onClick={() => run("active", { id: p.id, active: !p.active })} className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${p.active ? "text-primary bg-primary/10 border-primary/30" : "text-muted-foreground border-muted-foreground/30"}`}>
+          {busy === "active" ? <Loader2 className="h-3 w-3 animate-spin inline" /> : p.active ? "aktif" : "pasif"}
+        </button>
+      </div>
 
-      <button
-        type="button"
-        title={p.active ? "aktif — kapatmak için tıkla" : "pasif — açmak için tıkla"}
-        disabled={busy === "active"}
-        onClick={() => run("active", { id: p.id, active: !p.active })}
-        className={`text-[10px] font-mono px-1.5 py-0.5 rounded border ${p.active ? "text-primary bg-primary/10 border-primary/30" : "text-muted-foreground border-muted-foreground/30"}`}
-      >
-        {busy === "active" ? <Loader2 className="h-3 w-3 animate-spin inline" /> : p.active ? "aktif" : "pasif"}
-      </button>
+      {/* Orijinal satıcı fiyatı satırı */}
+      <div className="flex flex-wrap items-center gap-2 border-t border-primary/10 pt-1.5">
+        <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">orijinal:</span>
+        {mode !== "retail" ? (
+          <>
+            {showRetailChip ? (
+              <>
+                <span className="font-mono text-xs line-through text-muted-foreground/70">₺{retail.toLocaleString("tr-TR")}</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded border border-primary/40 bg-primary/10 text-primary">
+                  %{savePct} tasarruf
+                </span>
+              </>
+            ) : (
+              <span className="text-[10px] font-mono text-muted-foreground/60">tanımsız</span>
+            )}
+            {p.duration_label && (
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded border border-cyan/30 bg-cyan/10 text-cyan">
+                {p.duration_label}
+              </span>
+            )}
+            {p.retail_price_source_url && (
+              <a href={p.retail_price_source_url} target="_blank" rel="noreferrer" className="text-[10px] text-muted-foreground hover:text-primary inline-flex items-center gap-1 underline decoration-dotted">
+                <ExternalLink className="h-2.5 w-2.5" /> kaynak
+              </a>
+            )}
+            <button type="button" onClick={() => setMode("retail")} className="p-1 rounded border border-primary/30 hover:bg-primary/10" title="düzenle">
+              <Pencil className="h-3 w-3" />
+            </button>
+            <button type="button" onClick={aiSuggest} disabled={busy === "ai"} className="px-1.5 py-0.5 rounded border border-cyan/40 bg-cyan/10 text-cyan hover:bg-cyan/20 font-mono text-[10px] inline-flex items-center gap-1" title="AI öneri">
+              {busy === "ai" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+              AI öner
+            </button>
+          </>
+        ) : (
+          <div className="flex flex-wrap items-center gap-1 flex-1">
+            <input type="number" min={0} placeholder="orijinal ₺" value={retailInput} onChange={(e) => setRetailInput(e.target.value)} className="w-24 rounded border border-primary/30 bg-background/40 px-1.5 py-1 font-mono text-xs" />
+            <input type="text" placeholder='süre (örn "1 yıl")' value={durationInput} onChange={(e) => setDurationInput(e.target.value)} className="w-28 rounded border border-primary/30 bg-background/40 px-1.5 py-1 font-mono text-xs" />
+            <input type="url" placeholder="resmi satıcı URL" value={sourceInput} onChange={(e) => setSourceInput(e.target.value)} className="flex-1 min-w-[160px] rounded border border-primary/30 bg-background/40 px-1.5 py-1 font-mono text-xs" />
+            <Button size="sm" variant="outline" disabled={busy === "retail"} onClick={() => {
+              const n = retailInput.trim() === "" ? null : Number(retailInput);
+              if (n !== null && (!Number.isFinite(n) || n < 0)) { toast.error("Geçersiz fiyat"); return; }
+              run("retail", {
+                id: p.id,
+                retail_price_try: n,
+                duration_label: durationInput.trim() || null,
+                retail_price_source_url: sourceInput.trim() || null,
+              });
+            }}>
+              {busy === "retail" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setMode("idle")}><X className="h-3 w-3" /></Button>
+            <Button size="sm" variant="ghost" onClick={aiSuggest} disabled={busy === "ai"} title="AI öneri">
+              {busy === "ai" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 text-cyan" />}
+            </Button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
