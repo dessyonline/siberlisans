@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          after_data: Json | null
+          before_data: Json | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          ip_address: string | null
+          metadata: Json | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          ip_address?: string | null
+          metadata?: Json | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       affiliate_payouts: {
         Row: {
           admin_note: string | null
@@ -1849,6 +1894,28 @@ export type Database = {
           sold: number
         }[]
       }
+      admin_profit_by_product: {
+        Args: { _from: string; _to: string }
+        Returns: {
+          cost: number
+          product_id: string
+          product_name: string
+          profit: number
+          qty_sold: number
+          revenue: number
+        }[]
+      }
+      admin_profit_report: {
+        Args: { _from: string; _granularity?: string; _to: string }
+        Returns: {
+          bucket: string
+          cost: number
+          orders_count: number
+          profit: number
+          refunds: number
+          revenue: number
+        }[]
+      }
       admin_purge_available_keys: {
         Args: { _product_id: string }
         Returns: number
@@ -2052,6 +2119,17 @@ export type Database = {
           masked_user: string
           rating: number
         }[]
+      }
+      log_admin_action: {
+        Args: {
+          _action: string
+          _after: Json
+          _before: Json
+          _entity_id: string
+          _entity_type: string
+          _metadata: Json
+        }
+        Returns: string
       }
       mark_abandonment_notified: {
         Args: { _order_id: string }
