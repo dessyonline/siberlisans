@@ -87,8 +87,8 @@ function PartnerLanding() {
           </h1>
           <p className="text-muted-foreground max-w-xl mx-auto text-sm md:text-base">
             SiberPHP güvenli lisans dağıtım sistemi. Bu link ile kayıt ol, ilk{" "}
-            <span className="text-primary font-mono">₺300+</span> alışverişte{" "}
-            <span className="text-primary font-mono">ikinize de ₺10</span> cüzdan bakiyesi düşer.
+            <span className="text-primary font-mono">₺300+</span> siparişinde sana özel{" "}
+            <span className="text-primary font-mono">%5 indirim kuponu</span> (max ₺40) hediye.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
