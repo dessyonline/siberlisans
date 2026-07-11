@@ -118,7 +118,9 @@ function DavetPage() {
         <h1 className="mt-1.5 font-mono text-2xl md:text-3xl neon-text">Partner Paneli</h1>
         <p className="mt-1 text-sm text-muted-foreground max-w-xl">
           Davet linkinle kayıt olan arkadaşın en az ₺300 tutarında sipariş verdiğinde{" "}
-          <span className="text-primary font-mono">ikinize de ₺10 bakiye</span>. (En fazla 5 davet.)
+          <span className="text-primary font-mono">sana %5 nakit</span> cüzdanına,{" "}
+          <span className="text-primary font-mono">arkadaşına %5 indirim kuponu</span> düşer
+          (sipariş başına max ₺40). En fazla 5 davet.
         </p>
       </div>
 
