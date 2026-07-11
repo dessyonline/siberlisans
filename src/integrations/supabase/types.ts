@@ -1234,6 +1234,7 @@ export type Database = {
           last_seen_ip: string | null
           last_streak_at: string | null
           login_streak: number
+          partner_slug: string | null
           referral_bonus_paid: boolean
           referral_code: string | null
           referred_by: string | null
@@ -1251,6 +1252,7 @@ export type Database = {
           last_seen_ip?: string | null
           last_streak_at?: string | null
           login_streak?: number
+          partner_slug?: string | null
           referral_bonus_paid?: boolean
           referral_code?: string | null
           referred_by?: string | null
@@ -1268,6 +1270,7 @@ export type Database = {
           last_seen_ip?: string | null
           last_streak_at?: string | null
           login_streak?: number
+          partner_slug?: string | null
           referral_bonus_paid?: boolean
           referral_code?: string | null
           referred_by?: string | null
@@ -1332,6 +1335,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      referral_clicks: {
+        Row: {
+          converted: boolean
+          converted_user_id: string | null
+          created_at: string
+          id: string
+          partner_user_id: string | null
+          referral_code: string
+          source: string | null
+          ua_hash: string | null
+        }
+        Insert: {
+          converted?: boolean
+          converted_user_id?: string | null
+          created_at?: string
+          id?: string
+          partner_user_id?: string | null
+          referral_code: string
+          source?: string | null
+          ua_hash?: string | null
+        }
+        Update: {
+          converted?: boolean
+          converted_user_id?: string | null
+          created_at?: string
+          id?: string
+          partner_user_id?: string | null
+          referral_code?: string
+          source?: string | null
+          ua_hash?: string | null
+        }
+        Relationships: []
       }
       stock_notifications: {
         Row: {
@@ -2147,6 +2183,17 @@ export type Database = {
         Args: { _order_id: string }
         Returns: undefined
       }
+      partner_stats: {
+        Args: { _user_id: string }
+        Returns: {
+          clicks_30d: number
+          clicks_total: number
+          conversion_rate: number
+          conversions: number
+          daily: Json
+          earnings_30d: number
+        }[]
+      }
       pay_order_with_wallet: {
         Args: { _order_id: string }
         Returns: {
@@ -2175,6 +2222,10 @@ export type Database = {
         Returns: string
       }
       recompute_badges: { Args: { _user_id: string }; Returns: undefined }
+      record_referral_click: {
+        Args: { _code: string; _source: string; _ua_hash: string }
+        Returns: string
+      }
       refund_order_to_wallet: { Args: { _order_id: string }; Returns: number }
       refund_points_discount: { Args: { _order_id: string }; Returns: number }
       reject_topup: {
