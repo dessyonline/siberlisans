@@ -318,6 +318,7 @@ export type Database = {
           min_order_try: number
           updated_at: string
           used_count: number
+          user_id: string | null
         }
         Insert: {
           code: string
@@ -331,6 +332,7 @@ export type Database = {
           min_order_try?: number
           updated_at?: string
           used_count?: number
+          user_id?: string | null
         }
         Update: {
           code?: string
@@ -344,6 +346,7 @@ export type Database = {
           min_order_try?: number
           updated_at?: string
           used_count?: number
+          user_id?: string | null
         }
         Relationships: []
       }
