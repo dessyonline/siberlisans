@@ -62,6 +62,7 @@ import { Route as AuthenticatedAdminUniquelisansRouteImport } from './routes/_au
 import { Route as AuthenticatedAdminTedarikciLogRouteImport } from './routes/_authenticated/admin/tedarikci-log'
 import { Route as AuthenticatedAdminSiparislerRouteImport } from './routes/_authenticated/admin/siparisler'
 import { Route as AuthenticatedAdminShopierRouteImport } from './routes/_authenticated/admin/shopier'
+import { Route as AuthenticatedAdminRaporRouteImport } from './routes/_authenticated/admin/rapor'
 import { Route as AuthenticatedAdminPromosyonlarRouteImport } from './routes/_authenticated/admin/promosyonlar'
 import { Route as AuthenticatedAdminPopulerRouteImport } from './routes/_authenticated/admin/populer'
 import { Route as AuthenticatedAdminPartnerRouteImport } from './routes/_authenticated/admin/partner'
@@ -74,6 +75,7 @@ import { Route as AuthenticatedAdminKeylerRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminKampanyalarRouteImport } from './routes/_authenticated/admin/kampanyalar'
 import { Route as AuthenticatedAdminFlashRouteImport } from './routes/_authenticated/admin/flash'
 import { Route as AuthenticatedAdminDestekRouteImport } from './routes/_authenticated/admin/destek'
+import { Route as AuthenticatedAdminDenetimRouteImport } from './routes/_authenticated/admin/denetim'
 import { Route as AuthenticatedAdminCuzdanRouteImport } from './routes/_authenticated/admin/cuzdan'
 import { Route as AuthenticatedAdminCaprazSatisRouteImport } from './routes/_authenticated/admin/capraz-satis'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin/blog'
@@ -360,6 +362,11 @@ const AuthenticatedAdminShopierRoute =
     path: '/shopier',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminRaporRoute = AuthenticatedAdminRaporRouteImport.update({
+  id: '/rapor',
+  path: '/rapor',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
 const AuthenticatedAdminPromosyonlarRoute =
   AuthenticatedAdminPromosyonlarRouteImport.update({
     id: '/promosyonlar',
@@ -429,6 +436,12 @@ const AuthenticatedAdminDestekRoute =
   AuthenticatedAdminDestekRouteImport.update({
     id: '/destek',
     path: '/destek',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminDenetimRoute =
+  AuthenticatedAdminDenetimRouteImport.update({
+    id: '/denetim',
+    path: '/denetim',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 const AuthenticatedAdminCuzdanRoute =
@@ -551,6 +564,7 @@ export interface FileRoutesByFullPath {
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/capraz-satis': typeof AuthenticatedAdminCaprazSatisRoute
   '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
+  '/admin/denetim': typeof AuthenticatedAdminDenetimRoute
   '/admin/destek': typeof AuthenticatedAdminDestekRoute
   '/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
@@ -563,6 +577,7 @@ export interface FileRoutesByFullPath {
   '/admin/partner': typeof AuthenticatedAdminPartnerRoute
   '/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
+  '/admin/rapor': typeof AuthenticatedAdminRaporRoute
   '/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
@@ -628,6 +643,7 @@ export interface FileRoutesByTo {
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/capraz-satis': typeof AuthenticatedAdminCaprazSatisRoute
   '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
+  '/admin/denetim': typeof AuthenticatedAdminDenetimRoute
   '/admin/destek': typeof AuthenticatedAdminDestekRoute
   '/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
@@ -640,6 +656,7 @@ export interface FileRoutesByTo {
   '/admin/partner': typeof AuthenticatedAdminPartnerRoute
   '/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
+  '/admin/rapor': typeof AuthenticatedAdminRaporRoute
   '/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
@@ -708,6 +725,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/_authenticated/admin/capraz-satis': typeof AuthenticatedAdminCaprazSatisRoute
   '/_authenticated/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
+  '/_authenticated/admin/denetim': typeof AuthenticatedAdminDenetimRoute
   '/_authenticated/admin/destek': typeof AuthenticatedAdminDestekRoute
   '/_authenticated/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/_authenticated/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
@@ -720,6 +738,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/partner': typeof AuthenticatedAdminPartnerRoute
   '/_authenticated/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/_authenticated/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
+  '/_authenticated/admin/rapor': typeof AuthenticatedAdminRaporRoute
   '/_authenticated/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/_authenticated/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
   '/_authenticated/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
@@ -788,6 +807,7 @@ export interface FileRouteTypes {
     | '/admin/blog'
     | '/admin/capraz-satis'
     | '/admin/cuzdan'
+    | '/admin/denetim'
     | '/admin/destek'
     | '/admin/flash'
     | '/admin/kampanyalar'
@@ -800,6 +820,7 @@ export interface FileRouteTypes {
     | '/admin/partner'
     | '/admin/populer'
     | '/admin/promosyonlar'
+    | '/admin/rapor'
     | '/admin/shopier'
     | '/admin/siparisler'
     | '/admin/tedarikci-log'
@@ -865,6 +886,7 @@ export interface FileRouteTypes {
     | '/admin/blog'
     | '/admin/capraz-satis'
     | '/admin/cuzdan'
+    | '/admin/denetim'
     | '/admin/destek'
     | '/admin/flash'
     | '/admin/kampanyalar'
@@ -877,6 +899,7 @@ export interface FileRouteTypes {
     | '/admin/partner'
     | '/admin/populer'
     | '/admin/promosyonlar'
+    | '/admin/rapor'
     | '/admin/shopier'
     | '/admin/siparisler'
     | '/admin/tedarikci-log'
@@ -944,6 +967,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/blog'
     | '/_authenticated/admin/capraz-satis'
     | '/_authenticated/admin/cuzdan'
+    | '/_authenticated/admin/denetim'
     | '/_authenticated/admin/destek'
     | '/_authenticated/admin/flash'
     | '/_authenticated/admin/kampanyalar'
@@ -956,6 +980,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/partner'
     | '/_authenticated/admin/populer'
     | '/_authenticated/admin/promosyonlar'
+    | '/_authenticated/admin/rapor'
     | '/_authenticated/admin/shopier'
     | '/_authenticated/admin/siparisler'
     | '/_authenticated/admin/tedarikci-log'
@@ -1393,6 +1418,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminShopierRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/rapor': {
+      id: '/_authenticated/admin/rapor'
+      path: '/rapor'
+      fullPath: '/admin/rapor'
+      preLoaderRoute: typeof AuthenticatedAdminRaporRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/promosyonlar': {
       id: '/_authenticated/admin/promosyonlar'
       path: '/promosyonlar'
@@ -1475,6 +1507,13 @@ declare module '@tanstack/react-router' {
       path: '/destek'
       fullPath: '/admin/destek'
       preLoaderRoute: typeof AuthenticatedAdminDestekRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/denetim': {
+      id: '/_authenticated/admin/denetim'
+      path: '/denetim'
+      fullPath: '/admin/denetim'
+      preLoaderRoute: typeof AuthenticatedAdminDenetimRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/cuzdan': {
@@ -1571,6 +1610,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
   AuthenticatedAdminCaprazSatisRoute: typeof AuthenticatedAdminCaprazSatisRoute
   AuthenticatedAdminCuzdanRoute: typeof AuthenticatedAdminCuzdanRoute
+  AuthenticatedAdminDenetimRoute: typeof AuthenticatedAdminDenetimRoute
   AuthenticatedAdminDestekRoute: typeof AuthenticatedAdminDestekRoute
   AuthenticatedAdminFlashRoute: typeof AuthenticatedAdminFlashRoute
   AuthenticatedAdminKampanyalarRoute: typeof AuthenticatedAdminKampanyalarRoute
@@ -1583,6 +1623,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminPartnerRoute: typeof AuthenticatedAdminPartnerRoute
   AuthenticatedAdminPopulerRoute: typeof AuthenticatedAdminPopulerRoute
   AuthenticatedAdminPromosyonlarRoute: typeof AuthenticatedAdminPromosyonlarRoute
+  AuthenticatedAdminRaporRoute: typeof AuthenticatedAdminRaporRoute
   AuthenticatedAdminShopierRoute: typeof AuthenticatedAdminShopierRoute
   AuthenticatedAdminSiparislerRoute: typeof AuthenticatedAdminSiparislerRoute
   AuthenticatedAdminTedarikciLogRoute: typeof AuthenticatedAdminTedarikciLogRoute
@@ -1599,6 +1640,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
     AuthenticatedAdminCaprazSatisRoute: AuthenticatedAdminCaprazSatisRoute,
     AuthenticatedAdminCuzdanRoute: AuthenticatedAdminCuzdanRoute,
+    AuthenticatedAdminDenetimRoute: AuthenticatedAdminDenetimRoute,
     AuthenticatedAdminDestekRoute: AuthenticatedAdminDestekRoute,
     AuthenticatedAdminFlashRoute: AuthenticatedAdminFlashRoute,
     AuthenticatedAdminKampanyalarRoute: AuthenticatedAdminKampanyalarRoute,
@@ -1611,6 +1653,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminPartnerRoute: AuthenticatedAdminPartnerRoute,
     AuthenticatedAdminPopulerRoute: AuthenticatedAdminPopulerRoute,
     AuthenticatedAdminPromosyonlarRoute: AuthenticatedAdminPromosyonlarRoute,
+    AuthenticatedAdminRaporRoute: AuthenticatedAdminRaporRoute,
     AuthenticatedAdminShopierRoute: AuthenticatedAdminShopierRoute,
     AuthenticatedAdminSiparislerRoute: AuthenticatedAdminSiparislerRoute,
     AuthenticatedAdminTedarikciLogRoute: AuthenticatedAdminTedarikciLogRoute,
@@ -1703,13 +1746,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

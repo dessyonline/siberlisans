@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { resolveLogoUrl } from "@/lib/logo-resolver";
+import { writeAuditLog } from "@/lib/admin-audit.functions";
 
 const DEFAULT_URL = "https://bayi.uniquelisans.com/api";
 // Varsayılan markup (admin isterse import ederken override eder)
@@ -307,6 +308,14 @@ export const ulUpdateImported = createServerFn({ method: "POST" })
 
     const { error } = await supabase.from("products").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
+    await writeAuditLog(supabase, {
+      action: "product.update",
+      entity_type: "product",
+      entity_id: data.id,
+      before: { external_price: row.external_price },
+      after: patch,
+      metadata: { source: "uniquelisans" },
+    });
     return { ok: true as const, changed: true };
   });
 

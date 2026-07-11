@@ -22,6 +22,8 @@ import {
   Sparkles,
   Bell,
   RefreshCw,
+  TrendingUp,
+  History,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -42,6 +44,8 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
   { to: "/admin", label: "dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/admin/rapor", label: "kar/zarar raporu", icon: TrendingUp },
+  { to: "/admin/denetim", label: "denetim kaydı", icon: History },
   { to: "/admin/destek", label: "destek", icon: LifeBuoy },
   { to: "/admin/siparisler", label: "siparişler", icon: ShoppingCart },
   { to: "/admin/abonelikler", label: "abonelikler", icon: RefreshCw },
