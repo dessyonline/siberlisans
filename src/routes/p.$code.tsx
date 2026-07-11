@@ -13,12 +13,12 @@ export const Route = createFileRoute("/p/$code")({
         { title: `${name} seni davet ediyor — SiberPHP` },
         {
           name: "description",
-          content: `${name} davet linki ile kayıt ol, ilk ₺300+ alışverişte ikinize de ₺10 cüzdan bakiyesi.`,
+          content: `${name} davet linki ile kayıt ol, ilk ₺300+ siparişinde %5 indirim kuponu (max ₺40) senin olsun.`,
         },
         { property: "og:title", content: `${name} · SiberPHP davet` },
         {
           property: "og:description",
-          content: "Kayıt ol, ilk siparişte ₺10 bakiye kazan.",
+          content: "Kayıt ol, ilk ₺300+ siparişinde %5 indirim kuponu kazan.",
         },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
@@ -87,8 +87,8 @@ function PartnerLanding() {
           </h1>
           <p className="text-muted-foreground max-w-xl mx-auto text-sm md:text-base">
             SiberPHP güvenli lisans dağıtım sistemi. Bu link ile kayıt ol, ilk{" "}
-            <span className="text-primary font-mono">₺300+</span> alışverişte{" "}
-            <span className="text-primary font-mono">ikinize de ₺10</span> cüzdan bakiyesi düşer.
+            <span className="text-primary font-mono">₺300+</span> siparişinde sana özel{" "}
+            <span className="text-primary font-mono">%5 indirim kuponu</span> (max ₺40) hediye.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
@@ -118,7 +118,7 @@ function PartnerLanding() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-3 mt-12">
-          <Perk icon={Gift} title="₺10 hoşgeldin" desc="İlk ₺300 alışverişte cüzdan bakiyesi" />
+          <Perk icon={Gift} title="%5 hoşgeldin kuponu" desc="İlk ₺300+ siparişinde otomatik tanımlanır (max ₺40)" />
           <Perk icon={Zap} title="Anında teslim" desc="Ödeme sonrası saniyeler içinde lisans" />
           <Perk icon={Shield} title="Güvenli" desc="HWID koruma + garanti" />
         </div>
@@ -129,8 +129,8 @@ function PartnerLanding() {
             {[
               "Kayıt ol butonuna tıkla, davet kodu otomatik uygulanır",
               "E-posta ile hesap oluştur ve doğrula",
-              "İlk ₺300+ alışverişini tamamla",
-              "₺10 bakiye anında cüzdanına yatar",
+              "%5 indirim kuponun hesabına tanımlansın (90 gün geçerli)",
+              "İlk ₺300+ siparişinde kuponu uygula, indirim anında düşsün",
             ].map((s, i) => (
               <li key={i} className="flex items-start gap-2">
                 <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />

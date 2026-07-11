@@ -98,7 +98,7 @@ function DavetPage() {
       try {
         await navigator.share({
           title: "SiberPHP — Güvenli lisans dağıtım sistemi",
-          text: "Bu davet linki ile kayıt olursan ikinize de ₺10 bakiye (min ₺300 alışverişte)!",
+          text: "Davet linkimle kayıt ol, ilk ₺300+ siparişinde %5 indirim kuponu senin, %5 nakit benim olsun!",
           url: link,
         });
       } catch {
@@ -118,7 +118,9 @@ function DavetPage() {
         <h1 className="mt-1.5 font-mono text-2xl md:text-3xl neon-text">Partner Paneli</h1>
         <p className="mt-1 text-sm text-muted-foreground max-w-xl">
           Davet linkinle kayıt olan arkadaşın en az ₺300 tutarında sipariş verdiğinde{" "}
-          <span className="text-primary font-mono">ikinize de ₺10 bakiye</span>. (En fazla 5 davet.)
+          <span className="text-primary font-mono">sana %5 nakit</span> cüzdanına,{" "}
+          <span className="text-primary font-mono">arkadaşına %5 indirim kuponu</span> düşer
+          (sipariş başına max ₺40). En fazla 5 davet.
         </p>
       </div>
 
@@ -396,19 +398,19 @@ function ShareTemplates({
     () => [
       {
         label: "kısa",
-        text: `SiberPHP'ye özel davet linkim: ${link} — ilk ₺300 alışverişte ikimize de ₺10 bakiye.`,
+        text: `SiberPHP davet linkim: ${link} — ilk ₺300+ siparişinde sana %5 indirim kuponu (max ₺40).`,
       },
       {
         label: "twitter/x",
-        text: `Lisans işini SiberPHP'de hallediyorum, güvenli ve hızlı. Davet linkimle kayıt olursan ilk ₺300+ siparişte ikimize de ₺10 bakiye düşer 👾\n${link}`,
+        text: `Lisans işini SiberPHP'de hallediyorum, güvenli ve hızlı. Davet linkimle kayıt ol, ilk ₺300+ siparişinde %5 indirim kuponu senin olsun 👾\n${link}`,
       },
       {
         label: "whatsapp",
-        text: `Selam! SiberPHP'den anında lisans alabiliyorsun. Bu linkle kayıt ol, ilk ₺300 alışverişinde ikimize de ₺10 cüzdan bakiyesi geliyor: ${link}`,
+        text: `Selam! SiberPHP'den anında lisans alabiliyorsun. Bu linkle kayıt ol, ilk ₺300+ siparişinde %5 (max ₺40) indirim kuponu kazan: ${link}`,
       },
       {
         label: "discord",
-        text: `**${name}** SiberPHP partneri 🎯\n> Bu link ile kayıt ol, ilk ₺300+ siparişte ikimize de ₺10 bakiye.\n${link}`,
+        text: `**${name}** SiberPHP partneri 🎯\n> Bu linkle kayıt ol, ilk ₺300+ siparişinde %5 indirim kuponu (max ₺40) kazan.\n${link}`,
       },
     ],
     [link, name],
