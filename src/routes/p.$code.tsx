@@ -13,12 +13,12 @@ export const Route = createFileRoute("/p/$code")({
         { title: `${name} seni davet ediyor — SiberPHP` },
         {
           name: "description",
-          content: `${name} davet linki ile kayıt ol, ilk ₺300+ alışverişte ikinize de ₺10 cüzdan bakiyesi.`,
+          content: `${name} davet linki ile kayıt ol, ilk ₺300+ siparişinde %5 indirim kuponu (max ₺40) senin olsun.`,
         },
         { property: "og:title", content: `${name} · SiberPHP davet` },
         {
           property: "og:description",
-          content: "Kayıt ol, ilk siparişte ₺10 bakiye kazan.",
+          content: "Kayıt ol, ilk ₺300+ siparişinde %5 indirim kuponu kazan.",
         },
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
