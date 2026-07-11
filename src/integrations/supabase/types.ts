@@ -2136,6 +2136,14 @@ export type Database = {
           status: Database["public"]["Enums"]["order_status"]
         }[]
       }
+      get_partner_by_code: {
+        Args: { _code: string }
+        Returns: {
+          display_name: string
+          partner_slug: string
+          referral_code: string
+        }[]
+      }
       guess_product_category: {
         Args: { _description?: string; _name: string }
         Returns: string
