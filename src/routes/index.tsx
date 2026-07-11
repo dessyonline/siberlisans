@@ -35,6 +35,7 @@ import { ProductCardSkeleton } from "@/components/Skeleton";
 import { ProductLogo } from "@/components/ProductLogo";
 import { UserAvatar } from "@/components/UserAvatar";
 import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
+import { RetailPriceBadge } from "@/components/RetailPriceBadge";
 import { applyFlash } from "@/lib/flash-sales";
 import { useAuth } from "@/lib/auth-context";
 import { Wallet } from "lucide-react";
@@ -143,7 +144,7 @@ function Index() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, image_url, category, featured, manual_fulfillment, stock_hint, unlimited_stock, created_at, sort_order, tier, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, image_url, category, featured, manual_fulfillment, stock_hint, unlimited_stock, created_at, sort_order, tier, retail_price_try, retail_price_source_url, duration_label, license_keys(status)")
         .eq("active", true)
         .order("price_try");
       if (error) throw error;
@@ -743,6 +744,9 @@ function ProductCard({
     stock_hint?: number | null;
     unlimited_stock?: boolean | null;
     tier?: string | null;
+    retail_price_try?: number | null;
+    retail_price_source_url?: string | null;
+    duration_label?: string | null;
     license_keys?: { status: string }[] | null;
   };
   featured?: boolean;
@@ -848,6 +852,13 @@ function ProductCard({
               ₺{saved.toLocaleString("tr-TR")} tasarruf
             </div>
           )}
+          <div className="mt-1">
+            <RetailPriceBadge
+              currentPrice={hasSale ? final : Number(p.price_try)}
+              retailPrice={p.retail_price_try}
+              durationLabel={p.duration_label}
+            />
+          </div>
         </div>
         <Button asChild size="sm" disabled={soldOut} className={epic ? "bg-[oklch(0.78_0.16_75)] hover:bg-[oklch(0.72_0.16_75)] text-black" : ""}>
           <Link to="/urun/$slug" params={{ slug: p.slug }}>
