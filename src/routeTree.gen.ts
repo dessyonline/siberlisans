@@ -27,6 +27,7 @@ import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
 import { Route as SiparisRefRouteImport } from './routes/siparis.$ref'
 import { Route as PaketlerSlugRouteImport } from './routes/paketler.$slug'
+import { Route as PCodeRouteImport } from './routes/p.$code'
 import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as BakiyeYukleTopupIdRouteImport } from './routes/bakiye-yukle.$topupId'
@@ -176,6 +177,11 @@ const SiparisRefRoute = SiparisRefRouteImport.update({
 const PaketlerSlugRoute = PaketlerSlugRouteImport.update({
   id: '/paketler/$slug',
   path: '/paketler/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PCodeRoute = PCodeRouteImport.update({
+  id: '/p/$code',
+  path: '/p/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OdemeOrderIdRoute = OdemeOrderIdRouteImport.update({
@@ -553,6 +559,7 @@ export interface FileRoutesByFullPath {
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
+  '/p/$code': typeof PCodeRoute
   '/paketler/$slug': typeof PaketlerSlugRoute
   '/siparis/$ref': typeof SiparisRefRoute
   '/urun/$slug': typeof UrunSlugRoute
@@ -632,6 +639,7 @@ export interface FileRoutesByTo {
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
+  '/p/$code': typeof PCodeRoute
   '/paketler/$slug': typeof PaketlerSlugRoute
   '/siparis/$ref': typeof SiparisRefRoute
   '/urun/$slug': typeof UrunSlugRoute
@@ -714,6 +722,7 @@ export interface FileRoutesById {
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
+  '/p/$code': typeof PCodeRoute
   '/paketler/$slug': typeof PaketlerSlugRoute
   '/siparis/$ref': typeof SiparisRefRoute
   '/urun/$slug': typeof UrunSlugRoute
@@ -796,6 +805,7 @@ export interface FileRouteTypes {
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
     | '/odeme/$orderId'
+    | '/p/$code'
     | '/paketler/$slug'
     | '/siparis/$ref'
     | '/urun/$slug'
@@ -875,6 +885,7 @@ export interface FileRouteTypes {
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
     | '/odeme/$orderId'
+    | '/p/$code'
     | '/paketler/$slug'
     | '/siparis/$ref'
     | '/urun/$slug'
@@ -956,6 +967,7 @@ export interface FileRouteTypes {
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
     | '/odeme/$orderId'
+    | '/p/$code'
     | '/paketler/$slug'
     | '/siparis/$ref'
     | '/urun/$slug'
@@ -1029,6 +1041,7 @@ export interface RootRouteChildren {
   BakiyeYukleTopupIdRoute: typeof BakiyeYukleTopupIdRoute
   BlogSlugRoute: typeof BlogSlugRoute
   OdemeOrderIdRoute: typeof OdemeOrderIdRoute
+  PCodeRoute: typeof PCodeRoute
   PaketlerSlugRoute: typeof PaketlerSlugRoute
   SiparisRefRoute: typeof SiparisRefRoute
   UrunSlugRoute: typeof UrunSlugRoute
@@ -1171,6 +1184,13 @@ declare module '@tanstack/react-router' {
       path: '/paketler/$slug'
       fullPath: '/paketler/$slug'
       preLoaderRoute: typeof PaketlerSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p/$code': {
+      id: '/p/$code'
+      path: '/p/$code'
+      fullPath: '/p/$code'
+      preLoaderRoute: typeof PCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/odeme/$orderId': {
@@ -1726,6 +1746,7 @@ const rootRouteChildren: RootRouteChildren = {
   BakiyeYukleTopupIdRoute: BakiyeYukleTopupIdRoute,
   BlogSlugRoute: BlogSlugRoute,
   OdemeOrderIdRoute: OdemeOrderIdRoute,
+  PCodeRoute: PCodeRoute,
   PaketlerSlugRoute: PaketlerSlugRoute,
   SiparisRefRoute: SiparisRefRoute,
   UrunSlugRoute: UrunSlugRoute,
