@@ -234,7 +234,7 @@ function SiteHeader() {
           {user ? (
             <>
               {isAdmin && (
-                <Button asChild size="sm" variant="outline" className="font-mono px-2 sm:px-3">
+                <Button asChild size="sm" variant="outline" className="hidden sm:inline-flex font-mono px-2 sm:px-3">
                   <Link to="/admin" aria-label="Admin">
                     <LayoutDashboard className="h-4 w-4 sm:mr-1" />
                     <span className="hidden sm:inline">admin</span>
