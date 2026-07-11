@@ -95,8 +95,8 @@ function AuditPage() {
                 </td>
               </tr>
             )}
-            {rows.map((r) => (
-              <>
+            {rows.flatMap((r) => {
+              const items = [
                 <tr
                   key={r.id}
                   onClick={() => setExpanded(expanded === r.id ? null : r.id)}
@@ -115,8 +115,10 @@ function AuditPage() {
                   <td className="px-3 py-2 text-muted-foreground">
                     {expanded === r.id ? "kapat" : "aç"}
                   </td>
-                </tr>
-                {expanded === r.id && (
+                </tr>,
+              ];
+              if (expanded === r.id) {
+                items.push(
                   <tr key={r.id + "-x"} className="border-t border-border/40 bg-background/40">
                     <td colSpan={5} className="px-3 py-3">
                       <div className="grid gap-2 md:grid-cols-3">
@@ -125,10 +127,12 @@ function AuditPage() {
                         <Block title="metadata" v={r.metadata} />
                       </div>
                     </td>
-                  </tr>
-                )}
-              </>
-            ))}
+                  </tr>,
+                );
+              }
+              return items;
+            })}
+
           </tbody>
         </table>
       </div>
