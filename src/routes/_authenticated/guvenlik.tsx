@@ -278,5 +278,38 @@ function SecurityPage() {
         <div>· telefonunu kaybedersen destek üzerinden kimlik doğrulaması ile sıfırlanır.</div>
       </div>
     </div>
+      {/* Aktif oturumlar */}
+      <div className="glass-card rounded-lg p-5">
+        <div className="flex items-start gap-3">
+          <div className="rounded-md p-2 bg-warn/10 text-warn">
+            <LogOut className="h-5 w-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-mono text-sm font-semibold">Diğer Cihazlardan Çıkış</div>
+            <div className="mt-0.5 font-mono text-[11px] text-muted-foreground leading-relaxed">
+              Hesabında başka telefon veya bilgisayarda açık oturum kaldığından
+              şüphelenirsen buradan hepsini anında sonlandır. Bu cihazdaki
+              oturumun etkilenmez.
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-3 font-mono border-warn/40 text-warn hover:bg-warn/10"
+              onClick={signOutOthers}
+            >
+              <LogOut className="mr-1.5 h-3 w-3" /> tüm diğer oturumları kapat
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="glass-card rounded-lg p-4 font-mono text-[11px] text-muted-foreground space-y-1">
+        <div className="text-primary">// ipucu</div>
+        <div>· admin paneli için 2FA <span className="text-primary">zorunludur</span>.</div>
+        <div>· 2FA kaldırırken <span className="text-primary">her seferinde</span> taze kod istenir; bir başkası oturumunu ele geçirse bile sökemez.</div>
+        <div>· şüpheli erişimde önce "diğer oturumları kapat", sonra şifreni değiştir.</div>
+        <div>· telefonunu kaybedersen destek üzerinden kimlik doğrulaması ile sıfırlanır.</div>
+      </div>
+    </div>
   );
 }
