@@ -14,6 +14,7 @@ import { Route as SssRouteImport } from './routes/sss'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
+import { Route as LiderlikRouteImport } from './routes/liderlik'
 import { Route as KvkkRouteImport } from './routes/kvkk'
 import { Route as KosullarRouteImport } from './routes/kosullar'
 import { Route as IletisimRouteImport } from './routes/iletisim'
@@ -47,6 +48,7 @@ import { Route as AktivasyonTokenRouteImport } from './routes/aktivasyon.$token'
 import { Route as AuthenticatedKriptoYukleRouteImport } from './routes/_authenticated/kripto-yukle'
 import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
 import { Route as AuthenticatedGuvenlikRouteImport } from './routes/_authenticated/guvenlik'
+import { Route as AuthenticatedGorevlerRouteImport } from './routes/_authenticated/gorevler'
 import { Route as AuthenticatedFavorilerimRouteImport } from './routes/_authenticated/favorilerim'
 import { Route as AuthenticatedFaturalarRouteImport } from './routes/_authenticated/faturalar'
 import { Route as AuthenticatedDestekRouteImport } from './routes/_authenticated/destek'
@@ -117,6 +119,11 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
 const NasilCalisirRoute = NasilCalisirRouteImport.update({
   id: '/nasil-calisir',
   path: '/nasil-calisir',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiderlikRoute = LiderlikRouteImport.update({
+  id: '/liderlik',
+  path: '/liderlik',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KvkkRoute = KvkkRouteImport.update({
@@ -282,6 +289,11 @@ const AuthenticatedHesabimRoute = AuthenticatedHesabimRouteImport.update({
 const AuthenticatedGuvenlikRoute = AuthenticatedGuvenlikRouteImport.update({
   id: '/guvenlik',
   path: '/guvenlik',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGorevlerRoute = AuthenticatedGorevlerRouteImport.update({
+  id: '/gorevler',
+  path: '/gorevler',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedFavorilerimRoute =
@@ -556,6 +568,7 @@ export interface FileRoutesByFullPath {
   '/iletisim': typeof IletisimRoute
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
+  '/liderlik': typeof LiderlikRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -568,6 +581,7 @@ export interface FileRoutesByFullPath {
   '/destek': typeof AuthenticatedDestekRoute
   '/faturalar': typeof AuthenticatedFaturalarRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
+  '/gorevler': typeof AuthenticatedGorevlerRoute
   '/guvenlik': typeof AuthenticatedGuvenlikRoute
   '/hesabim': typeof AuthenticatedHesabimRouteWithChildren
   '/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
@@ -641,6 +655,7 @@ export interface FileRoutesByTo {
   '/iletisim': typeof IletisimRoute
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
+  '/liderlik': typeof LiderlikRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -652,6 +667,7 @@ export interface FileRoutesByTo {
   '/destek': typeof AuthenticatedDestekRoute
   '/faturalar': typeof AuthenticatedFaturalarRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
+  '/gorevler': typeof AuthenticatedGorevlerRoute
   '/guvenlik': typeof AuthenticatedGuvenlikRoute
   '/hesabim': typeof AuthenticatedHesabimRouteWithChildren
   '/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
@@ -727,6 +743,7 @@ export interface FileRoutesById {
   '/iletisim': typeof IletisimRoute
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
+  '/liderlik': typeof LiderlikRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
@@ -739,6 +756,7 @@ export interface FileRoutesById {
   '/_authenticated/destek': typeof AuthenticatedDestekRoute
   '/_authenticated/faturalar': typeof AuthenticatedFaturalarRoute
   '/_authenticated/favorilerim': typeof AuthenticatedFavorilerimRoute
+  '/_authenticated/gorevler': typeof AuthenticatedGorevlerRoute
   '/_authenticated/guvenlik': typeof AuthenticatedGuvenlikRoute
   '/_authenticated/hesabim': typeof AuthenticatedHesabimRouteWithChildren
   '/_authenticated/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
@@ -814,6 +832,7 @@ export interface FileRouteTypes {
     | '/iletisim'
     | '/kosullar'
     | '/kvkk'
+    | '/liderlik'
     | '/nasil-calisir'
     | '/robots.txt'
     | '/sitemap.xml'
@@ -826,6 +845,7 @@ export interface FileRouteTypes {
     | '/destek'
     | '/faturalar'
     | '/favorilerim'
+    | '/gorevler'
     | '/guvenlik'
     | '/hesabim'
     | '/kripto-yukle'
@@ -899,6 +919,7 @@ export interface FileRouteTypes {
     | '/iletisim'
     | '/kosullar'
     | '/kvkk'
+    | '/liderlik'
     | '/nasil-calisir'
     | '/robots.txt'
     | '/sitemap.xml'
@@ -910,6 +931,7 @@ export interface FileRouteTypes {
     | '/destek'
     | '/faturalar'
     | '/favorilerim'
+    | '/gorevler'
     | '/guvenlik'
     | '/hesabim'
     | '/kripto-yukle'
@@ -984,6 +1006,7 @@ export interface FileRouteTypes {
     | '/iletisim'
     | '/kosullar'
     | '/kvkk'
+    | '/liderlik'
     | '/nasil-calisir'
     | '/robots.txt'
     | '/sitemap.xml'
@@ -996,6 +1019,7 @@ export interface FileRouteTypes {
     | '/_authenticated/destek'
     | '/_authenticated/faturalar'
     | '/_authenticated/favorilerim'
+    | '/_authenticated/gorevler'
     | '/_authenticated/guvenlik'
     | '/_authenticated/hesabim'
     | '/_authenticated/kripto-yukle'
@@ -1071,6 +1095,7 @@ export interface RootRouteChildren {
   IletisimRoute: typeof IletisimRoute
   KosullarRoute: typeof KosullarRoute
   KvkkRoute: typeof KvkkRoute
+  LiderlikRoute: typeof LiderlikRoute
   NasilCalisirRoute: typeof NasilCalisirRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
@@ -1145,6 +1170,13 @@ declare module '@tanstack/react-router' {
       path: '/nasil-calisir'
       fullPath: '/nasil-calisir'
       preLoaderRoute: typeof NasilCalisirRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/liderlik': {
+      id: '/liderlik'
+      path: '/liderlik'
+      fullPath: '/liderlik'
+      preLoaderRoute: typeof LiderlikRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/kvkk': {
@@ -1376,6 +1408,13 @@ declare module '@tanstack/react-router' {
       path: '/guvenlik'
       fullPath: '/guvenlik'
       preLoaderRoute: typeof AuthenticatedGuvenlikRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gorevler': {
+      id: '/_authenticated/gorevler'
+      path: '/gorevler'
+      fullPath: '/gorevler'
+      preLoaderRoute: typeof AuthenticatedGorevlerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/favorilerim': {
@@ -1788,6 +1827,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDestekRoute: typeof AuthenticatedDestekRoute
   AuthenticatedFaturalarRoute: typeof AuthenticatedFaturalarRoute
   AuthenticatedFavorilerimRoute: typeof AuthenticatedFavorilerimRoute
+  AuthenticatedGorevlerRoute: typeof AuthenticatedGorevlerRoute
   AuthenticatedGuvenlikRoute: typeof AuthenticatedGuvenlikRoute
   AuthenticatedHesabimRoute: typeof AuthenticatedHesabimRouteWithChildren
   AuthenticatedKriptoYukleRoute: typeof AuthenticatedKriptoYukleRoute
@@ -1802,6 +1842,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDestekRoute: AuthenticatedDestekRoute,
   AuthenticatedFaturalarRoute: AuthenticatedFaturalarRoute,
   AuthenticatedFavorilerimRoute: AuthenticatedFavorilerimRoute,
+  AuthenticatedGorevlerRoute: AuthenticatedGorevlerRoute,
   AuthenticatedGuvenlikRoute: AuthenticatedGuvenlikRoute,
   AuthenticatedHesabimRoute: AuthenticatedHesabimRouteWithChildren,
   AuthenticatedKriptoYukleRoute: AuthenticatedKriptoYukleRoute,
@@ -1820,6 +1861,7 @@ const rootRouteChildren: RootRouteChildren = {
   IletisimRoute: IletisimRoute,
   KosullarRoute: KosullarRoute,
   KvkkRoute: KvkkRoute,
+  LiderlikRoute: LiderlikRoute,
   NasilCalisirRoute: NasilCalisirRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,

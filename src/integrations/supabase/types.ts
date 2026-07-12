@@ -101,8 +101,10 @@ export type Database = {
           description: string | null
           icon: string | null
           id: string
+          is_active: boolean
           name: string
           rule_key: string | null
+          season: string | null
           threshold: number | null
         }
         Insert: {
@@ -110,8 +112,10 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id: string
+          is_active?: boolean
           name: string
           rule_key?: string | null
+          season?: string | null
           threshold?: number | null
         }
         Update: {
@@ -119,8 +123,10 @@ export type Database = {
           description?: string | null
           icon?: string | null
           id?: string
+          is_active?: boolean
           name?: string
           rule_key?: string | null
+          season?: string | null
           threshold?: number | null
         }
         Relationships: []
@@ -314,6 +320,7 @@ export type Database = {
           expires_at: string | null
           id: string
           is_active: boolean
+          is_personal: boolean
           max_uses: number | null
           min_order_try: number
           updated_at: string
@@ -328,6 +335,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean
+          is_personal?: boolean
           max_uses?: number | null
           min_order_try?: number
           updated_at?: string
@@ -342,6 +350,7 @@ export type Database = {
           expires_at?: string | null
           id?: string
           is_active?: boolean
+          is_personal?: boolean
           max_uses?: number | null
           min_order_try?: number
           updated_at?: string
@@ -784,6 +793,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      missions: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          key: string
+          name: string
+          reward_points: number
+          rule_key: string
+          season: string | null
+          sort_order: number
+          target: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          key: string
+          name: string
+          reward_points?: number
+          rule_key: string
+          season?: string | null
+          sort_order?: number
+          target?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          key?: string
+          name?: string
+          reward_points?: number
+          rule_key?: string
+          season?: string | null
+          sort_order?: number
+          target?: number
+        }
+        Relationships: []
       }
       notification_preferences: {
         Row: {
@@ -1750,6 +1804,44 @@ export type Database = {
           },
         ]
       }
+      user_missions: {
+        Row: {
+          claimed_at: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          mission_id: string
+          progress: number
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          mission_id: string
+          progress?: number
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          mission_id?: string
+          progress?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_missions_mission_id_fkey"
+            columns: ["mission_id"]
+            isOneToOne: false
+            referencedRelation: "missions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_points_ledger: {
         Row: {
           balance_after: number
@@ -2184,7 +2276,19 @@ export type Database = {
           product_name: string
         }[]
       }
+      claim_mission: {
+        Args: { _mission_id: string }
+        Returns: {
+          awarded: number
+          progress: number
+          target: number
+        }[]
+      }
       cleanup_license_nonces: { Args: never; Returns: undefined }
+      compute_mission_progress: {
+        Args: { _rule_key: string; _user_id: string }
+        Returns: number
+      }
       compute_tier: {
         Args: { _points: number }
         Returns: Database["public"]["Enums"]["user_tier"]
@@ -2297,6 +2401,17 @@ export type Database = {
         Returns: undefined
       }
       mark_onboarded: { Args: never; Returns: undefined }
+      monthly_leaderboard: {
+        Args: never
+        Returns: {
+          avatar_id: string
+          display_masked: string
+          points_earned: number
+          rank: number
+          tier: string
+          user_id: string
+        }[]
+      }
       next_invoice_number: { Args: never; Returns: string }
       partner_stats: {
         Args: { _user_id: string }
@@ -2348,6 +2463,13 @@ export type Database = {
       record_referral_click: {
         Args: { _code: string; _source: string; _ua_hash: string }
         Returns: string
+      }
+      redeem_points_for_coupon: {
+        Args: { _points: number }
+        Returns: {
+          coupon_code: string
+          discount_try: number
+        }[]
       }
       refund_order_to_wallet: { Args: { _order_id: string }; Returns: number }
       refund_points_discount: { Args: { _order_id: string }; Returns: number }
