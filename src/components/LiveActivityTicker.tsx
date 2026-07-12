@@ -14,22 +14,12 @@ export function LiveActivityTicker() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data } = await supabase
-        .from("orders")
-        .select("created_at, products:product_id ( name, category )")
-        .eq("status", "approved")
-        .order("created_at", { ascending: false })
-        .limit(20);
+      // biome-ignore lint/suspicious/noExplicitAny: new rpc, types lag
+      const { data } = await (supabase.rpc as any)("public_recent_sales");
       if (cancelled) return;
-      const mapped: Item[] = (data ?? [])
-        .map((o: {
-          created_at: string;
-          products: { name: string; category: string | null } | null;
-        }) => ({
-          name: o.products?.name ?? "lisans",
-          category: o.products?.category ?? null,
-          when: relative(o.created_at),
-        }));
+      const mapped: Item[] = ((data ?? []) as Array<{ name: string; category: string | null; created_at: string }>).map(
+        (r) => ({ name: r.name, category: r.category, when: relative(r.created_at) }),
+      );
       setItems(mapped);
     })();
     return () => {
