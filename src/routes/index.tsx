@@ -355,6 +355,9 @@ function Index() {
         </div>
       </section>
 
+      {/* CANLI AKIŞ — son onaylı siparişler */}
+      <LiveActivityTicker />
+
 
       {/* ARAMA + SON EKLENENLER */}
       <section className="mx-auto max-w-6xl px-4 pt-12">
