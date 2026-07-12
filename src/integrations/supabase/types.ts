@@ -540,6 +540,68 @@ export type Database = {
           },
         ]
       }
+      invoices: {
+        Row: {
+          buyer_address: string | null
+          buyer_email: string | null
+          buyer_name: string | null
+          buyer_tax_id: string | null
+          created_at: string
+          id: string
+          invoice_number: string
+          issued_at: string
+          items_snapshot: Json
+          order_id: string
+          subtotal_try: number
+          total_try: number
+          user_id: string
+          vat_amount_try: number
+          vat_rate: number
+        }
+        Insert: {
+          buyer_address?: string | null
+          buyer_email?: string | null
+          buyer_name?: string | null
+          buyer_tax_id?: string | null
+          created_at?: string
+          id?: string
+          invoice_number: string
+          issued_at?: string
+          items_snapshot?: Json
+          order_id: string
+          subtotal_try?: number
+          total_try?: number
+          user_id: string
+          vat_amount_try?: number
+          vat_rate?: number
+        }
+        Update: {
+          buyer_address?: string | null
+          buyer_email?: string | null
+          buyer_name?: string | null
+          buyer_tax_id?: string | null
+          created_at?: string
+          id?: string
+          invoice_number?: string
+          issued_at?: string
+          items_snapshot?: Json
+          order_id?: string
+          subtotal_try?: number
+          total_try?: number
+          user_id?: string
+          vat_amount_try?: number
+          vat_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: true
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       license_events: {
         Row: {
           created_at: string
@@ -1229,6 +1291,9 @@ export type Database = {
       profiles: {
         Row: {
           avatar_id: string | null
+          billing_address: string | null
+          billing_name: string | null
+          billing_tax_id: string | null
           created_at: string
           display_name: string | null
           email: string | null
@@ -1247,6 +1312,9 @@ export type Database = {
         }
         Insert: {
           avatar_id?: string | null
+          billing_address?: string | null
+          billing_name?: string | null
+          billing_tax_id?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
@@ -1265,6 +1333,9 @@ export type Database = {
         }
         Update: {
           avatar_id?: string | null
+          billing_address?: string | null
+          billing_name?: string | null
+          billing_tax_id?: string | null
           created_at?: string
           display_name?: string | null
           email?: string | null
@@ -2105,6 +2176,7 @@ export type Database = {
               total_try: number
             }[]
           }
+      create_invoice_for_order: { Args: { _order_id: string }; Returns: string }
       credit_crypto_deposit: {
         Args: {
           _amount_usdt: number
@@ -2194,6 +2266,7 @@ export type Database = {
         Args: { _order_id: string }
         Returns: undefined
       }
+      next_invoice_number: { Args: never; Returns: string }
       partner_stats: {
         Args: { _user_id: string }
         Returns: {
