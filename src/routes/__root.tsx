@@ -30,7 +30,7 @@ import {
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { MatrixRain } from "../components/MatrixRain";
+
 import { AuthProvider, useAuth } from "../lib/auth-context";
 import { Button } from "../components/ui/button";
 import { Toaster } from "../components/ui/sonner";
@@ -519,7 +519,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <MatrixRain />
+        
         <AuthListener />
         <div className="flex min-h-screen flex-col">
           <SiteHeader />
