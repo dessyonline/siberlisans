@@ -33,7 +33,7 @@ function concat(...parts: Uint8Array[]): Uint8Array {
 async function hkdf(salt: Uint8Array, ikm: Uint8Array, info: Uint8Array, length: number): Promise<Uint8Array> {
   const key = await crypto.subtle.importKey("raw", ikm, "HKDF", false, ["deriveBits"]);
   const bits = await crypto.subtle.deriveBits(
-    { name: "HKDF", hash: "SHA-256", salt: salt as BufferSource, info: info as BufferSource },
+    { name: "HKDF", hash: "SHA-256", salt: salt as unknown as BufferSource, info: info as unknown as BufferSource },
     key,
     length * 8,
   );
@@ -42,7 +42,7 @@ async function hkdf(salt: Uint8Array, ikm: Uint8Array, info: Uint8Array, length:
 
 /** Import a raw P-256 public key (65 bytes) for ECDH. */
 async function importUaPublic(rawPub: Uint8Array): Promise<CryptoKey> {
-  return crypto.subtle.importKey("raw", rawPub as BufferSource, { name: "ECDH", namedCurve: "P-256" }, true, []);
+  return crypto.subtle.importKey("raw", rawPub as unknown as BufferSource, { name: "ECDH", namedCurve: "P-256" }, true, []);
 }
 
 /** Import VAPID private (32-byte scalar) as JWK for ES256 signing. */
@@ -79,7 +79,7 @@ async function signVapidJwt(endpoint: string): Promise<{ token: string; publicKe
   const sig = await crypto.subtle.sign(
     { name: "ECDSA", hash: "SHA-256" },
     key,
-    enc.encode(signingInput) as BufferSource,
+    enc.encode(signingInput) as unknown as BufferSource,
   );
   return { token: `${signingInput}.${bytesToB64u(sig)}`, publicKey };
 }
@@ -117,12 +117,12 @@ async function encryptPayload(
   // Pad: append 0x02 (last record delimiter)
   const padded = concat(payload, new Uint8Array([0x02]));
 
-  const aesKey = await crypto.subtle.importKey("raw", cek as BufferSource, "AES-GCM", false, ["encrypt"]);
+  const aesKey = await crypto.subtle.importKey("raw", cek as unknown as BufferSource, "AES-GCM", false, ["encrypt"]);
   const ciphertext = new Uint8Array(
     await crypto.subtle.encrypt(
-      { name: "AES-GCM", iv: nonce as BufferSource },
+      { name: "AES-GCM", iv: nonce as unknown as BufferSource },
       aesKey,
-      padded as BufferSource,
+      padded as unknown as BufferSource,
     ),
   );
 
@@ -169,7 +169,7 @@ export async function sendWebPush(sub: WebPushSubscription, payload: WebPushPayl
         Urgency: "normal",
         Authorization: `vapid t=${token}, k=${publicKey}`,
       },
-      body: body as BodyInit,
+      body: body as unknown as BodyInit,
     });
 
     if (resp.ok || resp.status === 201 || resp.status === 202) return { ok: true };
