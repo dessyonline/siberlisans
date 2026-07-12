@@ -48,6 +48,7 @@ import { Route as AuthenticatedKriptoYukleRouteImport } from './routes/_authenti
 import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
 import { Route as AuthenticatedGuvenlikRouteImport } from './routes/_authenticated/guvenlik'
 import { Route as AuthenticatedFavorilerimRouteImport } from './routes/_authenticated/favorilerim'
+import { Route as AuthenticatedFaturalarRouteImport } from './routes/_authenticated/faturalar'
 import { Route as AuthenticatedDestekRouteImport } from './routes/_authenticated/destek'
 import { Route as AuthenticatedDavetRouteImport } from './routes/_authenticated/davet'
 import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated/cuzdan'
@@ -286,6 +287,11 @@ const AuthenticatedFavorilerimRoute =
     path: '/favorilerim',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFaturalarRoute = AuthenticatedFaturalarRouteImport.update({
+  id: '/faturalar',
+  path: '/faturalar',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedDestekRoute = AuthenticatedDestekRouteImport.update({
   id: '/destek',
   path: '/destek',
@@ -539,6 +545,7 @@ export interface FileRoutesByFullPath {
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/davet': typeof AuthenticatedDavetRoute
   '/destek': typeof AuthenticatedDestekRoute
+  '/faturalar': typeof AuthenticatedFaturalarRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/guvenlik': typeof AuthenticatedGuvenlikRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
@@ -619,6 +626,7 @@ export interface FileRoutesByTo {
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/davet': typeof AuthenticatedDavetRoute
   '/destek': typeof AuthenticatedDestekRoute
+  '/faturalar': typeof AuthenticatedFaturalarRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/guvenlik': typeof AuthenticatedGuvenlikRoute
   '/hesabim': typeof AuthenticatedHesabimRoute
@@ -702,6 +710,7 @@ export interface FileRoutesById {
   '/_authenticated/cuzdan': typeof AuthenticatedCuzdanRoute
   '/_authenticated/davet': typeof AuthenticatedDavetRoute
   '/_authenticated/destek': typeof AuthenticatedDestekRoute
+  '/_authenticated/faturalar': typeof AuthenticatedFaturalarRoute
   '/_authenticated/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/_authenticated/guvenlik': typeof AuthenticatedGuvenlikRoute
   '/_authenticated/hesabim': typeof AuthenticatedHesabimRoute
@@ -785,6 +794,7 @@ export interface FileRouteTypes {
     | '/cuzdan'
     | '/davet'
     | '/destek'
+    | '/faturalar'
     | '/favorilerim'
     | '/guvenlik'
     | '/hesabim'
@@ -865,6 +875,7 @@ export interface FileRouteTypes {
     | '/cuzdan'
     | '/davet'
     | '/destek'
+    | '/faturalar'
     | '/favorilerim'
     | '/guvenlik'
     | '/hesabim'
@@ -947,6 +958,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cuzdan'
     | '/_authenticated/davet'
     | '/_authenticated/destek'
+    | '/_authenticated/faturalar'
     | '/_authenticated/favorilerim'
     | '/_authenticated/guvenlik'
     | '/_authenticated/hesabim'
@@ -1333,6 +1345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFavorilerimRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/faturalar': {
+      id: '/_authenticated/faturalar'
+      path: '/faturalar'
+      fullPath: '/faturalar'
+      preLoaderRoute: typeof AuthenticatedFaturalarRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/destek': {
       id: '/_authenticated/destek'
       path: '/destek'
@@ -1693,6 +1712,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCuzdanRoute: typeof AuthenticatedCuzdanRoute
   AuthenticatedDavetRoute: typeof AuthenticatedDavetRoute
   AuthenticatedDestekRoute: typeof AuthenticatedDestekRoute
+  AuthenticatedFaturalarRoute: typeof AuthenticatedFaturalarRoute
   AuthenticatedFavorilerimRoute: typeof AuthenticatedFavorilerimRoute
   AuthenticatedGuvenlikRoute: typeof AuthenticatedGuvenlikRoute
   AuthenticatedHesabimRoute: typeof AuthenticatedHesabimRoute
@@ -1706,6 +1726,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCuzdanRoute: AuthenticatedCuzdanRoute,
   AuthenticatedDavetRoute: AuthenticatedDavetRoute,
   AuthenticatedDestekRoute: AuthenticatedDestekRoute,
+  AuthenticatedFaturalarRoute: AuthenticatedFaturalarRoute,
   AuthenticatedFavorilerimRoute: AuthenticatedFavorilerimRoute,
   AuthenticatedGuvenlikRoute: AuthenticatedGuvenlikRoute,
   AuthenticatedHesabimRoute: AuthenticatedHesabimRoute,
