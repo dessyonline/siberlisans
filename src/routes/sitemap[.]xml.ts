@@ -65,7 +65,7 @@ export const Route = createFileRoute("/sitemap.xml")({
               });
             }
           }
-          for (const b of (blogsRes.data ?? []) as Array<{ slug: string; published_at: string | null; updated_at: string | null }>) {
+          for (const b of ((blogsRes.data ?? []) as unknown) as Array<{ slug: string; published_at: string | null; updated_at: string | null }>) {
             entries.push({
               path: `/blog/${b.slug}`,
               lastmod: ((b.updated_at ?? b.published_at) ?? "").slice(0, 10) || undefined,
