@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { listMyInvoices, getMyBillingProfile, updateBillingProfile } from "@/lib/invoices.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,10 +22,13 @@ export const Route = createFileRoute("/_authenticated/faturalar")({
 function MyInvoices() {
   const [search, setSearch] = useState("");
 
-  const { data: invoices, isLoading } = useQuery({
+  const invoicesQ = useQuery({
     queryKey: ["my-invoices"],
     queryFn: () => listMyInvoices(),
   });
+  const invoices = invoicesQ.data;
+  const isLoading = invoicesQ.isLoading;
+  const loadError = invoicesQ.error as Error | null;
 
   const { data: profile, refetch: refetchProfile } = useQuery({
     queryKey: ["my-billing-profile"],
@@ -39,14 +42,16 @@ function MyInvoices() {
   });
   const [formInit, setFormInit] = useState(false);
 
-  if (profile && !formInit) {
-    setForm({
-      billing_name: profile.billing_name ?? "",
-      billing_tax_id: profile.billing_tax_id ?? "",
-      billing_address: profile.billing_address ?? "",
-    });
-    setFormInit(true);
-  }
+  useEffect(() => {
+    if (profile && !formInit) {
+      setForm({
+        billing_name: profile.billing_name ?? "",
+        billing_tax_id: profile.billing_tax_id ?? "",
+        billing_address: profile.billing_address ?? "",
+      });
+      setFormInit(true);
+    }
+  }, [profile, formInit]);
 
   const save = useMutation({
     mutationFn: () =>
@@ -203,7 +208,23 @@ function MyInvoices() {
           </div>
         )}
 
-        {!isLoading && filtered.length === 0 && (
+        {!isLoading && loadError && (
+          <div className="font-mono text-xs text-destructive py-6 text-center border border-destructive/40 rounded">
+            [!] faturalar yüklenemedi: {loadError.message}
+            <div className="mt-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="font-mono"
+                onClick={() => invoicesQ.refetch()}
+              >
+                tekrar dene
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {!isLoading && !loadError && filtered.length === 0 && (
           <div className="font-mono text-xs text-muted-foreground py-8 text-center border border-dashed border-border/40 rounded">
             {invoices && invoices.length === 0
               ? "Henüz onaylı siparişin yok. İlk siparişin onaylandığında faturan burada oluşur."
