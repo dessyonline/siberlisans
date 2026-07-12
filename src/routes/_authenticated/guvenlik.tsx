@@ -55,21 +55,31 @@ function SecurityPage() {
 
   const askRemove = (id: string) => {
     setRemoveTarget(id);
-    if (aal !== "aal2") {
-      // Kaldırmak için önce aal2 gerek
-      setMode("verify-remove");
-    } else {
-      doRemove(id);
-    }
+    // Güvenlik: aal2 olsa bile her kaldırma öncesi taze TOTP kodu zorunlu.
+    // Aksi halde ele geçirilmiş bir admin oturumu 2FA'yı sessizce söker.
+    setMode("verify-remove");
   };
 
   const doRemove = async (id: string) => {
     const { error } = await supabase.auth.mfa.unenroll({ factorId: id });
     if (error) return toast.error(`[!] ${error.message}`);
-    toast.success("[✓] 2FA kaldırıldı");
+    // Bu cihazın güvenilir işaretini de temizle
+    untrustDevice(userId);
+    // Diğer tüm cihazlardaki oturumları kapat — 2FA sökülünce bir başkası
+    // eski aal2 tokenıyla admin panele erişmeye devam edemesin.
+    try {
+      await supabase.auth.signOut({ scope: "others" });
+    } catch { /* noop */ }
+    toast.success("[✓] 2FA kaldırıldı · diğer oturumlar sonlandırıldı");
     setRemoveTarget(null);
     setMode("idle");
     refresh();
+  };
+
+  const signOutOthers = async () => {
+    const { error } = await supabase.auth.signOut({ scope: "others" });
+    if (error) return toast.error(`[!] ${error.message}`);
+    toast.success("[✓] diğer tüm cihazlardan çıkış yapıldı");
   };
 
   return (
