@@ -21,13 +21,20 @@ import { ProductLogo } from "@/components/ProductLogo";
 const productMetaQuery = (slug: string) => ({
   queryKey: ["product-meta", slug],
   queryFn: async () => {
-    const { data } = await supabase
+    const { data: product } = await supabase
       .from("products")
-      .select("name, description, image_url, price_try, category")
+      .select("id, name, description, image_url, price_try, category, sku")
       .eq("slug", slug)
       .eq("active", true)
       .maybeSingle();
-    return data;
+    if (!product) return null;
+    const { data: reviews } = await supabase
+      .from("product_reviews")
+      .select("rating")
+      .eq("product_id", product.id);
+    const count = reviews?.length ?? 0;
+    const avg = count > 0 ? reviews!.reduce((s, r) => s + Number(r.rating || 0), 0) / count : 0;
+    return { ...product, reviewCount: count, ratingAvg: avg };
   },
 });
 
@@ -57,26 +64,43 @@ export const Route = createFileRoute("/urun/$slug")({
       meta.push({ property: "og:image", content: p.image_url });
       meta.push({ name: "twitter:image", content: p.image_url });
     }
+    // priceValidUntil: 1 yıl ileri
+    const priceValidUntil = new Date(Date.now() + 365 * 86400_000).toISOString().slice(0, 10);
+    const productLd: Record<string, unknown> = p
+      ? {
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: p.name,
+          description: desc,
+          image: p.image_url || undefined,
+          category: p.category || undefined,
+          sku: (p as { sku?: string | null }).sku || undefined,
+          brand: { "@type": "Brand", name: "SiberPHP" },
+          offers: {
+            "@type": "Offer",
+            priceCurrency: "TRY",
+            price: Number(p.price_try),
+            priceValidUntil,
+            url,
+            availability: "https://schema.org/InStock",
+            seller: { "@type": "Organization", name: "SiberPHP" },
+          },
+        }
+      : {};
+    if (p && (p as { reviewCount?: number }).reviewCount && (p as { reviewCount?: number }).reviewCount! > 0) {
+      productLd.aggregateRating = {
+        "@type": "AggregateRating",
+        ratingValue: Number((p as { ratingAvg?: number }).ratingAvg!.toFixed(2)),
+        reviewCount: (p as { reviewCount?: number }).reviewCount,
+        bestRating: 5,
+        worstRating: 1,
+      };
+    }
     const scripts = p
       ? [
           {
             type: "application/ld+json",
-            children: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "Product",
-              name: p.name,
-              description: desc,
-              image: p.image_url || undefined,
-              category: p.category || undefined,
-              brand: { "@type": "Brand", name: "SiberPHP" },
-              offers: {
-                "@type": "Offer",
-                priceCurrency: "TRY",
-                price: Number(p.price_try),
-                url,
-                availability: "https://schema.org/InStock",
-              },
-            }),
+            children: JSON.stringify(productLd),
           },
           {
             type: "application/ld+json",
@@ -90,6 +114,7 @@ export const Route = createFileRoute("/urun/$slug")({
               ],
             }),
           },
+
           {
             type: "application/ld+json",
             children: JSON.stringify({
