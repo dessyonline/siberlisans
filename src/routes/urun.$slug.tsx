@@ -23,7 +23,7 @@ const productMetaQuery = (slug: string) => ({
   queryFn: async () => {
     const { data: product } = await supabase
       .from("products")
-      .select("id, name, description, image_url, price_try, category, sku")
+      .select("id, name, description, image_url, price_try, category")
       .eq("slug", slug)
       .eq("active", true)
       .maybeSingle();
