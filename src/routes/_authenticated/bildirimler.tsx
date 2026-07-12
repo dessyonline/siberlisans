@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { getNotificationPrefs, updateNotificationPrefs, type NotificationPrefs } from "@/lib/notification-prefs.functions";
+import { PushEnableButton } from "@/components/PushEnableButton";
 
 export const Route = createFileRoute("/_authenticated/bildirimler")({
   component: Page,
