@@ -147,6 +147,32 @@
                 0 20px 50px oklch(0.82 0.20 145 / 0.15);
   }
 }
+@utility tilt-3d {
+  transform-style: preserve-3d;
+  transform: perspective(900px)
+    rotateX(var(--tilt-rx, 0deg))
+    rotateY(var(--tilt-ry, 0deg));
+  transition: transform 240ms cubic-bezier(0.2, 0.7, 0.2, 1),
+              box-shadow 240ms ease;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(
+      480px circle at var(--tilt-x, 50%) var(--tilt-y, 50%),
+      oklch(0.82 0.20 145 / 0.16),
+      transparent 45%
+    );
+    opacity: 0;
+    transition: opacity 220ms ease;
+    z-index: 0;
+  }
+  &:hover::before {
+    opacity: 1;
+  }
+}
 @utility cv-auto {
   content-visibility: auto;
   contain-intrinsic-size: 460px;

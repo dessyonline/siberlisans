@@ -40,6 +40,9 @@ import { applyFlash } from "@/lib/flash-sales";
 import { useAuth } from "@/lib/auth-context";
 import { Wallet } from "lucide-react";
 import { AdminEditBadge } from "@/components/AdminEditBadge";
+import { MatrixRain } from "@/components/MatrixRain";
+import { LiveActivityTicker } from "@/components/LiveActivityTicker";
+import { useTilt } from "@/hooks/use-tilt";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -214,6 +217,9 @@ function Index() {
       <section className="relative overflow-hidden border-b border-border/40">
         {/* animated grid backdrop */}
         <div className="pointer-events-none absolute inset-0 cyber-grid grid-drift" aria-hidden />
+        {/* matrix rain */}
+        <MatrixRain opacity={0.14} speed={0.8} />
+
         {/* floating orbs */}
         <div className="hero-orb h-[420px] w-[420px] left-[-120px] top-[-80px]" style={{ background: "oklch(0.82 0.20 145 / 0.55)" }} aria-hidden />
         <div className="hero-orb h-[380px] w-[380px] right-[-100px] top-[40%] animation-delay-[3s]" style={{ background: "oklch(0.65 0.20 300 / 0.35)", animationDelay: "3s" }} aria-hidden />
@@ -348,6 +354,9 @@ function Index() {
           </div>
         </div>
       </section>
+
+      {/* CANLI AKIŞ — son onaylı siparişler */}
+      <LiveActivityTicker />
 
 
       {/* ARAMA + SON EKLENENLER */}
@@ -764,9 +773,14 @@ function ProductCard({
   const flashSale = useActiveFlashSale(p.id);
   const { final, saved, percent, hasSale } = applyFlash(Number(p.price_try), flashSale);
 
+  const tilt = useTilt<HTMLDivElement>(5);
+
   return (
     <div
-      className={`glass-card glass-card-hover rounded-xl p-5 flex flex-col group relative overflow-hidden ${
+      ref={tilt.ref}
+      onMouseMove={tilt.onMouseMove}
+      onMouseLeave={tilt.onMouseLeave}
+      className={`glass-card glass-card-hover tilt-3d rounded-xl p-5 flex flex-col group relative overflow-hidden will-change-transform ${
         epic
           ? "epic-card border-transparent"
           : featured
