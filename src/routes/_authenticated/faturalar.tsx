@@ -208,7 +208,23 @@ function MyInvoices() {
           </div>
         )}
 
-        {!isLoading && filtered.length === 0 && (
+        {!isLoading && loadError && (
+          <div className="font-mono text-xs text-destructive py-6 text-center border border-destructive/40 rounded">
+            [!] faturalar yüklenemedi: {loadError.message}
+            <div className="mt-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="font-mono"
+                onClick={() => invoicesQ.refetch()}
+              >
+                tekrar dene
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {!isLoading && !loadError && filtered.length === 0 && (
           <div className="font-mono text-xs text-muted-foreground py-8 text-center border border-dashed border-border/40 rounded">
             {invoices && invoices.length === 0
               ? "Henüz onaylı siparişin yok. İlk siparişin onaylandığında faturan burada oluşur."
