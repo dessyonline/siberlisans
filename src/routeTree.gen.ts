@@ -93,6 +93,7 @@ import { Route as ApiPublicHooksUniquelisansCatalogRouteImport } from './routes/
 import { Route as ApiPublicHooksSyncUniquelisansRouteImport } from './routes/api/public/hooks/sync-uniquelisans'
 import { Route as ApiPublicHooksSubscriptionsRenewRouteImport } from './routes/api/public/hooks/subscriptions-renew'
 import { Route as ApiPublicHooksShopierRouteImport } from './routes/api/public/hooks/shopier'
+import { Route as ApiPublicHooksPushTickRouteImport } from './routes/api/public/hooks/push-tick'
 import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
 import { Route as ApiPublicHooksAbandonmentReminderRouteImport } from './routes/api/public/hooks/abandonment-reminder'
 
@@ -547,6 +548,11 @@ const ApiPublicHooksShopierRoute = ApiPublicHooksShopierRouteImport.update({
   path: '/api/public/hooks/shopier',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksPushTickRoute = ApiPublicHooksPushTickRouteImport.update({
+  id: '/api/public/hooks/push-tick',
+  path: '/api/public/hooks/push-tick',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksCampaignTickRoute =
   ApiPublicHooksCampaignTickRouteImport.update({
     id: '/api/public/hooks/campaign-tick',
@@ -641,6 +647,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/subscriptions-renew': typeof ApiPublicHooksSubscriptionsRenewRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
@@ -727,6 +734,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/subscriptions-renew': typeof ApiPublicHooksSubscriptionsRenewRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
@@ -816,6 +824,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/subscriptions-renew': typeof ApiPublicHooksSubscriptionsRenewRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
@@ -905,6 +914,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/push-tick'
     | '/api/public/hooks/shopier'
     | '/api/public/hooks/subscriptions-renew'
     | '/api/public/hooks/sync-uniquelisans'
@@ -991,6 +1001,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/push-tick'
     | '/api/public/hooks/shopier'
     | '/api/public/hooks/subscriptions-renew'
     | '/api/public/hooks/sync-uniquelisans'
@@ -1079,6 +1090,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/push-tick'
     | '/api/public/hooks/shopier'
     | '/api/public/hooks/subscriptions-renew'
     | '/api/public/hooks/sync-uniquelisans'
@@ -1128,6 +1140,7 @@ export interface RootRouteChildren {
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
+  ApiPublicHooksPushTickRoute: typeof ApiPublicHooksPushTickRoute
   ApiPublicHooksShopierRoute: typeof ApiPublicHooksShopierRoute
   ApiPublicHooksSubscriptionsRenewRoute: typeof ApiPublicHooksSubscriptionsRenewRoute
   ApiPublicHooksSyncUniquelisansRoute: typeof ApiPublicHooksSyncUniquelisansRoute
@@ -1725,6 +1738,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksShopierRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/push-tick': {
+      id: '/api/public/hooks/push-tick'
+      path: '/api/public/hooks/push-tick'
+      fullPath: '/api/public/hooks/push-tick'
+      preLoaderRoute: typeof ApiPublicHooksPushTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/campaign-tick': {
       id: '/api/public/hooks/campaign-tick'
       path: '/api/public/hooks/campaign-tick'
@@ -1895,6 +1915,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksAbandonmentReminderRoute:
     ApiPublicHooksAbandonmentReminderRoute,
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,
+  ApiPublicHooksPushTickRoute: ApiPublicHooksPushTickRoute,
   ApiPublicHooksShopierRoute: ApiPublicHooksShopierRoute,
   ApiPublicHooksSubscriptionsRenewRoute: ApiPublicHooksSubscriptionsRenewRoute,
   ApiPublicHooksSyncUniquelisansRoute: ApiPublicHooksSyncUniquelisansRoute,

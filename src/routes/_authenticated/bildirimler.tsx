@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { getNotificationPrefs, updateNotificationPrefs, type NotificationPrefs } from "@/lib/notification-prefs.functions";
+import { PushEnableButton } from "@/components/PushEnableButton";
 
 export const Route = createFileRoute("/_authenticated/bildirimler")({
   component: Page,
@@ -63,6 +64,10 @@ function Page() {
       <div className="flex items-center gap-2 mb-6">
         <Bell className="h-5 w-5 text-primary" />
         <h1 className="font-mono text-2xl neon-text">Bildirim Tercihleri</h1>
+      </div>
+
+      <div className="mb-4">
+        <PushEnableButton />
       </div>
 
       {isLoading || !state ? (
