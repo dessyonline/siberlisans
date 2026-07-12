@@ -2,15 +2,40 @@
   "name": "SiberPHP — Güvenli Lisans Dağıtım Sistemi",
   "short_name": "SiberPHP",
   "description": "Havale/EFT ile hızlı ve güvenli lisans anahtarı teslimi.",
-  "start_url": "/",
+  "start_url": "/?utm_source=pwa",
+  "id": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#0a0f0a",
   "theme_color": "#00ff9d",
   "lang": "tr",
+  "categories": ["shopping", "productivity", "utilities"],
   "icons": [
     { "src": "/favicon.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "/favicon.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Ürünler",
+      "short_name": "Ürünler",
+      "description": "Tüm lisans ürünlerini gör",
+      "url": "/urunler",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Hesabım",
+      "short_name": "Hesabım",
+      "description": "Bakiye, siparişler, lisanslar",
+      "url": "/hesabim",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Destek",
+      "short_name": "Destek",
+      "description": "Canlı destek bileti",
+      "url": "/destek",
+      "icons": [{ "src": "/favicon.png", "sizes": "192x192" }]
+    }
   ]
 }
