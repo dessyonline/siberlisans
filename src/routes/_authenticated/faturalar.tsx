@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { listMyInvoices, getMyBillingProfile, updateBillingProfile } from "@/lib/invoices.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
