@@ -133,6 +133,16 @@ function MyAccount() {
             <div className="text-lg neon-text leading-tight">{approvedKeys.length}</div>
           </div>
           <Link
+            to="/hesabim/lisanslar"
+            className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
+          >
+            <KeyRound className="h-4 w-4 text-primary shrink-0" />
+            <div className="min-w-0">
+              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">lisanslarım</div>
+              <div className="text-primary text-sm truncate">$ HWID & süre →</div>
+            </div>
+          </Link>
+          <Link
             to="/favorilerim"
             className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
           >

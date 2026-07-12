@@ -58,6 +58,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
 import { Route as ApiAdminRevokeRouteImport } from './routes/api/admin/revoke'
 import { Route as ApiAdminCreateRouteImport } from './routes/api/admin/create'
+import { Route as AuthenticatedHesabimLisanslarRouteImport } from './routes/_authenticated/hesabim.lisanslar'
 import { Route as AuthenticatedFaturaOrderIdRouteImport } from './routes/_authenticated/fatura.$orderId'
 import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
 import { Route as AuthenticatedAdminUniquelisansRouteImport } from './routes/_authenticated/admin/uniquelisans'
@@ -339,6 +340,12 @@ const ApiAdminCreateRoute = ApiAdminCreateRouteImport.update({
   path: '/api/admin/create',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedHesabimLisanslarRoute =
+  AuthenticatedHesabimLisanslarRouteImport.update({
+    id: '/lisanslar',
+    path: '/lisanslar',
+    getParentRoute: () => AuthenticatedHesabimRoute,
+  } as any)
 const AuthenticatedFaturaOrderIdRoute =
   AuthenticatedFaturaOrderIdRouteImport.update({
     id: '/fatura/$orderId',
@@ -555,7 +562,7 @@ export interface FileRoutesByFullPath {
   '/faturalar': typeof AuthenticatedFaturalarRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/guvenlik': typeof AuthenticatedGuvenlikRoute
-  '/hesabim': typeof AuthenticatedHesabimRoute
+  '/hesabim': typeof AuthenticatedHesabimRouteWithChildren
   '/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
@@ -606,6 +613,7 @@ export interface FileRoutesByFullPath {
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
+  '/hesabim/lisanslar': typeof AuthenticatedHesabimLisanslarRoute
   '/api/admin/create': typeof ApiAdminCreateRoute
   '/api/admin/revoke': typeof ApiAdminRevokeRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
@@ -637,7 +645,7 @@ export interface FileRoutesByTo {
   '/faturalar': typeof AuthenticatedFaturalarRoute
   '/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/guvenlik': typeof AuthenticatedGuvenlikRoute
-  '/hesabim': typeof AuthenticatedHesabimRoute
+  '/hesabim': typeof AuthenticatedHesabimRouteWithChildren
   '/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
@@ -688,6 +696,7 @@ export interface FileRoutesByTo {
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
+  '/hesabim/lisanslar': typeof AuthenticatedHesabimLisanslarRoute
   '/api/admin/create': typeof ApiAdminCreateRoute
   '/api/admin/revoke': typeof ApiAdminRevokeRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
@@ -722,7 +731,7 @@ export interface FileRoutesById {
   '/_authenticated/faturalar': typeof AuthenticatedFaturalarRoute
   '/_authenticated/favorilerim': typeof AuthenticatedFavorilerimRoute
   '/_authenticated/guvenlik': typeof AuthenticatedGuvenlikRoute
-  '/_authenticated/hesabim': typeof AuthenticatedHesabimRoute
+  '/_authenticated/hesabim': typeof AuthenticatedHesabimRouteWithChildren
   '/_authenticated/kripto-yukle': typeof AuthenticatedKriptoYukleRoute
   '/aktivasyon/$token': typeof AktivasyonTokenRoute
   '/api/activate': typeof ApiActivateRoute
@@ -773,6 +782,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/_authenticated/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
   '/_authenticated/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
+  '/_authenticated/hesabim/lisanslar': typeof AuthenticatedHesabimLisanslarRoute
   '/api/admin/create': typeof ApiAdminCreateRoute
   '/api/admin/revoke': typeof ApiAdminRevokeRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
@@ -858,6 +868,7 @@ export interface FileRouteTypes {
     | '/admin/uniquelisans'
     | '/admin/urunler'
     | '/fatura/$orderId'
+    | '/hesabim/lisanslar'
     | '/api/admin/create'
     | '/api/admin/revoke'
     | '/api/public/sitemap.xml'
@@ -940,6 +951,7 @@ export interface FileRouteTypes {
     | '/admin/uniquelisans'
     | '/admin/urunler'
     | '/fatura/$orderId'
+    | '/hesabim/lisanslar'
     | '/api/admin/create'
     | '/api/admin/revoke'
     | '/api/public/sitemap.xml'
@@ -1024,6 +1036,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/uniquelisans'
     | '/_authenticated/admin/urunler'
     | '/_authenticated/fatura/$orderId'
+    | '/_authenticated/hesabim/lisanslar'
     | '/api/admin/create'
     | '/api/admin/revoke'
     | '/api/public/sitemap.xml'
@@ -1428,6 +1441,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminCreateRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/hesabim/lisanslar': {
+      id: '/_authenticated/hesabim/lisanslar'
+      path: '/lisanslar'
+      fullPath: '/hesabim/lisanslar'
+      preLoaderRoute: typeof AuthenticatedHesabimLisanslarRouteImport
+      parentRoute: typeof AuthenticatedHesabimRoute
+    }
     '/_authenticated/fatura/$orderId': {
       id: '/_authenticated/fatura/$orderId'
       path: '/fatura/$orderId'
@@ -1728,6 +1748,17 @@ const AuthenticatedAdminRouteRouteWithChildren =
     AuthenticatedAdminRouteRouteChildren,
   )
 
+interface AuthenticatedHesabimRouteChildren {
+  AuthenticatedHesabimLisanslarRoute: typeof AuthenticatedHesabimLisanslarRoute
+}
+
+const AuthenticatedHesabimRouteChildren: AuthenticatedHesabimRouteChildren = {
+  AuthenticatedHesabimLisanslarRoute: AuthenticatedHesabimLisanslarRoute,
+}
+
+const AuthenticatedHesabimRouteWithChildren =
+  AuthenticatedHesabimRoute._addFileChildren(AuthenticatedHesabimRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedBildirimlerRoute: typeof AuthenticatedBildirimlerRoute
@@ -1737,7 +1768,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFaturalarRoute: typeof AuthenticatedFaturalarRoute
   AuthenticatedFavorilerimRoute: typeof AuthenticatedFavorilerimRoute
   AuthenticatedGuvenlikRoute: typeof AuthenticatedGuvenlikRoute
-  AuthenticatedHesabimRoute: typeof AuthenticatedHesabimRoute
+  AuthenticatedHesabimRoute: typeof AuthenticatedHesabimRouteWithChildren
   AuthenticatedKriptoYukleRoute: typeof AuthenticatedKriptoYukleRoute
   AuthenticatedFaturaOrderIdRoute: typeof AuthenticatedFaturaOrderIdRoute
 }
@@ -1751,7 +1782,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFaturalarRoute: AuthenticatedFaturalarRoute,
   AuthenticatedFavorilerimRoute: AuthenticatedFavorilerimRoute,
   AuthenticatedGuvenlikRoute: AuthenticatedGuvenlikRoute,
-  AuthenticatedHesabimRoute: AuthenticatedHesabimRoute,
+  AuthenticatedHesabimRoute: AuthenticatedHesabimRouteWithChildren,
   AuthenticatedKriptoYukleRoute: AuthenticatedKriptoYukleRoute,
   AuthenticatedFaturaOrderIdRoute: AuthenticatedFaturaOrderIdRoute,
 }
