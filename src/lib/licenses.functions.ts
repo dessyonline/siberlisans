@@ -72,16 +72,21 @@ export const releaseMyHwid = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
-    // Sahiplik kontrolü: order_keys -> orders.user_id
+    // Sahiplik kontrolü: order_keys -> orders.user_id + key_value
     const { data: check, error: cErr } = await supabase
       .from("order_keys")
-      .select("license_key_id, order:orders!inner(user_id)")
+      .select("license_key_id, license_key:license_keys(key_value), order:orders!inner(user_id)")
       .eq("license_key_id", data.license_key_id)
       .limit(1)
       .maybeSingle();
     if (cErr) throw cErr;
-    const ownerId = (check as unknown as { order: { user_id: string } | null } | null)?.order?.user_id;
-    if (!ownerId || ownerId !== userId) {
+    const row = check as unknown as {
+      order: { user_id: string } | null;
+      license_key: { key_value: string } | null;
+    } | null;
+    const ownerId = row?.order?.user_id;
+    const keyValue = row?.license_key?.key_value;
+    if (!ownerId || ownerId !== userId || !keyValue) {
       throw new Error("Bu lisans size ait değil.");
     }
 
@@ -91,7 +96,7 @@ export const releaseMyHwid = createServerFn({ method: "POST" })
     const { data: last } = await supabaseAdmin
       .from("license_events")
       .select("created_at")
-      .eq("license_key_id", data.license_key_id)
+      .eq("license_key", keyValue)
       .eq("event", "hwid_reset")
       .order("created_at", { ascending: false })
       .limit(1)
@@ -111,10 +116,11 @@ export const releaseMyHwid = createServerFn({ method: "POST" })
     if (uErr) throw uErr;
 
     await supabaseAdmin.from("license_events").insert({
-      license_key_id: data.license_key_id,
+      license_key: keyValue,
       event: "hwid_reset",
       detail: "user_self_reset",
     });
 
     return { ok: true };
   });
+
