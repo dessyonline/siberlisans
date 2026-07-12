@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { ShieldCheck, ShieldAlert, Trash2, ArrowLeft, Terminal, MonitorSmartphone } from "lucide-react";
+import { ShieldCheck, ShieldAlert, Trash2, ArrowLeft, Terminal, MonitorSmartphone, LogOut } from "lucide-react";
 import { MfaEnroll } from "@/components/security/MfaEnroll";
 import { MfaChallenge } from "@/components/security/MfaChallenge";
 import { trustedDeviceExpiry, untrustDevice, TRUSTED_DEVICE_TTL_DAYS } from "@/lib/trusted-device";
@@ -55,21 +55,31 @@ function SecurityPage() {
 
   const askRemove = (id: string) => {
     setRemoveTarget(id);
-    if (aal !== "aal2") {
-      // Kaldırmak için önce aal2 gerek
-      setMode("verify-remove");
-    } else {
-      doRemove(id);
-    }
+    // Güvenlik: aal2 olsa bile her kaldırma öncesi taze TOTP kodu zorunlu.
+    // Aksi halde ele geçirilmiş bir admin oturumu 2FA'yı sessizce söker.
+    setMode("verify-remove");
   };
 
   const doRemove = async (id: string) => {
     const { error } = await supabase.auth.mfa.unenroll({ factorId: id });
     if (error) return toast.error(`[!] ${error.message}`);
-    toast.success("[✓] 2FA kaldırıldı");
+    // Bu cihazın güvenilir işaretini de temizle
+    untrustDevice(userId);
+    // Diğer tüm cihazlardaki oturumları kapat — 2FA sökülünce bir başkası
+    // eski aal2 tokenıyla admin panele erişmeye devam edemesin.
+    try {
+      await supabase.auth.signOut({ scope: "others" });
+    } catch { /* noop */ }
+    toast.success("[✓] 2FA kaldırıldı · diğer oturumlar sonlandırıldı");
     setRemoveTarget(null);
     setMode("idle");
     refresh();
+  };
+
+  const signOutOthers = async () => {
+    const { error } = await supabase.auth.signOut({ scope: "others" });
+    if (error) return toast.error(`[!] ${error.message}`);
+    toast.success("[✓] diğer tüm cihazlardan çıkış yapıldı");
   };
 
   return (
@@ -261,10 +271,36 @@ function SecurityPage() {
       )}
 
 
+      {/* Aktif oturumlar */}
+      <div className="glass-card rounded-lg p-5">
+        <div className="flex items-start gap-3">
+          <div className="rounded-md p-2 bg-warn/10 text-warn">
+            <LogOut className="h-5 w-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-mono text-sm font-semibold">Diğer Cihazlardan Çıkış</div>
+            <div className="mt-0.5 font-mono text-[11px] text-muted-foreground leading-relaxed">
+              Hesabında başka telefon veya bilgisayarda açık oturum kaldığından
+              şüphelenirsen buradan hepsini anında sonlandır. Bu cihazdaki
+              oturumun etkilenmez.
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-3 font-mono border-warn/40 text-warn hover:bg-warn/10"
+              onClick={signOutOthers}
+            >
+              <LogOut className="mr-1.5 h-3 w-3" /> tüm diğer oturumları kapat
+            </Button>
+          </div>
+        </div>
+      </div>
+
       <div className="glass-card rounded-lg p-4 font-mono text-[11px] text-muted-foreground space-y-1">
         <div className="text-primary">// ipucu</div>
         <div>· admin paneli için 2FA <span className="text-primary">zorunludur</span>.</div>
-        <div>· şifre değişikliği ve hassas hesap işlemleri 2FA aktifken kod isteyecektir.</div>
+        <div>· 2FA kaldırırken <span className="text-primary">her seferinde</span> taze kod istenir; bir başkası oturumunu ele geçirse bile sökemez.</div>
+        <div>· şüpheli erişimde önce "diğer oturumları kapat", sonra şifreni değiştir.</div>
         <div>· telefonunu kaybedersen destek üzerinden kimlik doğrulaması ile sıfırlanır.</div>
       </div>
     </div>
