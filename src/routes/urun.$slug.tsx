@@ -74,7 +74,7 @@ export const Route = createFileRoute("/urun/$slug")({
           description: desc,
           image: p.image_url || undefined,
           category: p.category || undefined,
-          sku: (p as { sku?: string | null }).sku || undefined,
+          sku: undefined,
           brand: { "@type": "Brand", name: "SiberPHP" },
           offers: {
             "@type": "Offer",
