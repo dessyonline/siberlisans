@@ -76,6 +76,7 @@ import { Route as AuthenticatedAdminKriptoRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAdminKeylerRouteImport } from './routes/_authenticated/admin/keyler'
 import { Route as AuthenticatedAdminKampanyalarRouteImport } from './routes/_authenticated/admin/kampanyalar'
 import { Route as AuthenticatedAdminFlashRouteImport } from './routes/_authenticated/admin/flash'
+import { Route as AuthenticatedAdminFaturalarRouteImport } from './routes/_authenticated/admin/faturalar'
 import { Route as AuthenticatedAdminDestekRouteImport } from './routes/_authenticated/admin/destek'
 import { Route as AuthenticatedAdminDenetimRouteImport } from './routes/_authenticated/admin/denetim'
 import { Route as AuthenticatedAdminCuzdanRouteImport } from './routes/_authenticated/admin/cuzdan'
@@ -444,6 +445,12 @@ const AuthenticatedAdminFlashRoute = AuthenticatedAdminFlashRouteImport.update({
   path: '/flash',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
+const AuthenticatedAdminFaturalarRoute =
+  AuthenticatedAdminFaturalarRouteImport.update({
+    id: '/faturalar',
+    path: '/faturalar',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminDestekRoute =
   AuthenticatedAdminDestekRouteImport.update({
     id: '/destek',
@@ -580,6 +587,7 @@ export interface FileRoutesByFullPath {
   '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
   '/admin/denetim': typeof AuthenticatedAdminDenetimRoute
   '/admin/destek': typeof AuthenticatedAdminDestekRoute
+  '/admin/faturalar': typeof AuthenticatedAdminFaturalarRoute
   '/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
@@ -661,6 +669,7 @@ export interface FileRoutesByTo {
   '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
   '/admin/denetim': typeof AuthenticatedAdminDenetimRoute
   '/admin/destek': typeof AuthenticatedAdminDestekRoute
+  '/admin/faturalar': typeof AuthenticatedAdminFaturalarRoute
   '/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
@@ -745,6 +754,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
   '/_authenticated/admin/denetim': typeof AuthenticatedAdminDenetimRoute
   '/_authenticated/admin/destek': typeof AuthenticatedAdminDestekRoute
+  '/_authenticated/admin/faturalar': typeof AuthenticatedAdminFaturalarRoute
   '/_authenticated/admin/flash': typeof AuthenticatedAdminFlashRoute
   '/_authenticated/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/_authenticated/admin/keyler': typeof AuthenticatedAdminKeylerRoute
@@ -829,6 +839,7 @@ export interface FileRouteTypes {
     | '/admin/cuzdan'
     | '/admin/denetim'
     | '/admin/destek'
+    | '/admin/faturalar'
     | '/admin/flash'
     | '/admin/kampanyalar'
     | '/admin/keyler'
@@ -910,6 +921,7 @@ export interface FileRouteTypes {
     | '/admin/cuzdan'
     | '/admin/denetim'
     | '/admin/destek'
+    | '/admin/faturalar'
     | '/admin/flash'
     | '/admin/kampanyalar'
     | '/admin/keyler'
@@ -993,6 +1005,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/cuzdan'
     | '/_authenticated/admin/denetim'
     | '/_authenticated/admin/destek'
+    | '/_authenticated/admin/faturalar'
     | '/_authenticated/admin/flash'
     | '/_authenticated/admin/kampanyalar'
     | '/_authenticated/admin/keyler'
@@ -1541,6 +1554,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminFlashRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/faturalar': {
+      id: '/_authenticated/admin/faturalar'
+      path: '/faturalar'
+      fullPath: '/admin/faturalar'
+      preLoaderRoute: typeof AuthenticatedAdminFaturalarRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/destek': {
       id: '/_authenticated/admin/destek'
       path: '/destek'
@@ -1651,6 +1671,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminCuzdanRoute: typeof AuthenticatedAdminCuzdanRoute
   AuthenticatedAdminDenetimRoute: typeof AuthenticatedAdminDenetimRoute
   AuthenticatedAdminDestekRoute: typeof AuthenticatedAdminDestekRoute
+  AuthenticatedAdminFaturalarRoute: typeof AuthenticatedAdminFaturalarRoute
   AuthenticatedAdminFlashRoute: typeof AuthenticatedAdminFlashRoute
   AuthenticatedAdminKampanyalarRoute: typeof AuthenticatedAdminKampanyalarRoute
   AuthenticatedAdminKeylerRoute: typeof AuthenticatedAdminKeylerRoute
@@ -1681,6 +1702,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminCuzdanRoute: AuthenticatedAdminCuzdanRoute,
     AuthenticatedAdminDenetimRoute: AuthenticatedAdminDenetimRoute,
     AuthenticatedAdminDestekRoute: AuthenticatedAdminDestekRoute,
+    AuthenticatedAdminFaturalarRoute: AuthenticatedAdminFaturalarRoute,
     AuthenticatedAdminFlashRoute: AuthenticatedAdminFlashRoute,
     AuthenticatedAdminKampanyalarRoute: AuthenticatedAdminKampanyalarRoute,
     AuthenticatedAdminKeylerRoute: AuthenticatedAdminKeylerRoute,

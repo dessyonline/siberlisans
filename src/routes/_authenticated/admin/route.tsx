@@ -24,6 +24,7 @@ import {
   RefreshCw,
   TrendingUp,
   History,
+  Receipt,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
