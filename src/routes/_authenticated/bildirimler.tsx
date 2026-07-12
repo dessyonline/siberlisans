@@ -66,6 +66,10 @@ function Page() {
         <h1 className="font-mono text-2xl neon-text">Bildirim Tercihleri</h1>
       </div>
 
+      <div className="mb-4">
+        <PushEnableButton />
+      </div>
+
       {isLoading || !state ? (
         <div className="glass-card rounded-lg p-8 text-center font-mono text-sm text-muted-foreground animate-pulse">
           yükleniyor…
