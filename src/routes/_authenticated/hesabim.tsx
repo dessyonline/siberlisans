@@ -183,8 +183,23 @@ function MyAccount() {
 
 
 
-      <div className="mt-4">
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <BadgesBlock />
+        <Link
+          to="/gorevler"
+          className="glass-card corner-cut rounded-md p-4 flex items-center gap-3 hover:border-primary/60 transition group"
+        >
+          <Trophy className="h-8 w-8 text-primary shrink-0 group-hover:scale-110 transition" />
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+              görevler & liderlik
+            </div>
+            <div className="font-semibold">Puan kazan · Kupona çevir</div>
+            <div className="text-[11px] font-mono text-muted-foreground mt-0.5">
+              görevleri tamamla · aylık top 20'ye gir
+            </div>
+          </div>
+        </Link>
       </div>
 
       <Tabs defaultValue="orders" className="mt-6 md:mt-8">
