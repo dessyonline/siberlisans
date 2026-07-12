@@ -24,6 +24,7 @@ import {
   RefreshCw,
   TrendingUp,
   History,
+  Receipt,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -48,6 +49,7 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
   { to: "/admin/denetim", label: "denetim kaydı", icon: History },
   { to: "/admin/destek", label: "destek", icon: LifeBuoy },
   { to: "/admin/siparisler", label: "siparişler", icon: ShoppingCart },
+  { to: "/admin/faturalar", label: "faturalar", icon: Receipt },
   { to: "/admin/abonelikler", label: "abonelikler", icon: RefreshCw },
   { to: "/admin/urunler", label: "ürünler", icon: Package },
   { to: "/admin/paketler", label: "paketler", icon: Package },
