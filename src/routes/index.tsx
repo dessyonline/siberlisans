@@ -40,6 +40,9 @@ import { applyFlash } from "@/lib/flash-sales";
 import { useAuth } from "@/lib/auth-context";
 import { Wallet } from "lucide-react";
 import { AdminEditBadge } from "@/components/AdminEditBadge";
+import { MatrixRain } from "@/components/MatrixRain";
+import { LiveActivityTicker } from "@/components/LiveActivityTicker";
+import { useTilt } from "@/hooks/use-tilt";
 
 export const Route = createFileRoute("/")({
   component: Index,
