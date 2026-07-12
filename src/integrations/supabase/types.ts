@@ -2295,6 +2295,14 @@ export type Database = {
         }[]
       }
       process_referral_bonus: { Args: { _user_id: string }; Returns: undefined }
+      public_recent_sales: {
+        Args: never
+        Returns: {
+          category: string
+          created_at: string
+          name: string
+        }[]
+      }
       push_notification: {
         Args: {
           _body?: string
