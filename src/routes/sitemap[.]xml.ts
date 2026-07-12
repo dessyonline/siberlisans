@@ -19,6 +19,7 @@ export const Route = createFileRoute("/sitemap.xml")({
         const staticEntries: SitemapEntry[] = [
           { path: "/", changefreq: "daily", priority: "1.0" },
           { path: "/urunler", changefreq: "daily", priority: "0.9" },
+          { path: "/blog", changefreq: "weekly", priority: "0.7" },
           { path: "/nasil-calisir", changefreq: "monthly", priority: "0.6" },
           { path: "/sss", changefreq: "monthly", priority: "0.6" },
           { path: "/iletisim", changefreq: "monthly", priority: "0.5" },
@@ -36,11 +37,16 @@ export const Route = createFileRoute("/sitemap.xml")({
             process.env.SUPABASE_PUBLISHABLE_KEY!,
             { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
           );
-          const { data } = await supabase
-            .from("products")
-            .select("slug, created_at")
-            .eq("active", true);
-          for (const p of data ?? []) {
+          const [productsRes, blogsRes] = await Promise.all([
+            supabase.from("products").select("slug, created_at, category").eq("active", true),
+            supabase
+              // biome-ignore lint/suspicious/noExplicitAny: table types may lag
+              .from("blog_posts" as any)
+              .select("slug, published_at, updated_at")
+              .not("published_at", "is", null)
+              .lte("published_at", new Date().toISOString()),
+          ]);
+          for (const p of productsRes.data ?? []) {
             entries.push({
               path: `/urun/${p.slug}`,
               lastmod: (p.created_at ?? "").slice(0, 10) || undefined,
@@ -48,9 +54,29 @@ export const Route = createFileRoute("/sitemap.xml")({
               priority: "0.8",
             });
           }
+          const seenCat = new Set<string>();
+          for (const p of productsRes.data ?? []) {
+            if (p.category && !seenCat.has(p.category)) {
+              seenCat.add(p.category);
+              entries.push({
+                path: `/urunler?kategori=${encodeURIComponent(p.category)}`,
+                changefreq: "weekly",
+                priority: "0.6",
+              });
+            }
+          }
+          for (const b of (blogsRes.data ?? []) as Array<{ slug: string; published_at: string | null; updated_at: string | null }>) {
+            entries.push({
+              path: `/blog/${b.slug}`,
+              lastmod: ((b.updated_at ?? b.published_at) ?? "").slice(0, 10) || undefined,
+              changefreq: "monthly",
+              priority: "0.7",
+            });
+          }
         } catch {
           // Fall back to static entries on any error.
         }
+
 
         const urls = entries.map((e) =>
           [
