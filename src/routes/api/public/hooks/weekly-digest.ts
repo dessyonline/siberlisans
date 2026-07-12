@@ -55,13 +55,13 @@ export const Route = createFileRoute("/api/public/hooks/weekly-digest")({
           // biome-ignore lint/suspicious/noExplicitAny: joined
           const productIds = favs.map((f: any) => f.product_id).filter(Boolean);
           const { data: flash } = await supabaseAdmin
-            .from("flash_sales")
-            .select("product_id, discount_pct, ends_at")
+            // biome-ignore lint/suspicious/noExplicitAny: flash_sales schema variance
+            .from("flash_sales" as any)
+            .select("product_id, ends_at")
             .in("product_id", productIds)
-            .eq("active", true)
             .gte("ends_at", now);
 
-          const flashCount = flash?.length ?? 0;
+          const flashCount = (flash as unknown as unknown[])?.length ?? 0;
           // biome-ignore lint/suspicious/noExplicitAny: joined
           const inStock = favs.filter((f: any) => (f.products?.stock_qty ?? 0) > 0).length;
 
@@ -92,11 +92,14 @@ export const Route = createFileRoute("/api/public/hooks/weekly-digest")({
         }
 
         if (notifications.length > 0) {
-          await supabaseAdmin.from("notifications").insert(notifications);
+          // biome-ignore lint/suspicious/noExplicitAny: bulk insert
+          await supabaseAdmin.from("notifications").insert(notifications as any);
         }
         if (digestLogs.length > 0) {
-          await supabaseAdmin.from("weekly_digest_log").insert(digestLogs);
+          // biome-ignore lint/suspicious/noExplicitAny: bulk insert
+          await supabaseAdmin.from("weekly_digest_log").insert(digestLogs as any);
         }
+
 
         return Response.json({ ok: true, processed });
       },
