@@ -1302,6 +1302,7 @@ export type Database = {
           last_seen_ip: string | null
           last_streak_at: string | null
           login_streak: number
+          onboarded_at: string | null
           partner_slug: string | null
           referral_bonus_paid: boolean
           referral_code: string | null
@@ -1309,6 +1310,7 @@ export type Database = {
           tier: Database["public"]["Enums"]["user_tier"]
           total_points: number
           updated_at: string
+          weekly_digest_enabled: boolean
         }
         Insert: {
           avatar_id?: string | null
@@ -1323,6 +1325,7 @@ export type Database = {
           last_seen_ip?: string | null
           last_streak_at?: string | null
           login_streak?: number
+          onboarded_at?: string | null
           partner_slug?: string | null
           referral_bonus_paid?: boolean
           referral_code?: string | null
@@ -1330,6 +1333,7 @@ export type Database = {
           tier?: Database["public"]["Enums"]["user_tier"]
           total_points?: number
           updated_at?: string
+          weekly_digest_enabled?: boolean
         }
         Update: {
           avatar_id?: string | null
@@ -1344,6 +1348,7 @@ export type Database = {
           last_seen_ip?: string | null
           last_streak_at?: string | null
           login_streak?: number
+          onboarded_at?: string | null
           partner_slug?: string | null
           referral_bonus_paid?: boolean
           referral_code?: string | null
@@ -1351,6 +1356,7 @@ export type Database = {
           tier?: Database["public"]["Enums"]["user_tier"]
           total_points?: number
           updated_at?: string
+          weekly_digest_enabled?: boolean
         }
         Relationships: []
       }
@@ -1917,6 +1923,30 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_digest_log: {
+        Row: {
+          id: string
+          items_count: number
+          payload: Json | null
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          items_count?: number
+          payload?: Json | null
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          items_count?: number
+          payload?: Json | null
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -2266,6 +2296,7 @@ export type Database = {
         Args: { _order_id: string }
         Returns: undefined
       }
+      mark_onboarded: { Args: never; Returns: undefined }
       next_invoice_number: { Args: never; Returns: string }
       partner_stats: {
         Args: { _user_id: string }
