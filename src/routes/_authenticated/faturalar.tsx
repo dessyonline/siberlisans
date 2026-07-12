@@ -22,10 +22,13 @@ export const Route = createFileRoute("/_authenticated/faturalar")({
 function MyInvoices() {
   const [search, setSearch] = useState("");
 
-  const { data: invoices, isLoading } = useQuery({
+  const invoicesQ = useQuery({
     queryKey: ["my-invoices"],
     queryFn: () => listMyInvoices(),
   });
+  const invoices = invoicesQ.data;
+  const isLoading = invoicesQ.isLoading;
+  const loadError = invoicesQ.error as Error | null;
 
   const { data: profile, refetch: refetchProfile } = useQuery({
     queryKey: ["my-billing-profile"],
@@ -39,14 +42,16 @@ function MyInvoices() {
   });
   const [formInit, setFormInit] = useState(false);
 
-  if (profile && !formInit) {
-    setForm({
-      billing_name: profile.billing_name ?? "",
-      billing_tax_id: profile.billing_tax_id ?? "",
-      billing_address: profile.billing_address ?? "",
-    });
-    setFormInit(true);
-  }
+  useEffect(() => {
+    if (profile && !formInit) {
+      setForm({
+        billing_name: profile.billing_name ?? "",
+        billing_tax_id: profile.billing_tax_id ?? "",
+        billing_address: profile.billing_address ?? "",
+      });
+      setFormInit(true);
+    }
+  }, [profile, formInit]);
 
   const save = useMutation({
     mutationFn: () =>
