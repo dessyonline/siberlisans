@@ -849,6 +849,7 @@ export type Database = {
           updated_at: string
           user_id: string
           wallet_events: boolean
+          web_push: boolean
         }
         Insert: {
           abandonment?: boolean
@@ -859,6 +860,7 @@ export type Database = {
           updated_at?: string
           user_id: string
           wallet_events?: boolean
+          web_push?: boolean
         }
         Update: {
           abandonment?: boolean
@@ -869,6 +871,7 @@ export type Database = {
           updated_at?: string
           user_id?: string
           wallet_events?: boolean
+          web_push?: boolean
         }
         Relationships: []
       }
@@ -1469,6 +1472,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          fail_count: number
+          id: string
+          last_success_at: string | null
+          p256dh: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          fail_count?: number
+          id?: string
+          last_success_at?: string | null
+          p256dh: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          fail_count?: number
+          id?: string
+          last_success_at?: string | null
+          p256dh?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       referral_clicks: {
         Row: {
