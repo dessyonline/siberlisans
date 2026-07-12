@@ -271,13 +271,6 @@ function SecurityPage() {
       )}
 
 
-      <div className="glass-card rounded-lg p-4 font-mono text-[11px] text-muted-foreground space-y-1">
-        <div className="text-primary">// ipucu</div>
-        <div>· admin paneli için 2FA <span className="text-primary">zorunludur</span>.</div>
-        <div>· şifre değişikliği ve hassas hesap işlemleri 2FA aktifken kod isteyecektir.</div>
-        <div>· telefonunu kaybedersen destek üzerinden kimlik doğrulaması ile sıfırlanır.</div>
-      </div>
-    </div>
       {/* Aktif oturumlar */}
       <div className="glass-card rounded-lg p-5">
         <div className="flex items-start gap-3">
