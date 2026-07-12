@@ -58,7 +58,7 @@ function LeaderboardPage() {
         </p>
         <div className="flex justify-center gap-3 pt-2">
           <Link
-            to="/_authenticated/gorevler"
+            to="/gorevler"
             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md border border-primary/40 text-xs font-mono text-primary hover:bg-primary/10 transition"
           >
             <Target className="h-3 w-3" /> görevleri gör
