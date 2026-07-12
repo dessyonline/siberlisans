@@ -7,8 +7,11 @@ import { ArrowLeft, Calendar } from "lucide-react";
 
 export const Route = createFileRoute("/blog/$slug")({
   component: BlogPost,
-  head: ({ loaderData }) => {
-    const p = loaderData as { title?: string; excerpt?: string | null; cover_url?: string | null } | undefined;
+  head: ({ params, loaderData }) => {
+    const p = loaderData as
+      | { title?: string; excerpt?: string | null; cover_url?: string | null; published_at?: string | null }
+      | undefined;
+    const url = `https://siberlisans.lovable.app/blog/${params.slug}`;
     const title = p?.title ? `${p.title} — SiberPHP Blog` : "Blog — SiberPHP";
     const desc = p?.excerpt ?? "SiberPHP blog yazısı.";
     const meta = [
@@ -17,6 +20,7 @@ export const Route = createFileRoute("/blog/$slug")({
       { property: "og:title", content: p?.title ?? "SiberPHP Blog" },
       { property: "og:description", content: desc },
       { property: "og:type", content: "article" },
+      { property: "og:url", content: url },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: p?.title ?? "SiberPHP Blog" },
       { name: "twitter:description", content: desc },
@@ -25,21 +29,48 @@ export const Route = createFileRoute("/blog/$slug")({
       meta.push({ property: "og:image", content: p.cover_url });
       meta.push({ name: "twitter:image", content: p.cover_url });
     }
-    return { meta };
+    const scripts = p?.title
+      ? [
+          {
+            type: "application/ld+json",
+            children: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Article",
+              headline: p.title,
+              description: desc,
+              image: p.cover_url || undefined,
+              datePublished: p.published_at || undefined,
+              author: { "@type": "Organization", name: "SiberPHP" },
+              publisher: {
+                "@type": "Organization",
+                name: "SiberPHP",
+                logo: { "@type": "ImageObject", url: "https://siberlisans.lovable.app/favicon.ico" },
+              },
+              mainEntityOfPage: { "@type": "WebPage", "@id": url },
+            }),
+          },
+        ]
+      : undefined;
+    return {
+      meta,
+      links: [{ rel: "canonical", href: url }],
+      scripts,
+    };
   },
   loader: async ({ params }) => {
     const { data, error } = await supabase
       // biome-ignore lint/suspicious/noExplicitAny: new table
       .from("blog_posts" as any)
-      .select("title, excerpt, cover_url")
+      .select("title, excerpt, cover_url, published_at")
       .eq("slug", params.slug)
       .not("published_at", "is", null)
       .lte("published_at", new Date().toISOString())
       .maybeSingle();
     if (error || !data) throw notFound();
-    return data as unknown as { title: string; excerpt: string | null; cover_url: string | null };
+    return data as unknown as { title: string; excerpt: string | null; cover_url: string | null; published_at: string };
   },
 });
+
 
 type Post = {
   id: string;
