@@ -29,7 +29,7 @@ const getInvoiceData = createServerFn({ method: "GET" })
     let orderQuery = context.supabase
       .from("orders")
       .select(
-        "id, reference_code, price_try, status, created_at, buyer_email, product:products(name), items:order_items(quantity, product_name_snapshot, unit_price_try)",
+        "id, reference_code, price_try, status, created_at, product:products(name), items:order_items(quantity, product_name_snapshot, unit_price_try)",
       )
       .eq("id", data.orderId);
 
@@ -62,7 +62,6 @@ type LoaderData = {
     price_try: number;
     status: string;
     created_at: string;
-    buyer_email: string | null;
     product: { name: string } | null;
     items: { quantity: number; product_name_snapshot: string; unit_price_try: number }[] | null;
   };
@@ -130,7 +129,7 @@ function Invoice() {
   const invoiceNumber = invoice?.invoice_number ?? `(${order.reference_code})`;
   const issued = invoice?.issued_at ?? order.created_at;
   const buyerName = invoice?.buyer_name ?? "Bireysel Müşteri";
-  const buyerEmail = invoice?.buyer_email ?? order.buyer_email;
+  const buyerEmail = invoice?.buyer_email ?? null;
   const buyerTax = invoice?.buyer_tax_id;
   const buyerAddress = invoice?.buyer_address;
 
