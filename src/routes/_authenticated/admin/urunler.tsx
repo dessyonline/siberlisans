@@ -13,7 +13,8 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Star, Search, X, Package, AlertTriangle, Crown, Copy, ImageIcon, EyeOff, Eye, Wand2, Sparkles } from "lucide-react";
+import { Plus, Pencil, Trash2, Star, Search, X, Package, AlertTriangle, Crown, Copy, ImageIcon, EyeOff, Eye, Wand2, Sparkles, CheckSquare, Square, Percent } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { isLegacyClearbitLogo, resolveLogoUrl } from "@/lib/logo-resolver";
 import { ProductLogo } from "@/components/ProductLogo";
 
@@ -96,6 +97,8 @@ function ProductsAdmin() {
   const [editing, setEditing] = useState<Partial<Product> | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
   const upsertFn = useServerFn(upsertProduct);
   const deleteFn = useServerFn(deleteProduct);
   const searchParams = Route.useSearch();
@@ -240,6 +243,80 @@ function ProductsAdmin() {
     low_stock_threshold: 5,
   });
 
+  const toggleSel = (id: string) => {
+    setSelected((prev) => {
+      const n = new Set(prev);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+  };
+  const selectAllVisible = () => {
+    const ids = visible.map((p) => p.id);
+    const allSelected = ids.every((id) => selected.has(id));
+    setSelected(allSelected ? new Set() : new Set(ids));
+  };
+  const clearSel = () => setSelected(new Set());
+
+  const bulkUpdate = async (patch: Partial<Product>, label: string) => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const { error } = await supabase.from("products").update(patch).in("id", ids);
+      if (error) throw error;
+      toast.success(`${ids.length} ürün: ${label}`);
+      clearSel();
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setBulkBusy(false); }
+  };
+
+  const bulkPricePercent = async () => {
+    const raw = prompt("Yüzde değişim (örn +10 = %10 zam, -5 = %5 indirim):");
+    if (!raw) return;
+    const pct = Number(raw.replace(",", "."));
+    if (!Number.isFinite(pct) || pct === 0) { toast.error("Geçersiz yüzde"); return; }
+    const ids = Array.from(selected);
+    setBulkBusy(true);
+    try {
+      const list = (products ?? []) as Product[];
+      let ok = 0, fail = 0;
+      for (const p of list.filter((p) => ids.includes(p.id))) {
+        const next = Math.max(1, Math.round(Number(p.price_try) * (1 + pct / 100)));
+        const { error } = await supabase.from("products").update({ price_try: next }).eq("id", p.id);
+        if (error) fail++; else ok++;
+      }
+      toast.success(`${ok} ürün güncellendi${fail ? `, ${fail} atlandı (min kar kuralı olabilir)` : ""}`);
+      clearSel();
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setBulkBusy(false); }
+  };
+
+  const bulkCategory = async () => {
+    const cat = prompt("Yeni kategori adı (boş bırakırsan temizlenir):", "");
+    if (cat === null) return;
+    await bulkUpdate({ category: cat.trim() === "" ? null : cat.trim() }, `kategori → ${cat || "—"}`);
+  };
+
+  const bulkDelete = async () => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    if (!confirm(`${ids.length} ürünü ve bağlı tüm keyleri silmek istediğine emin misin?`)) return;
+    setBulkBusy(true);
+    try {
+      const { error } = await supabase.from("products").delete().in("id", ids);
+      if (error) throw error;
+      toast.success(`${ids.length} ürün silindi`);
+      clearSel();
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setBulkBusy(false); }
+  };
+
   return (
     <div>
       {/* HEADER + STATS */}
@@ -326,8 +403,44 @@ function ProductsAdmin() {
         </div>
       </div>
 
+      {/* BULK TOOLBAR */}
+      <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-background/40 px-3 py-2 font-mono text-xs">
+        <button
+          onClick={selectAllVisible}
+          className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+        >
+          {visible.length > 0 && visible.every((p) => selected.has(p.id))
+            ? <CheckSquare className="h-3.5 w-3.5 text-primary" />
+            : <Square className="h-3.5 w-3.5" />}
+          <span>görünenleri seç ({visible.length})</span>
+        </button>
+        {selected.size > 0 ? (
+          <>
+            <span className="text-primary">· {selected.size} seçildi</span>
+            <div className="flex flex-wrap gap-1.5 ml-auto">
+              <BulkBtn onClick={() => bulkUpdate({ active: true }, "aktif")} busy={bulkBusy}><Eye className="h-3 w-3 mr-1" />aktif</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ active: false }, "pasif")} busy={bulkBusy}><EyeOff className="h-3 w-3 mr-1" />pasif</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ manual_fulfillment: true }, "manuel teslim")} busy={bulkBusy}>manuel aç</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ manual_fulfillment: false }, "otomatik teslim")} busy={bulkBusy}>manuel kapat</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ featured: true }, "öne çıkan")} busy={bulkBusy}><Star className="h-3 w-3 mr-1" />öne çıkar</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ featured: false }, "öne çıkarma kaldırıldı")} busy={bulkBusy}>featured kapat</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ unlimited_stock: true }, "∞ stok")} busy={bulkBusy}>∞ stok</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ unlimited_stock: false }, "stok normal")} busy={bulkBusy}>∞ kapat</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ tier: "epic" }, "destansı")} busy={bulkBusy}><Crown className="h-3 w-3 mr-1" />epic</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ tier: "standard" }, "standart")} busy={bulkBusy}>standart</BulkBtn>
+              <BulkBtn onClick={bulkCategory} busy={bulkBusy}>kategori…</BulkBtn>
+              <BulkBtn onClick={bulkPricePercent} busy={bulkBusy}><Percent className="h-3 w-3 mr-1" />fiyat %…</BulkBtn>
+              <BulkBtn onClick={bulkDelete} busy={bulkBusy} danger><Trash2 className="h-3 w-3 mr-1" />sil</BulkBtn>
+              <BulkBtn onClick={clearSel} busy={bulkBusy}>×</BulkBtn>
+            </div>
+          </>
+        ) : (
+          <span className="text-muted-foreground">satırlardaki kutucukları işaretle → toplu işlem çıkacak</span>
+        )}
+      </div>
+
       {/* PRODUCT LIST */}
-      <div className="mt-4 space-y-2">
+      <div className="mt-3 space-y-2">
         {visible.length === 0 && (
           <div className="text-center text-muted-foreground font-mono py-10 border border-dashed border-border/60 rounded-lg">
             eşleşen ürün yok
@@ -352,6 +465,13 @@ function ProductsAdmin() {
               state === "empty" ? "border-destructive/40" : state === "low" ? "border-warn/40" : "border-border/60"
             } ${p.tier === "epic" ? "!border-transparent epic-card" : ""}`}>
               <div className="flex gap-3 sm:gap-4 items-start">
+                <div className="pt-1">
+                  <Checkbox
+                    checked={selected.has(p.id)}
+                    onCheckedChange={() => toggleSel(p.id)}
+                    aria-label="seç"
+                  />
+                </div>
                 {/* thumbnail */}
                 <ProductLogo
                   name={p.name}
@@ -665,6 +785,23 @@ function ProductsAdmin() {
     </div>
   );
 }
+
+function BulkBtn({ children, onClick, busy, danger }: { children: React.ReactNode; onClick: () => void; busy?: boolean; danger?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={busy}
+      className={`inline-flex items-center rounded border px-2 py-1 text-[11px] font-mono transition-colors disabled:opacity-40 ${
+        danger
+          ? "border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20"
+          : "border-border/60 bg-background/60 hover:border-primary/50 hover:text-primary"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
