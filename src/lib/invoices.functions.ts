@@ -29,15 +29,69 @@ export type InvoiceRow = {
 export const listMyInvoices = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase
+    const { data: invoices, error: invoicesError } = await context.supabase
       .from("invoices")
       .select(
-        "id, order_id, invoice_number, issued_at, buyer_name, buyer_email, subtotal_try, vat_rate, vat_amount_try, total_try, order:orders(reference_code)",
+        "id, order_id, invoice_number, issued_at, buyer_name, buyer_email, subtotal_try, vat_rate, vat_amount_try, total_try",
       )
       .eq("user_id", context.userId)
       .order("issued_at", { ascending: false });
-    if (error) throw new Error(error.message);
-    return (data ?? []) as unknown as InvoiceRow[];
+    if (invoicesError) throw new Error(invoicesError.message);
+
+    const { data: orders, error: ordersError } = await context.supabase
+      .from("orders")
+      .select("id, reference_code, status, price_try, created_at, approved_at")
+      .eq("user_id", context.userId)
+      .eq("status", "approved")
+      .order("approved_at", { ascending: false, nullsFirst: false });
+    if (ordersError) throw new Error(ordersError.message);
+
+    const orderMap = new Map(
+      (orders ?? []).map((order) => [
+        order.id,
+        {
+          reference_code: order.reference_code,
+          price_try: Number(order.price_try),
+          issued_at: order.approved_at ?? order.created_at,
+        },
+      ]),
+    );
+
+    const rows = ((invoices ?? []) as unknown as InvoiceRow[]).map((invoice) => ({
+      ...invoice,
+      order: orderMap.get(invoice.order_id)
+        ? { reference_code: orderMap.get(invoice.order_id)!.reference_code }
+        : null,
+    }));
+
+    const invoicedOrderIds = new Set(rows.map((invoice) => invoice.order_id));
+    const missingInvoiceRows = (orders ?? [])
+      .filter((order) => !invoicedOrderIds.has(order.id))
+      .map((order) => {
+        const total = Number(order.price_try);
+        const subtotal = Math.round((total / 1.2) * 100) / 100;
+        const vat = Math.round((total - subtotal) * 100) / 100;
+        return {
+          id: `pending-${order.id}`,
+          order_id: order.id,
+          invoice_number: `Hazır: ${order.reference_code}`,
+          issued_at: order.approved_at ?? order.created_at,
+          buyer_name: null,
+          buyer_email: null,
+          buyer_tax_id: null,
+          buyer_address: null,
+          subtotal_try: subtotal,
+          vat_rate: 20,
+          vat_amount_try: vat,
+          total_try: total,
+          items_snapshot: [],
+          order: { reference_code: order.reference_code },
+        } satisfies InvoiceRow;
+      });
+
+    return [...rows, ...missingInvoiceRows].sort(
+      (a, b) => new Date(b.issued_at).getTime() - new Date(a.issued_at).getTime(),
+    );
   });
 
 export const getMyInvoice = createServerFn({ method: "GET" })
@@ -118,19 +172,6 @@ export const updateBillingProfile = createServerFn({ method: "POST" })
 
 // -------------------- ADMIN --------------------
 
-async function assertAdmin(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  supabase: any,
-  userId: string,
-) {
-  const { data, error } = await supabase.rpc("has_role", {
-    _user_id: userId,
-    _role: "admin",
-  });
-  if (error) throw new Error("Yetki kontrol edilemedi");
-  if (!data) throw new Error("Yetkisiz");
-}
-
 const adminFilterSchema = z.object({
   q: z.string().trim().max(120).optional(),
   from: z.string().optional(),
@@ -142,7 +183,13 @@ export const adminListInvoices = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => adminFilterSchema.parse(v ?? {}))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (roleError) throw new Error("Yetki kontrol edilemedi");
+    if (!isAdmin) throw new Error("Yetkisiz");
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     let q = supabaseAdmin
@@ -183,7 +230,13 @@ export const adminRegenerateInvoice = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => z.object({ orderId: z.string().uuid() }).parse(v))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+    if (roleError) throw new Error("Yetki kontrol edilemedi");
+    if (!isAdmin) throw new Error("Yetkisiz");
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: id, error } = await supabaseAdmin.rpc("create_invoice_for_order", {
       _order_id: data.orderId,
