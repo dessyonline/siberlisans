@@ -8,24 +8,34 @@ const getInvoiceData = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((v: unknown) => v as { orderId: string })
   .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await context.supabase.rpc("has_role", {
+      _user_id: context.userId,
+      _role: "admin",
+    });
+
     // 1) Fatura satırı (varsa)
-    const { data: invoice } = await context.supabase
+    let invoiceQuery = context.supabase
       .from("invoices")
       .select(
         "invoice_number, issued_at, buyer_name, buyer_email, buyer_tax_id, buyer_address, subtotal_try, vat_rate, vat_amount_try, total_try, items_snapshot",
       )
-      .eq("order_id", data.orderId)
-      .maybeSingle();
+      .eq("order_id", data.orderId);
+
+    if (!isAdmin) invoiceQuery = invoiceQuery.eq("user_id", context.userId);
+
+    const { data: invoice } = await invoiceQuery.maybeSingle();
 
     // 2) Sipariş kimliği + kalemler (fatura yoksa da yazdırabilelim)
-    const { data: order, error } = await context.supabase
+    let orderQuery = context.supabase
       .from("orders")
       .select(
         "id, reference_code, price_try, status, created_at, buyer_email, product:products(name), items:order_items(quantity, product_name_snapshot, unit_price_try)",
       )
-      .eq("id", data.orderId)
-      .eq("user_id", context.userId)
-      .maybeSingle();
+      .eq("id", data.orderId);
+
+    if (!isAdmin) orderQuery = orderQuery.eq("user_id", context.userId);
+
+    const { data: order, error } = await orderQuery.maybeSingle();
 
     if (error || !order) throw notFound();
 
