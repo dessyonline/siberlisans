@@ -13,7 +13,8 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2, Star, Search, X, Package, AlertTriangle, Crown, Copy, ImageIcon, EyeOff, Eye, Wand2, Sparkles } from "lucide-react";
+import { Plus, Pencil, Trash2, Star, Search, X, Package, AlertTriangle, Crown, Copy, ImageIcon, EyeOff, Eye, Wand2, Sparkles, CheckSquare, Square, Percent } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { isLegacyClearbitLogo, resolveLogoUrl } from "@/lib/logo-resolver";
 import { ProductLogo } from "@/components/ProductLogo";
 
