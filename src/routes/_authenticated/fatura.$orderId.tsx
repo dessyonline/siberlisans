@@ -29,7 +29,7 @@ const getInvoiceData = createServerFn({ method: "GET" })
     let orderQuery = context.supabase
       .from("orders")
       .select(
-        "id, reference_code, price_try, status, created_at, product:products(name), items:order_items(quantity, product_name_snapshot, unit_price_try), user:profiles!orders_user_id_fkey(email)",
+        "id, reference_code, price_try, status, created_at, product:products(name), items:order_items(quantity, product_name_snapshot, unit_price_try)",
       )
       .eq("id", data.orderId);
 
