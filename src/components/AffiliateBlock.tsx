@@ -114,7 +114,7 @@ export function AffiliateBlock() {
         <div className="space-y-1 max-h-60 overflow-y-auto">
           {(data?.referred ?? []).map((r) => (
             <div key={r.id} className="flex items-center justify-between text-xs py-1.5 border-b border-border/30">
-              <span>{r.display_name || r.email || "kullanıcı"}</span>
+              <span>{r.display_name || r.masked_email || "kullanıcı"}</span>
               <span className="text-muted-foreground font-mono">
                 {new Date(r.created_at).toLocaleDateString("tr-TR")}
               </span>
