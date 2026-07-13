@@ -465,6 +465,13 @@ function ProductsAdmin() {
               state === "empty" ? "border-destructive/40" : state === "low" ? "border-warn/40" : "border-border/60"
             } ${p.tier === "epic" ? "!border-transparent epic-card" : ""}`}>
               <div className="flex gap-3 sm:gap-4 items-start">
+                <div className="pt-1">
+                  <Checkbox
+                    checked={selected.has(p.id)}
+                    onCheckedChange={() => toggleSel(p.id)}
+                    aria-label="seç"
+                  />
+                </div>
                 {/* thumbnail */}
                 <ProductLogo
                   name={p.name}
