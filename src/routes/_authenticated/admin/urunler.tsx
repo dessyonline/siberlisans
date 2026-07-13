@@ -779,6 +779,23 @@ function ProductsAdmin() {
   );
 }
 
+function BulkBtn({ children, onClick, busy, danger }: { children: React.ReactNode; onClick: () => void; busy?: boolean; danger?: boolean }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={busy}
+      className={`inline-flex items-center rounded border px-2 py-1 text-[11px] font-mono transition-colors disabled:opacity-40 ${
+        danger
+          ? "border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20"
+          : "border-border/60 bg-background/60 hover:border-primary/50 hover:text-primary"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
+
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-lg border border-border/50 bg-background/30 p-3 sm:p-4">
