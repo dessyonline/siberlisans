@@ -227,7 +227,7 @@ function DavetPage() {
               >
                 <div className="min-w-0 flex-1">
                   <div className="font-mono text-xs truncate">
-                    {u.display_name ?? u.email?.split("@")[0]}
+                    {u.display_name ?? u.masked_email ?? "kullanıcı"}
                   </div>
                   <div className="text-[10px] text-muted-foreground font-mono">
                     {new Date(u.created_at).toLocaleDateString("tr-TR")}
