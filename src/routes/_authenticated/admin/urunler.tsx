@@ -97,6 +97,8 @@ function ProductsAdmin() {
   const [editing, setEditing] = useState<Partial<Product> | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
   const upsertFn = useServerFn(upsertProduct);
   const deleteFn = useServerFn(deleteProduct);
   const searchParams = Route.useSearch();
