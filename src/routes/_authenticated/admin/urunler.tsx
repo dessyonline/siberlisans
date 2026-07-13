@@ -257,7 +257,7 @@ function ProductsAdmin() {
   };
   const clearSel = () => setSelected(new Set());
 
-  const bulkUpdate = async (patch: Record<string, unknown>, label: string) => {
+  const bulkUpdate = async (patch: Partial<Product>, label: string) => {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
     setBulkBusy(true);
