@@ -13,12 +13,7 @@ export const getAffiliateStats = createServerFn({ method: "GET" })
         .select("id, amount_try, status, method, destination, admin_note, created_at, processed_at")
         .order("created_at", { ascending: false })
         .limit(20),
-      supabase
-        .from("profiles")
-        .select("id, display_name, email, created_at")
-        .eq("referred_by", userId)
-        .order("created_at", { ascending: false })
-        .limit(50),
+      supabase.rpc("list_my_referred"),
     ]);
     const s = stats.data?.[0] ?? {
       total_earned: 0,
