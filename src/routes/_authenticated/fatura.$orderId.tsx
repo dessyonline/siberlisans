@@ -62,7 +62,6 @@ type LoaderData = {
     price_try: number;
     status: string;
     created_at: string;
-    created_at: string;
     product: { name: string } | null;
     items: { quantity: number; product_name_snapshot: string; unit_price_try: number }[] | null;
   };
