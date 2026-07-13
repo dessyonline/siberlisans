@@ -129,7 +129,7 @@ function Invoice() {
   const invoiceNumber = invoice?.invoice_number ?? `(${order.reference_code})`;
   const issued = invoice?.issued_at ?? order.created_at;
   const buyerName = invoice?.buyer_name ?? "Bireysel Müşteri";
-  const buyerEmail = invoice?.buyer_email ?? order.buyer_email;
+  const buyerEmail = invoice?.buyer_email ?? null;
   const buyerTax = invoice?.buyer_tax_id;
   const buyerAddress = invoice?.buyer_address;
 
