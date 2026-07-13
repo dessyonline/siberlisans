@@ -243,6 +243,80 @@ function ProductsAdmin() {
     low_stock_threshold: 5,
   });
 
+  const toggleSel = (id: string) => {
+    setSelected((prev) => {
+      const n = new Set(prev);
+      if (n.has(id)) n.delete(id); else n.add(id);
+      return n;
+    });
+  };
+  const selectAllVisible = () => {
+    const ids = visible.map((p) => p.id);
+    const allSelected = ids.every((id) => selected.has(id));
+    setSelected(allSelected ? new Set() : new Set(ids));
+  };
+  const clearSel = () => setSelected(new Set());
+
+  const bulkUpdate = async (patch: Record<string, unknown>, label: string) => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const { error } = await supabase.from("products").update(patch).in("id", ids);
+      if (error) throw error;
+      toast.success(`${ids.length} ürün: ${label}`);
+      clearSel();
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setBulkBusy(false); }
+  };
+
+  const bulkPricePercent = async () => {
+    const raw = prompt("Yüzde değişim (örn +10 = %10 zam, -5 = %5 indirim):");
+    if (!raw) return;
+    const pct = Number(raw.replace(",", "."));
+    if (!Number.isFinite(pct) || pct === 0) { toast.error("Geçersiz yüzde"); return; }
+    const ids = Array.from(selected);
+    setBulkBusy(true);
+    try {
+      const list = (products ?? []) as Product[];
+      let ok = 0, fail = 0;
+      for (const p of list.filter((p) => ids.includes(p.id))) {
+        const next = Math.max(1, Math.round(Number(p.price_try) * (1 + pct / 100)));
+        const { error } = await supabase.from("products").update({ price_try: next }).eq("id", p.id);
+        if (error) fail++; else ok++;
+      }
+      toast.success(`${ok} ürün güncellendi${fail ? `, ${fail} atlandı (min kar kuralı olabilir)` : ""}`);
+      clearSel();
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setBulkBusy(false); }
+  };
+
+  const bulkCategory = async () => {
+    const cat = prompt("Yeni kategori adı (boş bırakırsan temizlenir):", "");
+    if (cat === null) return;
+    await bulkUpdate({ category: cat.trim() === "" ? null : cat.trim() }, `kategori → ${cat || "—"}`);
+  };
+
+  const bulkDelete = async () => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    if (!confirm(`${ids.length} ürünü ve bağlı tüm keyleri silmek istediğine emin misin?`)) return;
+    setBulkBusy(true);
+    try {
+      const { error } = await supabase.from("products").delete().in("id", ids);
+      if (error) throw error;
+      toast.success(`${ids.length} ürün silindi`);
+      clearSel();
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setBulkBusy(false); }
+  };
+
   return (
     <div>
       {/* HEADER + STATS */}
