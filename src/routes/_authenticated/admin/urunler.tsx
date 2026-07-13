@@ -403,8 +403,44 @@ function ProductsAdmin() {
         </div>
       </div>
 
+      {/* BULK TOOLBAR */}
+      <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-border/60 bg-background/40 px-3 py-2 font-mono text-xs">
+        <button
+          onClick={selectAllVisible}
+          className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+        >
+          {visible.length > 0 && visible.every((p) => selected.has(p.id))
+            ? <CheckSquare className="h-3.5 w-3.5 text-primary" />
+            : <Square className="h-3.5 w-3.5" />}
+          <span>görünenleri seç ({visible.length})</span>
+        </button>
+        {selected.size > 0 ? (
+          <>
+            <span className="text-primary">· {selected.size} seçildi</span>
+            <div className="flex flex-wrap gap-1.5 ml-auto">
+              <BulkBtn onClick={() => bulkUpdate({ active: true }, "aktif")} busy={bulkBusy}><Eye className="h-3 w-3 mr-1" />aktif</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ active: false }, "pasif")} busy={bulkBusy}><EyeOff className="h-3 w-3 mr-1" />pasif</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ manual_fulfillment: true }, "manuel teslim")} busy={bulkBusy}>manuel aç</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ manual_fulfillment: false }, "otomatik teslim")} busy={bulkBusy}>manuel kapat</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ featured: true }, "öne çıkan")} busy={bulkBusy}><Star className="h-3 w-3 mr-1" />öne çıkar</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ featured: false }, "öne çıkarma kaldırıldı")} busy={bulkBusy}>featured kapat</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ unlimited_stock: true }, "∞ stok")} busy={bulkBusy}>∞ stok</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ unlimited_stock: false }, "stok normal")} busy={bulkBusy}>∞ kapat</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ tier: "epic" }, "destansı")} busy={bulkBusy}><Crown className="h-3 w-3 mr-1" />epic</BulkBtn>
+              <BulkBtn onClick={() => bulkUpdate({ tier: "standard" }, "standart")} busy={bulkBusy}>standart</BulkBtn>
+              <BulkBtn onClick={bulkCategory} busy={bulkBusy}>kategori…</BulkBtn>
+              <BulkBtn onClick={bulkPricePercent} busy={bulkBusy}><Percent className="h-3 w-3 mr-1" />fiyat %…</BulkBtn>
+              <BulkBtn onClick={bulkDelete} busy={bulkBusy} danger><Trash2 className="h-3 w-3 mr-1" />sil</BulkBtn>
+              <BulkBtn onClick={clearSel} busy={bulkBusy}>×</BulkBtn>
+            </div>
+          </>
+        ) : (
+          <span className="text-muted-foreground">satırlardaki kutucukları işaretle → toplu işlem çıkacak</span>
+        )}
+      </div>
+
       {/* PRODUCT LIST */}
-      <div className="mt-4 space-y-2">
+      <div className="mt-3 space-y-2">
         {visible.length === 0 && (
           <div className="text-center text-muted-foreground font-mono py-10 border border-dashed border-border/60 rounded-lg">
             eşleşen ürün yok
