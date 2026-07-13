@@ -45,11 +45,7 @@ function DavetPage() {
           .select("referral_code, referred_by, partner_slug, display_name")
           .eq("id", user!.id)
           .single(),
-        supabase
-          .from("profiles")
-          .select("id, email, display_name, created_at, referral_bonus_paid")
-          .eq("referred_by", user!.id)
-          .order("created_at", { ascending: false }),
+        supabase.rpc("list_my_referred"),
         supabase
           .from("wallet_transactions")
           .select("amount_try")
@@ -231,7 +227,7 @@ function DavetPage() {
               >
                 <div className="min-w-0 flex-1">
                   <div className="font-mono text-xs truncate">
-                    {u.display_name ?? u.email?.split("@")[0]}
+                    {u.display_name ?? u.masked_email ?? "kullanıcı"}
                   </div>
                   <div className="text-[10px] text-muted-foreground font-mono">
                     {new Date(u.created_at).toLocaleDateString("tr-TR")}

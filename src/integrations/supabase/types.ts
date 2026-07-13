@@ -2416,6 +2416,16 @@ export type Database = {
           user_id: string
         }[]
       }
+      list_my_referred: {
+        Args: never
+        Returns: {
+          created_at: string
+          display_name: string
+          id: string
+          masked_email: string
+          referral_bonus_paid: boolean
+        }[]
+      }
       list_product_reviews: {
         Args: { _product_id: string }
         Returns: {
