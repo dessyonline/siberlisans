@@ -144,7 +144,8 @@ export const createOrder = createServerFn({ method: "POST" })
 
 
     const referenceCode = genRef();
-    const { data: order, error } = await supabase
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: order, error } = await supabaseAdmin
       .from("orders")
       .insert({
         user_id: userId,
