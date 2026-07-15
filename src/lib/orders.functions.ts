@@ -167,16 +167,11 @@ export const createOrder = createServerFn({ method: "POST" })
       console.error("[flash] apply", (e as Error).message);
     }
 
-    // Yeni sipariş bildirimi (admin) — sadece gerçek sipariş oluştuğunda
-    try {
-      const { notifyTelegram, orderCreatedMessage } = await import("@/lib/telegram.server");
-      await notifyTelegram(orderCreatedMessage({
-        reference: order.reference_code,
-        productName: product.name,
-        priceTry: Number(product.price_try),
-        userEmail: (claims as { email?: string } | null)?.email ?? null,
-      }));
-    } catch (e) { console.error("[notify] orderCreated", (e as Error).message); }
+    // NOT: "Satın al" tıklamasında TG bildirimi yollamıyoruz. Sadece
+    // başarılı sipariş (ödeme/dekont sonrası) admin'e bildiriliyor.
+    void claims;
+
+
 
 
     return { orderId: order.id, referenceCode: order.reference_code };
