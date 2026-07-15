@@ -1495,8 +1495,20 @@ function PromoBlock({
       setCode("");
       qc.invalidateQueries({ queryKey: ["order", orderId] });
     } catch (e) {
-      const msg = (e as Error).message || "Kod uygulanamadı";
-      setErr(msg);
+      const raw = (e as Error).message || "";
+      const [key, param] = raw.split(":");
+      const map: Record<string, string> = {
+        kod_bulunamadi: "Bu kod sistemde bulunamadı. Yazımı kontrol edin.",
+        kod_pasif: "Bu kod şu an pasif.",
+        kod_suresi_dolmus: "Bu kodun süresi dolmuş.",
+        kod_limit_dolmus: "Bu kodun kullanım limiti dolmuş.",
+        kod_min_tutar: param ? `Bu kod için minimum sipariş tutarı ₺${param}.` : "Sepet tutarı bu kod için yetersiz.",
+        kod_urun_uyumsuz: "Bu kod bu üründe geçerli değil.",
+        invalid_promo_code: "Geçersiz promosyon kodu.",
+        order_not_found: "Bu sipariş için kod uygulanamıyor.",
+        unauthorized: "Oturum gerekli.",
+      };
+      setErr(map[key] ?? raw ?? "Kod uygulanamadı");
     } finally {
       setBusy(false);
     }
