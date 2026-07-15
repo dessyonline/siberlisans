@@ -119,7 +119,7 @@ function Dashboard() {
       return {
         totalRev,
         todayRev,
-        totalOrders: all.length,
+        totalOrders: approved.length,
         pendingCount: pendingRes.count ?? 0,
         availableKeys: keysRes.count ?? 0,
         chart,
