@@ -5,6 +5,7 @@ import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { upsertProduct, deleteProduct } from "@/lib/orders.functions";
+import { suggestRetailPrice } from "@/lib/retail-price.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,6 +66,9 @@ type Product = {
   image_url: string | null;
   shopier_url: string | null;
   requires_email: boolean;
+  retail_price_try: number | null;
+  retail_price_source_url: string | null;
+  duration_label: string | null;
 };
 
 type Filter = "all" | "active" | "inactive" | "featured" | "epic" | "low" | "empty";
@@ -101,6 +105,8 @@ function ProductsAdmin() {
   const [bulkBusy, setBulkBusy] = useState(false);
   const upsertFn = useServerFn(upsertProduct);
   const deleteFn = useServerFn(deleteProduct);
+  const suggestFn = useServerFn(suggestRetailPrice);
+  const [aiBusy, setAiBusy] = useState(false);
   const searchParams = Route.useSearch();
   const navigate = Route.useNavigate();
 
@@ -317,6 +323,77 @@ function ProductsAdmin() {
     finally { setBulkBusy(false); }
   };
 
+  const bulkFindRetail = async () => {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    if (!confirm(`${ids.length} ürün için AI ile orijinal (resmi satıcı) fiyatı aransın mı?\n(Sadece yeni önerilir, mevcut değerin üzerine yazılır)`)) return;
+    setBulkBusy(true);
+    let ok = 0, fail = 0, skip = 0;
+    try {
+      for (const id of ids) {
+        try {
+          const r = await suggestFn({ data: { productId: id } });
+          if (!r?.retail_price_try || r.retail_price_try <= 0) { skip++; continue; }
+          const { error } = await supabase.from("products").update({
+            retail_price_try: r.retail_price_try,
+            retail_price_source_url: r.source_url,
+            duration_label: r.duration_label,
+            retail_price_updated_at: new Date().toISOString(),
+          }).eq("id", id);
+          if (error) fail++; else ok++;
+        } catch { fail++; }
+      }
+      toast.success(`AI orijinal fiyat: ${ok} güncellendi, ${skip} atlandı${fail ? `, ${fail} hata` : ""}`);
+      clearSel();
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+    } finally { setBulkBusy(false); }
+  };
+
+  const findRetailForEditing = async () => {
+    if (!editing?.id) { toast.error("Önce ürünü kaydet."); return; }
+    setAiBusy(true);
+    try {
+      const r = await suggestFn({ data: { productId: editing.id } });
+      if (!r?.retail_price_try) { toast.info("AI güvenilir bir fiyat bulamadı."); return; }
+      setEditing((p) => ({
+        ...p!,
+        retail_price_try: r.retail_price_try,
+        retail_price_source_url: r.source_url,
+        duration_label: r.duration_label,
+      }));
+      // aynı anda DB'ye de yaz (kaydet basılmasa da kalıcı olsun)
+      await supabase.from("products").update({
+        retail_price_try: r.retail_price_try,
+        retail_price_source_url: r.source_url,
+        duration_label: r.duration_label,
+        retail_price_updated_at: new Date().toISOString(),
+      }).eq("id", editing.id);
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+      toast.success(`Orijinal fiyat: ₺${r.retail_price_try.toLocaleString("tr-TR")} · güven %${Math.round((r.confidence ?? 0) * 100)}`);
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setAiBusy(false); }
+  };
+
+  const saveRetailManual = async () => {
+    if (!editing?.id) { toast.error("Önce ürünü kaydet."); return; }
+    setAiBusy(true);
+    try {
+      const { error } = await supabase.from("products").update({
+        retail_price_try: editing.retail_price_try ?? null,
+        retail_price_source_url: editing.retail_price_source_url ?? null,
+        duration_label: editing.duration_label ?? null,
+        retail_price_updated_at: new Date().toISOString(),
+      }).eq("id", editing.id);
+      if (error) throw error;
+      qc.invalidateQueries({ queryKey: ["admin-products"] });
+      qc.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Orijinal fiyat kaydedildi.");
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setAiBusy(false); }
+  };
+
   return (
     <div>
       {/* HEADER + STATS */}
@@ -430,6 +507,7 @@ function ProductsAdmin() {
               <BulkBtn onClick={() => bulkUpdate({ tier: "standard" }, "standart")} busy={bulkBusy}>standart</BulkBtn>
               <BulkBtn onClick={bulkCategory} busy={bulkBusy}>kategori…</BulkBtn>
               <BulkBtn onClick={bulkPricePercent} busy={bulkBusy}><Percent className="h-3 w-3 mr-1" />fiyat %…</BulkBtn>
+              <BulkBtn onClick={bulkFindRetail} busy={bulkBusy}><Sparkles className="h-3 w-3 mr-1" />AI orijinal fiyat</BulkBtn>
               <BulkBtn onClick={bulkDelete} busy={bulkBusy} danger><Trash2 className="h-3 w-3 mr-1" />sil</BulkBtn>
               <BulkBtn onClick={clearSel} busy={bulkBusy}>×</BulkBtn>
             </div>
@@ -726,6 +804,61 @@ function ProductsAdmin() {
                   {(!editing.delivery_type || editing.delivery_type === "key") && "havuza her satıra bir lisans anahtarı ekle"}
                 </p>
               </Section>
+
+              {/* SECTION: RETAIL PRICE (orijinal satıcı fiyatı) */}
+              <Section title="orijinal fiyat (resmi satıcı)">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="font-mono text-xs"
+                    onClick={findRetailForEditing}
+                    disabled={aiBusy || !editing.id}
+                    title={!editing.id ? "Önce ürünü kaydet" : "AI ile ara"}
+                  >
+                    <Sparkles className="h-3.5 w-3.5 mr-1" />
+                    {aiBusy ? "aranıyor…" : "AI ile orijinal fiyatı bul"}
+                  </Button>
+                  {!editing.id && (
+                    <span className="font-mono text-[10px] text-warn">önce kaydet, sonra AI ile ara</span>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <Field
+                    label="orijinal fiyat (₺)"
+                    value={editing.retail_price_try == null ? "" : String(editing.retail_price_try)}
+                    onChange={(v) => setEditing((p) => ({ ...p!, retail_price_try: v === "" ? null : Number(v) }))}
+                    type="number"
+                  />
+                  <Field
+                    label="süre etiketi (1 yıl, ömür boyu…)"
+                    value={editing.duration_label ?? ""}
+                    onChange={(v) => setEditing((p) => ({ ...p!, duration_label: v }))}
+                  />
+                  <Field
+                    label="kaynak URL"
+                    value={editing.retail_price_source_url ?? ""}
+                    onChange={(v) => setEditing((p) => ({ ...p!, retail_price_source_url: v }))}
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="font-mono text-xs"
+                    onClick={saveRetailManual}
+                    disabled={aiBusy || !editing.id}
+                  >
+                    manuel değerleri kaydet
+                  </Button>
+                </div>
+                <p className="font-mono text-[10px] text-muted-foreground">
+                  Bu değer müşteriye üstü çizili "resmi fiyat" olarak gösterilir; satış fiyatından yüksek olmalı.
+                </p>
+              </Section>
+
 
               {/* SECTION: STOCK & VISIBILITY */}
               <Section title="stok & görünürlük">
