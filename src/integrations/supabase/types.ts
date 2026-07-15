@@ -549,6 +549,104 @@ export type Database = {
           },
         ]
       }
+      ig_auto_reply_rules: {
+        Row: {
+          active: boolean
+          case_sensitive: boolean
+          created_at: string
+          created_by: string | null
+          id: string
+          last_matched_at: string | null
+          match_count: number
+          match_type: Database["public"]["Enums"]["ig_match_type"]
+          priority: number
+          response: string
+          trigger: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          case_sensitive?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_matched_at?: string | null
+          match_count?: number
+          match_type?: Database["public"]["Enums"]["ig_match_type"]
+          priority?: number
+          response: string
+          trigger: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          case_sensitive?: boolean
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          last_matched_at?: string | null
+          match_count?: number
+          match_type?: Database["public"]["Enums"]["ig_match_type"]
+          priority?: number
+          response?: string
+          trigger?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ig_message_log: {
+        Row: {
+          created_at: string
+          id: string
+          ig_message_id: string | null
+          matched_rule_id: string | null
+          message_text: string | null
+          raw_payload: Json | null
+          recipient_id: string | null
+          reply_error: string | null
+          reply_sent: boolean
+          reply_text: string | null
+          sender_id: string
+          sender_username: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ig_message_id?: string | null
+          matched_rule_id?: string | null
+          message_text?: string | null
+          raw_payload?: Json | null
+          recipient_id?: string | null
+          reply_error?: string | null
+          reply_sent?: boolean
+          reply_text?: string | null
+          sender_id: string
+          sender_username?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ig_message_id?: string | null
+          matched_rule_id?: string | null
+          message_text?: string | null
+          raw_payload?: Json | null
+          recipient_id?: string | null
+          reply_error?: string | null
+          reply_sent?: boolean
+          reply_text?: string | null
+          sender_id?: string
+          sender_username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ig_message_log_matched_rule_id_fkey"
+            columns: ["matched_rule_id"]
+            isOneToOne: false
+            referencedRelation: "ig_auto_reply_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoices: {
         Row: {
           buyer_address: string | null
@@ -2602,6 +2700,7 @@ export type Database = {
         | "hourly"
         | "daily"
         | "weekly"
+      ig_match_type: "exact" | "contains" | "starts_with" | "regex"
       key_status: "available" | "assigned" | "revoked"
       order_status: "pending" | "reviewing" | "approved" | "rejected" | "failed"
       promo_type: "percent" | "fixed"
@@ -2753,6 +2852,7 @@ export const Constants = {
         "daily",
         "weekly",
       ],
+      ig_match_type: ["exact", "contains", "starts_with", "regex"],
       key_status: ["available", "assigned", "revoked"],
       order_status: ["pending", "reviewing", "approved", "rejected", "failed"],
       promo_type: ["percent", "fixed"],
