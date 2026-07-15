@@ -805,6 +805,61 @@ function ProductsAdmin() {
                 </p>
               </Section>
 
+              {/* SECTION: RETAIL PRICE (orijinal satıcı fiyatı) */}
+              <Section title="orijinal fiyat (resmi satıcı)">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="font-mono text-xs"
+                    onClick={findRetailForEditing}
+                    disabled={aiBusy || !editing.id}
+                    title={!editing.id ? "Önce ürünü kaydet" : "AI ile ara"}
+                  >
+                    <Sparkles className="h-3.5 w-3.5 mr-1" />
+                    {aiBusy ? "aranıyor…" : "AI ile orijinal fiyatı bul"}
+                  </Button>
+                  {!editing.id && (
+                    <span className="font-mono text-[10px] text-warn">önce kaydet, sonra AI ile ara</span>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <Field
+                    label="orijinal fiyat (₺)"
+                    value={editing.retail_price_try == null ? "" : String(editing.retail_price_try)}
+                    onChange={(v) => setEditing((p) => ({ ...p!, retail_price_try: v === "" ? null : Number(v) }))}
+                    type="number"
+                  />
+                  <Field
+                    label="süre etiketi (1 yıl, ömür boyu…)"
+                    value={editing.duration_label ?? ""}
+                    onChange={(v) => setEditing((p) => ({ ...p!, duration_label: v }))}
+                  />
+                  <Field
+                    label="kaynak URL"
+                    value={editing.retail_price_source_url ?? ""}
+                    onChange={(v) => setEditing((p) => ({ ...p!, retail_price_source_url: v }))}
+                  />
+                </div>
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="font-mono text-xs"
+                    onClick={saveRetailManual}
+                    disabled={aiBusy || !editing.id}
+                  >
+                    manuel değerleri kaydet
+                  </Button>
+                </div>
+                <p className="font-mono text-[10px] text-muted-foreground">
+                  Bu değer müşteriye üstü çizili "resmi fiyat" olarak gösterilir; satış fiyatından yüksek olmalı.
+                </p>
+              </Section>
+
+
               {/* SECTION: STOCK & VISIBILITY */}
               <Section title="stok & görünürlük">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
