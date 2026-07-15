@@ -105,6 +105,8 @@ function ProductsAdmin() {
   const [bulkBusy, setBulkBusy] = useState(false);
   const upsertFn = useServerFn(upsertProduct);
   const deleteFn = useServerFn(deleteProduct);
+  const suggestFn = useServerFn(suggestRetailPrice);
+  const [aiBusy, setAiBusy] = useState(false);
   const searchParams = Route.useSearch();
   const navigate = Route.useNavigate();
 
