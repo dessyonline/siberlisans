@@ -66,6 +66,9 @@ type Product = {
   image_url: string | null;
   shopier_url: string | null;
   requires_email: boolean;
+  retail_price_try: number | null;
+  retail_price_source_url: string | null;
+  duration_label: string | null;
 };
 
 type Filter = "all" | "active" | "inactive" | "featured" | "epic" | "low" | "empty";
