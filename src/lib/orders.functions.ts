@@ -1040,8 +1040,10 @@ async function applyFlashDiscountToOrder(
     discount_try: v.saved,
   }));
   if (inserts.length === 0) return;
-  await supabase.from("order_discounts").insert(inserts);
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  await supabaseAdmin.from("order_discounts").insert(inserts);
 }
+
 
 const addItemInput = z.object({
   orderId: z.string().uuid(),
