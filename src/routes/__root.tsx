@@ -535,6 +535,7 @@ function RootComponent() {
         <SocialPopup />
         <OnboardingTour />
         <PwaInstallPrompt />
+        <PushEnablePrompt />
         <Toaster />
 
       </AuthProvider>
