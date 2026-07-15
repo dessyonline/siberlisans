@@ -45,6 +45,7 @@ import { IpChangeGuard } from "../components/security/IpChangeGuard";
 import { SocialPopup } from "../components/SocialPopup";
 import { OnboardingTour } from "../components/OnboardingTour";
 import { PwaInstallPrompt } from "../components/PwaInstallPrompt";
+import { PushEnablePrompt } from "../components/PushEnablePrompt";
 import { useQuery } from "@tanstack/react-query";
 
 
@@ -534,6 +535,7 @@ function RootComponent() {
         <SocialPopup />
         <OnboardingTour />
         <PwaInstallPrompt />
+        <PushEnablePrompt />
         <Toaster />
 
       </AuthProvider>
