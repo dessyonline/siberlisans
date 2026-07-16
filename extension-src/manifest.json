@@ -11,13 +11,10 @@
     "cookies",
     "alarms"
   ],
-    "host_permissions": [
+  "host_permissions": [
     "https://*.lovable.dev/*",
     "https://api.lovable.dev/*",
     "https://lovable.dev/*",
-    "https://io.eklas.dev/*",
-    "https://vibedeals.shop/*",
-    "https://dawn-hill-b9bf.oxenv.workers.dev/*",
     "https://siberlisans.lovable.app/*"
   ],
   "action": {
@@ -71,7 +68,7 @@
     }
   ],
   "content_security_policy": {
-    "extension_pages": "default-src 'self'; connect-src https://io.eklas.dev https://*.lovable.dev https://api.lovable.dev https://vibedeals.shop https://dawn-hill-b9bf.oxenv.workers.dev https://siberlisans.lovable.app; img-src 'self' blob: data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; media-src 'self'"
+    "extension_pages": "default-src 'self'; connect-src https://siberlisans.lovable.app https://*.lovable.dev https://api.lovable.dev; img-src 'self' blob: data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; media-src 'self'"
   },
   "icons": {
     "16": "assets/icon16.png",
