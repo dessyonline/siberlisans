@@ -142,9 +142,13 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
       await notifyLowStockForOrder(supabase, data.orderId);
     } catch (e) { console.error("[notify] lowStock wallet", (e as Error).message); }
 
-    // Push bildirim + referral bonus
+    // Push bildirim + referral bonus + admin Telegram
     try {
-      const { data: ord } = await supabase.from("orders").select("user_id, reference_code").eq("id", data.orderId).single();
+      const { data: ord } = await supabase
+        .from("orders")
+        .select("user_id, reference_code, price_try, product:products(name)")
+        .eq("id", data.orderId)
+        .single();
       if (ord?.user_id) {
         await supabase.rpc("push_notification" as never, {
           _user_id: ord.user_id,
@@ -155,6 +159,16 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
         } as never);
         await supabase.rpc("process_referral_bonus" as never, { _user_id: ord.user_id } as never);
       }
+      try {
+        const { notifyTelegram } = await import("@/lib/telegram.server");
+        const pname = (ord?.product as unknown as { name?: string } | null)?.name ?? "—";
+        await notifyTelegram(
+          `✅ <b>Cüzdandan ödeme başarılı</b>\n` +
+          `📦 ${pname}\n` +
+          `💰 ₺${Number(ord?.price_try ?? 0).toLocaleString("tr-TR")}\n` +
+          `🔖 <code>${ord?.reference_code ?? ""}</code>`,
+        );
+      } catch (e) { console.error("[tg] payWallet", (e as Error).message); }
     } catch (e) { console.error("[notify] payWallet", (e as Error).message); }
 
     return {

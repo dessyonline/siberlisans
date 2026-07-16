@@ -218,14 +218,21 @@ function Payment() {
     if (file.size > 5 * 1024 * 1024) return toast.error("Dosya 5MB'ı aşamaz");
     setUploading(true);
     try {
-      const path = `${user.id}/${orderId}-${Date.now()}-${file.name}`;
-      const { error } = await supabase.storage.from("receipts").upload(path, file, { upsert: true });
+      // Sanitize filename: Supabase Storage keys allow only a limited ascii set.
+      const dot = file.name.lastIndexOf(".");
+      const ext = dot >= 0 ? file.name.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 6) : "bin";
+      const safeExt = ext || "bin";
+      const path = `${user.id}/${orderId}-${Date.now()}.${safeExt}`;
+      const { error } = await supabase.storage.from("receipts").upload(path, file, {
+        upsert: true,
+        contentType: file.type || "application/octet-stream",
+      });
       if (error) throw error;
       await markPaidFn({ data: { orderId, receiptPath: path } });
       toast.success("Dekont alındı · doğrulama başlatıldı");
       qc.invalidateQueries({ queryKey: ["order", orderId] });
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error((e as Error).message || "Dekont yüklenemedi");
     } finally {
       setUploading(false);
     }
