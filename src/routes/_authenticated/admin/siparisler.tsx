@@ -61,7 +61,16 @@ function OrdersAdmin() {
       if (filter !== "all") q = q.eq("status", filter);
       const { data, error } = await q;
       if (error) throw error;
-      return data;
+      const ids = Array.from(new Set((data ?? []).map((o) => o.user_id).filter(Boolean))) as string[];
+      let byId = new Map<string, { email: string | null; display_name: string | null }>();
+      if (ids.length) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, email, display_name")
+          .in("id", ids);
+        byId = new Map((profs ?? []).map((p) => [p.id, { email: p.email, display_name: p.display_name }]));
+      }
+      return (data ?? []).map((o) => ({ ...o, buyer: (o.user_id && byId.get(o.user_id)) || null }));
     },
     refetchInterval: 10000,
   });
@@ -374,11 +383,22 @@ function OrdersAdmin() {
                 </div>
                 <button
                   onClick={() => copyRef(o.reference_code)}
-                  className="mt-1 text-xs text-muted-foreground font-mono hover:text-primary flex items-center gap-1"
+                  className="mt-1 text-xs text-muted-foreground font-mono hover:text-primary flex items-center gap-1 flex-wrap"
                 >
                   <Copy className="h-3 w-3" /> {o.reference_code}
                   <span className="mx-1">·</span>
                   {new Date(o.created_at).toLocaleString("tr-TR")}
+                  {(o as { buyer?: { email?: string | null; display_name?: string | null } | null }).buyer?.email && (
+                    <>
+                      <span className="mx-1">·</span>
+                      <span className="text-primary/80">
+                        {(o as { buyer?: { display_name?: string | null } }).buyer?.display_name
+                          ? `${(o as { buyer?: { display_name?: string | null } }).buyer?.display_name} · `
+                          : ""}
+                        {(o as { buyer?: { email?: string | null } }).buyer?.email}
+                      </span>
+                    </>
+                  )}
                 </button>
                 </div>
               </div>
