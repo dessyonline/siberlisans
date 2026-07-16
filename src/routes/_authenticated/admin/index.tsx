@@ -26,13 +26,49 @@ function Dashboard() {
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
     queryFn: async () => {
+      // Adminlerin test siparişlerini ciro/sipariş sayımından hariç tut
+      const { data: adminRoleRows } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
+      const adminIds = (adminRoleRows ?? []).map((r) => r.user_id as string);
+      const excludeFilter = adminIds.length > 0 ? `(${adminIds.join(",")})` : null;
+
+      const buildOrders = () => {
+        const q = supabase.from("orders").select("id, price_try, status, created_at, user_id");
+        if (excludeFilter) q.not("user_id", "in", excludeFilter);
+        return q;
+      };
+      const buildPending = () => {
+        const q = supabase
+          .from("orders")
+          .select("id", { count: "exact", head: true })
+          .in("status", ["pending", "reviewing"]);
+        if (excludeFilter) q.not("user_id", "in", excludeFilter);
+        return q;
+      };
+      const buildRecent = () => {
+        const q = supabase
+          .from("orders")
+          .select("id, status, price_try, reference_code, created_at, user_id, product:products(name)")
+          .order("created_at", { ascending: false })
+          .limit(6);
+        if (excludeFilter) q.not("user_id", "in", excludeFilter);
+        return q;
+      };
+      const buildTop = () => {
+        const q = supabase
+          .from("orders")
+          .select("price_try, user_id, product:products(name)")
+          .eq("status", "approved");
+        if (excludeFilter) q.not("user_id", "in", excludeFilter);
+        return q;
+      };
+
       const [ordersRes, pendingRes, keysRes, lowStockRes, messagesRes, recentRes, topProductsRes] =
         await Promise.all([
-          supabase.from("orders").select("id, price_try, status, created_at"),
-          supabase
-            .from("orders")
-            .select("id", { count: "exact", head: true })
-            .in("status", ["pending", "reviewing"]),
+          buildOrders(),
+          buildPending(),
           supabase
             .from("license_keys")
             .select("id", { count: "exact", head: true })
@@ -48,15 +84,8 @@ function Dashboard() {
             .neq("status", "rejected")
             .order("created_at", { ascending: false })
             .limit(5),
-          supabase
-            .from("orders")
-            .select("id, status, price_try, reference_code, created_at, product:products(name)")
-            .order("created_at", { ascending: false })
-            .limit(6),
-          supabase
-            .from("orders")
-            .select("price_try, product:products(name)")
-            .eq("status", "approved"),
+          buildRecent(),
+          buildTop(),
         ]);
 
       const all = ordersRes.data ?? [];
