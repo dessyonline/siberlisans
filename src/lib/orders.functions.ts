@@ -678,11 +678,11 @@ export const approveOrder = createServerFn({ method: "POST" })
     const row = Array.isArray(result) ? result[0] : null;
     await notifyLowStockForOrder(supabase, data.orderId);
 
-    // Push bildirim + referral bonus (owner user'a)
+    // Push bildirim + referral bonus (owner user'a) + admin Telegram
     try {
       const { data: ord2 } = await supabase
         .from("orders")
-        .select("user_id, reference_code")
+        .select("user_id, reference_code, price_try, product:products(name)")
         .eq("id", data.orderId)
         .single();
       if (ord2?.user_id) {
@@ -695,6 +695,16 @@ export const approveOrder = createServerFn({ method: "POST" })
         } as never);
         await supabase.rpc("process_referral_bonus" as never, { _user_id: ord2.user_id } as never);
       }
+      try {
+        const { notifyTelegram } = await import("@/lib/telegram.server");
+        const pname = (ord2?.product as unknown as { name?: string } | null)?.name ?? "—";
+        await notifyTelegram(
+          `🎉 <b>Sipariş onaylandı</b>\n` +
+          `📦 ${pname}\n` +
+          `💰 ₺${Number(ord2?.price_try ?? 0).toLocaleString("tr-TR")}\n` +
+          `🔖 <code>${ord2?.reference_code ?? ""}</code>`,
+        );
+      } catch (e) { console.error("[tg] approveOrder", (e as Error).message); }
     } catch (e) { console.error("[notify] approveOrder", (e as Error).message); }
 
     return {
@@ -759,7 +769,7 @@ export const finalizeFreeOrder = createServerFn({ method: "POST" })
 
 const importKeysInput = z.object({
   productId: z.string().uuid(),
-  keys: z.array(z.string().min(4).max(200)).min(1).max(2000),
+  keys: z.array(z.string().min(4).max(4000)).min(1).max(2000),
 });
 
 export const importLicenseKeys = createServerFn({ method: "POST" })
