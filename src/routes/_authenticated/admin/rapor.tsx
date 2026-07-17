@@ -159,7 +159,10 @@ function ReportPage() {
                     />
                   </div>
                   <div className="w-24 text-right text-primary shrink-0">₺{fmt(p)}</div>
-                  <div className="hidden md:block w-24 text-right text-muted-foreground shrink-0">
+                  <div className="hidden md:block w-20 text-right text-cyan shrink-0" title="günlük onaylı bakiye yüklemesi">
+                    +₺{fmt(Number(r.topups ?? 0))}
+                  </div>
+                  <div className="hidden md:block w-16 text-right text-muted-foreground shrink-0">
                     {Number(r.orders_count)} sip.
                   </div>
                 </div>
@@ -168,6 +171,7 @@ function ReportPage() {
           </div>
         )}
       </div>
+
 
       {/* Per-product */}
       <div className="glass-card rounded-lg overflow-hidden">
