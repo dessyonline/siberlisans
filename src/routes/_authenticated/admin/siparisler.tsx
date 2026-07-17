@@ -143,6 +143,19 @@ function OrdersAdmin() {
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
     } catch (e) { toast.error((e as Error).message); }
   };
+  const handleCancel = async (id: string, ref: string) => {
+    if (!confirm(`${ref} siparişini iptal et? Cüzdan ile ödediyse bakiyeye iade edilir, havuz anahtarları serbest bırakılır.`)) return;
+    try {
+      const res = await cancelFn({ data: { orderId: id, note: note || undefined } });
+      const parts: string[] = ["İptal edildi"];
+      if (res.refunded_try > 0) parts.push(`₺${res.refunded_try} iade`);
+      if (res.released_keys > 0) parts.push(`${res.released_keys} anahtar iade`);
+      toast.success(parts.join(" · "));
+      setNote("");
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    } catch (e) { toast.error((e as Error).message); }
+  };
+
 
   const handleSyncOne = async (id: string) => {
     setSyncing(id);
