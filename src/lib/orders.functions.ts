@@ -798,15 +798,28 @@ export const importLicenseKeys = createServerFn({ method: "POST" })
       return { inserted: count ?? rows.length, submitted: rows.length };
     }
 
-    const rows = [...new Set(data.keys.map((k) => k.trim()).filter(Boolean))].map((key_value) => ({
-      product_id: data.productId,
-      key_value,
-    }));
+    const uniqueKeys = [...new Set(data.keys.map((k) => k.trim()).filter(Boolean))];
+    if (uniqueKeys.length === 0) return { inserted: 0, submitted: 0 };
+
+    // Partial unique index (WHERE is_shared IS NOT TRUE) — ON CONFLICT cannot
+    // target it via PostgREST, so dedupe against existing rows manually.
+    const { data: existing, error: existErr } = await supabase
+      .from("license_keys")
+      .select("key_value")
+      .eq("product_id", data.productId)
+      .neq("is_shared", true)
+      .in("key_value", uniqueKeys);
+    if (existErr) throw new Error(existErr.message);
+    const already = new Set((existing ?? []).map((r: { key_value: string }) => r.key_value));
+    const rows = uniqueKeys
+      .filter((k) => !already.has(k))
+      .map((key_value) => ({ product_id: data.productId, key_value }));
+    if (rows.length === 0) return { inserted: 0, submitted: uniqueKeys.length };
     const { error, count } = await supabase
       .from("license_keys")
-      .upsert(rows, { onConflict: "product_id,key_value", ignoreDuplicates: true, count: "exact" });
+      .insert(rows, { count: "exact" });
     if (error) throw new Error(error.message);
-    return { inserted: count ?? rows.length, submitted: rows.length };
+    return { inserted: count ?? rows.length, submitted: uniqueKeys.length };
   });
 
 
