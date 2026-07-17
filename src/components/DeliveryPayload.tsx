@@ -57,26 +57,47 @@ export function DeliveryPayload({
     );
   }
 
-  if (deliveryType === "link_token" && activationToken) {
-    const url = `${base}/aktivasyon/${activationToken}`;
-    return (
-      <div className="rounded border border-primary/30 bg-primary/5 p-3 font-mono text-sm space-y-2">
-        <div className="text-[10px] tracking-widest text-muted-foreground">aktivasyon linkin</div>
-        <div className="flex items-center gap-2">
-          <code className="flex-1 break-all text-primary">{url}</code>
-          <button onClick={() => copy(url, "Link")}><Copy className="h-3.5 w-3.5" /></button>
-        </div>
+  if (deliveryType === "link_token") {
+    // Havuza gerçek bir aktivasyon linki (http/https) yüklendiyse, token sayfası yerine
+    // doğrudan o linki müşteriye göster.
+    const raw = (keyValue ?? "").trim();
+    const isRealUrl = /^https?:\/\//i.test(raw);
+    if (isRealUrl) {
+      return (
         <a
-          href={url}
+          href={raw}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+          className="flex items-center gap-2 rounded border border-primary/30 bg-primary/5 px-3 py-2 font-mono text-primary text-sm hover:bg-primary/10"
         >
-          <ExternalLink className="h-3 w-3" /> linki aç
+          <LinkIcon className="h-4 w-4" />
+          <span className="flex-1 break-all truncate">{raw}</span>
+          <ExternalLink className="h-3.5 w-3.5" />
         </a>
-      </div>
-    );
+      );
+    }
+    if (activationToken) {
+      const url = `${base}/aktivasyon/${activationToken}`;
+      return (
+        <div className="rounded border border-primary/30 bg-primary/5 p-3 font-mono text-sm space-y-2">
+          <div className="text-[10px] tracking-widest text-muted-foreground">aktivasyon linkin</div>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 break-all text-primary">{url}</code>
+            <button onClick={() => copy(url, "Link")}><Copy className="h-3.5 w-3.5" /></button>
+          </div>
+          <a
+            href={url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+          >
+            <ExternalLink className="h-3 w-3" /> linki aç
+          </a>
+        </div>
+      );
+    }
   }
+
 
   // URL key (ör. sınırsız stok davet linki) — link olarak render et
   const isUrl = /^https?:\/\//i.test(keyValue.trim());
