@@ -19,6 +19,7 @@ type Form = {
   image_url: string;
   product_id: string;
   custom_prize_name: string;
+  points_enabled: boolean;
   entry_cost_points: number;
   max_entries_per_user: number;
   end_at: string;
@@ -31,6 +32,7 @@ const emptyForm: Form = {
   image_url: "",
   product_id: "",
   custom_prize_name: "",
+  points_enabled: false,
   entry_cost_points: 100,
   max_entries_per_user: 5,
   end_at: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 16),
@@ -63,7 +65,7 @@ function AdminRafflesPage() {
         image_url: form.image_url || null,
         product_id: form.product_id || null,
         custom_prize_name: form.custom_prize_name || null,
-        entry_cost_points: Number(form.entry_cost_points),
+        entry_cost_points: form.points_enabled ? Number(form.entry_cost_points) : 0,
         max_entries_per_user: Number(form.max_entries_per_user),
         end_at: new Date(form.end_at).toISOString(),
         status: form.status,
@@ -140,10 +142,18 @@ function AdminRafflesPage() {
                 className="w-full rounded border border-primary/30 bg-card px-2 py-1.5" />
             </label>
             <label className="space-y-1 text-xs">
-              <span className="font-mono text-muted-foreground">bilet maliyeti (puan, 0=ücretsiz)</span>
-              <input type="number" min={0} value={form.entry_cost_points}
+              <span className="font-mono text-muted-foreground">puan ile katılım</span>
+              <div className="flex items-center gap-2 rounded border border-primary/30 bg-card px-2 py-1.5">
+                <input type="checkbox" checked={form.points_enabled}
+                  onChange={(e) => setForm({ ...form, points_enabled: e.target.checked })} />
+                <span className="font-mono text-xs">{form.points_enabled ? "açık (puan harcanır)" : "kapalı (ücretsiz)"}</span>
+              </div>
+            </label>
+            <label className="space-y-1 text-xs">
+              <span className="font-mono text-muted-foreground">bilet maliyeti (puan)</span>
+              <input type="number" min={0} disabled={!form.points_enabled} value={form.entry_cost_points}
                 onChange={(e) => setForm({ ...form, entry_cost_points: +e.target.value })}
-                className="w-full rounded border border-primary/30 bg-card px-2 py-1.5" />
+                className="w-full rounded border border-primary/30 bg-card px-2 py-1.5 disabled:opacity-40" />
             </label>
             <label className="space-y-1 text-xs">
               <span className="font-mono text-muted-foreground">kişi başı max bilet</span>
@@ -204,6 +214,7 @@ function AdminRafflesPage() {
                 id: r.id, title: r.title, description: r.description ?? "",
                 image_url: r.image_url ?? "", product_id: r.product_id ?? "",
                 custom_prize_name: r.custom_prize_name ?? "",
+                points_enabled: (r.entry_cost_points ?? 0) > 0,
                 entry_cost_points: r.entry_cost_points, max_entries_per_user: r.max_entries_per_user,
                 end_at: new Date(r.end_at).toISOString().slice(0, 16),
                 status: r.status === "drawn" ? "active" : r.status,
