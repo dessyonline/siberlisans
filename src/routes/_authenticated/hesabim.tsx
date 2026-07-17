@@ -13,6 +13,7 @@ import { TierCard } from "@/components/TierCard";
 import { AVATARS, UserAvatar } from "@/components/UserAvatar";
 import { SubscriptionsBlock } from "@/components/SubscriptionsBlock";
 import { BadgesBlock } from "@/components/BadgesBlock";
+import { DailyStreakCard } from "@/components/DailyStreakCard";
 import { AffiliateBlock } from "@/components/AffiliateBlock";
 import { TransferButton } from "@/components/TransferButton";
 
@@ -175,8 +176,9 @@ function MyAccount() {
         </div>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
         <TierCard />
+        <DailyStreakCard />
       </div>
 
 
