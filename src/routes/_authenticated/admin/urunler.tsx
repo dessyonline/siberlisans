@@ -54,6 +54,7 @@ type Product = {
   duration: "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "lifetime";
   delivery_type: DeliveryType;
   price_try: number;
+  cost_try: number | null;
   active: boolean;
   category: string | null;
   manual_fulfillment: boolean;
