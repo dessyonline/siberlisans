@@ -218,6 +218,7 @@ function RaffleCard({
   authed,
   myTier,
   mine,
+  myWin,
   buyCount,
   onBuyCountChange,
   onEnter,
@@ -230,6 +231,7 @@ function RaffleCard({
   authed: boolean;
   myTier: string | null;
   mine?: { entries: number; spent: number; daily_today: boolean; shared: string[] };
+  myWin?: { id: string; place: number; delivered_key: string | null; is_backup: boolean } | null;
   buyCount: number;
   onBuyCountChange: (n: number) => void;
   onEnter: (c: number) => void;
