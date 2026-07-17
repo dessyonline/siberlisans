@@ -798,6 +798,7 @@ const productInput = z.object({
   duration: z.enum(["hourly", "daily", "weekly", "monthly", "yearly", "lifetime"]),
   delivery_type: z.enum(["key", "account", "link", "link_token"]).default("key"),
   price_try: z.number().min(0).max(1000000),
+  cost_try: z.number().min(0).max(1000000).optional().nullable(),
   active: z.boolean(),
   category: z.string().max(80).optional().nullable(),
   manual_fulfillment: z.boolean().optional(),
