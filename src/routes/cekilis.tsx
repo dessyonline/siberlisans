@@ -180,6 +180,7 @@ function RafflesPage() {
             authed={authed}
             myTier={myTier}
             mine={mine.data?.[r.id]}
+            myWin={winByRaffle.get(r.id)}
             buyCount={buyCounts[r.id] ?? 1}
             onBuyCountChange={(n) => setBuyCounts({ ...buyCounts, [r.id]: n })}
             onEnter={(c) => enterMut.mutate({ raffleId: r.id, count: c })}
