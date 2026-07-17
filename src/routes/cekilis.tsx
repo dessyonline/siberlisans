@@ -90,6 +90,9 @@ function RafflesPage() {
   const list = useQuery({ queryKey: ["raffles"], queryFn: () => listActiveRaffles(), refetchInterval: 30_000 });
   const past = useQuery({ queryKey: ["past-winners"], queryFn: () => listPastWinners() });
   const mine = useQuery({ queryKey: ["my-raffle-entries"], queryFn: () => getMyEntries(), enabled: authed });
+  const myWins = useQuery({ queryKey: ["my-raffle-wins"], queryFn: () => getMyRaffleWins(), enabled: authed });
+  const winByRaffle = new Map<string, any>();
+  for (const w of myWins.data ?? []) winByRaffle.set((w as any).raffle_id, w);
 
   const enter = useServerFn(enterRaffle);
   const daily = useServerFn(claimDailyTicket);
