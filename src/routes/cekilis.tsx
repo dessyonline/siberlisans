@@ -420,7 +420,7 @@ function RaffleCard({
                 <div key={i} className="flex items-center gap-2 rounded bg-card/40 px-2 py-1 font-mono text-[11px]">
                   <UserAvatar id={w.avatar_id} size={20} />
                   <span className="text-primary">#{w.place}</span>
-                  <span className="flex-1 truncate">{w.display_name}</span>
+                  <span className="flex-1 truncate">{w.masked_email ?? w.display_name}</span>
                   {w.tier && <span className="rounded bg-primary/10 px-1 text-[9px] uppercase text-primary/80">{w.tier}</span>}
                   <Trophy className="h-3 w-3 text-primary" />
                 </div>
