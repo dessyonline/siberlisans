@@ -176,8 +176,9 @@ function MyAccount() {
         </div>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
         <TierCard />
+        <DailyStreakCard />
       </div>
 
 
