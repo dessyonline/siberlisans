@@ -51,6 +51,9 @@ function KeysAdmin() {
   const [busy, setBusy] = useState(false);
   const [poolSearch, setPoolSearch] = useState("");
   const [poolSort, setPoolSort] = useState<"name" | "low" | "high">("low");
+  const [sharedMode, setSharedMode] = useState(false);
+  const [sharedCount, setSharedCount] = useState<number>(10);
+
 
   const { data: products } = useQuery({
     queryKey: ["products", "for-keys"],
