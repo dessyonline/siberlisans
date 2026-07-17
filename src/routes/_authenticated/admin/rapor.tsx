@@ -122,13 +122,18 @@ function ReportPage() {
       </div>
 
       {/* KPI cards */}
-      <div className="grid gap-3 grid-cols-2 md:grid-cols-5">
+      <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
         <Kpi label="sipariş" value={String(totals.orders)} />
-        <Kpi label="ciro" value={`₺${fmt(totals.revenue)}`} />
+        <Kpi label="brüt ciro" value={`₺${fmt(totals.gross)}`} tone="muted" />
+        <Kpi label="kupon indirim" value={`−₺${fmt(totals.discount)}`} tone={totals.discount > 0 ? "bad" : "muted"} />
+        <Kpi label="net ciro" value={`₺${fmt(totals.revenue)}`} />
         <Kpi label="maliyet" value={`₺${fmt(totals.cost)}`} tone="muted" />
         <Kpi label="net kar" value={`₺${fmt(totals.profit)}`} tone={totals.profit >= 0 ? "good" : "bad"} />
         <Kpi label="marj" value={`%${fmt(margin)}`} tone={margin >= 20 ? "good" : margin >= 0 ? "muted" : "bad"} />
+        <Kpi label="iade / iptal" value={`₺${fmt(totals.refunds)}`} tone={totals.refunds > 0 ? "bad" : "muted"} />
+        <Kpi label="bakiye yükleme" value={`₺${fmt(totals.topups)}`} tone="good" />
       </div>
+
 
       {/* Bar chart */}
       <div className="glass-card rounded-lg p-4">
