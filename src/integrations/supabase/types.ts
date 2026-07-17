@@ -1613,6 +1613,112 @@ export type Database = {
         }
         Relationships: []
       }
+      raffle_entries: {
+        Row: {
+          created_at: string
+          entries_count: number
+          id: string
+          points_spent: number
+          raffle_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          entries_count?: number
+          id?: string
+          points_spent?: number
+          raffle_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          entries_count?: number
+          id?: string
+          points_spent?: number
+          raffle_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raffle_entries_raffle_id_fkey"
+            columns: ["raffle_id"]
+            isOneToOne: false
+            referencedRelation: "raffles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raffles: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          custom_prize_name: string | null
+          delivered_key: string | null
+          description: string | null
+          drawn_at: string | null
+          end_at: string
+          entry_cost_points: number
+          id: string
+          image_url: string | null
+          max_entries_per_user: number
+          product_id: string | null
+          start_at: string
+          status: string
+          title: string
+          updated_at: string
+          winner_entry_id: string | null
+          winner_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          custom_prize_name?: string | null
+          delivered_key?: string | null
+          description?: string | null
+          drawn_at?: string | null
+          end_at: string
+          entry_cost_points?: number
+          id?: string
+          image_url?: string | null
+          max_entries_per_user?: number
+          product_id?: string | null
+          start_at?: string
+          status?: string
+          title: string
+          updated_at?: string
+          winner_entry_id?: string | null
+          winner_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          custom_prize_name?: string | null
+          delivered_key?: string | null
+          description?: string | null
+          drawn_at?: string | null
+          end_at?: string
+          entry_cost_points?: number
+          id?: string
+          image_url?: string | null
+          max_entries_per_user?: number
+          product_id?: string | null
+          start_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          winner_entry_id?: string | null
+          winner_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raffles_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       referral_clicks: {
         Row: {
           converted: boolean
@@ -2473,6 +2579,22 @@ export type Database = {
           _user_id: string
         }
         Returns: string
+      }
+      draw_raffle: {
+        Args: { _raffle_id: string }
+        Returns: {
+          delivered_key: string
+          winner_entry_id: string
+          winner_user_id: string
+        }[]
+      }
+      enter_raffle: {
+        Args: { _count?: number; _raffle_id: string }
+        Returns: {
+          entry_id: string
+          points_spent: number
+          total_entries: number
+        }[]
       }
       finalize_free_order: {
         Args: { _order_id: string }

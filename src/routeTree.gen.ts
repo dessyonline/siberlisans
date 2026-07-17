@@ -20,6 +20,7 @@ import { Route as KosullarRouteImport } from './routes/kosullar'
 import { Route as IletisimRouteImport } from './routes/iletisim'
 import { Route as IadeRouteImport } from './routes/iade'
 import { Route as GizlilikRouteImport } from './routes/gizlilik'
+import { Route as CekilisRouteImport } from './routes/cekilis'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -83,6 +84,7 @@ import { Route as AuthenticatedAdminFaturalarRouteImport } from './routes/_authe
 import { Route as AuthenticatedAdminDestekRouteImport } from './routes/_authenticated/admin/destek'
 import { Route as AuthenticatedAdminDenetimRouteImport } from './routes/_authenticated/admin/denetim'
 import { Route as AuthenticatedAdminCuzdanRouteImport } from './routes/_authenticated/admin/cuzdan'
+import { Route as AuthenticatedAdminCekilisRouteImport } from './routes/_authenticated/admin/cekilis'
 import { Route as AuthenticatedAdminCaprazSatisRouteImport } from './routes/_authenticated/admin/capraz-satis'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin/blog'
 import { Route as AuthenticatedAdminBildirimlerRouteImport } from './routes/_authenticated/admin/bildirimler'
@@ -150,6 +152,11 @@ const IadeRoute = IadeRouteImport.update({
 const GizlilikRoute = GizlilikRouteImport.update({
   id: '/gizlilik',
   path: '/gizlilik',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CekilisRoute = CekilisRouteImport.update({
+  id: '/cekilis',
+  path: '/cekilis',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -490,6 +497,12 @@ const AuthenticatedAdminCuzdanRoute =
     path: '/cuzdan',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminCekilisRoute =
+  AuthenticatedAdminCekilisRouteImport.update({
+    id: '/cekilis',
+    path: '/cekilis',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminCaprazSatisRoute =
   AuthenticatedAdminCaprazSatisRouteImport.update({
     id: '/capraz-satis',
@@ -569,6 +582,7 @@ const ApiPublicHooksAbandonmentReminderRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cekilis': typeof CekilisRoute
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
   '/iletisim': typeof IletisimRoute
@@ -618,6 +632,7 @@ export interface FileRoutesByFullPath {
   '/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/capraz-satis': typeof AuthenticatedAdminCaprazSatisRoute
+  '/admin/cekilis': typeof AuthenticatedAdminCekilisRoute
   '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
   '/admin/denetim': typeof AuthenticatedAdminDenetimRoute
   '/admin/destek': typeof AuthenticatedAdminDestekRoute
@@ -657,6 +672,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/cekilis': typeof CekilisRoute
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
   '/iletisim': typeof IletisimRoute
@@ -705,6 +721,7 @@ export interface FileRoutesByTo {
   '/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/capraz-satis': typeof AuthenticatedAdminCaprazSatisRoute
+  '/admin/cekilis': typeof AuthenticatedAdminCekilisRoute
   '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
   '/admin/denetim': typeof AuthenticatedAdminDenetimRoute
   '/admin/destek': typeof AuthenticatedAdminDestekRoute
@@ -746,6 +763,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/cekilis': typeof CekilisRoute
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
   '/iletisim': typeof IletisimRoute
@@ -795,6 +813,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/_authenticated/admin/capraz-satis': typeof AuthenticatedAdminCaprazSatisRoute
+  '/_authenticated/admin/cekilis': typeof AuthenticatedAdminCekilisRoute
   '/_authenticated/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
   '/_authenticated/admin/denetim': typeof AuthenticatedAdminDenetimRoute
   '/_authenticated/admin/destek': typeof AuthenticatedAdminDestekRoute
@@ -836,6 +855,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/cekilis'
     | '/gizlilik'
     | '/iade'
     | '/iletisim'
@@ -885,6 +905,7 @@ export interface FileRouteTypes {
     | '/admin/bildirimler'
     | '/admin/blog'
     | '/admin/capraz-satis'
+    | '/admin/cekilis'
     | '/admin/cuzdan'
     | '/admin/denetim'
     | '/admin/destek'
@@ -924,6 +945,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/cekilis'
     | '/gizlilik'
     | '/iade'
     | '/iletisim'
@@ -972,6 +994,7 @@ export interface FileRouteTypes {
     | '/admin/bildirimler'
     | '/admin/blog'
     | '/admin/capraz-satis'
+    | '/admin/cekilis'
     | '/admin/cuzdan'
     | '/admin/denetim'
     | '/admin/destek'
@@ -1012,6 +1035,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/cekilis'
     | '/gizlilik'
     | '/iade'
     | '/iletisim'
@@ -1061,6 +1085,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/bildirimler'
     | '/_authenticated/admin/blog'
     | '/_authenticated/admin/capraz-satis'
+    | '/_authenticated/admin/cekilis'
     | '/_authenticated/admin/cuzdan'
     | '/_authenticated/admin/denetim'
     | '/_authenticated/admin/destek'
@@ -1102,6 +1127,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CekilisRoute: typeof CekilisRoute
   GizlilikRoute: typeof GizlilikRoute
   IadeRoute: typeof IadeRoute
   IletisimRoute: typeof IletisimRoute
@@ -1225,6 +1251,13 @@ declare module '@tanstack/react-router' {
       path: '/gizlilik'
       fullPath: '/gizlilik'
       preLoaderRoute: typeof GizlilikRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cekilis': {
+      id: '/cekilis'
+      path: '/cekilis'
+      fullPath: '/cekilis'
+      preLoaderRoute: typeof CekilisRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -1668,6 +1701,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCuzdanRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/cekilis': {
+      id: '/_authenticated/admin/cekilis'
+      path: '/cekilis'
+      fullPath: '/admin/cekilis'
+      preLoaderRoute: typeof AuthenticatedAdminCekilisRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/capraz-satis': {
       id: '/_authenticated/admin/capraz-satis'
       path: '/capraz-satis'
@@ -1768,6 +1808,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminBildirimlerRoute: typeof AuthenticatedAdminBildirimlerRoute
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
   AuthenticatedAdminCaprazSatisRoute: typeof AuthenticatedAdminCaprazSatisRoute
+  AuthenticatedAdminCekilisRoute: typeof AuthenticatedAdminCekilisRoute
   AuthenticatedAdminCuzdanRoute: typeof AuthenticatedAdminCuzdanRoute
   AuthenticatedAdminDenetimRoute: typeof AuthenticatedAdminDenetimRoute
   AuthenticatedAdminDestekRoute: typeof AuthenticatedAdminDestekRoute
@@ -1799,6 +1840,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminBildirimlerRoute: AuthenticatedAdminBildirimlerRoute,
     AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
     AuthenticatedAdminCaprazSatisRoute: AuthenticatedAdminCaprazSatisRoute,
+    AuthenticatedAdminCekilisRoute: AuthenticatedAdminCekilisRoute,
     AuthenticatedAdminCuzdanRoute: AuthenticatedAdminCuzdanRoute,
     AuthenticatedAdminDenetimRoute: AuthenticatedAdminDenetimRoute,
     AuthenticatedAdminDestekRoute: AuthenticatedAdminDestekRoute,
@@ -1876,6 +1918,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  CekilisRoute: CekilisRoute,
   GizlilikRoute: GizlilikRoute,
   IadeRoute: IadeRoute,
   IletisimRoute: IletisimRoute,
