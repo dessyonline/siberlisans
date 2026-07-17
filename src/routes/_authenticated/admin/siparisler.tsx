@@ -593,6 +593,20 @@ function OrdersAdmin() {
                 </Dialog>
               </div>
             )}
+            {o.status === "approved" && (
+              <div className="mt-3 flex justify-end">
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleCancel(o.id, o.reference_code)}
+                  className="font-mono"
+                  title="Siparişi iptal et — cüzdan iadesi + havuz anahtarı serbest bırakma"
+                >
+                  <X className="h-3.5 w-3.5 mr-1" /> siparişi iptal et
+                </Button>
+              </div>
+            )}
+
           </div>
 
           );
