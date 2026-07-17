@@ -1613,6 +1613,35 @@ export type Database = {
         }
         Relationships: []
       }
+      raffle_daily_claims: {
+        Row: {
+          claim_date: string
+          created_at: string
+          raffle_id: string
+          user_id: string
+        }
+        Insert: {
+          claim_date?: string
+          created_at?: string
+          raffle_id: string
+          user_id: string
+        }
+        Update: {
+          claim_date?: string
+          created_at?: string
+          raffle_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raffle_daily_claims_raffle_id_fkey"
+            columns: ["raffle_id"]
+            isOneToOne: false
+            referencedRelation: "raffles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       raffle_entries: {
         Row: {
           created_at: string
@@ -1648,62 +1677,177 @@ export type Database = {
           },
         ]
       }
+      raffle_shares: {
+        Row: {
+          created_at: string
+          platform: string
+          raffle_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          platform: string
+          raffle_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          platform?: string
+          raffle_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raffle_shares_raffle_id_fkey"
+            columns: ["raffle_id"]
+            isOneToOne: false
+            referencedRelation: "raffles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      raffle_winners: {
+        Row: {
+          created_at: string
+          delivered_key: string | null
+          disqualified_at: string | null
+          entry_id: string | null
+          id: string
+          is_backup: boolean
+          place: number
+          raffle_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          delivered_key?: string | null
+          disqualified_at?: string | null
+          entry_id?: string | null
+          id?: string
+          is_backup?: boolean
+          place?: number
+          raffle_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          delivered_key?: string | null
+          disqualified_at?: string | null
+          entry_id?: string | null
+          id?: string
+          is_backup?: boolean
+          place?: number
+          raffle_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raffle_winners_raffle_id_fkey"
+            columns: ["raffle_id"]
+            isOneToOne: false
+            referencedRelation: "raffles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       raffles: {
         Row: {
+          announce_end_sent_at: string | null
+          announce_start_sent_at: string | null
           created_at: string
           created_by: string | null
           custom_prize_name: string | null
+          daily_bonus_enabled: boolean
           delivered_key: string | null
           description: string | null
+          draw_hash: string | null
           drawn_at: string | null
           end_at: string
           entry_cost_points: number
+          featured: boolean
           id: string
           image_url: string | null
+          is_recurring: boolean
           max_entries_per_user: number
+          min_tier: Database["public"]["Enums"]["user_tier"] | null
+          num_winners: number
           product_id: string | null
+          recurrence_days: number | null
+          seed_commit: string | null
+          seed_reveal: string | null
+          share_bonus_enabled: boolean
           start_at: string
           status: string
+          template_of: string | null
+          tickets_per_amount_try: number
           title: string
           updated_at: string
           winner_entry_id: string | null
           winner_user_id: string | null
         }
         Insert: {
+          announce_end_sent_at?: string | null
+          announce_start_sent_at?: string | null
           created_at?: string
           created_by?: string | null
           custom_prize_name?: string | null
+          daily_bonus_enabled?: boolean
           delivered_key?: string | null
           description?: string | null
+          draw_hash?: string | null
           drawn_at?: string | null
           end_at: string
           entry_cost_points?: number
+          featured?: boolean
           id?: string
           image_url?: string | null
+          is_recurring?: boolean
           max_entries_per_user?: number
+          min_tier?: Database["public"]["Enums"]["user_tier"] | null
+          num_winners?: number
           product_id?: string | null
+          recurrence_days?: number | null
+          seed_commit?: string | null
+          seed_reveal?: string | null
+          share_bonus_enabled?: boolean
           start_at?: string
           status?: string
+          template_of?: string | null
+          tickets_per_amount_try?: number
           title: string
           updated_at?: string
           winner_entry_id?: string | null
           winner_user_id?: string | null
         }
         Update: {
+          announce_end_sent_at?: string | null
+          announce_start_sent_at?: string | null
           created_at?: string
           created_by?: string | null
           custom_prize_name?: string | null
+          daily_bonus_enabled?: boolean
           delivered_key?: string | null
           description?: string | null
+          draw_hash?: string | null
           drawn_at?: string | null
           end_at?: string
           entry_cost_points?: number
+          featured?: boolean
           id?: string
           image_url?: string | null
+          is_recurring?: boolean
           max_entries_per_user?: number
+          min_tier?: Database["public"]["Enums"]["user_tier"] | null
+          num_winners?: number
           product_id?: string | null
+          recurrence_days?: number | null
+          seed_commit?: string | null
+          seed_reveal?: string | null
+          share_bonus_enabled?: boolean
           start_at?: string
           status?: string
+          template_of?: string | null
+          tickets_per_amount_try?: number
           title?: string
           updated_at?: string
           winner_entry_id?: string | null
@@ -2290,7 +2434,26 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      raffle_winners_public: {
+        Row: {
+          created_at: string | null
+          display_name: string | null
+          has_key: boolean | null
+          id: string | null
+          is_backup: boolean | null
+          place: number | null
+          raffle_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "raffle_winners_raffle_id_fkey"
+            columns: ["raffle_id"]
+            isOneToOne: false
+            referencedRelation: "raffles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       _assign_key_to_order: {
@@ -2504,6 +2667,15 @@ export type Database = {
         }
         Returns: number
       }
+      broadcast_raffle_message: {
+        Args: {
+          _body: string
+          _link?: string
+          _raffle_id: string
+          _title: string
+        }
+        Returns: number
+      }
       bump_login_streak: {
         Args: never
         Returns: {
@@ -2523,6 +2695,13 @@ export type Database = {
           threshold: number
         }[]
       }
+      claim_daily_raffle_ticket: {
+        Args: { _raffle_id: string }
+        Returns: {
+          entry_id: string
+          total_entries: number
+        }[]
+      }
       claim_license_by_token: {
         Args: { _token: string }
         Returns: {
@@ -2539,6 +2718,13 @@ export type Database = {
           awarded: number
           progress: number
           target: number
+        }[]
+      }
+      claim_share_raffle_ticket: {
+        Args: { _platform: string; _raffle_id: string }
+        Returns: {
+          entry_id: string
+          total_entries: number
         }[]
       }
       cleanup_license_nonces: { Args: never; Returns: undefined }
@@ -2580,11 +2766,18 @@ export type Database = {
         }
         Returns: string
       }
+      disqualify_raffle_winner: {
+        Args: { _winner_id: string }
+        Returns: {
+          new_user_id: string
+          new_winner_id: string
+        }[]
+      }
       draw_raffle: {
         Args: { _raffle_id: string }
         Returns: {
-          delivered_key: string
-          winner_entry_id: string
+          delivered_keys: string[]
+          draw_hash: string
           winner_user_id: string
         }[]
       }
@@ -2741,6 +2934,16 @@ export type Database = {
           _user_id: string
         }
         Returns: string
+      }
+      raffle_analytics: {
+        Args: { _raffle_id: string }
+        Returns: {
+          hourly: Json
+          points_spent: number
+          top_users: Json
+          total_entries: number
+          unique_participants: number
+        }[]
       }
       recompute_badges: { Args: { _user_id: string }; Returns: undefined }
       record_referral_click: {
