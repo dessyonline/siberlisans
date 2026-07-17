@@ -142,10 +142,18 @@ function AdminRafflesPage() {
                 className="w-full rounded border border-primary/30 bg-card px-2 py-1.5" />
             </label>
             <label className="space-y-1 text-xs">
-              <span className="font-mono text-muted-foreground">bilet maliyeti (puan, 0=ücretsiz)</span>
-              <input type="number" min={0} value={form.entry_cost_points}
+              <span className="font-mono text-muted-foreground">puan ile katılım</span>
+              <div className="flex items-center gap-2 rounded border border-primary/30 bg-card px-2 py-1.5">
+                <input type="checkbox" checked={form.points_enabled}
+                  onChange={(e) => setForm({ ...form, points_enabled: e.target.checked })} />
+                <span className="font-mono text-xs">{form.points_enabled ? "açık (puan harcanır)" : "kapalı (ücretsiz)"}</span>
+              </div>
+            </label>
+            <label className="space-y-1 text-xs">
+              <span className="font-mono text-muted-foreground">bilet maliyeti (puan)</span>
+              <input type="number" min={0} disabled={!form.points_enabled} value={form.entry_cost_points}
                 onChange={(e) => setForm({ ...form, entry_cost_points: +e.target.value })}
-                className="w-full rounded border border-primary/30 bg-card px-2 py-1.5" />
+                className="w-full rounded border border-primary/30 bg-card px-2 py-1.5 disabled:opacity-40" />
             </label>
             <label className="space-y-1 text-xs">
               <span className="font-mono text-muted-foreground">kişi başı max bilet</span>
