@@ -2436,6 +2436,7 @@ export type Database = {
     Views: {
       raffle_winners_public: {
         Row: {
+          avatar_id: string | null
           created_at: string | null
           display_name: string | null
           has_key: boolean | null
@@ -2443,6 +2444,7 @@ export type Database = {
           is_backup: boolean | null
           place: number | null
           raffle_id: string | null
+          tier: Database["public"]["Enums"]["user_tier"] | null
         }
         Relationships: [
           {
