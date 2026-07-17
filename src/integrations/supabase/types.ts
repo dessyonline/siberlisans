@@ -2766,6 +2766,9 @@ export type Database = {
         }
         Returns: string
       }
+      digest:
+        | { Args: { data: string; type: string }; Returns: string }
+        | { Args: { data: string; type: string }; Returns: string }
       disqualify_raffle_winner: {
         Args: { _winner_id: string }
         Returns: {
