@@ -214,6 +214,7 @@ function AdminRafflesPage() {
                 id: r.id, title: r.title, description: r.description ?? "",
                 image_url: r.image_url ?? "", product_id: r.product_id ?? "",
                 custom_prize_name: r.custom_prize_name ?? "",
+                points_enabled: (r.entry_cost_points ?? 0) > 0,
                 entry_cost_points: r.entry_cost_points, max_entries_per_user: r.max_entries_per_user,
                 end_at: new Date(r.end_at).toISOString().slice(0, 16),
                 status: r.status === "drawn" ? "active" : r.status,
