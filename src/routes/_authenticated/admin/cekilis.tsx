@@ -65,7 +65,7 @@ function AdminRafflesPage() {
         image_url: form.image_url || null,
         product_id: form.product_id || null,
         custom_prize_name: form.custom_prize_name || null,
-        entry_cost_points: Number(form.entry_cost_points),
+        entry_cost_points: form.points_enabled ? Number(form.entry_cost_points) : 0,
         max_entries_per_user: Number(form.max_entries_per_user),
         end_at: new Date(form.end_at).toISOString(),
         status: form.status,
