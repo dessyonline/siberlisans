@@ -73,8 +73,8 @@ export const listActiveRaffles = createServerFn({ method: "GET" }).handler(async
     if (winUserIds.length) {
       const { data: profs } = await supabaseAdmin
         .from("profiles")
-        .select("user_id,email,display_name,avatar_id,tier")
-        .in("user_id", winUserIds);
+        .select("id,email,display_name,avatar_id,tier")
+        .in("id", winUserIds);
       for (const p of (profs ?? []) as Array<{ user_id: string; email: string | null; display_name: string | null; avatar_id: string | null; tier: string | null }>) {
         profMap.set(p.user_id, { email: p.email, display_name: p.display_name, avatar_id: p.avatar_id, tier: p.tier });
       }
@@ -111,8 +111,8 @@ export const listPastWinners = createServerFn({ method: "GET" }).handler(async (
   if (userIds.length) {
     const { data: profs } = await supabaseAdmin
       .from("profiles")
-      .select("user_id,email,display_name,avatar_id,tier")
-      .in("user_id", userIds);
+      .select("id,email,display_name,avatar_id,tier")
+      .in("id", userIds);
     for (const p of (profs ?? []) as Array<{ user_id: string; email: string | null; display_name: string | null; avatar_id: string | null; tier: string | null }>) {
       map.set(p.user_id, { email: p.email, display_name: p.display_name, avatar_id: p.avatar_id, tier: p.tier });
     }
