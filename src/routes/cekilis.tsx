@@ -384,14 +384,43 @@ function RaffleCard({
               <Lock className="h-3 w-3" /> {r.min_tier}+ seviye gerekli
             </div>
           )}
+          {drawn && myWin && (
+            <div className="relative overflow-hidden rounded-lg border-2 border-primary bg-gradient-to-br from-primary/20 via-primary/5 to-transparent p-4 neon-glow-strong">
+              <div className="scan-line pointer-events-none absolute inset-0 opacity-30" />
+              <div className="relative flex items-center gap-2 font-mono text-sm text-primary">
+                <PartyPopper className="h-5 w-5" /> ÇEKİLİŞİ KAZANDIN — #{myWin.place}{myWin.is_backup && <span className="rounded bg-blue-500/20 px-1 text-[10px] text-blue-400">yedek</span>}
+              </div>
+              {myWin.delivered_key ? (
+                <div className="relative mt-2 space-y-2">
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">🏆 Ödülün:</div>
+                  <div className="flex items-center gap-2 rounded border border-primary/40 bg-background/80 px-2 py-1.5">
+                    <code className="flex-1 truncate font-mono text-xs text-primary">{myWin.delivered_key}</code>
+                    <button
+                      onClick={() => { navigator.clipboard.writeText(myWin.delivered_key!); toast.success("Kopyalandı!"); }}
+                      className="rounded border border-primary/40 px-2 py-1 text-primary hover:bg-primary/10"
+                      aria-label="kopyala"
+                    >
+                      <Copy className="h-3 w-3" />
+                    </button>
+                  </div>
+                  <Link to="/hesabim/lisanslar" className="block text-center font-mono text-[10px] text-primary/80 underline">tüm lisanslarım →</Link>
+                </div>
+              ) : (
+                <div className="relative mt-2 rounded bg-card/60 p-2 font-mono text-[11px] text-muted-foreground">Ödülün hazırlanıyor, kısa süre içinde bildirim gelecek.</div>
+              )}
+            </div>
+          )}
           {drawn && (
             <div className="space-y-1">
               <div className="rounded bg-primary/10 p-2 text-center font-mono text-xs text-primary">
                 {r.winners?.length ?? 0} kazanan belirlendi
               </div>
               {(r.winners ?? []).slice(0, 3).map((w: any, i: number) => (
-                <div key={i} className="flex items-center justify-between rounded bg-card/40 px-2 py-0.5 font-mono text-[11px]">
-                  <span>#{w.place} {w.display_name}</span>
+                <div key={i} className="flex items-center gap-2 rounded bg-card/40 px-2 py-1 font-mono text-[11px]">
+                  <UserAvatar id={w.avatar_id} size={20} />
+                  <span className="text-primary">#{w.place}</span>
+                  <span className="flex-1 truncate">{w.display_name}</span>
+                  {w.tier && <span className="rounded bg-primary/10 px-1 text-[9px] uppercase text-primary/80">{w.tier}</span>}
                   <Trophy className="h-3 w-3 text-primary" />
                 </div>
               ))}
