@@ -9,9 +9,11 @@ import {
   claimDailyTicket,
   claimShareTicket,
   listPastWinners,
+  getMyRaffleWins,
 } from "@/lib/raffles.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { Ticket, Trophy, Clock, Users, Sparkles, Gift, Share2, Lock, Shield, Star } from "lucide-react";
+import { Ticket, Trophy, Clock, Users, Sparkles, Gift, Share2, Lock, Shield, Star, Copy, PartyPopper } from "lucide-react";
+import { UserAvatar } from "@/components/UserAvatar";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/cekilis")({
