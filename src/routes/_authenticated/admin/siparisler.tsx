@@ -80,17 +80,18 @@ function OrdersAdmin() {
       if (orderIds.length) {
         const { data: discs } = await supabase
           .from("order_discounts")
-          .select("order_id, discount_try, code_snapshot, kind")
+          .select("order_id, discount_try, code_snapshot")
           .in("order_id", orderIds);
         for (const d of discs ?? []) {
           const key = d.order_id as string;
           const prev = discByOrder.get(key) ?? { total: 0, codes: [] };
           prev.total += Number(d.discount_try ?? 0);
-          const label = (d.code_snapshot as string | null) ?? (d.kind as string | null) ?? "indirim";
+          const label = (d.code_snapshot as string | null) ?? "indirim";
           if (label) prev.codes.push(label);
           discByOrder.set(key, prev);
         }
       }
+
       return (data ?? []).map((o) => ({
         ...o,
         buyer: (o.user_id && byId.get(o.user_id)) || null,
