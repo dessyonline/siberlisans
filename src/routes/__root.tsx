@@ -220,6 +220,7 @@ function SiteHeader() {
           <Link to="/urunler" className="text-muted-foreground hover:text-primary">./ürünler</Link>
           <Link to="/paketler" className="text-muted-foreground hover:text-primary">./paketler</Link>
           <Link to="/cekilis" className="text-primary hover:text-primary/80">./çekiliş</Link>
+          <Link to="/araclar" className="text-primary hover:text-primary/80">./araçlar</Link>
           <Link to="/blog" className="text-muted-foreground hover:text-primary">./blog</Link>
           <Link to="/nasil-calisir" className="text-muted-foreground hover:text-primary">./nasıl-çalışır</Link>
           <Link to="/sss" className="text-muted-foreground hover:text-primary">./SSS</Link>
