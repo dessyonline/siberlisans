@@ -189,15 +189,19 @@ function KeysAdmin() {
     if (!productId) return toast.error("Ürün seçin");
     const list = splitLines(raw);
     if (list.length === 0) return toast.error("En az bir key girin");
+    if (sharedMode && (!sharedCount || sharedCount < 1)) return toast.error("Ortak anahtar için stok adedi girin");
     setBusy(true);
     try {
-      const r = await importFn({ data: { productId, keys: list } });
+      const r = await importFn({ data: { productId, keys: list, sharedCount: sharedMode ? sharedCount : 0 } });
       const submitted = r.submitted ?? list.length;
       if (r.inserted === 0) {
         toast.error(
           `Hiç key eklenmedi. Girdiğin ${submitted} satır bu üründe zaten kayıtlı görünüyor. Farklı bir email:şifre veya key ekleyin.`,
           { duration: 8000 },
         );
+      } else if (sharedMode) {
+        toast.success(`Ortak anahtar → ${r.inserted} stok eklendi ✓`);
+        setRaw("");
       } else if (r.inserted < submitted) {
         toast.success(`${r.inserted}/${submitted} key eklendi — ${submitted - r.inserted} tanesi zaten bu üründe kayıtlıydı.`);
         setRaw("");
@@ -210,6 +214,7 @@ function KeysAdmin() {
     } catch (e) { toast.error((e as Error).message); }
     finally { setBusy(false); }
   };
+
 
   const purge = async (pid: string, name: string, avail: number) => {
     if (!confirm(`${name}: ${avail} adet müsait (satılmamış) key silinecek. Emin misin?`)) return;
