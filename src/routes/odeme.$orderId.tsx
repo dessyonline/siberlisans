@@ -1511,6 +1511,7 @@ function PromoBlock({
         kod_limit_dolmus: "Bu kodun kullanım limiti dolmuş.",
         kod_min_tutar: param ? `Bu kod için minimum sipariş tutarı ₺${param}.` : "Sepet tutarı bu kod için yetersiz.",
         kod_urun_uyumsuz: "Bu kod bu üründe geçerli değil.",
+        kod_zaten_kullanildi: "Bu kodu daha önce kullandın, tekrar kullanılamaz.",
         invalid_promo_code: "Geçersiz promosyon kodu.",
         order_not_found: "Bu sipariş için kod uygulanamıyor.",
         unauthorized: "Oturum gerekli.",
