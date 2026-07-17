@@ -75,8 +75,8 @@ export const listActiveRaffles = createServerFn({ method: "GET" }).handler(async
         .from("profiles")
         .select("id,email,display_name,avatar_id,tier")
         .in("id", winUserIds);
-      for (const p of (profs ?? []) as Array<{ user_id: string; email: string | null; display_name: string | null; avatar_id: string | null; tier: string | null }>) {
-        profMap.set(p.user_id, { email: p.email, display_name: p.display_name, avatar_id: p.avatar_id, tier: p.tier });
+      for (const p of (profs ?? []) as Array<{ id: string; email: string | null; display_name: string | null; avatar_id: string | null; tier: string | null }>) {
+        profMap.set(p.id, { email: p.email, display_name: p.display_name, avatar_id: p.avatar_id, tier: p.tier });
       }
     }
     for (const w of winRows) {
@@ -113,8 +113,8 @@ export const listPastWinners = createServerFn({ method: "GET" }).handler(async (
       .from("profiles")
       .select("id,email,display_name,avatar_id,tier")
       .in("id", userIds);
-    for (const p of (profs ?? []) as Array<{ user_id: string; email: string | null; display_name: string | null; avatar_id: string | null; tier: string | null }>) {
-      map.set(p.user_id, { email: p.email, display_name: p.display_name, avatar_id: p.avatar_id, tier: p.tier });
+    for (const p of (profs ?? []) as Array<{ id: string; email: string | null; display_name: string | null; avatar_id: string | null; tier: string | null }>) {
+      map.set(p.id, { email: p.email, display_name: p.display_name, avatar_id: p.avatar_id, tier: p.tier });
     }
   }
   return rows.map((r) => {
