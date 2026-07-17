@@ -19,6 +19,7 @@ type Form = {
   image_url: string;
   product_id: string;
   custom_prize_name: string;
+  points_enabled: boolean;
   entry_cost_points: number;
   max_entries_per_user: number;
   end_at: string;
@@ -31,6 +32,7 @@ const emptyForm: Form = {
   image_url: "",
   product_id: "",
   custom_prize_name: "",
+  points_enabled: false,
   entry_cost_points: 100,
   max_entries_per_user: 5,
   end_at: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 16),
