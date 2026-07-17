@@ -74,7 +74,7 @@ export const listPastWinners = createServerFn({ method: "GET" }).handler(async (
   const sb = pubClient();
   const { data, error } = await sb
     .from("raffle_winners_public" as never)
-    .select("id,raffle_id,place,display_name,created_at")
+    .select("id,raffle_id,place,display_name,avatar_id,tier,created_at")
     .order("created_at", { ascending: false })
     .limit(30);
   if (error) throw new Error(error.message);
