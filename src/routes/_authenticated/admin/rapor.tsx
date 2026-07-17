@@ -60,9 +60,19 @@ function ReportPage() {
   const maxProfit = Math.max(1, ...series.map((s) => Number(s.profit)));
 
   function exportCsv() {
-    const header = ["tarih", "sipariş", "ciro", "maliyet", "kar", "iade"].join(",");
+    const header = ["tarih", "sipariş", "brüt_ciro", "kupon_indirim", "net_ciro", "maliyet", "kar", "iade", "bakiye_yükleme"].join(",");
     const rows = series.map((r) =>
-      [r.bucket, r.orders_count, r.revenue, r.cost, r.profit, r.refunds].join(","),
+      [
+        r.bucket,
+        r.orders_count,
+        r.gross_revenue ?? 0,
+        r.discount_total ?? 0,
+        r.revenue,
+        r.cost,
+        r.profit,
+        r.refunds,
+        r.topups ?? 0,
+      ].join(","),
     );
     const csv = [header, ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -71,6 +81,7 @@ function ReportPage() {
     a.download = `rapor-${from}-${to}.csv`;
     a.click();
   }
+
 
   return (
     <div className="space-y-4">
