@@ -293,7 +293,9 @@ function OrdersAdmin() {
             <option value="pending">bekliyor</option>
             <option value="approved">onaylı</option>
             <option value="rejected">reddedildi</option>
+            <option value="cancelled">iptal</option>
             <option value="all">tüm durumlar</option>
+
           </select>
           <select
             value={range}
