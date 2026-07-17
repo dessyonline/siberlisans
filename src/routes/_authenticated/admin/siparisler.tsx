@@ -24,6 +24,7 @@ const STATUS: Record<string, string> = {
   reviewing: "inceleniyor",
   approved: "onaylı",
   rejected: "reddedildi",
+  cancelled: "iptal",
 };
 
 const STATUS_CLS: Record<string, string> = {
@@ -31,7 +32,9 @@ const STATUS_CLS: Record<string, string> = {
   reviewing: "text-cyan border-cyan/40 bg-cyan/10",
   approved: "text-primary border-primary/40 bg-primary/10",
   rejected: "text-destructive border-destructive/40 bg-destructive/10",
+  cancelled: "text-destructive border-destructive/40 bg-destructive/10",
 };
+
 
 type Range = "today" | "7d" | "30d" | "all";
 
