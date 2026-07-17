@@ -123,13 +123,13 @@ export const upsertRaffle = createServerFn({ method: "POST" })
       end_at: data.end_at,
       status: data.status,
     };
+    const tbl = context.supabase.from("raffles" as never) as any;
     if (data.id) {
-      const { error } = await context.supabase.from("raffles" as never).update(payload).eq("id", data.id);
+      const { error } = await tbl.update(payload).eq("id", data.id);
       if (error) throw new Error(error.message);
       return { id: data.id };
     }
-    const { data: row, error } = await context.supabase
-      .from("raffles" as never)
+    const { data: row, error } = await tbl
       .insert({ ...payload, created_by: context.userId })
       .select("id")
       .single();

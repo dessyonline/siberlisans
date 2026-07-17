@@ -43,7 +43,7 @@ function AdminRafflesPage() {
   const products = useQuery({
     queryKey: ["admin-raffles-products"],
     queryFn: async () => {
-      const { data } = await supabase.from("products").select("id,name").eq("is_active", true).order("name");
+      const { data } = await supabase.from("products").select("id,name").eq("active", true).order("name");
       return data ?? [];
     },
   });
