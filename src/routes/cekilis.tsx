@@ -199,7 +199,7 @@ function RafflesPage() {
               {(past.data ?? []).map((w: any) => (
                 <div key={w.id} className="flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 py-1 pl-1 pr-3 font-mono text-xs">
                   <UserAvatar id={w.avatar_id} size={22} />
-                  <span className="truncate max-w-[120px]">{w.display_name}</span>
+                  <span className="truncate max-w-[160px]">{w.masked_email ?? w.display_name}</span>
                   {w.tier && <span className="rounded bg-primary/10 px-1 text-[9px] uppercase text-primary/80">{w.tier}</span>}
                   <span className="text-muted-foreground">·</span>
                   <span className="text-primary">{w.place}.</span>
