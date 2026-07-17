@@ -19,6 +19,16 @@ function pubClient() {
   });
 }
 
+function maskEmail(email: string | null | undefined): string | null {
+  if (!email) return null;
+  const [local, domain] = email.split("@");
+  if (!domain) return email;
+  const l = local.length <= 2 ? local[0] + "*" : local.slice(0, 2) + "*".repeat(Math.max(1, local.length - 3)) + local.slice(-1);
+  const [dName, ...dRest] = domain.split(".");
+  const d = dName.length <= 2 ? dName[0] + "*" : dName[0] + "*".repeat(Math.max(1, dName.length - 2)) + dName.slice(-1);
+  return `${l}@${d}${dRest.length ? "." + dRest.join(".") : ""}`;
+}
+
 const RAFFLE_COLS =
   "id,title,description,image_url,product_id,custom_prize_name,entry_cost_points,max_entries_per_user,start_at,end_at,status,winner_user_id,drawn_at,delivered_key,min_tier,num_winners,featured,seed_commit,seed_reveal,draw_hash,is_recurring,recurrence_days,daily_bonus_enabled,share_bonus_enabled,tickets_per_amount_try,product:products(id,name,slug,image_url,retail_price_try,price_try)";
 
