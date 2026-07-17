@@ -35,7 +35,7 @@ export const listActiveRaffles = createServerFn({ method: "GET" }).handler(async
   const rows = (data ?? []) as Array<Record<string, unknown> & { id: string }>;
   const ids = rows.map((r) => r.id);
   const counts = new Map<string, { entries: number; users: number }>();
-  const winnersMap = new Map<string, Array<{ display_name: string; place: number }>>();
+  const winnersMap = new Map<string, Array<{ display_name: string; place: number; avatar_id: string | null; tier: string | null }>>();
   if (ids.length) {
     const { data: ec } = await sb.from("raffle_entries" as never).select("raffle_id,entries_count,user_id").in("raffle_id", ids);
     const usersByRaffle: Record<string, Set<string>> = {};
@@ -52,13 +52,15 @@ export const listActiveRaffles = createServerFn({ method: "GET" }).handler(async
     }
     const { data: wp } = await sb
       .from("raffle_winners_public" as never)
-      .select("raffle_id,place,display_name")
+      .select("raffle_id,place,display_name,avatar_id,tier")
       .in("raffle_id", ids)
       .order("place", { ascending: true });
-    for (const w of ((wp ?? []) as Array<{ raffle_id: string; place: number; display_name: string }>)) {
+    for (const w of ((wp ?? []) as Array<{ raffle_id: string; place: number; display_name: string; avatar_id: string | null; tier: string | null }>)) {
       (winnersMap.get(w.raffle_id) ?? winnersMap.set(w.raffle_id, []).get(w.raffle_id)!).push({
         display_name: w.display_name,
         place: w.place,
+        avatar_id: w.avatar_id,
+        tier: w.tier,
       });
     }
   }
