@@ -58,6 +58,7 @@ import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedBildirimlerRouteImport } from './routes/_authenticated/bildirimler'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as ApiToolsAiRouteImport } from './routes/api/tools/ai'
 import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
 import { Route as ApiAdminRevokeRouteImport } from './routes/api/admin/revoke'
 import { Route as ApiAdminCreateRouteImport } from './routes/api/admin/create'
@@ -345,6 +346,11 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const ApiToolsAiRoute = ApiToolsAiRouteImport.update({
+  id: '/api/tools/ai',
+  path: '/api/tools/ai',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicSitemapDotxmlRoute = ApiPublicSitemapDotxmlRouteImport.update({
   id: '/api/public/sitemap.xml',
@@ -659,6 +665,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/create': typeof ApiAdminCreateRoute
   '/api/admin/revoke': typeof ApiAdminRevokeRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
+  '/api/tools/ai': typeof ApiToolsAiRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
@@ -748,6 +755,7 @@ export interface FileRoutesByTo {
   '/api/admin/create': typeof ApiAdminCreateRoute
   '/api/admin/revoke': typeof ApiAdminRevokeRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
+  '/api/tools/ai': typeof ApiToolsAiRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
@@ -840,6 +848,7 @@ export interface FileRoutesById {
   '/api/admin/create': typeof ApiAdminCreateRoute
   '/api/admin/revoke': typeof ApiAdminRevokeRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
+  '/api/tools/ai': typeof ApiToolsAiRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
@@ -932,6 +941,7 @@ export interface FileRouteTypes {
     | '/api/admin/create'
     | '/api/admin/revoke'
     | '/api/public/sitemap.xml'
+    | '/api/tools/ai'
     | '/admin/'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
@@ -1021,6 +1031,7 @@ export interface FileRouteTypes {
     | '/api/admin/create'
     | '/api/admin/revoke'
     | '/api/public/sitemap.xml'
+    | '/api/tools/ai'
     | '/admin'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
@@ -1112,6 +1123,7 @@ export interface FileRouteTypes {
     | '/api/admin/create'
     | '/api/admin/revoke'
     | '/api/public/sitemap.xml'
+    | '/api/tools/ai'
     | '/_authenticated/admin/'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
@@ -1164,6 +1176,7 @@ export interface RootRouteChildren {
   ApiAdminCreateRoute: typeof ApiAdminCreateRoute
   ApiAdminRevokeRoute: typeof ApiAdminRevokeRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
+  ApiToolsAiRoute: typeof ApiToolsAiRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
   ApiPublicHooksPushTickRoute: typeof ApiPublicHooksPushTickRoute
@@ -1518,6 +1531,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/api/tools/ai': {
+      id: '/api/tools/ai'
+      path: '/api/tools/ai'
+      fullPath: '/api/tools/ai'
+      preLoaderRoute: typeof ApiToolsAiRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/sitemap.xml': {
       id: '/api/public/sitemap.xml'
@@ -1955,6 +1975,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminCreateRoute: ApiAdminCreateRoute,
   ApiAdminRevokeRoute: ApiAdminRevokeRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
+  ApiToolsAiRoute: ApiToolsAiRoute,
   ApiPublicHooksAbandonmentReminderRoute:
     ApiPublicHooksAbandonmentReminderRoute,
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,
