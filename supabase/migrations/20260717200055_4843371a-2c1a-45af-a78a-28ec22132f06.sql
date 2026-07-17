@@ -1,0 +1,1 @@
+ALTER VIEW public.raffle_winners_public SET (security_invoker = on);
