@@ -2203,6 +2203,10 @@ export type Database = {
         Args: { _delta: number; _note: string; _user_id: string }
         Returns: number
       }
+      admin_cancel_order: {
+        Args: { _note?: string; _order_id: string }
+        Returns: Json
+      }
       admin_create_license_key: {
         Args: {
           _duration_days?: number
@@ -2294,10 +2298,13 @@ export type Database = {
         Returns: {
           bucket: string
           cost: number
+          discount_total: number
+          gross_revenue: number
           orders_count: number
           profit: number
           refunds: number
           revenue: number
+          topups: number
         }[]
       }
       admin_purge_available_keys: {
@@ -2702,7 +2709,13 @@ export type Database = {
         | "weekly"
       ig_match_type: "exact" | "contains" | "starts_with" | "regex"
       key_status: "available" | "assigned" | "revoked"
-      order_status: "pending" | "reviewing" | "approved" | "rejected" | "failed"
+      order_status:
+        | "pending"
+        | "reviewing"
+        | "approved"
+        | "rejected"
+        | "failed"
+        | "cancelled"
       promo_type: "percent" | "fixed"
       support_ticket_priority: "low" | "normal" | "high" | "urgent"
       support_ticket_status: "open" | "pending" | "closed"
@@ -2854,7 +2867,14 @@ export const Constants = {
       ],
       ig_match_type: ["exact", "contains", "starts_with", "regex"],
       key_status: ["available", "assigned", "revoked"],
-      order_status: ["pending", "reviewing", "approved", "rejected", "failed"],
+      order_status: [
+        "pending",
+        "reviewing",
+        "approved",
+        "rejected",
+        "failed",
+        "cancelled",
+      ],
       promo_type: ["percent", "fixed"],
       support_ticket_priority: ["low", "normal", "high", "urgent"],
       support_ticket_status: ["open", "pending", "closed"],

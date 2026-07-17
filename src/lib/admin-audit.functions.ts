@@ -112,9 +112,12 @@ export const getProfitReport = createServerFn({ method: "POST" })
         bucket: string;
         orders_count: number;
         revenue: number;
+        gross_revenue: number;
+        discount_total: number;
         cost: number;
         profit: number;
         refunds: number;
+        topups: number;
       }>) ?? [],
       byProduct: (byProduct.data as Array<{
         product_id: string;
@@ -126,3 +129,4 @@ export const getProfitReport = createServerFn({ method: "POST" })
       }>) ?? [],
     };
   });
+

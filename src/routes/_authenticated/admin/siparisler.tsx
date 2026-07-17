@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { approveOrder, rejectOrder } from "@/lib/orders.functions";
+import { approveOrder, rejectOrder, adminCancelOrder } from "@/lib/orders.functions";
 import { syncUniquelisansOrder, syncAllPendingUniquelisans } from "@/lib/uniquelisans-sync.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,7 @@ const STATUS: Record<string, string> = {
   reviewing: "inceleniyor",
   approved: "onaylı",
   rejected: "reddedildi",
+  cancelled: "iptal",
 };
 
 const STATUS_CLS: Record<string, string> = {
@@ -31,20 +32,24 @@ const STATUS_CLS: Record<string, string> = {
   reviewing: "text-cyan border-cyan/40 bg-cyan/10",
   approved: "text-primary border-primary/40 bg-primary/10",
   rejected: "text-destructive border-destructive/40 bg-destructive/10",
+  cancelled: "text-destructive border-destructive/40 bg-destructive/10",
 };
+
 
 type Range = "today" | "7d" | "30d" | "all";
 
 function OrdersAdmin() {
   const qc = useQueryClient();
-  const [filter, setFilter] = useState<"reviewing" | "pending" | "approved" | "rejected" | "all">("reviewing");
+  const [filter, setFilter] = useState<"reviewing" | "pending" | "approved" | "rejected" | "cancelled" | "all">("reviewing");
   const [range, setRange] = useState<Range>("all");
   const [query, setQuery] = useState("");
   const [onlyWithMessage, setOnlyWithMessage] = useState(false);
   const approveFn = useServerFn(approveOrder);
   const rejectFn = useServerFn(rejectOrder);
+  const cancelFn = useServerFn(adminCancelOrder);
   const syncOneFn = useServerFn(syncUniquelisansOrder);
   const syncAllFn = useServerFn(syncAllPendingUniquelisans);
+
   const [note, setNote] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
@@ -56,12 +61,13 @@ function OrdersAdmin() {
     queryFn: async () => {
       let q = supabase
         .from("orders")
-        .select("id, status, price_try, reference_code, receipt_path, admin_note, user_note, checkout_fields, external_order_id, external_delivery_data, external_status, created_at, product:products(name, manual_fulfillment, source), user_id")
+        .select("id, status, price_try, reference_code, receipt_path, admin_note, user_note, checkout_fields, external_order_id, external_delivery_data, external_status, created_at, product:products(name, manual_fulfillment, source), user_id, paid_with")
         .order("created_at", { ascending: false });
       if (filter !== "all") q = q.eq("status", filter);
       const { data, error } = await q;
       if (error) throw error;
       const ids = Array.from(new Set((data ?? []).map((o) => o.user_id).filter(Boolean))) as string[];
+      const orderIds = (data ?? []).map((o) => o.id);
       let byId = new Map<string, { email: string | null; display_name: string | null }>();
       if (ids.length) {
         const { data: profs } = await supabase
@@ -70,10 +76,31 @@ function OrdersAdmin() {
           .in("id", ids);
         byId = new Map((profs ?? []).map((p) => [p.id, { email: p.email, display_name: p.display_name }]));
       }
-      return (data ?? []).map((o) => ({ ...o, buyer: (o.user_id && byId.get(o.user_id)) || null }));
+      let discByOrder = new Map<string, { total: number; codes: string[] }>();
+      if (orderIds.length) {
+        const { data: discs } = await supabase
+          .from("order_discounts")
+          .select("order_id, discount_try, code_snapshot")
+          .in("order_id", orderIds);
+        for (const d of discs ?? []) {
+          const key = d.order_id as string;
+          const prev = discByOrder.get(key) ?? { total: 0, codes: [] };
+          prev.total += Number(d.discount_try ?? 0);
+          const label = (d.code_snapshot as string | null) ?? "indirim";
+          if (label) prev.codes.push(label);
+          discByOrder.set(key, prev);
+        }
+      }
+
+      return (data ?? []).map((o) => ({
+        ...o,
+        buyer: (o.user_id && byId.get(o.user_id)) || null,
+        discount: discByOrder.get(o.id) ?? null,
+      }));
     },
     refetchInterval: 10000,
   });
+
 
   const filtered = useMemo(() => {
     const now = Date.now();
@@ -116,6 +143,19 @@ function OrdersAdmin() {
       qc.invalidateQueries({ queryKey: ["admin-orders"] });
     } catch (e) { toast.error((e as Error).message); }
   };
+  const handleCancel = async (id: string, ref: string) => {
+    if (!confirm(`${ref} siparişini iptal et? Cüzdan ile ödediyse bakiyeye iade edilir, havuz anahtarları serbest bırakılır.`)) return;
+    try {
+      const res = await cancelFn({ data: { orderId: id, note: note || undefined } });
+      const parts: string[] = ["İptal edildi"];
+      if (res.refunded_try > 0) parts.push(`₺${res.refunded_try} iade`);
+      if (res.released_keys > 0) parts.push(`${res.released_keys} anahtar iade`);
+      toast.success(parts.join(" · "));
+      setNote("");
+      qc.invalidateQueries({ queryKey: ["admin-orders"] });
+    } catch (e) { toast.error((e as Error).message); }
+  };
+
 
   const handleSyncOne = async (id: string) => {
     setSyncing(id);
@@ -253,7 +293,9 @@ function OrdersAdmin() {
             <option value="pending">bekliyor</option>
             <option value="approved">onaylı</option>
             <option value="rejected">reddedildi</option>
+            <option value="cancelled">iptal</option>
             <option value="all">tüm durumlar</option>
+
           </select>
           <select
             value={range}
@@ -403,10 +445,30 @@ function OrdersAdmin() {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xl font-semibold text-primary font-mono">
-                  ₺{Number(o.price_try).toLocaleString("tr-TR")}
-                </div>
+                {(() => {
+                  const d = (o as { discount?: { total: number; codes: string[] } | null }).discount;
+                  const gross = Number(o.price_try);
+                  const net = d ? Math.max(0, gross - d.total) : gross;
+                  return (
+                    <>
+                      {d && d.total > 0 && (
+                        <div className="text-[11px] font-mono text-muted-foreground line-through">
+                          ₺{gross.toLocaleString("tr-TR")}
+                        </div>
+                      )}
+                      <div className="text-xl font-semibold text-primary font-mono">
+                        ₺{net.toLocaleString("tr-TR")}
+                      </div>
+                      {d && d.total > 0 && (
+                        <div className="mt-1 text-[10px] font-mono text-warn">
+                          🎟 {d.codes.join(", ")} · −₺{d.total.toLocaleString("tr-TR")}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
+
             </div>
 
             {o.user_note && (
@@ -531,6 +593,20 @@ function OrdersAdmin() {
                 </Dialog>
               </div>
             )}
+            {o.status === "approved" && (
+              <div className="mt-3 flex justify-end">
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => handleCancel(o.id, o.reference_code)}
+                  className="font-mono"
+                  title="Siparişi iptal et — cüzdan iadesi + havuz anahtarı serbest bırakma"
+                >
+                  <X className="h-3.5 w-3.5 mr-1" /> siparişi iptal et
+                </Button>
+              </div>
+            )}
+
           </div>
 
           );

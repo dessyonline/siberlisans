@@ -44,21 +44,35 @@ function ReportPage() {
     (acc, r) => ({
       orders: acc.orders + Number(r.orders_count),
       revenue: acc.revenue + Number(r.revenue),
+      gross: acc.gross + Number(r.gross_revenue ?? 0),
+      discount: acc.discount + Number(r.discount_total ?? 0),
       cost: acc.cost + Number(r.cost),
       profit: acc.profit + Number(r.profit),
       refunds: acc.refunds + Number(r.refunds),
+      topups: acc.topups + Number(r.topups ?? 0),
     }),
-    { orders: 0, revenue: 0, cost: 0, profit: 0, refunds: 0 },
+    { orders: 0, revenue: 0, gross: 0, discount: 0, cost: 0, profit: 0, refunds: 0, topups: 0 },
   );
 
   const margin = totals.revenue > 0 ? (totals.profit / totals.revenue) * 100 : 0;
 
+
   const maxProfit = Math.max(1, ...series.map((s) => Number(s.profit)));
 
   function exportCsv() {
-    const header = ["tarih", "sipariş", "ciro", "maliyet", "kar", "iade"].join(",");
+    const header = ["tarih", "sipariş", "brüt_ciro", "kupon_indirim", "net_ciro", "maliyet", "kar", "iade", "bakiye_yükleme"].join(",");
     const rows = series.map((r) =>
-      [r.bucket, r.orders_count, r.revenue, r.cost, r.profit, r.refunds].join(","),
+      [
+        r.bucket,
+        r.orders_count,
+        r.gross_revenue ?? 0,
+        r.discount_total ?? 0,
+        r.revenue,
+        r.cost,
+        r.profit,
+        r.refunds,
+        r.topups ?? 0,
+      ].join(","),
     );
     const csv = [header, ...rows].join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
@@ -67,6 +81,7 @@ function ReportPage() {
     a.download = `rapor-${from}-${to}.csv`;
     a.click();
   }
+
 
   return (
     <div className="space-y-4">
@@ -107,13 +122,18 @@ function ReportPage() {
       </div>
 
       {/* KPI cards */}
-      <div className="grid gap-3 grid-cols-2 md:grid-cols-5">
+      <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
         <Kpi label="sipariş" value={String(totals.orders)} />
-        <Kpi label="ciro" value={`₺${fmt(totals.revenue)}`} />
+        <Kpi label="brüt ciro" value={`₺${fmt(totals.gross)}`} tone="muted" />
+        <Kpi label="kupon indirim" value={`−₺${fmt(totals.discount)}`} tone={totals.discount > 0 ? "bad" : "muted"} />
+        <Kpi label="net ciro" value={`₺${fmt(totals.revenue)}`} />
         <Kpi label="maliyet" value={`₺${fmt(totals.cost)}`} tone="muted" />
         <Kpi label="net kar" value={`₺${fmt(totals.profit)}`} tone={totals.profit >= 0 ? "good" : "bad"} />
         <Kpi label="marj" value={`%${fmt(margin)}`} tone={margin >= 20 ? "good" : margin >= 0 ? "muted" : "bad"} />
+        <Kpi label="iade / iptal" value={`₺${fmt(totals.refunds)}`} tone={totals.refunds > 0 ? "bad" : "muted"} />
+        <Kpi label="bakiye yükleme" value={`₺${fmt(totals.topups)}`} tone="good" />
       </div>
+
 
       {/* Bar chart */}
       <div className="glass-card rounded-lg p-4">
@@ -139,7 +159,10 @@ function ReportPage() {
                     />
                   </div>
                   <div className="w-24 text-right text-primary shrink-0">₺{fmt(p)}</div>
-                  <div className="hidden md:block w-24 text-right text-muted-foreground shrink-0">
+                  <div className="hidden md:block w-20 text-right text-cyan shrink-0" title="günlük onaylı bakiye yüklemesi">
+                    +₺{fmt(Number(r.topups ?? 0))}
+                  </div>
+                  <div className="hidden md:block w-16 text-right text-muted-foreground shrink-0">
                     {Number(r.orders_count)} sip.
                   </div>
                 </div>
@@ -148,6 +171,7 @@ function ReportPage() {
           </div>
         )}
       </div>
+
 
       {/* Per-product */}
       <div className="glass-card rounded-lg overflow-hidden">

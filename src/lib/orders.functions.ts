@@ -1097,3 +1097,28 @@ export const cancelPendingOrder = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+const adminCancelInput = z.object({
+  orderId: z.string().uuid(),
+  note: z.string().max(500).optional(),
+});
+
+export const adminCancelOrder = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => adminCancelInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: isAdmin } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "admin",
+    });
+    if (!isAdmin) throw new Error("Yetkisiz.");
+    const { data: res, error } = await supabase.rpc("admin_cancel_order", {
+      _order_id: data.orderId,
+      _note: data.note ?? null,
+    // biome-ignore lint/suspicious/noExplicitAny: rpc typing
+    } as any);
+    if (error) throw new Error(error.message);
+    return res as { ok: boolean; refunded_try: number; released_keys: number };
+  });
+
+
