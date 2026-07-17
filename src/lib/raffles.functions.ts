@@ -79,6 +79,18 @@ export const listPastWinners = createServerFn({ method: "GET" }).handler(async (
   return data ?? [];
 });
 
+export const getMyRaffleWins = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("raffle_winners" as never)
+      .select("id,raffle_id,place,delivered_key,is_backup,disqualified_at,created_at")
+      .eq("user_id", context.userId)
+      .is("disqualified_at", null);
+    if (error) throw new Error(error.message);
+    return (data ?? []) as Array<{ id: string; raffle_id: string; place: number; delivered_key: string | null; is_backup: boolean; created_at: string }>;
+  });
+
 export const getMyEntries = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
