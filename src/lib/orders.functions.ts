@@ -770,6 +770,7 @@ export const finalizeFreeOrder = createServerFn({ method: "POST" })
 const importKeysInput = z.object({
   productId: z.string().uuid(),
   keys: z.array(z.string().min(4).max(4000)).min(1).max(2000),
+  sharedCount: z.number().int().min(0).max(100000).optional(),
 });
 
 export const importLicenseKeys = createServerFn({ method: "POST" })
@@ -779,6 +780,24 @@ export const importLicenseKeys = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
     if (!isAdmin) throw new Error("Yetkisiz.");
+
+    // Shared key mode: her key için sharedCount adet kopya (aynı key_value, is_shared=true).
+    const shared = Math.max(0, Math.floor(data.sharedCount ?? 0));
+    if (shared > 0) {
+      const uniqueKeys = [...new Set(data.keys.map((k) => k.trim()).filter(Boolean))];
+      const rows: Array<{ product_id: string; key_value: string; is_shared: boolean }> = [];
+      for (const key_value of uniqueKeys) {
+        for (let i = 0; i < shared; i++) {
+          rows.push({ product_id: data.productId, key_value, is_shared: true });
+        }
+      }
+      const { error, count } = await supabase
+        .from("license_keys")
+        .insert(rows, { count: "exact" });
+      if (error) throw new Error(error.message);
+      return { inserted: count ?? rows.length, submitted: rows.length };
+    }
+
     const rows = [...new Set(data.keys.map((k) => k.trim()).filter(Boolean))].map((key_value) => ({
       product_id: data.productId,
       key_value,
@@ -789,6 +808,7 @@ export const importLicenseKeys = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { inserted: count ?? rows.length, submitted: rows.length };
   });
+
 
 const productInput = z.object({
   id: z.string().uuid().optional(),
