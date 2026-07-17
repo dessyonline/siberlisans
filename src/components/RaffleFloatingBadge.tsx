@@ -32,7 +32,7 @@ export function RaffleFloatingBadge() {
     return () => clearInterval(t);
   }, []);
 
-  const active = ((data ?? []) as Array<{ id: string; title: string; status: string; end_at: string; featured?: boolean }>)
+  const active = ((data ?? []) as unknown as Array<{ id: string; title: string; status: string; end_at: string; featured?: boolean }>)
     .filter((r) => r.status === "active" && new Date(r.end_at).getTime() > now)
     .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))[0];
 
