@@ -445,10 +445,30 @@ function OrdersAdmin() {
                 </div>
               </div>
               <div className="text-right">
-                <div className="text-xl font-semibold text-primary font-mono">
-                  ₺{Number(o.price_try).toLocaleString("tr-TR")}
-                </div>
+                {(() => {
+                  const d = (o as { discount?: { total: number; codes: string[] } | null }).discount;
+                  const gross = Number(o.price_try);
+                  const net = d ? Math.max(0, gross - d.total) : gross;
+                  return (
+                    <>
+                      {d && d.total > 0 && (
+                        <div className="text-[11px] font-mono text-muted-foreground line-through">
+                          ₺{gross.toLocaleString("tr-TR")}
+                        </div>
+                      )}
+                      <div className="text-xl font-semibold text-primary font-mono">
+                        ₺{net.toLocaleString("tr-TR")}
+                      </div>
+                      {d && d.total > 0 && (
+                        <div className="mt-1 text-[10px] font-mono text-warn">
+                          🎟 {d.codes.join(", ")} · −₺{d.total.toLocaleString("tr-TR")}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
+
             </div>
 
             {o.user_note && (
