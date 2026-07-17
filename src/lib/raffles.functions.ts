@@ -288,8 +288,19 @@ export const adminRaffleWinners = createServerFn({ method: "GET" })
       .eq("raffle_id", data.id)
       .order("place", { ascending: true });
     if (error) throw new Error(error.message);
-    return r ?? [];
+    const rows = (r ?? []) as Array<any>;
+    if (rows.length === 0) return [];
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const userIds = Array.from(new Set(rows.map((w) => w.user_id).filter(Boolean)));
+    const { data: profs } = await supabaseAdmin
+      .from("profiles")
+      .select("id, display_name, email")
+      .in("id", userIds);
+    const map = new Map<string, { email: string | null; display_name: string | null }>();
+    for (const p of profs ?? []) map.set((p as any).id, { email: (p as any).email ?? null, display_name: (p as any).display_name ?? null });
+    return rows.map((w) => ({ ...w, email: map.get(w.user_id)?.email ?? null, display_name: map.get(w.user_id)?.display_name ?? null }));
   });
+
 
 export const deleteRaffle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
