@@ -374,9 +374,12 @@ function KeysAdmin() {
                 <div className="flex items-center gap-2 font-mono text-[11px]">
                   {pendingCount > 0 && (
                     <span className="text-primary">
-                      {pendingCount} satır hazır → {pendingCount} key eklenecek
+                      {sharedMode
+                        ? `${pendingCount} anahtar × ${sharedCount} stok = ${pendingCount * sharedCount} satır`
+                        : `${pendingCount} satır hazır → ${pendingCount} key eklenecek`}
                     </span>
                   )}
+
                   {raw && (
                     <button
                       onClick={() => setRaw("")}
