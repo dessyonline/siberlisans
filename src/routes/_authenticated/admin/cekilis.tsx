@@ -414,7 +414,7 @@ function WinnersBlock({ raffleId, onDisqualify }: { raffleId: string; onDisquali
       {(q.data ?? []).map((w: any) => (
         <div key={w.id} className={`flex items-center gap-2 rounded px-2 py-1 ${w.disqualified_at ? "bg-red-500/10 text-red-400 line-through" : "bg-card/60"}`}>
           <span className="text-primary">{w.place}.</span>
-          <span className="truncate">{String(w.user_id).slice(0, 8)}…</span>
+          <span className="truncate">{w.email ?? w.display_name ?? `${String(w.user_id).slice(0, 8)}…`}</span>
           {w.is_backup && <span className="rounded bg-blue-500/20 px-1 text-[10px] text-blue-400">yedek</span>}
           {w.delivered_key && <span className="text-muted-foreground">· key ✓</span>}
           <div className="ml-auto">
