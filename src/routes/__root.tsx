@@ -24,6 +24,7 @@ import {
   User as UserIcon,
   LogOut,
   X,
+  Sparkles,
 } from "lucide-react";
 
 
@@ -220,6 +221,7 @@ function SiteHeader() {
           <Link to="/urunler" className="text-muted-foreground hover:text-primary">./ürünler</Link>
           <Link to="/paketler" className="text-muted-foreground hover:text-primary">./paketler</Link>
           <Link to="/cekilis" className="text-primary hover:text-primary/80">./çekiliş</Link>
+          <Link to="/araclar" className="text-primary hover:text-primary/80">./araçlar</Link>
           <Link to="/blog" className="text-muted-foreground hover:text-primary">./blog</Link>
           <Link to="/nasil-calisir" className="text-muted-foreground hover:text-primary">./nasıl-çalışır</Link>
           <Link to="/sss" className="text-muted-foreground hover:text-primary">./SSS</Link>
@@ -368,6 +370,7 @@ function MobileMenu({
           <Link to="/urunler" data-mobile-menu-close className={linkCls}><Package className="h-4 w-4" />ürünler</Link>
           <Link to="/paketler" data-mobile-menu-close className={linkCls}><Boxes className="h-4 w-4" />paketler</Link>
           <Link to="/cekilis" data-mobile-menu-close className={linkCls}><Ticket className="h-4 w-4" />çekiliş</Link>
+          <Link to="/araclar" data-mobile-menu-close className={linkCls}><Sparkles className="h-4 w-4" />araçlar</Link>
           <Link to="/blog" data-mobile-menu-close className={linkCls}><Newspaper className="h-4 w-4" />blog</Link>
           <Link to="/nasil-calisir" data-mobile-menu-close className={linkCls}><BookOpen className="h-4 w-4" />nasıl çalışır</Link>
           <Link to="/sss" data-mobile-menu-close className={linkCls}><HelpCircle className="h-4 w-4" />SSS</Link>

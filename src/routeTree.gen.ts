@@ -56,13 +56,22 @@ import { Route as AuthenticatedDestekRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedDavetRouteImport } from './routes/_authenticated/davet'
 import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated/cuzdan'
 import { Route as AuthenticatedBildirimlerRouteImport } from './routes/_authenticated/bildirimler'
+import { Route as AuthenticatedAraclarRouteRouteImport } from './routes/_authenticated/araclar/route'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
+import { Route as AuthenticatedAraclarIndexRouteImport } from './routes/_authenticated/araclar/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
+import { Route as ApiToolsAiRouteImport } from './routes/api/tools/ai'
 import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
 import { Route as ApiAdminRevokeRouteImport } from './routes/api/admin/revoke'
 import { Route as ApiAdminCreateRouteImport } from './routes/api/admin/create'
 import { Route as AuthenticatedHesabimLisanslarRouteImport } from './routes/_authenticated/hesabim.lisanslar'
 import { Route as AuthenticatedFaturaOrderIdRouteImport } from './routes/_authenticated/fatura.$orderId'
+import { Route as AuthenticatedAraclarVideoRouteImport } from './routes/_authenticated/araclar/video'
+import { Route as AuthenticatedAraclarSloganRouteImport } from './routes/_authenticated/araclar/slogan'
+import { Route as AuthenticatedAraclarOzetRouteImport } from './routes/_authenticated/araclar/ozet'
+import { Route as AuthenticatedAraclarKodRouteImport } from './routes/_authenticated/araclar/kod'
+import { Route as AuthenticatedAraclarChatRouteImport } from './routes/_authenticated/araclar/chat'
+import { Route as AuthenticatedAraclarCeviriRouteImport } from './routes/_authenticated/araclar/ceviri'
 import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
 import { Route as AuthenticatedAdminUniquelisansRouteImport } from './routes/_authenticated/admin/uniquelisans'
 import { Route as AuthenticatedAdminTedarikciLogRouteImport } from './routes/_authenticated/admin/tedarikci-log'
@@ -89,6 +98,7 @@ import { Route as AuthenticatedAdminCaprazSatisRouteImport } from './routes/_aut
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin/blog'
 import { Route as AuthenticatedAdminBildirimlerRouteImport } from './routes/_authenticated/admin/bildirimler'
 import { Route as AuthenticatedAdminAyarlarRouteImport } from './routes/_authenticated/admin/ayarlar'
+import { Route as AuthenticatedAdminAraclarRouteImport } from './routes/_authenticated/admin/araclar'
 import { Route as AuthenticatedAdminAboneliklerRouteImport } from './routes/_authenticated/admin/abonelikler'
 import { Route as ApiPublicHooksWeeklyDigestRouteImport } from './routes/api/public/hooks/weekly-digest'
 import { Route as ApiPublicHooksUniquelisansCatalogRouteImport } from './routes/api/public/hooks/uniquelisans-catalog'
@@ -336,15 +346,32 @@ const AuthenticatedBildirimlerRoute =
     path: '/bildirimler',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedAraclarRouteRoute =
+  AuthenticatedAraclarRouteRouteImport.update({
+    id: '/araclar',
+    path: '/araclar',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAraclarIndexRoute =
+  AuthenticatedAraclarIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const ApiToolsAiRoute = ApiToolsAiRouteImport.update({
+  id: '/api/tools/ai',
+  path: '/api/tools/ai',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicSitemapDotxmlRoute = ApiPublicSitemapDotxmlRouteImport.update({
   id: '/api/public/sitemap.xml',
@@ -372,6 +399,41 @@ const AuthenticatedFaturaOrderIdRoute =
     id: '/fatura/$orderId',
     path: '/fatura/$orderId',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoRoute =
+  AuthenticatedAraclarVideoRouteImport.update({
+    id: '/video',
+    path: '/video',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarSloganRoute =
+  AuthenticatedAraclarSloganRouteImport.update({
+    id: '/slogan',
+    path: '/slogan',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarOzetRoute =
+  AuthenticatedAraclarOzetRouteImport.update({
+    id: '/ozet',
+    path: '/ozet',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarKodRoute = AuthenticatedAraclarKodRouteImport.update({
+  id: '/kod',
+  path: '/kod',
+  getParentRoute: () => AuthenticatedAraclarRouteRoute,
+} as any)
+const AuthenticatedAraclarChatRoute =
+  AuthenticatedAraclarChatRouteImport.update({
+    id: '/chat',
+    path: '/chat',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarCeviriRoute =
+  AuthenticatedAraclarCeviriRouteImport.update({
+    id: '/ceviri',
+    path: '/ceviri',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
   } as any)
 const AuthenticatedAdminUrunlerRoute =
   AuthenticatedAdminUrunlerRouteImport.update({
@@ -526,6 +588,12 @@ const AuthenticatedAdminAyarlarRoute =
     path: '/ayarlar',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminAraclarRoute =
+  AuthenticatedAdminAraclarRouteImport.update({
+    id: '/araclar',
+    path: '/araclar',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminAboneliklerRoute =
   AuthenticatedAdminAboneliklerRouteImport.update({
     id: '/abonelikler',
@@ -595,6 +663,7 @@ export interface FileRoutesByFullPath {
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/araclar': typeof AuthenticatedAraclarRouteRouteWithChildren
   '/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/davet': typeof AuthenticatedDavetRoute
@@ -628,6 +697,7 @@ export interface FileRoutesByFullPath {
   '/blog/': typeof BlogIndexRoute
   '/paketler/': typeof PaketlerIndexRoute
   '/admin/abonelikler': typeof AuthenticatedAdminAboneliklerRoute
+  '/admin/araclar': typeof AuthenticatedAdminAraclarRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
   '/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
@@ -654,12 +724,20 @@ export interface FileRoutesByFullPath {
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
+  '/araclar/ceviri': typeof AuthenticatedAraclarCeviriRoute
+  '/araclar/chat': typeof AuthenticatedAraclarChatRoute
+  '/araclar/kod': typeof AuthenticatedAraclarKodRoute
+  '/araclar/ozet': typeof AuthenticatedAraclarOzetRoute
+  '/araclar/slogan': typeof AuthenticatedAraclarSloganRoute
+  '/araclar/video': typeof AuthenticatedAraclarVideoRoute
   '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
   '/hesabim/lisanslar': typeof AuthenticatedHesabimLisanslarRoute
   '/api/admin/create': typeof ApiAdminCreateRoute
   '/api/admin/revoke': typeof ApiAdminRevokeRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
+  '/api/tools/ai': typeof ApiToolsAiRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
+  '/araclar/': typeof AuthenticatedAraclarIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
@@ -717,6 +795,7 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogIndexRoute
   '/paketler': typeof PaketlerIndexRoute
   '/admin/abonelikler': typeof AuthenticatedAdminAboneliklerRoute
+  '/admin/araclar': typeof AuthenticatedAdminAraclarRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
   '/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
@@ -743,12 +822,20 @@ export interface FileRoutesByTo {
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
+  '/araclar/ceviri': typeof AuthenticatedAraclarCeviriRoute
+  '/araclar/chat': typeof AuthenticatedAraclarChatRoute
+  '/araclar/kod': typeof AuthenticatedAraclarKodRoute
+  '/araclar/ozet': typeof AuthenticatedAraclarOzetRoute
+  '/araclar/slogan': typeof AuthenticatedAraclarSloganRoute
+  '/araclar/video': typeof AuthenticatedAraclarVideoRoute
   '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
   '/hesabim/lisanslar': typeof AuthenticatedHesabimLisanslarRoute
   '/api/admin/create': typeof ApiAdminCreateRoute
   '/api/admin/revoke': typeof ApiAdminRevokeRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
+  '/api/tools/ai': typeof ApiToolsAiRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
+  '/araclar': typeof AuthenticatedAraclarIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
@@ -776,6 +863,7 @@ export interface FileRoutesById {
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
+  '/_authenticated/araclar': typeof AuthenticatedAraclarRouteRouteWithChildren
   '/_authenticated/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/_authenticated/cuzdan': typeof AuthenticatedCuzdanRoute
   '/_authenticated/davet': typeof AuthenticatedDavetRoute
@@ -809,6 +897,7 @@ export interface FileRoutesById {
   '/blog/': typeof BlogIndexRoute
   '/paketler/': typeof PaketlerIndexRoute
   '/_authenticated/admin/abonelikler': typeof AuthenticatedAdminAboneliklerRoute
+  '/_authenticated/admin/araclar': typeof AuthenticatedAdminAraclarRoute
   '/_authenticated/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
   '/_authenticated/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
@@ -835,12 +924,20 @@ export interface FileRoutesById {
   '/_authenticated/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/_authenticated/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/_authenticated/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
+  '/_authenticated/araclar/ceviri': typeof AuthenticatedAraclarCeviriRoute
+  '/_authenticated/araclar/chat': typeof AuthenticatedAraclarChatRoute
+  '/_authenticated/araclar/kod': typeof AuthenticatedAraclarKodRoute
+  '/_authenticated/araclar/ozet': typeof AuthenticatedAraclarOzetRoute
+  '/_authenticated/araclar/slogan': typeof AuthenticatedAraclarSloganRoute
+  '/_authenticated/araclar/video': typeof AuthenticatedAraclarVideoRoute
   '/_authenticated/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
   '/_authenticated/hesabim/lisanslar': typeof AuthenticatedHesabimLisanslarRoute
   '/api/admin/create': typeof ApiAdminCreateRoute
   '/api/admin/revoke': typeof ApiAdminRevokeRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
+  '/api/tools/ai': typeof ApiToolsAiRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
+  '/_authenticated/araclar/': typeof AuthenticatedAraclarIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
@@ -868,6 +965,7 @@ export interface FileRouteTypes {
     | '/sss'
     | '/urunler'
     | '/admin'
+    | '/araclar'
     | '/bildirimler'
     | '/cuzdan'
     | '/davet'
@@ -901,6 +999,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/paketler/'
     | '/admin/abonelikler'
+    | '/admin/araclar'
     | '/admin/ayarlar'
     | '/admin/bildirimler'
     | '/admin/blog'
@@ -927,12 +1026,20 @@ export interface FileRouteTypes {
     | '/admin/tedarikci-log'
     | '/admin/uniquelisans'
     | '/admin/urunler'
+    | '/araclar/ceviri'
+    | '/araclar/chat'
+    | '/araclar/kod'
+    | '/araclar/ozet'
+    | '/araclar/slogan'
+    | '/araclar/video'
     | '/fatura/$orderId'
     | '/hesabim/lisanslar'
     | '/api/admin/create'
     | '/api/admin/revoke'
     | '/api/public/sitemap.xml'
+    | '/api/tools/ai'
     | '/admin/'
+    | '/araclar/'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/push-tick'
@@ -990,6 +1097,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/paketler'
     | '/admin/abonelikler'
+    | '/admin/araclar'
     | '/admin/ayarlar'
     | '/admin/bildirimler'
     | '/admin/blog'
@@ -1016,12 +1124,20 @@ export interface FileRouteTypes {
     | '/admin/tedarikci-log'
     | '/admin/uniquelisans'
     | '/admin/urunler'
+    | '/araclar/ceviri'
+    | '/araclar/chat'
+    | '/araclar/kod'
+    | '/araclar/ozet'
+    | '/araclar/slogan'
+    | '/araclar/video'
     | '/fatura/$orderId'
     | '/hesabim/lisanslar'
     | '/api/admin/create'
     | '/api/admin/revoke'
     | '/api/public/sitemap.xml'
+    | '/api/tools/ai'
     | '/admin'
+    | '/araclar'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/push-tick'
@@ -1048,6 +1164,7 @@ export interface FileRouteTypes {
     | '/sss'
     | '/urunler'
     | '/_authenticated/admin'
+    | '/_authenticated/araclar'
     | '/_authenticated/bildirimler'
     | '/_authenticated/cuzdan'
     | '/_authenticated/davet'
@@ -1081,6 +1198,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/paketler/'
     | '/_authenticated/admin/abonelikler'
+    | '/_authenticated/admin/araclar'
     | '/_authenticated/admin/ayarlar'
     | '/_authenticated/admin/bildirimler'
     | '/_authenticated/admin/blog'
@@ -1107,12 +1225,20 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/tedarikci-log'
     | '/_authenticated/admin/uniquelisans'
     | '/_authenticated/admin/urunler'
+    | '/_authenticated/araclar/ceviri'
+    | '/_authenticated/araclar/chat'
+    | '/_authenticated/araclar/kod'
+    | '/_authenticated/araclar/ozet'
+    | '/_authenticated/araclar/slogan'
+    | '/_authenticated/araclar/video'
     | '/_authenticated/fatura/$orderId'
     | '/_authenticated/hesabim/lisanslar'
     | '/api/admin/create'
     | '/api/admin/revoke'
     | '/api/public/sitemap.xml'
+    | '/api/tools/ai'
     | '/_authenticated/admin/'
+    | '/_authenticated/araclar/'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/push-tick'
@@ -1164,6 +1290,7 @@ export interface RootRouteChildren {
   ApiAdminCreateRoute: typeof ApiAdminCreateRoute
   ApiAdminRevokeRoute: typeof ApiAdminRevokeRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
+  ApiToolsAiRoute: typeof ApiToolsAiRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
   ApiPublicHooksPushTickRoute: typeof ApiPublicHooksPushTickRoute
@@ -1505,6 +1632,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBildirimlerRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/araclar': {
+      id: '/_authenticated/araclar'
+      path: '/araclar'
+      fullPath: '/araclar'
+      preLoaderRoute: typeof AuthenticatedAraclarRouteRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -1512,12 +1646,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/araclar/': {
+      id: '/_authenticated/araclar/'
+      path: '/'
+      fullPath: '/araclar/'
+      preLoaderRoute: typeof AuthenticatedAraclarIndexRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/api/tools/ai': {
+      id: '/api/tools/ai'
+      path: '/api/tools/ai'
+      fullPath: '/api/tools/ai'
+      preLoaderRoute: typeof ApiToolsAiRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/public/sitemap.xml': {
       id: '/api/public/sitemap.xml'
@@ -1553,6 +1701,48 @@ declare module '@tanstack/react-router' {
       fullPath: '/fatura/$orderId'
       preLoaderRoute: typeof AuthenticatedFaturaOrderIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/araclar/video': {
+      id: '/_authenticated/araclar/video'
+      path: '/video'
+      fullPath: '/araclar/video'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/slogan': {
+      id: '/_authenticated/araclar/slogan'
+      path: '/slogan'
+      fullPath: '/araclar/slogan'
+      preLoaderRoute: typeof AuthenticatedAraclarSloganRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/ozet': {
+      id: '/_authenticated/araclar/ozet'
+      path: '/ozet'
+      fullPath: '/araclar/ozet'
+      preLoaderRoute: typeof AuthenticatedAraclarOzetRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/kod': {
+      id: '/_authenticated/araclar/kod'
+      path: '/kod'
+      fullPath: '/araclar/kod'
+      preLoaderRoute: typeof AuthenticatedAraclarKodRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/chat': {
+      id: '/_authenticated/araclar/chat'
+      path: '/chat'
+      fullPath: '/araclar/chat'
+      preLoaderRoute: typeof AuthenticatedAraclarChatRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/ceviri': {
+      id: '/_authenticated/araclar/ceviri'
+      path: '/ceviri'
+      fullPath: '/araclar/ceviri'
+      preLoaderRoute: typeof AuthenticatedAraclarCeviriRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
     }
     '/_authenticated/admin/urunler': {
       id: '/_authenticated/admin/urunler'
@@ -1736,6 +1926,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAyarlarRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/araclar': {
+      id: '/_authenticated/admin/araclar'
+      path: '/araclar'
+      fullPath: '/admin/araclar'
+      preLoaderRoute: typeof AuthenticatedAdminAraclarRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/abonelikler': {
       id: '/_authenticated/admin/abonelikler'
       path: '/abonelikler'
@@ -1804,6 +2001,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAboneliklerRoute: typeof AuthenticatedAdminAboneliklerRoute
+  AuthenticatedAdminAraclarRoute: typeof AuthenticatedAdminAraclarRoute
   AuthenticatedAdminAyarlarRoute: typeof AuthenticatedAdminAyarlarRoute
   AuthenticatedAdminBildirimlerRoute: typeof AuthenticatedAdminBildirimlerRoute
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
@@ -1836,6 +2034,7 @@ interface AuthenticatedAdminRouteRouteChildren {
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
     AuthenticatedAdminAboneliklerRoute: AuthenticatedAdminAboneliklerRoute,
+    AuthenticatedAdminAraclarRoute: AuthenticatedAdminAraclarRoute,
     AuthenticatedAdminAyarlarRoute: AuthenticatedAdminAyarlarRoute,
     AuthenticatedAdminBildirimlerRoute: AuthenticatedAdminBildirimlerRoute,
     AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
@@ -1870,6 +2069,32 @@ const AuthenticatedAdminRouteRouteWithChildren =
     AuthenticatedAdminRouteRouteChildren,
   )
 
+interface AuthenticatedAraclarRouteRouteChildren {
+  AuthenticatedAraclarCeviriRoute: typeof AuthenticatedAraclarCeviriRoute
+  AuthenticatedAraclarChatRoute: typeof AuthenticatedAraclarChatRoute
+  AuthenticatedAraclarKodRoute: typeof AuthenticatedAraclarKodRoute
+  AuthenticatedAraclarOzetRoute: typeof AuthenticatedAraclarOzetRoute
+  AuthenticatedAraclarSloganRoute: typeof AuthenticatedAraclarSloganRoute
+  AuthenticatedAraclarVideoRoute: typeof AuthenticatedAraclarVideoRoute
+  AuthenticatedAraclarIndexRoute: typeof AuthenticatedAraclarIndexRoute
+}
+
+const AuthenticatedAraclarRouteRouteChildren: AuthenticatedAraclarRouteRouteChildren =
+  {
+    AuthenticatedAraclarCeviriRoute: AuthenticatedAraclarCeviriRoute,
+    AuthenticatedAraclarChatRoute: AuthenticatedAraclarChatRoute,
+    AuthenticatedAraclarKodRoute: AuthenticatedAraclarKodRoute,
+    AuthenticatedAraclarOzetRoute: AuthenticatedAraclarOzetRoute,
+    AuthenticatedAraclarSloganRoute: AuthenticatedAraclarSloganRoute,
+    AuthenticatedAraclarVideoRoute: AuthenticatedAraclarVideoRoute,
+    AuthenticatedAraclarIndexRoute: AuthenticatedAraclarIndexRoute,
+  }
+
+const AuthenticatedAraclarRouteRouteWithChildren =
+  AuthenticatedAraclarRouteRoute._addFileChildren(
+    AuthenticatedAraclarRouteRouteChildren,
+  )
+
 interface AuthenticatedHesabimRouteChildren {
   AuthenticatedHesabimLisanslarRoute: typeof AuthenticatedHesabimLisanslarRoute
 }
@@ -1883,6 +2108,7 @@ const AuthenticatedHesabimRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
+  AuthenticatedAraclarRouteRoute: typeof AuthenticatedAraclarRouteRouteWithChildren
   AuthenticatedBildirimlerRoute: typeof AuthenticatedBildirimlerRoute
   AuthenticatedCuzdanRoute: typeof AuthenticatedCuzdanRoute
   AuthenticatedDavetRoute: typeof AuthenticatedDavetRoute
@@ -1898,6 +2124,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
+  AuthenticatedAraclarRouteRoute: AuthenticatedAraclarRouteRouteWithChildren,
   AuthenticatedBildirimlerRoute: AuthenticatedBildirimlerRoute,
   AuthenticatedCuzdanRoute: AuthenticatedCuzdanRoute,
   AuthenticatedDavetRoute: AuthenticatedDavetRoute,
@@ -1955,6 +2182,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminCreateRoute: ApiAdminCreateRoute,
   ApiAdminRevokeRoute: ApiAdminRevokeRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
+  ApiToolsAiRoute: ApiToolsAiRoute,
   ApiPublicHooksAbandonmentReminderRoute:
     ApiPublicHooksAbandonmentReminderRoute,
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,
