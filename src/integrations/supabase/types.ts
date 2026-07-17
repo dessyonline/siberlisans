@@ -755,6 +755,7 @@ export type Database = {
           expires_at: string | null
           hwid: string | null
           id: string
+          is_shared: boolean
           key_value: string
           last_validated_at: string | null
           product_id: string
@@ -773,6 +774,7 @@ export type Database = {
           expires_at?: string | null
           hwid?: string | null
           id?: string
+          is_shared?: boolean
           key_value: string
           last_validated_at?: string | null
           product_id: string
@@ -791,6 +793,7 @@ export type Database = {
           expires_at?: string | null
           hwid?: string | null
           id?: string
+          is_shared?: boolean
           key_value?: string
           last_validated_at?: string | null
           product_id?: string
@@ -2334,6 +2337,7 @@ export type Database = {
           expires_at: string | null
           hwid: string | null
           id: string
+          is_shared: boolean
           key_value: string
           last_validated_at: string | null
           product_id: string
