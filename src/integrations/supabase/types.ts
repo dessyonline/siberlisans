@@ -95,6 +95,81 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_jobs: {
+        Row: {
+          cost_try: number
+          created_at: string
+          error: string | null
+          id: string
+          kind: string
+          params: Json
+          prompt: string
+          result_url: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cost_try?: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          kind: string
+          params?: Json
+          prompt: string
+          result_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cost_try?: number
+          created_at?: string
+          error?: string | null
+          id?: string
+          kind?: string
+          params?: Json
+          prompt?: string
+          result_url?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      ai_tool_usage: {
+        Row: {
+          count: number
+          created_at: string
+          day: string
+          id: string
+          points_spent: number
+          tool_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          day?: string
+          id?: string
+          points_spent?: number
+          tool_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          day?: string
+          id?: string
+          points_spent?: number
+          tool_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           created_at: string | null
@@ -2481,6 +2556,10 @@ export type Database = {
         Args: { _note?: string; _order_id: string }
         Returns: Json
       }
+      admin_complete_ai_job: {
+        Args: { _job: string; _url: string }
+        Returns: undefined
+      }
       admin_create_license_key: {
         Args: {
           _duration_days?: number
@@ -2516,6 +2595,10 @@ export type Database = {
           week_orders: number
           week_revenue: number
         }[]
+      }
+      admin_fail_ai_job: {
+        Args: { _job: string; _reason: string; _refund?: boolean }
+        Returns: undefined
       }
       admin_force_delete_license: { Args: { _id: string }; Returns: boolean }
       admin_list_assigned_keys: {
@@ -2737,6 +2820,11 @@ export type Database = {
       compute_tier: {
         Args: { _points: number }
         Returns: Database["public"]["Enums"]["user_tier"]
+      }
+      consume_ai_quota: { Args: { _tool_key: string }; Returns: Json }
+      create_ai_video_job: {
+        Args: { _aspect: string; _duration: number; _prompt: string }
+        Returns: string
       }
       create_cart_order:
         | {
