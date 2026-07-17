@@ -19,6 +19,7 @@ import {
   Menu,
   Home,
   Boxes,
+  Ticket,
   Newspaper,
   User as UserIcon,
   LogOut,
