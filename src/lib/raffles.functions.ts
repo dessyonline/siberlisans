@@ -45,7 +45,7 @@ export const listActiveRaffles = createServerFn({ method: "GET" }).handler(async
   const rows = (data ?? []) as Array<Record<string, unknown> & { id: string }>;
   const ids = rows.map((r) => r.id);
   const counts = new Map<string, { entries: number; users: number }>();
-  const winnersMap = new Map<string, Array<{ display_name: string; place: number; avatar_id: string | null; tier: string | null }>>();
+  const winnersMap = new Map<string, Array<{ display_name: string; place: number; avatar_id: string | null; tier: string | null; masked_email: string | null }>>();
   if (ids.length) {
     const { data: ec } = await sb.from("raffle_entries" as never).select("raffle_id,entries_count,user_id").in("raffle_id", ids);
     const usersByRaffle: Record<string, Set<string>> = {};
@@ -60,17 +60,33 @@ export const listActiveRaffles = createServerFn({ method: "GET" }).handler(async
       cur.users = set.size;
       counts.set(rid, cur);
     }
-    const { data: wp } = await sb
-      .from("raffle_winners_public" as never)
-      .select("raffle_id,place,display_name,avatar_id,tier")
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: wp } = await supabaseAdmin
+      .from("raffle_winners" as never)
+      .select("raffle_id,place,user_id,is_backup,disqualified_at")
       .in("raffle_id", ids)
+      .is("disqualified_at", null)
       .order("place", { ascending: true });
-    for (const w of ((wp ?? []) as Array<{ raffle_id: string; place: number; display_name: string; avatar_id: string | null; tier: string | null }>)) {
+    const winRows = (wp ?? []) as Array<{ raffle_id: string; place: number; user_id: string; is_backup: boolean }>;
+    const winUserIds = Array.from(new Set(winRows.map((w) => w.user_id)));
+    const profMap = new Map<string, { email: string | null; display_name: string | null; avatar_id: string | null; tier: string | null }>();
+    if (winUserIds.length) {
+      const { data: profs } = await supabaseAdmin
+        .from("profiles")
+        .select("user_id,email,display_name,avatar_id,tier")
+        .in("user_id", winUserIds);
+      for (const p of (profs ?? []) as Array<{ user_id: string; email: string | null; display_name: string | null; avatar_id: string | null; tier: string | null }>) {
+        profMap.set(p.user_id, { email: p.email, display_name: p.display_name, avatar_id: p.avatar_id, tier: p.tier });
+      }
+    }
+    for (const w of winRows) {
+      const p = profMap.get(w.user_id);
       (winnersMap.get(w.raffle_id) ?? winnersMap.set(w.raffle_id, []).get(w.raffle_id)!).push({
-        display_name: w.display_name,
+        display_name: p?.display_name ?? "Anonim",
         place: w.place,
-        avatar_id: w.avatar_id,
-        tier: w.tier,
+        avatar_id: p?.avatar_id ?? null,
+        tier: p?.tier ?? null,
+        masked_email: maskEmail(p?.email),
       });
     }
   }
@@ -81,14 +97,39 @@ export const listActiveRaffles = createServerFn({ method: "GET" }).handler(async
 });
 
 export const listPastWinners = createServerFn({ method: "GET" }).handler(async () => {
-  const sb = pubClient();
-  const { data, error } = await sb
-    .from("raffle_winners_public" as never)
-    .select("id,raffle_id,place,display_name,avatar_id,tier,created_at")
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await supabaseAdmin
+    .from("raffle_winners" as never)
+    .select("id,raffle_id,place,user_id,created_at,disqualified_at")
+    .is("disqualified_at", null)
     .order("created_at", { ascending: false })
     .limit(30);
   if (error) throw new Error(error.message);
-  return data ?? [];
+  const rows = (data ?? []) as Array<{ id: string; raffle_id: string; place: number; user_id: string; created_at: string }>;
+  const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
+  const map = new Map<string, { email: string | null; display_name: string | null; avatar_id: string | null; tier: string | null }>();
+  if (userIds.length) {
+    const { data: profs } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id,email,display_name,avatar_id,tier")
+      .in("user_id", userIds);
+    for (const p of (profs ?? []) as Array<{ user_id: string; email: string | null; display_name: string | null; avatar_id: string | null; tier: string | null }>) {
+      map.set(p.user_id, { email: p.email, display_name: p.display_name, avatar_id: p.avatar_id, tier: p.tier });
+    }
+  }
+  return rows.map((r) => {
+    const p = map.get(r.user_id);
+    return {
+      id: r.id,
+      raffle_id: r.raffle_id,
+      place: r.place,
+      created_at: r.created_at,
+      display_name: p?.display_name ?? "Anonim",
+      avatar_id: p?.avatar_id ?? null,
+      tier: p?.tier ?? null,
+      masked_email: maskEmail(p?.email),
+    };
+  });
 });
 
 export const getMyRaffleWins = createServerFn({ method: "GET" })
