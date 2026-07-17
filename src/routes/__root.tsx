@@ -24,6 +24,7 @@ import {
   User as UserIcon,
   LogOut,
   X,
+  Sparkles,
 } from "lucide-react";
 
 
