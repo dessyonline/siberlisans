@@ -40,6 +40,7 @@ import { applyFlash } from "@/lib/flash-sales";
 import { useAuth } from "@/lib/auth-context";
 import { Wallet } from "lucide-react";
 import { AdminEditBadge } from "@/components/AdminEditBadge";
+import { RaffleFloatingBadge } from "@/components/RaffleFloatingBadge";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -209,6 +210,7 @@ function Index() {
 
   return (
     <div>
+      <RaffleFloatingBadge />
       <UserBalanceWelcome />
       {/* HERO — cinematic */}
       <section className="relative overflow-hidden border-b border-border/40">
