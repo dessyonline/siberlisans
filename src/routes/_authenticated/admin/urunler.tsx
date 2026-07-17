@@ -173,6 +173,7 @@ function ProductsAdmin() {
           duration: (editing.duration ?? "monthly") as "monthly" | "yearly" | "lifetime",
           delivery_type: (editing.delivery_type ?? "key") as DeliveryType,
           price_try: Number(editing.price_try ?? 0),
+          cost_try: editing.cost_try == null || Number.isNaN(Number(editing.cost_try)) ? null : Number(editing.cost_try),
           active: editing.active ?? true,
           category: editing.category ?? null,
           manual_fulfillment: editing.manual_fulfillment ?? false,
@@ -214,6 +215,7 @@ function ProductsAdmin() {
           duration: p.duration,
           delivery_type: p.delivery_type,
           price_try: Number(p.price_try),
+          cost_try: p.cost_try == null ? null : Number(p.cost_try),
           active: patch.active ?? p.active,
           category: p.category ?? null,
           manual_fulfillment: p.manual_fulfillment,
@@ -578,6 +580,16 @@ function ProductsAdmin() {
                     <span>·</span>
                     <span className="text-primary/90">₺{Number(p.price_try).toLocaleString("tr-TR")}</span>
                     <span>·</span>
+                    <span className="text-warn/90" title="maliyet">mal ₺{Number(p.cost_try ?? 0).toLocaleString("tr-TR")}</span>
+                    {Number(p.cost_try ?? 0) > 0 && (
+                      <>
+                        <span>·</span>
+                        <span className={Number(p.price_try) - Number(p.cost_try ?? 0) >= 200 ? "text-primary" : "text-destructive"} title="kar">
+                          kar ₺{(Number(p.price_try) - Number(p.cost_try ?? 0)).toLocaleString("tr-TR")}
+                        </span>
+                      </>
+                    )}
+                    <span>·</span>
                     <span>{DELIVERY_LABELS[(p.delivery_type ?? "key") as DeliveryType]}</span>
                     {p.manual_fulfillment && <><span>·</span><span className="text-warn">manuel</span></>}
                   </div>
@@ -785,6 +797,7 @@ function ProductsAdmin() {
                     </select>
                   </div>
                   <Field label="fiyat (₺)" value={editing.price_try == null ? "" : String(editing.price_try)} onChange={(v) => setEditing((p) => ({ ...p!, price_try: v === "" ? 0 : Number(v) }))} type="number" />
+                  <Field label="maliyet (₺) — ciro/kar hesabı için" value={editing.cost_try == null ? "" : String(editing.cost_try)} onChange={(v) => setEditing((p) => ({ ...p!, cost_try: v === "" ? null : Number(v) }))} type="number" />
                   <div>
                     <Label className="font-mono text-xs">teslim tipi</Label>
                     <select
