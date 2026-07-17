@@ -44,14 +44,18 @@ function ReportPage() {
     (acc, r) => ({
       orders: acc.orders + Number(r.orders_count),
       revenue: acc.revenue + Number(r.revenue),
+      gross: acc.gross + Number(r.gross_revenue ?? 0),
+      discount: acc.discount + Number(r.discount_total ?? 0),
       cost: acc.cost + Number(r.cost),
       profit: acc.profit + Number(r.profit),
       refunds: acc.refunds + Number(r.refunds),
+      topups: acc.topups + Number(r.topups ?? 0),
     }),
-    { orders: 0, revenue: 0, cost: 0, profit: 0, refunds: 0 },
+    { orders: 0, revenue: 0, gross: 0, discount: 0, cost: 0, profit: 0, refunds: 0, topups: 0 },
   );
 
   const margin = totals.revenue > 0 ? (totals.profit / totals.revenue) * 100 : 0;
+
 
   const maxProfit = Math.max(1, ...series.map((s) => Number(s.profit)));
 
