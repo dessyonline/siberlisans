@@ -61,12 +61,13 @@ function OrdersAdmin() {
     queryFn: async () => {
       let q = supabase
         .from("orders")
-        .select("id, status, price_try, reference_code, receipt_path, admin_note, user_note, checkout_fields, external_order_id, external_delivery_data, external_status, created_at, product:products(name, manual_fulfillment, source), user_id")
+        .select("id, status, price_try, reference_code, receipt_path, admin_note, user_note, checkout_fields, external_order_id, external_delivery_data, external_status, created_at, product:products(name, manual_fulfillment, source), user_id, paid_with")
         .order("created_at", { ascending: false });
       if (filter !== "all") q = q.eq("status", filter);
       const { data, error } = await q;
       if (error) throw error;
       const ids = Array.from(new Set((data ?? []).map((o) => o.user_id).filter(Boolean))) as string[];
+      const orderIds = (data ?? []).map((o) => o.id);
       let byId = new Map<string, { email: string | null; display_name: string | null }>();
       if (ids.length) {
         const { data: profs } = await supabase
@@ -75,10 +76,30 @@ function OrdersAdmin() {
           .in("id", ids);
         byId = new Map((profs ?? []).map((p) => [p.id, { email: p.email, display_name: p.display_name }]));
       }
-      return (data ?? []).map((o) => ({ ...o, buyer: (o.user_id && byId.get(o.user_id)) || null }));
+      let discByOrder = new Map<string, { total: number; codes: string[] }>();
+      if (orderIds.length) {
+        const { data: discs } = await supabase
+          .from("order_discounts")
+          .select("order_id, discount_try, code_snapshot, kind")
+          .in("order_id", orderIds);
+        for (const d of discs ?? []) {
+          const key = d.order_id as string;
+          const prev = discByOrder.get(key) ?? { total: 0, codes: [] };
+          prev.total += Number(d.discount_try ?? 0);
+          const label = (d.code_snapshot as string | null) ?? (d.kind as string | null) ?? "indirim";
+          if (label) prev.codes.push(label);
+          discByOrder.set(key, prev);
+        }
+      }
+      return (data ?? []).map((o) => ({
+        ...o,
+        buyer: (o.user_id && byId.get(o.user_id)) || null,
+        discount: discByOrder.get(o.id) ?? null,
+      }));
     },
     refetchInterval: 10000,
   });
+
 
   const filtered = useMemo(() => {
     const now = Date.now();
