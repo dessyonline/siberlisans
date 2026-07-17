@@ -40,14 +40,16 @@ type Range = "today" | "7d" | "30d" | "all";
 
 function OrdersAdmin() {
   const qc = useQueryClient();
-  const [filter, setFilter] = useState<"reviewing" | "pending" | "approved" | "rejected" | "all">("reviewing");
+  const [filter, setFilter] = useState<"reviewing" | "pending" | "approved" | "rejected" | "cancelled" | "all">("reviewing");
   const [range, setRange] = useState<Range>("all");
   const [query, setQuery] = useState("");
   const [onlyWithMessage, setOnlyWithMessage] = useState(false);
   const approveFn = useServerFn(approveOrder);
   const rejectFn = useServerFn(rejectOrder);
+  const cancelFn = useServerFn(adminCancelOrder);
   const syncOneFn = useServerFn(syncUniquelisansOrder);
   const syncAllFn = useServerFn(syncAllPendingUniquelisans);
+
   const [note, setNote] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
