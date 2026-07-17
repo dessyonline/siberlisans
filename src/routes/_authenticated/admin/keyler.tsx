@@ -51,6 +51,9 @@ function KeysAdmin() {
   const [busy, setBusy] = useState(false);
   const [poolSearch, setPoolSearch] = useState("");
   const [poolSort, setPoolSort] = useState<"name" | "low" | "high">("low");
+  const [sharedMode, setSharedMode] = useState(false);
+  const [sharedCount, setSharedCount] = useState<number>(10);
+
 
   const { data: products } = useQuery({
     queryKey: ["products", "for-keys"],
@@ -186,15 +189,19 @@ function KeysAdmin() {
     if (!productId) return toast.error("Ürün seçin");
     const list = splitLines(raw);
     if (list.length === 0) return toast.error("En az bir key girin");
+    if (sharedMode && (!sharedCount || sharedCount < 1)) return toast.error("Ortak anahtar için stok adedi girin");
     setBusy(true);
     try {
-      const r = await importFn({ data: { productId, keys: list } });
+      const r = await importFn({ data: { productId, keys: list, sharedCount: sharedMode ? sharedCount : 0 } });
       const submitted = r.submitted ?? list.length;
       if (r.inserted === 0) {
         toast.error(
           `Hiç key eklenmedi. Girdiğin ${submitted} satır bu üründe zaten kayıtlı görünüyor. Farklı bir email:şifre veya key ekleyin.`,
           { duration: 8000 },
         );
+      } else if (sharedMode) {
+        toast.success(`Ortak anahtar → ${r.inserted} stok eklendi ✓`);
+        setRaw("");
       } else if (r.inserted < submitted) {
         toast.success(`${r.inserted}/${submitted} key eklendi — ${submitted - r.inserted} tanesi zaten bu üründe kayıtlıydı.`);
         setRaw("");
@@ -207,6 +214,7 @@ function KeysAdmin() {
     } catch (e) { toast.error((e as Error).message); }
     finally { setBusy(false); }
   };
+
 
   const purge = async (pid: string, name: string, avail: number) => {
     if (!confirm(`${name}: ${avail} adet müsait (satılmamış) key silinecek. Emin misin?`)) return;
@@ -299,6 +307,35 @@ function KeysAdmin() {
                 <div className="text-muted-foreground">{hint.help}</div>
               </div>
 
+              <div className={`rounded border p-3 font-mono text-[11px] leading-relaxed transition ${sharedMode ? "border-cyan/40 bg-cyan/5" : "border-border/60 bg-muted/10"}`}>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={sharedMode}
+                    onChange={(e) => setSharedMode(e.target.checked)}
+                    className="accent-cyan"
+                  />
+                  <span className={sharedMode ? "text-cyan" : "text-foreground"}>ortak anahtar modu</span>
+                </label>
+                {sharedMode && (
+                  <div className="mt-2 space-y-1.5">
+                    <div className="text-muted-foreground">aynı anahtar N kez stok olarak eklenir. her satış birinden düşer.</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">stok adedi:</span>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={100000}
+                        value={sharedCount}
+                        onChange={(e) => setSharedCount(Math.max(1, Number(e.target.value) || 0))}
+                        className="h-7 w-24 font-mono text-xs"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+
               <label className="flex items-center gap-2 rounded border border-dashed border-border px-3 py-2.5 text-xs font-mono cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition">
                 <FileUp className="h-3.5 w-3.5 text-primary" />
                 <span className="flex-1">dosya seç (.txt / .csv)</span>
@@ -337,9 +374,12 @@ function KeysAdmin() {
                 <div className="flex items-center gap-2 font-mono text-[11px]">
                   {pendingCount > 0 && (
                     <span className="text-primary">
-                      {pendingCount} satır hazır → {pendingCount} key eklenecek
+                      {sharedMode
+                        ? `${pendingCount} anahtar × ${sharedCount} stok = ${pendingCount * sharedCount} satır`
+                        : `${pendingCount} satır hazır → ${pendingCount} key eklenecek`}
                     </span>
                   )}
+
                   {raw && (
                     <button
                       onClick={() => setRaw("")}
