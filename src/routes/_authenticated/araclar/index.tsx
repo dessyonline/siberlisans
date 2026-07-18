@@ -1,17 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { MessageSquare, Languages, Code2, FileText, Sparkles, Video, Eraser, Minimize2, QrCode, Palette, Wand2 } from "lucide-react";
+import { Video, Eraser, Minimize2, QrCode, Palette, Wand2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/araclar/")({
   component: Hub,
-  head: () => ({ meta: [{ title: "AI Araçlar — SiberPHP" }] }),
+  head: () => ({ meta: [{ title: "Araçlar — SiberPHP" }] }),
 });
 
 const TOOLS = [
-  { to: "/araclar/chat", label: "AI Chat", desc: "Genel amaçlı asistan — sorularını sor.", icon: MessageSquare, badge: "AI" as const },
-  { to: "/araclar/ceviri", label: "Çevirmen", desc: "Anında dil çevirisi (TR/EN/DE/FR/AR...).", icon: Languages, badge: "AI" as const },
-  { to: "/araclar/kod", label: "Kod Açıklayıcı", desc: "Kodu satır satır açıkla + refactor önerisi.", icon: Code2, badge: "AI" as const },
-  { to: "/araclar/ozet", label: "Metin Özetleyici", desc: "Uzun metni 6 madde özete indirger.", icon: FileText, badge: "AI" as const },
-  { to: "/araclar/slogan", label: "Slogan Üretici", desc: "Ürün açıklamandan 5 slogan çıkarır.", icon: Sparkles, badge: "AI" as const },
   { to: "/araclar/arkaplan", label: "Arkaplan Kaldır", desc: "Resmin arkaplanını tarayıcıda kaldır — sınırsız.", icon: Eraser, badge: "FREE" as const },
   { to: "/araclar/sikistir", label: "Resim Sıkıştır", desc: "JPG/WebP/PNG · yeniden boyutlandır + sıkıştır.", icon: Minimize2, badge: "FREE" as const },
   { to: "/araclar/qr", label: "QR Kod Üret", desc: "URL/metin → özelleştirilebilir QR PNG.", icon: QrCode, badge: "FREE" as const },
@@ -25,11 +20,10 @@ function Hub() {
     <div className="space-y-4">
       <div className="glass-card rounded-lg p-4 sm:p-6">
         <div className="font-mono text-xs text-muted-foreground">$ ./araclar --list<span className="terminal-caret" /></div>
-        <h1 className="mt-2 font-mono text-2xl sm:text-3xl neon-text">Ücretsiz AI Araçlar</h1>
+        <h1 className="mt-2 font-mono text-2xl sm:text-3xl neon-text">Araçlar</h1>
         <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
-          Tier'ına göre günlük kota — bronze 10, silver 25, gold 60, platinum 150. Kotan bitince
-          <span className="text-primary"> her 5 puan = 1 ekstra istek</span>. Video üretimi cüzdandan
-          fiyatlanır (3s ₺25 · 5s ₺40 · 8s ₺60).
+          <span className="text-primary">FREE</span> araçlar tarayıcında çalışır — sınırsız & ücretsiz.
+          <span className="text-yellow-400"> ₺</span> araçlar cüzdandan fiyatlanır.
         </p>
       </div>
 
