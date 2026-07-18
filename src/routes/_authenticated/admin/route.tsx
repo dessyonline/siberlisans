@@ -1,5 +1,8 @@
-import { createFileRoute, Outlet, redirect, Link, useLocation, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import { createFileRoute, Outlet, redirect, Link, useLocation } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -12,7 +15,6 @@ import {
   Ticket,
   Megaphone,
   Wallet,
-  ChevronDown,
   Star,
   Zap,
   BookOpen,
@@ -26,6 +28,7 @@ import {
   History,
   Receipt,
   Shield,
+  Menu,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -35,7 +38,6 @@ export const Route = createFileRoute("/_authenticated/admin")({
     if (!userData.user) throw redirect({ to: "/auth" });
     const { data } = await supabase.rpc("has_role", { _user_id: userData.user.id, _role: "admin" });
     if (!data) throw redirect({ to: "/hesabim" });
-    // Admin panele giriş için 2FA zorunlu (aal2)
     const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     if (aalData?.currentLevel !== "aal2") {
       throw redirect({ to: "/guvenlik" });
@@ -44,102 +46,180 @@ export const Route = createFileRoute("/_authenticated/admin")({
   component: AdminLayout,
 });
 
-const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }[] = [
-  { to: "/admin", label: "dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/admin/rapor", label: "kar/zarar raporu", icon: TrendingUp },
-  { to: "/admin/denetim", label: "denetim kaydı", icon: History },
-  { to: "/admin/destek", label: "destek", icon: LifeBuoy },
-  { to: "/admin/siparisler", label: "siparişler", icon: ShoppingCart },
-  { to: "/admin/faturalar", label: "faturalar", icon: Receipt },
-  { to: "/admin/abonelikler", label: "abonelikler", icon: RefreshCw },
-  { to: "/admin/urunler", label: "ürünler", icon: Package },
-  { to: "/admin/paketler", label: "paketler", icon: Package },
-  { to: "/admin/partner", label: "partner", icon: Users },
-  { to: "/admin/populer", label: "popüler seçimler", icon: Star },
-  { to: "/admin/keyler", label: "key havuzu", icon: KeyRound },
-  { to: "/admin/lisanslar", label: "lisanslar", icon: ShieldCheck },
-  { to: "/admin/kullanicilar", label: "kullanıcılar", icon: Users },
-  { to: "/admin/bildirimler", label: "bildirimler", icon: Bell },
-  { to: "/admin/promosyonlar", label: "promosyonlar", icon: Ticket },
-  { to: "/admin/kuponlar", label: "kuponlar", icon: Ticket },
-  { to: "/admin/kampanyalar", label: "kampanyalar", icon: Megaphone },
-  { to: "/admin/flash", label: "flash indirim", icon: Zap },
-  { to: "/admin/cekilis", label: "çekiliş", icon: Ticket },
-  { to: "/admin/capraz-satis", label: "çapraz satış", icon: Sparkles },
-  { to: "/admin/blog", label: "blog", icon: BookOpen },
-  { to: "/admin/cuzdan", label: "cüzdan", icon: Wallet },
-  { to: "/admin/kripto", label: "kripto", icon: Bitcoin },
-  { to: "/admin/shopier", label: "shopier", icon: Wallet },
-  { to: "/admin/uniquelisans", label: "uniquelisans", icon: Boxes },
-  { to: "/admin/tedarikci-log", label: "tedarikçi log", icon: ShieldCheck },
-  { to: "/admin/ip-yonetim", label: "ip yönetim", icon: Shield },
-  { to: "/admin/ayarlar", label: "ayarlar", icon: Settings },
+type NavItem = { to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean };
+type NavGroup = { label: string; items: NavItem[] };
 
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: "genel",
+    items: [
+      { to: "/admin", label: "dashboard", icon: LayoutDashboard, exact: true },
+      { to: "/admin/rapor", label: "kar/zarar raporu", icon: TrendingUp },
+      { to: "/admin/denetim", label: "denetim kaydı", icon: History },
+      { to: "/admin/destek", label: "destek", icon: LifeBuoy },
+    ],
+  },
+  {
+    label: "satış",
+    items: [
+      { to: "/admin/siparisler", label: "siparişler", icon: ShoppingCart },
+      { to: "/admin/faturalar", label: "faturalar", icon: Receipt },
+      { to: "/admin/abonelikler", label: "abonelikler", icon: RefreshCw },
+    ],
+  },
+  {
+    label: "katalog",
+    items: [
+      { to: "/admin/urunler", label: "ürünler", icon: Package },
+      { to: "/admin/paketler", label: "paketler", icon: Package },
+      { to: "/admin/populer", label: "popüler seçimler", icon: Star },
+      { to: "/admin/keyler", label: "key havuzu", icon: KeyRound },
+      { to: "/admin/lisanslar", label: "lisanslar", icon: ShieldCheck },
+    ],
+  },
+  {
+    label: "kullanıcılar",
+    items: [
+      { to: "/admin/kullanicilar", label: "kullanıcılar", icon: Users },
+      { to: "/admin/partner", label: "partner", icon: Users },
+      { to: "/admin/bildirimler", label: "bildirimler", icon: Bell },
+    ],
+  },
+  {
+    label: "pazarlama",
+    items: [
+      { to: "/admin/promosyonlar", label: "promosyonlar", icon: Ticket },
+      { to: "/admin/kuponlar", label: "kuponlar", icon: Ticket },
+      { to: "/admin/kampanyalar", label: "kampanyalar", icon: Megaphone },
+      { to: "/admin/flash", label: "flash indirim", icon: Zap },
+      { to: "/admin/cekilis", label: "çekiliş", icon: Ticket },
+      { to: "/admin/capraz-satis", label: "çapraz satış", icon: Sparkles },
+      { to: "/admin/blog", label: "blog", icon: BookOpen },
+    ],
+  },
+  {
+    label: "ödeme",
+    items: [
+      { to: "/admin/cuzdan", label: "cüzdan", icon: Wallet },
+      { to: "/admin/kripto", label: "kripto", icon: Bitcoin },
+      { to: "/admin/shopier", label: "shopier", icon: Wallet },
+    ],
+  },
+  {
+    label: "sistem",
+    items: [
+      { to: "/admin/uniquelisans", label: "uniquelisans", icon: Boxes },
+      { to: "/admin/tedarikci-log", label: "tedarikçi log", icon: ShieldCheck },
+      { to: "/admin/ip-yonetim", label: "ip yönetim", icon: Shield },
+      { to: "/admin/ayarlar", label: "ayarlar", icon: Settings },
+    ],
+  },
 ];
+
+const ALL_ITEMS: NavItem[] = NAV_GROUPS.flatMap((g) => g.items);
+
+function NavList({ pathname, onNavigate }: { pathname: string; onNavigate?: () => void }) {
+  return (
+    <nav className="space-y-4">
+      {NAV_GROUPS.map((group) => (
+        <div key={group.label}>
+          <div className="px-3 pb-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground/60">
+            {group.label}
+          </div>
+          <div className="space-y-0.5">
+            {group.items.map((n) => {
+              const active = n.exact ? pathname === n.to : pathname.startsWith(n.to);
+              const Icon = n.icon;
+              return (
+                <Link
+                  key={n.to}
+                  to={n.to as "/admin"}
+                  onClick={onNavigate}
+                  className={`flex items-center gap-2 rounded px-3 py-2 font-mono text-sm transition-colors ${
+                    active
+                      ? "bg-primary/10 text-primary neon-text"
+                      : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                  }`}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  <span className="truncate">{n.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </nav>
+  );
+}
 
 function AdminLayout() {
   const loc = useLocation();
-  const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const activeItem =
-    NAV.find((n) => (n.exact ? loc.pathname === n.to : loc.pathname.startsWith(n.to))) ?? NAV[0];
+    ALL_ITEMS.find((n) => (n.exact ? loc.pathname === n.to : loc.pathname.startsWith(n.to))) ??
+    ALL_ITEMS[0];
   const ActiveIcon = activeItem.icon;
 
   return (
-    <div className="mx-auto max-w-7xl px-3 py-3 grid gap-3 sm:px-3 sm:py-4 md:px-4 md:py-6 md:gap-6 md:grid-cols-[220px,1fr]">
-      {/* MOBILE: native select acting as page picker */}
-      <div className="md:hidden">
-        <label className="relative block">
-          <span className="sr-only">Admin sayfası seç</span>
-          <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-            <ActiveIcon className="h-4 w-4" />
-          </span>
-          <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground">
-            <ChevronDown className="h-4 w-4" />
-          </span>
-          <select
-            value={activeItem.to}
-            onChange={(e) => navigate({ to: e.target.value as "/admin" })}
-            className="w-full appearance-none rounded-lg border border-primary/30 bg-card py-3 pl-10 pr-10 font-mono text-sm text-foreground focus:outline-none focus:border-primary"
+    <div className="mx-auto max-w-7xl px-3 py-3 grid gap-3 sm:px-3 sm:py-4 md:px-4 md:py-6 md:gap-6 md:grid-cols-[240px,1fr]">
+      {/* MOBILE: top bar with hamburger to open side panel */}
+      <div className="md:hidden flex items-center gap-2">
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="font-mono text-xs gap-2 border-primary/30 shrink-0"
+            >
+              <Menu className="h-4 w-4" />
+              menü
+            </Button>
+          </SheetTrigger>
+          <SheetContent
+            side="left"
+            className="w-[280px] p-0 border-r border-primary/20 bg-background"
           >
-            {NAV.map((n) => (
-              <option key={n.to} value={n.to} className="bg-background text-foreground">
-                {n.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="mt-2 flex items-center justify-between px-1 font-mono text-[10px] text-muted-foreground/70">
-          <span>$ /admin{activeItem.to === "/admin" ? "" : activeItem.to.replace("/admin", "")}</span>
-          <Link to="/" className="hover:text-primary inline-flex items-center gap-1">
-            <ArrowLeft className="h-3 w-3" /> siteye dön
-          </Link>
+            <SheetTitle className="sr-only">Admin menü</SheetTitle>
+            <div className="flex h-full flex-col">
+              <div className="border-b border-border/40 px-4 py-3">
+                <div className="font-mono text-xs text-muted-foreground">
+                  $ /admin<span className="terminal-caret" />
+                </div>
+              </div>
+              <div className="flex-1 overflow-y-auto p-3">
+                <NavList pathname={loc.pathname} onNavigate={() => setMobileOpen(false)} />
+              </div>
+              <div className="border-t border-border/40 p-3">
+                <Link
+                  to="/"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-1 px-3 py-2 font-mono text-xs text-muted-foreground hover:text-primary"
+                >
+                  <ArrowLeft className="h-3 w-3" /> siteye dön
+                </Link>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
+
+        <div className="flex-1 min-w-0 rounded-lg border border-primary/20 bg-card px-3 py-2 flex items-center gap-2">
+          <ActiveIcon className="h-4 w-4 text-primary shrink-0" />
+          <span className="font-mono text-sm text-foreground truncate">{activeItem.label}</span>
         </div>
       </div>
 
-      {/* DESKTOP: sidebar list */}
-      <aside className="hidden md:block glass-card rounded-lg h-fit md:sticky md:top-20 md:p-3 min-w-0 overflow-hidden">
+      {/* DESKTOP: sticky sidebar */}
+      <aside className="hidden md:block glass-card rounded-lg h-fit md:sticky md:top-20 md:p-3 min-w-0 overflow-hidden max-h-[calc(100vh-6rem)] overflow-y-auto">
         <div className="font-mono text-xs text-muted-foreground px-2 pt-2 pb-3">
           $ /admin<span className="terminal-caret" />
         </div>
-        <nav className="space-y-1">
-          {NAV.map((n) => {
-            const active = n.exact ? loc.pathname === n.to : loc.pathname.startsWith(n.to);
-            return (
-              <Link
-                key={n.to}
-                to={n.to as "/admin"}
-                className={`flex items-center gap-2 rounded px-3 py-2 font-mono text-sm ${
-                  active ? "bg-primary/10 text-primary neon-text" : "text-muted-foreground hover:text-primary"
-                }`}
-              >
-                <n.icon className="h-4 w-4" />
-                {n.label}
-              </Link>
-            );
-          })}
-        </nav>
-        <Link to="/" className="mt-4 flex items-center gap-1 px-3 py-2 font-mono text-xs text-muted-foreground hover:text-primary">
+        <NavList pathname={loc.pathname} />
+        <Link
+          to="/"
+          className="mt-4 flex items-center gap-1 px-3 py-2 font-mono text-xs text-muted-foreground hover:text-primary"
+        >
           <ArrowLeft className="h-3 w-3" /> siteye dön
         </Link>
       </aside>
