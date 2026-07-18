@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Video, Eraser, Minimize2, QrCode, Palette, Wand2, Braces, Binary, Type, Crop, Stamp, ShieldCheck, FileText } from "lucide-react";
+import { Video, Eraser, Minimize2, QrCode, Palette, Wand2, Braces, Binary, Type, Crop, Stamp, ShieldCheck, FileText, Scissors, Film, Music, Layers, Gauge, RotateCw, VolumeX, Image as ImageIcon } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/araclar/")({
   component: Hub,
@@ -16,6 +16,17 @@ const TOOLS = [
   { to: "/araclar/pdf", label: "Resim → PDF", desc: "Birden fazla resmi tek PDF'e birleştir.", icon: FileText, badge: "FREE" as const },
   { to: "/araclar/palet", label: "Renk Paleti", desc: "Resimden hakim renkleri hex olarak çıkar.", icon: Palette, badge: "FREE" as const },
   { to: "/araclar/qr", label: "QR Kod Üret", desc: "URL/metin → özelleştirilebilir QR PNG.", icon: QrCode, badge: "FREE" as const },
+  // Video (ffmpeg.wasm — tarayıcıda)
+  { to: "/araclar/video-trim", label: "Video Kırp/Kes", desc: "Başlangıç-bitiş vererek videoyu hızlıca kes.", icon: Scissors, badge: "FREE" as const },
+  { to: "/araclar/video-gif", label: "Video → GIF", desc: "Video parçasını GIF'e çevir — FPS + boyut.", icon: Film, badge: "FREE" as const },
+  { to: "/araclar/video-sikistir", label: "Video Sıkıştır", desc: "H.264 + CRF ile dosya boyutunu düşür.", icon: Minimize2, badge: "FREE" as const },
+  { to: "/araclar/video-mp3", label: "Video → MP3", desc: "Videodan sesi çıkar ve MP3 indir.", icon: Music, badge: "FREE" as const },
+  { to: "/araclar/video-birlestir", label: "Video Birleştir", desc: "Birden fazla klibi sırayla birleştir.", icon: Layers, badge: "FREE" as const },
+  { to: "/araclar/video-watermark", label: "Video Watermark", desc: "Videoya metin filigranı ekle.", icon: Stamp, badge: "FREE" as const },
+  { to: "/araclar/video-hiz", label: "Video Hız Değiştir", desc: "0.5x yavaş / 2x-4x hızlı — ses senkron.", icon: Gauge, badge: "FREE" as const },
+  { to: "/araclar/video-dondur", label: "Video Döndür/Çevir", desc: "90°/180° döndür veya yatay/dikey çevir.", icon: RotateCw, badge: "FREE" as const },
+  { to: "/araclar/video-thumbnail", label: "Video Thumbnail", desc: "Kareden JPG kapak resmi çıkar.", icon: ImageIcon, badge: "FREE" as const },
+  { to: "/araclar/video-sessiz", label: "Video Sessizleştir", desc: "Ses kanalını sil — görüntü aynı kalır.", icon: VolumeX, badge: "FREE" as const },
   // Geliştirici / Metin
   { to: "/araclar/json", label: "JSON Formatter", desc: "JSON doğrula, beautify veya minify et.", icon: Braces, badge: "FREE" as const },
   { to: "/araclar/base64", label: "Base64 Kodla/Çöz", desc: "Metin & dosya ↔ Base64 (data URI).", icon: Binary, badge: "FREE" as const },
