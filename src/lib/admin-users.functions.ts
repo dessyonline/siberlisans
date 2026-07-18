@@ -27,7 +27,7 @@ export const listUsers = createServerFn({ method: "GET" })
           .select("id, email, display_name, created_at, last_seen_ip, last_seen_at")
           .order("created_at", { ascending: false }),
         supabaseAdmin.from("user_roles").select("user_id, role"),
-        supabaseAdmin.from("orders").select("user_id, status, price_try, client_ip, user_agent, is_vpn, created_at").order("created_at", { ascending: false }),
+        supabaseAdmin.from("orders").select("user_id, status, price_try, client_ip, user_agent, created_at").order("created_at", { ascending: false }),
         supabaseAdmin.from("wallet_topups").select("user_id, client_ip, is_vpn, created_at").order("created_at", { ascending: false }),
       ]);
 
