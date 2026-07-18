@@ -66,7 +66,7 @@ function Page() {
     }
     if ((balance ?? 0) < price) {
       toast.error(`Cüzdan bakiyen yetersiz. ₺${price} gerekli, ₺${balance?.toFixed(2)} var.`);
-      nav({ to: "/_authenticated/cuzdan" as never });
+      nav({ to: "/cuzdan" as never });
       return;
     }
     if (!confirm(`${plan.name} paketi (${billing === "yearly" ? "yıllık" : "aylık"}) — ₺${price} düşülecek. Onaylıyor musun?`)) return;
@@ -74,7 +74,7 @@ function Page() {
     try {
       await purchaseAiSubscription({ data: { planSlug: slug, billing } });
       toast.success("Paket aktif! Şimdi video üret.");
-      nav({ to: "/_authenticated/araclar/video" as never });
+      nav({ to: "/araclar/video" as never });
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
