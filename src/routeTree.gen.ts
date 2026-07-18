@@ -72,6 +72,7 @@ import { Route as AuthenticatedAraclarOzetRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAraclarKodRouteImport } from './routes/_authenticated/araclar/kod'
 import { Route as AuthenticatedAraclarChatRouteImport } from './routes/_authenticated/araclar/chat'
 import { Route as AuthenticatedAraclarCeviriRouteImport } from './routes/_authenticated/araclar/ceviri'
+import { Route as AuthenticatedAraclarArkaplanRouteImport } from './routes/_authenticated/araclar/arkaplan'
 import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
 import { Route as AuthenticatedAdminUniquelisansRouteImport } from './routes/_authenticated/admin/uniquelisans'
 import { Route as AuthenticatedAdminTedarikciLogRouteImport } from './routes/_authenticated/admin/tedarikci-log'
@@ -437,6 +438,12 @@ const AuthenticatedAraclarCeviriRoute =
     path: '/ceviri',
     getParentRoute: () => AuthenticatedAraclarRouteRoute,
   } as any)
+const AuthenticatedAraclarArkaplanRoute =
+  AuthenticatedAraclarArkaplanRouteImport.update({
+    id: '/arkaplan',
+    path: '/arkaplan',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
 const AuthenticatedAdminUrunlerRoute =
   AuthenticatedAdminUrunlerRouteImport.update({
     id: '/urunler',
@@ -739,6 +746,7 @@ export interface FileRoutesByFullPath {
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
+  '/araclar/arkaplan': typeof AuthenticatedAraclarArkaplanRoute
   '/araclar/ceviri': typeof AuthenticatedAraclarCeviriRoute
   '/araclar/chat': typeof AuthenticatedAraclarChatRoute
   '/araclar/kod': typeof AuthenticatedAraclarKodRoute
@@ -839,6 +847,7 @@ export interface FileRoutesByTo {
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
+  '/araclar/arkaplan': typeof AuthenticatedAraclarArkaplanRoute
   '/araclar/ceviri': typeof AuthenticatedAraclarCeviriRoute
   '/araclar/chat': typeof AuthenticatedAraclarChatRoute
   '/araclar/kod': typeof AuthenticatedAraclarKodRoute
@@ -943,6 +952,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/_authenticated/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/_authenticated/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
+  '/_authenticated/araclar/arkaplan': typeof AuthenticatedAraclarArkaplanRoute
   '/_authenticated/araclar/ceviri': typeof AuthenticatedAraclarCeviriRoute
   '/_authenticated/araclar/chat': typeof AuthenticatedAraclarChatRoute
   '/_authenticated/araclar/kod': typeof AuthenticatedAraclarKodRoute
@@ -1047,6 +1057,7 @@ export interface FileRouteTypes {
     | '/admin/tedarikci-log'
     | '/admin/uniquelisans'
     | '/admin/urunler'
+    | '/araclar/arkaplan'
     | '/araclar/ceviri'
     | '/araclar/chat'
     | '/araclar/kod'
@@ -1147,6 +1158,7 @@ export interface FileRouteTypes {
     | '/admin/tedarikci-log'
     | '/admin/uniquelisans'
     | '/admin/urunler'
+    | '/araclar/arkaplan'
     | '/araclar/ceviri'
     | '/araclar/chat'
     | '/araclar/kod'
@@ -1250,6 +1262,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/tedarikci-log'
     | '/_authenticated/admin/uniquelisans'
     | '/_authenticated/admin/urunler'
+    | '/_authenticated/araclar/arkaplan'
     | '/_authenticated/araclar/ceviri'
     | '/_authenticated/araclar/chat'
     | '/_authenticated/araclar/kod'
@@ -1771,6 +1784,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAraclarCeviriRouteImport
       parentRoute: typeof AuthenticatedAraclarRouteRoute
     }
+    '/_authenticated/araclar/arkaplan': {
+      id: '/_authenticated/araclar/arkaplan'
+      path: '/arkaplan'
+      fullPath: '/araclar/arkaplan'
+      preLoaderRoute: typeof AuthenticatedAraclarArkaplanRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
     '/_authenticated/admin/urunler': {
       id: '/_authenticated/admin/urunler'
       path: '/urunler'
@@ -2113,6 +2133,7 @@ const AuthenticatedAdminRouteRouteWithChildren =
   )
 
 interface AuthenticatedAraclarRouteRouteChildren {
+  AuthenticatedAraclarArkaplanRoute: typeof AuthenticatedAraclarArkaplanRoute
   AuthenticatedAraclarCeviriRoute: typeof AuthenticatedAraclarCeviriRoute
   AuthenticatedAraclarChatRoute: typeof AuthenticatedAraclarChatRoute
   AuthenticatedAraclarKodRoute: typeof AuthenticatedAraclarKodRoute
@@ -2124,6 +2145,7 @@ interface AuthenticatedAraclarRouteRouteChildren {
 
 const AuthenticatedAraclarRouteRouteChildren: AuthenticatedAraclarRouteRouteChildren =
   {
+    AuthenticatedAraclarArkaplanRoute: AuthenticatedAraclarArkaplanRoute,
     AuthenticatedAraclarCeviriRoute: AuthenticatedAraclarCeviriRoute,
     AuthenticatedAraclarChatRoute: AuthenticatedAraclarChatRoute,
     AuthenticatedAraclarKodRoute: AuthenticatedAraclarKodRoute,
