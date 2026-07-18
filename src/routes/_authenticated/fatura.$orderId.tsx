@@ -234,7 +234,7 @@ function Invoice() {
           </Link>
           <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded bg-black text-white text-sm hover:bg-gray-800"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded bg-primary text-primary-foreground text-sm hover:opacity-90 transition-opacity"
           >
             <Printer className="h-4 w-4" /> Yazdır / PDF olarak indir
           </button>
