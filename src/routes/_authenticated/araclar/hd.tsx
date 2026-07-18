@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { Upload, Download, Sparkles, Loader2 } from "lucide-react";
+import { Upload, Download, Sparkles, Loader2, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { streamImage } from "@/lib/streamImage";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/araclar/hd")({
   component: HdPage,
@@ -10,11 +11,11 @@ export const Route = createFileRoute("/_authenticated/araclar/hd")({
 });
 
 type Mode = "hd" | "restore" | "colorize" | "denoise";
-const MODES: { id: Mode; label: string; desc: string }[] = [
-  { id: "hd", label: "HD / Netleştir", desc: "Detayları keskinleştir, çözünürlük artır" },
-  { id: "restore", label: "Fotoğraf Onar", desc: "Eski/hasarlı fotoğrafı iyileştir" },
-  { id: "colorize", label: "Renklendir", desc: "Siyah-beyaz → renkli" },
-  { id: "denoise", label: "Gürültü Temizle", desc: "Grain / sıkıştırma izlerini kaldır" },
+const MODES: { id: Mode; label: string; desc: string; price: number }[] = [
+  { id: "hd", label: "HD / Netleştir", desc: "Detayları keskinleştir, çözünürlük artır", price: 5 },
+  { id: "restore", label: "Fotoğraf Onar", desc: "Eski/hasarlı fotoğrafı iyileştir", price: 8 },
+  { id: "colorize", label: "Renklendir", desc: "Siyah-beyaz → renkli", price: 8 },
+  { id: "denoise", label: "Gürültü Temizle", desc: "Grain / sıkıştırma izlerini kaldır", price: 4 },
 ];
 
 function HdPage() {
