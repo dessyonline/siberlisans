@@ -1,14 +1,24 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Video, Eraser, Minimize2, QrCode, Palette, Wand2, Braces, Binary, Type, Crop, Stamp, ShieldCheck, FileText, Scissors, Film, Music, Layers, Gauge, RotateCw, VolumeX, Image as ImageIcon, Search, LayoutGrid, ImageIcon as PicIcon, Video as VidIcon, Code2, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Video, Eraser, Minimize2, QrCode, Palette, Wand2, Braces, Binary, Type,
+  Crop, Stamp, ShieldCheck, FileText, Scissors, Film, Music, Layers, Gauge,
+  RotateCw, VolumeX, Image as ImageIcon, Search, LayoutGrid, ImageIcon as PicIcon,
+  Video as VidIcon, Code2, Sparkles, Zap, Infinity as InfIcon, Cpu, ArrowRight,
+} from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/araclar/")({
   component: Hub,
-  head: () => ({ meta: [{ title: "Araçlar — SiberPHP" }] }),
+  head: () => ({
+    meta: [
+      { title: "Araçlar Laboratuvarı — SiberPHP" },
+      { name: "description", content: "26 profesyonel araç — arka plan kaldırma, video düzenleme, AI görsel & video üretimi. Tarayıcında çalışır, hesap dışına veri çıkmaz." },
+    ],
+  }),
 });
 
 type Category = "resim" | "video" | "gelistirici" | "uretme";
-type Badge = "FREE" | "₺";
+type Badge = "FREE" | "AI";
 
 interface Tool {
   to: string;
@@ -17,85 +27,171 @@ interface Tool {
   icon: typeof Video;
   badge: Badge;
   category: Category;
+  featured?: boolean;
 }
 
 const TOOLS: Tool[] = [
   // Resim & Medya
-  { to: "/araclar/arkaplan", label: "Arkaplan Kaldır", desc: "Resmin arkaplanını tarayıcıda kaldır — sınırsız.", icon: Eraser, badge: "FREE", category: "resim" },
+  { to: "/araclar/arkaplan", label: "Arkaplan Kaldır", desc: "Resmin arkaplanını tarayıcında sil — sınırsız.", icon: Eraser, badge: "FREE", category: "resim", featured: true },
   { to: "/araclar/sikistir", label: "Resim Sıkıştır", desc: "JPG/WebP/PNG · yeniden boyutlandır + sıkıştır.", icon: Minimize2, badge: "FREE", category: "resim" },
   { to: "/araclar/kirp", label: "Kırp & Döndür", desc: "Resmi kırp, döndür, yatay/dikey çevir.", icon: Crop, badge: "FREE", category: "resim" },
-  { to: "/araclar/watermark", label: "Watermark Ekle", desc: "Metin filigranı ekle — 6 farklı konum.", icon: Stamp, badge: "FREE", category: "resim" },
+  { to: "/araclar/watermark", label: "Watermark Ekle", desc: "Metin filigranı — 6 farklı konum.", icon: Stamp, badge: "FREE", category: "resim" },
   { to: "/araclar/exif", label: "EXIF Temizle", desc: "Konum/kamera metadata sil — gizlilik.", icon: ShieldCheck, badge: "FREE", category: "resim" },
   { to: "/araclar/pdf", label: "Resim → PDF", desc: "Birden fazla resmi tek PDF'e birleştir.", icon: FileText, badge: "FREE", category: "resim" },
   { to: "/araclar/palet", label: "Renk Paleti", desc: "Resimden hakim renkleri hex olarak çıkar.", icon: Palette, badge: "FREE", category: "resim" },
   { to: "/araclar/qr", label: "QR Kod Üret", desc: "URL/metin → özelleştirilebilir QR PNG.", icon: QrCode, badge: "FREE", category: "uretme" },
   // Video
-  { to: "/araclar/video-trim", label: "Video Kırp/Kes", desc: "Başlangıç-bitiş vererek videoyu hızlıca kes.", icon: Scissors, badge: "FREE", category: "video" },
+  { to: "/araclar/video-trim", label: "Video Kırp/Kes", desc: "Başlangıç-bitiş vererek hızlıca kes.", icon: Scissors, badge: "FREE", category: "video" },
   { to: "/araclar/video-gif", label: "Video → GIF", desc: "Video parçasını GIF'e çevir — FPS + boyut.", icon: Film, badge: "FREE", category: "video" },
   { to: "/araclar/video-sikistir", label: "Video Sıkıştır", desc: "H.264 + CRF ile dosya boyutunu düşür.", icon: Minimize2, badge: "FREE", category: "video" },
   { to: "/araclar/video-mp3", label: "Video → MP3", desc: "Videodan sesi çıkar ve MP3 indir.", icon: Music, badge: "FREE", category: "video" },
   { to: "/araclar/video-birlestir", label: "Video Birleştir", desc: "Birden fazla klibi sırayla birleştir.", icon: Layers, badge: "FREE", category: "video" },
   { to: "/araclar/video-watermark", label: "Video Watermark", desc: "Videoya metin filigranı ekle.", icon: Stamp, badge: "FREE", category: "video" },
   { to: "/araclar/video-hiz", label: "Video Hız Değiştir", desc: "0.5x yavaş / 2x-4x hızlı — ses senkron.", icon: Gauge, badge: "FREE", category: "video" },
-  { to: "/araclar/video-dondur", label: "Video Döndür/Çevir", desc: "90°/180° döndür veya yatay/dikey çevir.", icon: RotateCw, badge: "FREE", category: "video" },
+  { to: "/araclar/video-dondur", label: "Video Döndür/Çevir", desc: "90°/180° döndür veya çevir.", icon: RotateCw, badge: "FREE", category: "video" },
   { to: "/araclar/video-thumbnail", label: "Video Thumbnail", desc: "Kareden JPG kapak resmi çıkar.", icon: ImageIcon, badge: "FREE", category: "video" },
   { to: "/araclar/video-sessiz", label: "Video Sessizleştir", desc: "Ses kanalını sil — görüntü aynı kalır.", icon: VolumeX, badge: "FREE", category: "video" },
-  // Geliştirici / Metin
+  // Geliştirici
   { to: "/araclar/json", label: "JSON Formatter", desc: "JSON doğrula, beautify veya minify et.", icon: Braces, badge: "FREE", category: "gelistirici" },
   { to: "/araclar/base64", label: "Base64 Kodla/Çöz", desc: "Metin & dosya ↔ Base64 (data URI).", icon: Binary, badge: "FREE", category: "gelistirici" },
   { to: "/araclar/sayac", label: "Metin Sayaç", desc: "Kelime, karakter, okuma süresi — canlı.", icon: Type, badge: "FREE", category: "gelistirici" },
   { to: "/araclar/renk", label: "Renk Çevirici", desc: "HEX ↔ RGB ↔ HSL + ton skalası.", icon: Palette, badge: "FREE", category: "gelistirici" },
-  // Üretme (AI + jeneratörler)
-  { to: "/araclar/hd", label: "Resim HD Yap", desc: "Bulanık/eski fotoğrafı AI ile netleştir · ₺4-8/resim.", icon: Wand2, badge: "₺", category: "uretme" },
-  { to: "/araclar/video", label: "AI Video", desc: "Prompt'tan video üret — cüzdandan düşer.", icon: Video, badge: "₺", category: "uretme" },
-  { to: "/araclar/video-uzun", label: "AI Uzun Video (Multi-Sahne)", desc: "2-6 sahne yaz — otomatik üretilip birleştirilir.", icon: Film, badge: "₺", category: "uretme" },
-
+  // AI Üretme
+  { to: "/araclar/hd", label: "Resim HD Yap", desc: "Bulanık/eski fotoğrafı AI ile netleştir.", icon: Wand2, badge: "AI", category: "uretme", featured: true },
+  { to: "/araclar/video", label: "AI Video", desc: "Prompt'tan cinematic video üret.", icon: Video, badge: "AI", category: "uretme", featured: true },
+  { to: "/araclar/video-uzun", label: "AI Uzun Video", desc: "2-6 sahne yaz — otomatik birleştir.", icon: Film, badge: "AI", category: "uretme" },
 ];
 
-const CATEGORIES: { id: "hepsi" | Category; label: string; icon: typeof Video }[] = [
-  { id: "hepsi", label: "Tümü", icon: LayoutGrid },
-  { id: "resim", label: "Resim & Medya", icon: PicIcon },
-  { id: "video", label: "Video", icon: VidIcon },
-  { id: "gelistirici", label: "Geliştirici", icon: Code2 },
-  { id: "uretme", label: "Üretme", icon: Sparkles },
+const CATEGORIES: { id: "hepsi" | Category; label: string; icon: typeof Video; hint: string }[] = [
+  { id: "hepsi", label: "Tümü", icon: LayoutGrid, hint: "bütün araçlar" },
+  { id: "resim", label: "Resim", icon: PicIcon, hint: "görsel işlemleri" },
+  { id: "video", label: "Video", icon: VidIcon, hint: "kesme, sıkıştırma, dönüştürme" },
+  { id: "gelistirici", label: "Kod", icon: Code2, hint: "geliştirici yardımcıları" },
+  { id: "uretme", label: "AI", icon: Sparkles, hint: "yapay zeka üretimi" },
 ];
 
 function Hub() {
   const [cat, setCat] = useState<"hepsi" | Category>("hepsi");
   const [q, setQ] = useState("");
+  const [now, setNow] = useState<string>(() => new Date().toLocaleTimeString("tr-TR", { hour12: false }));
 
-  const filtered = TOOLS.filter((t) => {
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date().toLocaleTimeString("tr-TR", { hour12: false })), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const filtered = useMemo(() => TOOLS.filter((t) => {
     if (cat !== "hepsi" && t.category !== cat) return false;
     if (q.trim() && !`${t.label} ${t.desc}`.toLowerCase().includes(q.toLowerCase())) return false;
     return true;
-  });
+  }), [cat, q]);
+
+  const featured = TOOLS.filter((t) => t.featured);
+  const totalFree = TOOLS.filter((t) => t.badge === "FREE").length;
+  const totalAi = TOOLS.filter((t) => t.badge === "AI").length;
 
   const grouped: Record<Category, Tool[]> = { resim: [], video: [], gelistirici: [], uretme: [] };
   for (const t of filtered) grouped[t.category].push(t);
-
   const showGrouped = cat === "hepsi" && !q.trim();
 
   return (
-    <div className="space-y-4">
-      <div className="glass-card rounded-lg p-4 sm:p-6">
-        <div className="font-mono text-xs text-muted-foreground">$ ./araclar --list<span className="terminal-caret" /></div>
-        <h1 className="mt-2 font-mono text-2xl sm:text-3xl neon-text">Araçlar</h1>
-        <p className="mt-2 text-sm text-muted-foreground max-w-2xl">
-          <span className="text-primary">FREE</span> araçlar tarayıcında çalışır — sınırsız & ücretsiz.
-          <span className="text-yellow-400"> ₺</span> araçlar cüzdandan fiyatlanır.
-        </p>
-      </div>
+    <div className="space-y-6">
+      {/* CINEMATIC HERO */}
+      <section className="relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-background via-background to-primary/5 p-6 sm:p-8">
+        <div className="cyber-grid absolute inset-0 opacity-40" aria-hidden />
+        <div className="hero-orb absolute -top-24 -right-24 h-64 w-64 rounded-full bg-primary/20 blur-3xl" aria-hidden />
+        <div className="hero-orb absolute -bottom-32 -left-16 h-72 w-72 rounded-full bg-primary/10 blur-3xl" aria-hidden style={{ animationDelay: "1.5s" }} />
 
-      {/* Kontrol paneli */}
-      <div className="glass-card rounded-lg p-3 space-y-3">
+        <div className="relative z-10 grid gap-6 lg:grid-cols-[1.4fr_1fr] items-center">
+          <div className="space-y-4">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-3 py-1 font-mono text-[11px] text-primary">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+              </span>
+              LAB v2.0 — {TOOLS.length} araç çevrimiçi
+            </div>
+
+            <h1 className="font-mono text-3xl sm:text-5xl leading-tight">
+              <span className="neon-text">Araç</span>
+              <span className="text-foreground">Laboratuvarı</span>
+              <span className="terminal-caret ml-1" />
+            </h1>
+
+            <p className="text-sm sm:text-base text-muted-foreground max-w-xl">
+              Görselini rötuşla, videonu kes, JSON'unu formatla veya bir prompt yaz — AI sana video üretsin. Hepsi <span className="text-primary font-semibold">tek yerde</span>, dosyaların hesabından dışarı çıkmaz.
+            </p>
+
+            <div className="flex flex-wrap gap-2 pt-1">
+              <a href="#araclar" className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-mono text-primary-foreground neon-glow hover:brightness-110 transition">
+                <Zap className="h-4 w-4" /> Araçları keşfet
+              </a>
+              <Link
+                to="/paketler/ai"
+                className="inline-flex items-center gap-2 rounded-md border border-primary/40 px-4 py-2 text-sm font-mono text-primary hover:bg-primary/10 transition"
+              >
+                <Sparkles className="h-4 w-4" /> AI paketleri
+              </Link>
+            </div>
+          </div>
+
+          {/* TERMINAL WIDGET */}
+          <div className="relative">
+            <div className="glass-card rounded-lg border-primary/30 overflow-hidden">
+              <div className="flex items-center justify-between border-b border-primary/20 bg-black/40 px-3 py-2 font-mono text-[10px] text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-red-500/70" />
+                  <span className="h-2 w-2 rounded-full bg-yellow-500/70" />
+                  <span className="h-2 w-2 rounded-full bg-primary/70" />
+                  <span className="ml-2">lab.siberphp ~ status</span>
+                </div>
+                <span>{now}</span>
+              </div>
+              <div className="p-4 font-mono text-xs space-y-2">
+                <StatRow icon={InfIcon} label="Ücretsiz araçlar" value={`${totalFree}`} accent />
+                <StatRow icon={Cpu} label="AI üretim modülü" value={`${totalAi}`} />
+                <StatRow icon={ShieldCheck} label="Dosya sunucuya çıkışı" value="0" mute />
+                <div className="pt-2 border-t border-primary/10 space-y-1">
+                  <div className="text-muted-foreground">$ available_categories</div>
+                  <div className="flex flex-wrap gap-1">
+                    {CATEGORIES.filter((c) => c.id !== "hepsi").map((c) => (
+                      <span key={c.id} className="rounded border border-primary/20 px-1.5 py-0.5 text-primary/80 text-[10px]">
+                        {c.label}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="scan-line pointer-events-none absolute inset-0" aria-hidden />
+          </div>
+        </div>
+      </section>
+
+      {/* SPOTLIGHT / FEATURED */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-primary" />
+            <h2 className="font-mono text-sm text-primary">Öne çıkanlar</h2>
+          </div>
+          <span className="font-mono text-[10px] text-muted-foreground">// en çok kullanılan 3 araç</span>
+        </div>
+        <div className="grid gap-3 md:grid-cols-3">
+          {featured.map((t) => <FeaturedCard key={t.to} tool={t} />)}
+        </div>
+      </section>
+
+      {/* KONTROL PANELİ */}
+      <section id="araclar" className="glass-card rounded-lg p-3 space-y-3 sticky top-2 z-20 backdrop-blur-xl">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Araç ara..."
-            className="w-full rounded-md bg-black/40 border border-primary/30 pl-9 pr-3 py-2 font-mono text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary"
+            placeholder="Araç ara — örn: 'arka plan', 'gif', 'json'..."
+            className="w-full rounded-md bg-black/40 border border-primary/30 pl-9 pr-3 py-2.5 font-mono text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:shadow-[0_0_20px_hsl(var(--primary)/0.2)] transition"
           />
         </div>
 
@@ -109,6 +205,7 @@ function Hub() {
                 key={c.id}
                 type="button"
                 onClick={() => setCat(c.id)}
+                title={c.hint}
                 className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-mono text-xs transition-all ${
                   active
                     ? "border-primary bg-primary/10 text-primary neon-glow"
@@ -122,25 +219,30 @@ function Hub() {
             );
           })}
         </div>
-      </div>
+      </section>
 
-      {/* Grid */}
+      {/* GRID */}
       {filtered.length === 0 ? (
-        <div className="glass-card rounded-lg p-8 text-center">
-          <div className="font-mono text-sm text-muted-foreground">Eşleşen araç yok.</div>
+        <div className="glass-card rounded-lg p-10 text-center space-y-2">
+          <div className="font-mono text-sm text-muted-foreground">// no match</div>
+          <div className="font-mono text-xs text-muted-foreground/60">Aramanı temizle veya farklı bir kategori dene.</div>
         </div>
       ) : showGrouped ? (
-        <div className="space-y-6">
+        <div className="space-y-8">
           {CATEGORIES.filter((c) => c.id !== "hepsi").map((c) => {
             const list = grouped[c.id as Category];
             if (list.length === 0) return null;
             const Icon = c.icon;
             return (
               <section key={c.id} className="space-y-3">
-                <div className="flex items-center gap-2 border-b border-primary/20 pb-2">
-                  <Icon className="h-4 w-4 text-primary" />
-                  <h2 className="font-mono text-sm text-primary">{c.label}</h2>
-                  <span className="font-mono text-[10px] text-muted-foreground">({list.length})</span>
+                <div className="flex items-center gap-3 border-b border-primary/20 pb-2">
+                  <div className="rounded-md border border-primary/30 bg-primary/5 p-1.5">
+                    <Icon className="h-4 w-4 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="font-mono text-sm text-primary">./{c.id}</h3>
+                    <div className="font-mono text-[10px] text-muted-foreground">{c.hint} · {list.length} araç</div>
+                  </div>
                 </div>
                 <ToolGrid tools={list} />
               </section>
@@ -154,6 +256,42 @@ function Hub() {
   );
 }
 
+function StatRow({ icon: Icon, label, value, accent, mute }: { icon: typeof Video; label: string; value: string; accent?: boolean; mute?: boolean }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="inline-flex items-center gap-1.5 text-muted-foreground">
+        <Icon className={`h-3 w-3 ${accent ? "text-primary" : ""}`} /> {label}
+      </span>
+      <span className={`${accent ? "text-primary neon-text-glow" : mute ? "text-muted-foreground" : "text-foreground"}`}>{value}</span>
+    </div>
+  );
+}
+
+function FeaturedCard({ tool }: { tool: Tool }) {
+  const Icon = tool.icon;
+  return (
+    <Link
+      to={tool.to as "/araclar/chat"}
+      className="group relative overflow-hidden rounded-lg border border-primary/30 bg-gradient-to-br from-background to-primary/5 p-4 hover:border-primary hover:shadow-[0_0_30px_hsl(var(--primary)/0.35)] transition-all"
+    >
+      <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 blur-2xl group-hover:bg-primary/20 transition" aria-hidden />
+      <div className="relative flex items-start justify-between">
+        <div className="rounded-md border border-primary/30 bg-primary/10 p-2.5 text-primary">
+          <Icon className="h-5 w-5" />
+        </div>
+        <span className={`font-mono text-[10px] rounded-full border px-2 py-0.5 ${tool.badge === "FREE" ? "border-primary/40 text-primary" : "border-yellow-400/40 text-yellow-400"}`}>
+          {tool.badge}
+        </span>
+      </div>
+      <div className="relative mt-3 font-mono text-sm text-foreground">{tool.label}</div>
+      <p className="relative mt-1 text-xs text-muted-foreground">{tool.desc}</p>
+      <div className="relative mt-3 inline-flex items-center gap-1 font-mono text-[10px] text-primary opacity-70 group-hover:opacity-100 transition">
+        aç <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition" />
+      </div>
+    </Link>
+  );
+}
+
 function ToolGrid({ tools }: { tools: Tool[] }) {
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -163,22 +301,19 @@ function ToolGrid({ tools }: { tools: Tool[] }) {
           <Link
             key={t.to}
             to={t.to as "/araclar/chat"}
-            className="glass-card rounded-lg p-4 hover:border-primary/60 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)] transition-all group"
+            className="group relative overflow-hidden rounded-lg border border-primary/15 bg-card/40 backdrop-blur p-4 hover:border-primary/60 hover:bg-card/70 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)] transition-all"
           >
+            <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition" aria-hidden />
             <div className="flex items-center gap-2">
-              <div className="rounded-md bg-primary/10 p-2 text-primary group-hover:bg-primary/20">
+              <div className="rounded-md bg-primary/10 p-2 text-primary group-hover:bg-primary/20 group-hover:scale-105 transition-transform">
                 <Icon className="h-5 w-5" />
               </div>
-              <div className="font-mono text-sm text-foreground">{t.label}</div>
-              <span
-                className={`ml-auto text-[10px] font-mono ${
-                  t.badge === "FREE" ? "text-primary/80" : "text-yellow-400/80"
-                }`}
-              >
+              <div className="font-mono text-sm text-foreground flex-1 truncate">{t.label}</div>
+              <span className={`text-[10px] font-mono rounded px-1.5 py-0.5 border ${t.badge === "FREE" ? "border-primary/30 text-primary/80" : "border-yellow-400/30 text-yellow-400/80"}`}>
                 {t.badge}
               </span>
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">{t.desc}</p>
+            <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{t.desc}</p>
           </Link>
         );
       })}
