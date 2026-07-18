@@ -24,8 +24,14 @@ function IpAdminPage() {
   const blockFn = useServerFn(blockIp);
   const unblockFn = useServerFn(unblockIp);
 
-  const blocked = useQuery({ queryKey: ["ip-blocked"], queryFn: () => listBlocked({}) });
-  const suspicious = useQuery({ queryKey: ["ip-suspicious"], queryFn: () => listSusp({}) });
+  const blocked = useQuery({
+    queryKey: ["ip-blocked"],
+    queryFn: async () => (await listBlocked({})) as { rows: Array<{ ip: string; reason: string | null; blocked_until: string; created_at: string; user_id: string | null }> },
+  });
+  const suspicious = useQuery({
+    queryKey: ["ip-suspicious"],
+    queryFn: async () => (await listSusp({})) as { rows: Array<{ ip: string; country: string | null; vpn: boolean; rejected: number; total: number; last: string }> },
+  });
 
   const [ip, setIp] = useState("");
   const [reason, setReason] = useState("");
