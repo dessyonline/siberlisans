@@ -88,6 +88,7 @@ import { Route as AuthenticatedAdminKullanicilarRouteImport } from './routes/_au
 import { Route as AuthenticatedAdminKriptoRouteImport } from './routes/_authenticated/admin/kripto'
 import { Route as AuthenticatedAdminKeylerRouteImport } from './routes/_authenticated/admin/keyler'
 import { Route as AuthenticatedAdminKampanyalarRouteImport } from './routes/_authenticated/admin/kampanyalar'
+import { Route as AuthenticatedAdminIpYonetimRouteImport } from './routes/_authenticated/admin/ip-yonetim'
 import { Route as AuthenticatedAdminFlashRouteImport } from './routes/_authenticated/admin/flash'
 import { Route as AuthenticatedAdminFaturalarRouteImport } from './routes/_authenticated/admin/faturalar'
 import { Route as AuthenticatedAdminDestekRouteImport } from './routes/_authenticated/admin/destek'
@@ -530,6 +531,12 @@ const AuthenticatedAdminKampanyalarRoute =
     path: '/kampanyalar',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminIpYonetimRoute =
+  AuthenticatedAdminIpYonetimRouteImport.update({
+    id: '/ip-yonetim',
+    path: '/ip-yonetim',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminFlashRoute = AuthenticatedAdminFlashRouteImport.update({
   id: '/flash',
   path: '/flash',
@@ -708,6 +715,7 @@ export interface FileRoutesByFullPath {
   '/admin/destek': typeof AuthenticatedAdminDestekRoute
   '/admin/faturalar': typeof AuthenticatedAdminFaturalarRoute
   '/admin/flash': typeof AuthenticatedAdminFlashRoute
+  '/admin/ip-yonetim': typeof AuthenticatedAdminIpYonetimRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/admin/kripto': typeof AuthenticatedAdminKriptoRoute
@@ -806,6 +814,7 @@ export interface FileRoutesByTo {
   '/admin/destek': typeof AuthenticatedAdminDestekRoute
   '/admin/faturalar': typeof AuthenticatedAdminFaturalarRoute
   '/admin/flash': typeof AuthenticatedAdminFlashRoute
+  '/admin/ip-yonetim': typeof AuthenticatedAdminIpYonetimRoute
   '/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/admin/kripto': typeof AuthenticatedAdminKriptoRoute
@@ -908,6 +917,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/destek': typeof AuthenticatedAdminDestekRoute
   '/_authenticated/admin/faturalar': typeof AuthenticatedAdminFaturalarRoute
   '/_authenticated/admin/flash': typeof AuthenticatedAdminFlashRoute
+  '/_authenticated/admin/ip-yonetim': typeof AuthenticatedAdminIpYonetimRoute
   '/_authenticated/admin/kampanyalar': typeof AuthenticatedAdminKampanyalarRoute
   '/_authenticated/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/_authenticated/admin/kripto': typeof AuthenticatedAdminKriptoRoute
@@ -1010,6 +1020,7 @@ export interface FileRouteTypes {
     | '/admin/destek'
     | '/admin/faturalar'
     | '/admin/flash'
+    | '/admin/ip-yonetim'
     | '/admin/kampanyalar'
     | '/admin/keyler'
     | '/admin/kripto'
@@ -1108,6 +1119,7 @@ export interface FileRouteTypes {
     | '/admin/destek'
     | '/admin/faturalar'
     | '/admin/flash'
+    | '/admin/ip-yonetim'
     | '/admin/kampanyalar'
     | '/admin/keyler'
     | '/admin/kripto'
@@ -1209,6 +1221,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/destek'
     | '/_authenticated/admin/faturalar'
     | '/_authenticated/admin/flash'
+    | '/_authenticated/admin/ip-yonetim'
     | '/_authenticated/admin/kampanyalar'
     | '/_authenticated/admin/keyler'
     | '/_authenticated/admin/kripto'
@@ -1856,6 +1869,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminKampanyalarRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/ip-yonetim': {
+      id: '/_authenticated/admin/ip-yonetim'
+      path: '/ip-yonetim'
+      fullPath: '/admin/ip-yonetim'
+      preLoaderRoute: typeof AuthenticatedAdminIpYonetimRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/flash': {
       id: '/_authenticated/admin/flash'
       path: '/flash'
@@ -2012,6 +2032,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminDestekRoute: typeof AuthenticatedAdminDestekRoute
   AuthenticatedAdminFaturalarRoute: typeof AuthenticatedAdminFaturalarRoute
   AuthenticatedAdminFlashRoute: typeof AuthenticatedAdminFlashRoute
+  AuthenticatedAdminIpYonetimRoute: typeof AuthenticatedAdminIpYonetimRoute
   AuthenticatedAdminKampanyalarRoute: typeof AuthenticatedAdminKampanyalarRoute
   AuthenticatedAdminKeylerRoute: typeof AuthenticatedAdminKeylerRoute
   AuthenticatedAdminKriptoRoute: typeof AuthenticatedAdminKriptoRoute
@@ -2045,6 +2066,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminDestekRoute: AuthenticatedAdminDestekRoute,
     AuthenticatedAdminFaturalarRoute: AuthenticatedAdminFaturalarRoute,
     AuthenticatedAdminFlashRoute: AuthenticatedAdminFlashRoute,
+    AuthenticatedAdminIpYonetimRoute: AuthenticatedAdminIpYonetimRoute,
     AuthenticatedAdminKampanyalarRoute: AuthenticatedAdminKampanyalarRoute,
     AuthenticatedAdminKeylerRoute: AuthenticatedAdminKeylerRoute,
     AuthenticatedAdminKriptoRoute: AuthenticatedAdminKriptoRoute,
@@ -2197,13 +2219,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

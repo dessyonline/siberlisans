@@ -25,6 +25,7 @@ import {
   TrendingUp,
   History,
   Receipt,
+  Shield,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -71,6 +72,7 @@ const NAV: { to: string; label: string; icon: typeof LayoutDashboard; exact?: bo
   { to: "/admin/shopier", label: "shopier", icon: Wallet },
   { to: "/admin/uniquelisans", label: "uniquelisans", icon: Boxes },
   { to: "/admin/tedarikci-log", label: "tedarikçi log", icon: ShieldCheck },
+  { to: "/admin/ip-yonetim", label: "ip yönetim", icon: Shield },
   { to: "/admin/ayarlar", label: "ayarlar", icon: Settings },
 
 ];
