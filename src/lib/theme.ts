@@ -1,11 +1,11 @@
 export type Theme = "dark" | "light" | "matrix" | "midnight" | "sunset";
 
 export const THEMES: { id: Theme; label: string; desc: string; swatch: string[] }[] = [
-  { id: "dark",     label: "Cyber Neon",    desc: "koyu + neon yeşil (varsayılan)",       swatch: ["#0a0f14", "#111b24", "#00ff9d"] },
-  { id: "light",    label: "Cloud White",   desc: "beyaz + elektrik mavi",                swatch: ["#fafbfc", "#e8ecf1", "#3b82f6"] },
-  { id: "matrix",   label: "Matrix",        desc: "siyah + parlak yeşil terminal",        swatch: ["#000000", "#0a1a0a", "#22ff55"] },
-  { id: "midnight", label: "Midnight Blue", desc: "derin lacivert + camgöbeği",           swatch: ["#0a0e2a", "#141a3d", "#4dd0ff"] },
-  { id: "sunset",   label: "Sunset Ember",  desc: "sıcak amber + turuncu ember",          swatch: ["#1a0f0a", "#241612", "#ff8a3d"] },
+  { id: "dark",     label: "Cyber Neon",    desc: "koyu teal + neon yeşil (varsayılan)",  swatch: ["#0c1418", "#182027", "#00ffa3"] },
+  { id: "light",    label: "Cloud White",   desc: "kâğıt beyazı + indigo/menekşe",         swatch: ["#fafbfd", "#eef0f6", "#5b3df5"] },
+  { id: "matrix",   label: "Matrix",        desc: "saf siyah + zümrüt terminal",           swatch: ["#020402", "#0a1a10", "#00ff5c"] },
+  { id: "midnight", label: "Midnight Blue", desc: "royal lacivert + buz camgöbeği",        swatch: ["#080d24", "#141c3d", "#5cc3ff"] },
+  { id: "sunset",   label: "Sunset Ember",  desc: "sıcak erik + mercan turuncu",           swatch: ["#1a0d0a", "#2a1a15", "#ff7a3d"] },
 ];
 
 const KEY = "siberphp-theme";
