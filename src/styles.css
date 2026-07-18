@@ -152,6 +152,135 @@
   color: var(--color-foreground);
 }
 
+/* =================== MATRIX THEME =================== */
+[data-theme="matrix"] {
+  --background: oklch(0.08 0.02 145);
+  --foreground: oklch(0.94 0.14 145);
+  --card: oklch(0.11 0.03 145);
+  --card-foreground: oklch(0.94 0.14 145);
+  --popover: oklch(0.11 0.03 145);
+  --popover-foreground: oklch(0.94 0.14 145);
+  --primary: oklch(0.88 0.26 145);
+  --primary-foreground: oklch(0.08 0.02 145);
+  --secondary: oklch(0.16 0.04 145);
+  --secondary-foreground: oklch(0.94 0.14 145);
+  --muted: oklch(0.14 0.03 145);
+  --muted-foreground: oklch(0.66 0.14 145);
+  --accent: oklch(0.75 0.18 155);
+  --accent-foreground: oklch(0.08 0.02 145);
+  --destructive: oklch(0.65 0.24 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.24 0.08 145);
+  --input: oklch(0.14 0.03 145);
+  --ring: oklch(0.88 0.26 145);
+  --neon: oklch(0.88 0.26 145);
+  --cyan: oklch(0.85 0.18 165);
+  --purple-glow: oklch(0.85 0.20 130);
+  --warn: oklch(0.85 0.16 95);
+}
+[data-theme="matrix"] body {
+  background-image:
+    radial-gradient(ellipse 900px 500px at 12% 0%, oklch(0.88 0.26 145 / 0.12), transparent 60%),
+    radial-gradient(ellipse 800px 500px at 88% 100%, oklch(0.75 0.18 155 / 0.08), transparent 60%);
+}
+[data-theme="matrix"] .glass-card {
+  background: oklch(0.09 0.03 145 / 0.86);
+  border: 1px solid oklch(0.30 0.10 145 / 0.9);
+}
+
+/* =================== MIDNIGHT BLUE THEME =================== */
+[data-theme="midnight"] {
+  --background: oklch(0.12 0.05 265);
+  --foreground: oklch(0.94 0.02 240);
+  --card: oklch(0.16 0.06 265);
+  --card-foreground: oklch(0.94 0.02 240);
+  --popover: oklch(0.16 0.06 265);
+  --popover-foreground: oklch(0.94 0.02 240);
+  --primary: oklch(0.78 0.14 225);
+  --primary-foreground: oklch(0.10 0.04 265);
+  --secondary: oklch(0.20 0.06 265);
+  --secondary-foreground: oklch(0.94 0.02 240);
+  --muted: oklch(0.18 0.05 265);
+  --muted-foreground: oklch(0.65 0.05 235);
+  --accent: oklch(0.72 0.16 210);
+  --accent-foreground: oklch(0.10 0.04 265);
+  --destructive: oklch(0.65 0.24 25);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.26 0.08 260);
+  --input: oklch(0.18 0.05 265);
+  --ring: oklch(0.78 0.14 225);
+  --neon: oklch(0.78 0.14 225);
+  --cyan: oklch(0.80 0.14 210);
+  --purple-glow: oklch(0.68 0.20 285);
+  --warn: oklch(0.82 0.16 85);
+}
+[data-theme="midnight"] body {
+  background-image:
+    radial-gradient(ellipse 900px 500px at 12% 0%, oklch(0.78 0.14 225 / 0.12), transparent 60%),
+    radial-gradient(ellipse 800px 500px at 88% 100%, oklch(0.68 0.20 285 / 0.10), transparent 60%);
+}
+[data-theme="midnight"] .glass-card {
+  background: oklch(0.15 0.06 265 / 0.82);
+  border: 1px solid oklch(0.30 0.09 260 / 0.9);
+}
+
+/* =================== SUNSET EMBER THEME =================== */
+[data-theme="sunset"] {
+  --background: oklch(0.14 0.03 35);
+  --foreground: oklch(0.96 0.02 60);
+  --card: oklch(0.18 0.04 35);
+  --card-foreground: oklch(0.96 0.02 60);
+  --popover: oklch(0.18 0.04 35);
+  --popover-foreground: oklch(0.96 0.02 60);
+  --primary: oklch(0.75 0.18 55);
+  --primary-foreground: oklch(0.14 0.03 35);
+  --secondary: oklch(0.22 0.05 35);
+  --secondary-foreground: oklch(0.96 0.02 60);
+  --muted: oklch(0.20 0.04 35);
+  --muted-foreground: oklch(0.65 0.05 50);
+  --accent: oklch(0.68 0.19 35);
+  --accent-foreground: oklch(0.14 0.03 35);
+  --destructive: oklch(0.62 0.24 20);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.28 0.06 40);
+  --input: oklch(0.20 0.04 35);
+  --ring: oklch(0.75 0.18 55);
+  --neon: oklch(0.75 0.18 55);
+  --cyan: oklch(0.72 0.14 75);
+  --purple-glow: oklch(0.60 0.22 15);
+  --warn: oklch(0.82 0.18 85);
+}
+[data-theme="sunset"] body {
+  background-image:
+    radial-gradient(ellipse 900px 500px at 12% 0%, oklch(0.75 0.18 55 / 0.14), transparent 60%),
+    radial-gradient(ellipse 800px 500px at 88% 100%, oklch(0.60 0.22 15 / 0.10), transparent 60%);
+}
+[data-theme="sunset"] .glass-card {
+  background: oklch(0.17 0.04 35 / 0.82);
+  border: 1px solid oklch(0.32 0.07 40 / 0.9);
+}
+
+/* =================== Non-dark shared overrides =================== */
+[data-theme] .neon-text-glow {
+  text-shadow: 0 0 20px color-mix(in oklch, var(--color-neon) 55%, transparent);
+}
+[data-theme] .cyber-grid {
+  background-image:
+    linear-gradient(color-mix(in oklch, var(--color-neon) 12%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklch, var(--color-neon) 12%, transparent) 1px, transparent 1px);
+}
+[data-theme] ::selection {
+  background: color-mix(in oklch, var(--color-neon) 30%, transparent);
+  color: var(--color-foreground);
+}
+
+/* Smooth theme swap */
+html { transition: background-color 260ms ease, color 260ms ease; }
+body, .glass-card, header, footer, main, section, aside, nav {
+  transition: background-color 260ms ease, border-color 260ms ease, color 260ms ease;
+}
+
+
 
 @layer base {
   * { border-color: var(--color-border); }
