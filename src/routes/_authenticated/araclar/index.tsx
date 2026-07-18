@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Video, Eraser, Minimize2, QrCode, Palette, Wand2, Braces, Binary, Type } from "lucide-react";
+import { Video, Eraser, Minimize2, QrCode, Palette, Wand2, Braces, Binary, Type, Crop, Stamp, ShieldCheck, FileText } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/araclar/")({
   component: Hub,
@@ -7,14 +7,21 @@ export const Route = createFileRoute("/_authenticated/araclar/")({
 });
 
 const TOOLS = [
+  // Resim & Medya
   { to: "/araclar/arkaplan", label: "Arkaplan Kaldır", desc: "Resmin arkaplanını tarayıcıda kaldır — sınırsız.", icon: Eraser, badge: "FREE" as const },
+  { to: "/araclar/sikistir", label: "Resim Sıkıştır", desc: "JPG/WebP/PNG · yeniden boyutlandır + sıkıştır.", icon: Minimize2, badge: "FREE" as const },
+  { to: "/araclar/kirp", label: "Kırp & Döndür", desc: "Resmi kırp, döndür, yatay/dikey çevir.", icon: Crop, badge: "FREE" as const },
+  { to: "/araclar/watermark", label: "Watermark Ekle", desc: "Metin filigranı ekle — 6 farklı konum.", icon: Stamp, badge: "FREE" as const },
+  { to: "/araclar/exif", label: "EXIF Temizle", desc: "Konum/kamera metadata sil — gizlilik.", icon: ShieldCheck, badge: "FREE" as const },
+  { to: "/araclar/pdf", label: "Resim → PDF", desc: "Birden fazla resmi tek PDF'e birleştir.", icon: FileText, badge: "FREE" as const },
+  { to: "/araclar/palet", label: "Renk Paleti", desc: "Resimden hakim renkleri hex olarak çıkar.", icon: Palette, badge: "FREE" as const },
+  { to: "/araclar/qr", label: "QR Kod Üret", desc: "URL/metin → özelleştirilebilir QR PNG.", icon: QrCode, badge: "FREE" as const },
+  // Geliştirici / Metin
   { to: "/araclar/json", label: "JSON Formatter", desc: "JSON doğrula, beautify veya minify et.", icon: Braces, badge: "FREE" as const },
   { to: "/araclar/base64", label: "Base64 Kodla/Çöz", desc: "Metin & dosya ↔ Base64 (data URI).", icon: Binary, badge: "FREE" as const },
   { to: "/araclar/sayac", label: "Metin Sayaç", desc: "Kelime, karakter, okuma süresi — canlı.", icon: Type, badge: "FREE" as const },
   { to: "/araclar/renk", label: "Renk Çevirici", desc: "HEX ↔ RGB ↔ HSL + ton skalası.", icon: Palette, badge: "FREE" as const },
-  { to: "/araclar/sikistir", label: "Resim Sıkıştır", desc: "JPG/WebP/PNG · yeniden boyutlandır + sıkıştır.", icon: Minimize2, badge: "FREE" as const },
-  { to: "/araclar/qr", label: "QR Kod Üret", desc: "URL/metin → özelleştirilebilir QR PNG.", icon: QrCode, badge: "FREE" as const },
-  { to: "/araclar/palet", label: "Renk Paleti", desc: "Resimden hakim renkleri hex olarak çıkar.", icon: Palette, badge: "FREE" as const },
+  // Ücretli
   { to: "/araclar/hd", label: "Resim HD Yap", desc: "Bulanık/eski fotoğrafı AI ile netleştir · ₺4-8/resim.", icon: Wand2, badge: "₺" as const },
   { to: "/araclar/video", label: "AI Video", desc: "Prompt'tan video üret — cüzdandan düşer.", icon: Video, badge: "₺" as const },
 ];
