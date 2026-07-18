@@ -10,13 +10,15 @@ export const Route = createFileRoute("/_authenticated/araclar/hd")({
   head: () => ({ meta: [{ title: "Resim HD Yap — AI Araçlar" }] }),
 });
 
-type Mode = "hd" | "restore" | "colorize" | "denoise";
+type Mode = "hd" | "restore" | "colorize" | "denoise" | "custom";
 const MODES: { id: Mode; label: string; desc: string; price: number }[] = [
   { id: "hd", label: "HD / Netleştir", desc: "Detayları keskinleştir, çözünürlük artır", price: 5 },
   { id: "restore", label: "Fotoğraf Onar", desc: "Eski/hasarlı fotoğrafı iyileştir", price: 8 },
   { id: "colorize", label: "Renklendir", desc: "Siyah-beyaz → renkli", price: 8 },
   { id: "denoise", label: "Gürültü Temizle", desc: "Grain / sıkıştırma izlerini kaldır", price: 4 },
+  { id: "custom", label: "Özel Prompt", desc: "Kendi isteğini yaz — AI istediğini uygulasın", price: 6 },
 ];
+
 
 function HdPage() {
   const [input, setInput] = useState<string | null>(null);
