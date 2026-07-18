@@ -48,6 +48,8 @@ import { SocialPopup } from "../components/SocialPopup";
 import { OnboardingTour } from "../components/OnboardingTour";
 import { PwaInstallPrompt } from "../components/PwaInstallPrompt";
 import { PushEnablePrompt } from "../components/PushEnablePrompt";
+import { ThemeToggle } from "../components/ThemeToggle";
+import { THEME_BOOT_SCRIPT } from "../lib/theme";
 import { useQuery } from "@tanstack/react-query";
 
 
@@ -178,6 +180,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: MOBILE_MENU_SCRIPT }} />
         {children}
         <Scripts />
@@ -235,6 +238,8 @@ function SiteHeader() {
 
           <CartButton compact />
           <div className="hidden sm:block"><NotificationBell /></div>
+          <ThemeToggle className="hidden sm:inline-flex" />
+
 
 
 
