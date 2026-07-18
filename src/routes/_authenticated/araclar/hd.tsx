@@ -26,7 +26,9 @@ function HdPage() {
   const [isFinal, setIsFinal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<Mode>("hd");
+  const [prompt, setPrompt] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
 
   function onPick(f: File | undefined) {
     if (!f) return;
