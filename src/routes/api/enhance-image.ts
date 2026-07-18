@@ -7,6 +7,7 @@ const PRICES: Record<string, number> = {
   restore: 8,
   colorize: 8,
   denoise: 4,
+  custom: 6,
 };
 
 const PROMPTS: Record<string, string> = {
@@ -15,6 +16,7 @@ const PROMPTS: Record<string, string> = {
   colorize: "Colorize this black and white image with natural, realistic colors. Keep composition and details identical.",
   denoise: "Remove noise, grain and compression artifacts from this image. Keep every detail sharp and natural.",
 };
+
 
 export const Route = createFileRoute("/api/enhance-image")({
   server: {
