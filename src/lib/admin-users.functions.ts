@@ -20,14 +20,15 @@ export const listUsers = createServerFn({ method: "GET" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [{ data: profiles, error: pErr }, { data: roles, error: rErr }, { data: orders, error: oErr }] =
+    const [{ data: profiles, error: pErr }, { data: roles, error: rErr }, { data: orders, error: oErr }, { data: topups }] =
       await Promise.all([
         supabaseAdmin
           .from("profiles")
-          .select("id, email, display_name, created_at")
+          .select("id, email, display_name, created_at, last_seen_ip, last_seen_at")
           .order("created_at", { ascending: false }),
         supabaseAdmin.from("user_roles").select("user_id, role"),
-        supabaseAdmin.from("orders").select("user_id, status, price_try"),
+        supabaseAdmin.from("orders").select("user_id, status, price_try, client_ip, user_agent, is_vpn, created_at").order("created_at", { ascending: false }),
+        supabaseAdmin.from("wallet_topups").select("user_id, client_ip, is_vpn, created_at").order("created_at", { ascending: false }),
       ]);
 
     if (pErr) throw new Error(pErr.message);
