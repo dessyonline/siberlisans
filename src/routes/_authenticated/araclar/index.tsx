@@ -46,11 +46,17 @@ function Hub() {
                   <Icon className="h-5 w-5" />
                 </div>
                 <div className="font-mono text-sm text-foreground">{t.label}</div>
-                {t.free ? (
-                  <span className="ml-auto text-[10px] font-mono text-primary/80">FREE</span>
-                ) : (
-                  <span className="ml-auto text-[10px] font-mono text-yellow-400/80">₺</span>
-                )}
+                <span
+                  className={`ml-auto text-[10px] font-mono ${
+                    t.badge === "FREE"
+                      ? "text-primary/80"
+                      : t.badge === "₺"
+                      ? "text-yellow-400/80"
+                      : "text-blue-400/80"
+                  }`}
+                >
+                  {t.badge}
+                </span>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">{t.desc}</p>
             </Link>
