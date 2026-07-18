@@ -124,11 +124,13 @@ function Page() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: user }, priceMap] = await Promise.all([
+      const [{ data: user }, priceMap, s] = await Promise.all([
         supabase.auth.getUser(),
         getAiVideoPrices().catch(() => DEFAULT_PRICES),
+        getMyAiSubscription().catch(() => null),
       ]);
       setPrices(priceMap as Record<Quality, Record<number, number>>);
+      setSub(s as typeof sub);
       if (!user.user) return;
       const { data: w } = await supabase
         .from("wallets")
