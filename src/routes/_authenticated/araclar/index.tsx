@@ -48,6 +48,8 @@ const TOOLS: Tool[] = [
   // Üretme (AI + jeneratörler)
   { to: "/araclar/hd", label: "Resim HD Yap", desc: "Bulanık/eski fotoğrafı AI ile netleştir · ₺4-8/resim.", icon: Wand2, badge: "₺", category: "uretme" },
   { to: "/araclar/video", label: "AI Video", desc: "Prompt'tan video üret — cüzdandan düşer.", icon: Video, badge: "₺", category: "uretme" },
+  { to: "/araclar/video-uzun", label: "AI Uzun Video (Multi-Sahne)", desc: "2-6 sahne yaz — otomatik üretilip birleştirilir.", icon: Film, badge: "₺", category: "uretme" },
+
 ];
 
 const CATEGORIES: { id: "hepsi" | Category; label: string; icon: typeof Video }[] = [
