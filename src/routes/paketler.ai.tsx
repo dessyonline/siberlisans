@@ -90,9 +90,10 @@ function Page() {
         </div>
         <h1 className="font-mono text-3xl sm:text-5xl neon-text">AI Video Paketleri</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Easemate ₺350/ay abonelik zorunlu · Runway ₺180/video ·
-          <span className="text-primary font-semibold"> Biz ₺149'dan başlıyor</span>. Kullanmasan bile ödeme başına tek video da alabilirsin.
+          Tek kredi havuzu — <span className="text-primary font-semibold">video + görsel + HD upscale</span> aynı paketten harcanır. Easemate ₺350/ay abonelik zorunlu ·
+          <span className="text-primary font-semibold"> Biz ₺149'dan başlıyor, kullanmasan tek seferlik de alabilirsin</span>.
         </p>
+
 
         <div className="inline-flex rounded-lg border border-border/60 p-1 mt-3">
           <button
@@ -178,14 +179,35 @@ function Page() {
 
       <div className="glass-card rounded-lg p-5 space-y-3">
         <div className="flex items-center gap-2 font-mono text-sm text-primary">
-          <Info className="h-4 w-4" /> Nasıl çalışır?
+          <Info className="h-4 w-4" /> Universal Kredi Sistemi — Kredi neyle harcanır?
         </div>
-        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-          <li>Krediler cüzdanınla aynı birim: 1 kredi = ₺1 video maliyeti.</li>
-          <li>Video üretirken önce paketten düşer, yetmezse cüzdandan tamamlanır.</li>
-          <li>30 gün sonra kalan krediler yanar — kullan veya kaybet (rakipler de aynısını yapıyor).</li>
-          <li>İstersen paket olmadan tek seferlik ₺10-50'lik videolar üretmeye devam edebilirsin.</li>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm font-mono">
+            <thead>
+              <tr className="border-b border-border/60 text-xs text-muted-foreground">
+                <th className="text-left py-2 pr-4">Araç</th>
+                <th className="text-left py-2 pr-4">Kredi</th>
+                <th className="text-left py-2">Not</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-border/40"><td className="py-2 pr-4">🎬 Fast Video (5sn)</td><td className="text-primary">10 kredi</td><td className="text-muted-foreground text-xs">Kling/Luma turbo</td></tr>
+              <tr className="border-b border-border/40"><td className="py-2 pr-4">🎬 HD Video (5sn)</td><td className="text-primary">25 kredi</td><td className="text-muted-foreground text-xs">1080p</td></tr>
+              <tr className="border-b border-border/40"><td className="py-2 pr-4">🎬 Cinematic Video</td><td className="text-primary">50 kredi</td><td className="text-muted-foreground text-xs">Sinematik kalite</td></tr>
+              <tr className="border-b border-border/40"><td className="py-2 pr-4">🖼️ HD Upscale / İyileştir</td><td className="text-primary">5 kredi</td><td className="text-muted-foreground text-xs">Gemini 3 Pro Image</td></tr>
+              <tr className="border-b border-border/40"><td className="py-2 pr-4">🖼️ Restore / Renklendir</td><td className="text-primary">8 kredi</td><td className="text-muted-foreground text-xs">Eski foto onarımı</td></tr>
+              <tr className="border-b border-border/40"><td className="py-2 pr-4">🖼️ Özel Prompt Görsel</td><td className="text-primary">6 kredi</td><td className="text-muted-foreground text-xs">Serbest talimat</td></tr>
+              <tr><td className="py-2 pr-4">🎨 Arka Plan Kaldır / QR / Sıkıştır</td><td className="text-emerald-400">Ücretsiz</td><td className="text-muted-foreground text-xs">Tarayıcıda çalışır</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside pt-2">
+          <li>1 kredi = ₺1 değerinde AI aracı — video, görsel, upscale hepsi aynı havuzdan.</li>
+          <li>İşlem başlarken önce paketten düşer, kredi yetmezse cüzdandan tamamlanır.</li>
+          <li>30 gün sonra kalan krediler yanar (rakiplerle aynı model).</li>
+          <li>Paket olmadan tek seferlik ödeme de yapabilirsin — cüzdandan düşer.</li>
         </ul>
+
         <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground pt-2">
           <Wallet className="h-3 w-3" />
           Cüzdan bakiyen: <span className="text-primary">₺{balance?.toFixed(2) ?? "0.00"}</span>
