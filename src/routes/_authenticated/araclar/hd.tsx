@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { Upload, Download, Sparkles, Loader2 } from "lucide-react";
+import { Upload, Download, Sparkles, Loader2, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { streamImage } from "@/lib/streamImage";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/araclar/hd")({
   component: HdPage,
@@ -10,11 +11,11 @@ export const Route = createFileRoute("/_authenticated/araclar/hd")({
 });
 
 type Mode = "hd" | "restore" | "colorize" | "denoise";
-const MODES: { id: Mode; label: string; desc: string }[] = [
-  { id: "hd", label: "HD / Netleştir", desc: "Detayları keskinleştir, çözünürlük artır" },
-  { id: "restore", label: "Fotoğraf Onar", desc: "Eski/hasarlı fotoğrafı iyileştir" },
-  { id: "colorize", label: "Renklendir", desc: "Siyah-beyaz → renkli" },
-  { id: "denoise", label: "Gürültü Temizle", desc: "Grain / sıkıştırma izlerini kaldır" },
+const MODES: { id: Mode; label: string; desc: string; price: number }[] = [
+  { id: "hd", label: "HD / Netleştir", desc: "Detayları keskinleştir, çözünürlük artır", price: 5 },
+  { id: "restore", label: "Fotoğraf Onar", desc: "Eski/hasarlı fotoğrafı iyileştir", price: 8 },
+  { id: "colorize", label: "Renklendir", desc: "Siyah-beyaz → renkli", price: 8 },
+  { id: "denoise", label: "Gürültü Temizle", desc: "Grain / sıkıştırma izlerini kaldır", price: 4 },
 ];
 
 function HdPage() {
@@ -42,10 +43,15 @@ function HdPage() {
 
   async function run() {
     if (!input) return;
+    const price = MODES.find((m) => m.id === mode)?.price ?? 5;
+    if (!confirm(`Cüzdanınızdan ₺${price} düşülecek. Onaylıyor musunuz?`)) return;
     setLoading(true);
     setOutput(null);
     setIsFinal(false);
     try {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      if (!token) throw new Error("Oturum bulunamadı");
       await streamImage(
         "/api/enhance-image",
         { imageDataUrl: input, mode },
@@ -53,8 +59,9 @@ function HdPage() {
           setOutput(dataUrl);
           if (final) setIsFinal(true);
         },
+        { Authorization: `Bearer ${token}` },
       );
-      toast.success("Tamamlandı");
+      toast.success(`Tamamlandı · ₺${price} düşüldü`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Hata");
     } finally {
@@ -82,6 +89,9 @@ function HdPage() {
           Bulanık, düşük çözünürlüklü veya eski fotoğrafları AI ile netleştir.
           Gemini 3 Pro Image ile üretilir — birkaç saniye sürer.
         </p>
+        <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-mono text-primary">
+          <Wallet className="h-3.5 w-3.5" /> Cüzdandan düşer · HD ₺5 · Onar/Renklendir ₺8 · Gürültü ₺4
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-4">
@@ -93,7 +103,10 @@ function HdPage() {
               mode === m.id ? "border-primary shadow-[0_0_18px_hsl(var(--primary)/0.35)]" : ""
             }`}
           >
-            <div className="font-mono text-sm">{m.label}</div>
+            <div className="flex items-center justify-between">
+              <div className="font-mono text-sm">{m.label}</div>
+              <span className="text-xs font-mono text-yellow-400">₺{m.price}</span>
+            </div>
             <div className="text-xs text-muted-foreground mt-1">{m.desc}</div>
           </button>
         ))}

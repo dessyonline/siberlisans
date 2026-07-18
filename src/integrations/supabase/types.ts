@@ -2833,6 +2833,7 @@ export type Database = {
       bump_orders_count: { Args: { _order_id: string }; Returns: undefined }
       cancel_pending_order: { Args: { _order_id: string }; Returns: boolean }
       cancel_subscription: { Args: { _sub_id: string }; Returns: boolean }
+      charge_ai_enhance: { Args: { _price_try: number }; Returns: Json }
       check_low_stock_after_assign: {
         Args: { _product_id: string }
         Returns: {
