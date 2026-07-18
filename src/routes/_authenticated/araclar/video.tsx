@@ -103,6 +103,7 @@ function Page() {
   const [balance, setBalance] = useState<number | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [prices, setPrices] = useState<Record<Quality, Record<number, number>>>(DEFAULT_PRICES);
+  const [sub, setSub] = useState<{ plan_slug: string; credits_remaining: number; expires_at: string } | null>(null);
   const autoDownloaded = useRef<Set<string>>(new Set());
 
   const refresh = async () => {
