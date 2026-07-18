@@ -163,7 +163,7 @@ function AdminLayout() {
   const ActiveIcon = activeItem.icon;
 
   return (
-    <div className="mx-auto max-w-7xl px-3 py-3 sm:px-3 sm:py-4 md:px-4 md:py-6 md:grid md:gap-6 md:grid-cols-[260px,1fr]">
+    <div className="min-h-[calc(100vh-3.5rem)] px-3 py-3 sm:px-3 sm:py-4 md:px-0 md:py-0">
       {/* MOBILE header + Sheet */}
       <div className="md:hidden sticky top-16 z-30 mb-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-background/80 backdrop-blur px-2 py-2">
         <Sheet open={open} onOpenChange={setOpen}>
@@ -212,8 +212,8 @@ function AdminLayout() {
         </div>
       </div>
 
-      {/* DESKTOP: fixed left sidebar with internal scroll */}
-      <aside className="hidden md:flex md:flex-col md:sticky md:top-20 md:h-[calc(100vh-6rem)] glass-card rounded-lg border border-primary/20 overflow-hidden">
+      {/* DESKTOP: always-visible fixed left sidebar */}
+      <aside className="hidden md:fixed md:left-0 md:top-14 md:bottom-0 md:z-30 md:flex md:w-72 md:flex-col border-r border-primary/20 bg-background/95 backdrop-blur overflow-hidden">
         <div className="border-b border-border/40 px-4 py-3 shrink-0">
           <div className="font-mono text-xs text-muted-foreground">
             $ /admin<span className="terminal-caret" />
@@ -232,7 +232,7 @@ function AdminLayout() {
         </div>
       </aside>
 
-      <div className="min-w-0">
+      <div className="min-w-0 md:ml-72 md:min-h-[calc(100vh-3.5rem)] md:px-6 md:py-6">
         <Outlet />
       </div>
     </div>
