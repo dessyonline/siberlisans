@@ -68,7 +68,7 @@ function Hub() {
     return true;
   });
 
-  const grouped: Record<Category, Tool[]> = { resim: [], video: [], gelistirici: [], ai: [] };
+  const grouped: Record<Category, Tool[]> = { resim: [], video: [], gelistirici: [], uretme: [] };
   for (const t of filtered) grouped[t.category].push(t);
 
   const showGrouped = cat === "hepsi" && !q.trim();
