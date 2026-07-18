@@ -43,10 +43,15 @@ function HdPage() {
 
   async function run() {
     if (!input) return;
+    const price = MODES.find((m) => m.id === mode)?.price ?? 5;
+    if (!confirm(`Cüzdanınızdan ₺${price} düşülecek. Onaylıyor musunuz?`)) return;
     setLoading(true);
     setOutput(null);
     setIsFinal(false);
     try {
+      const { data: sess } = await supabase.auth.getSession();
+      const token = sess.session?.access_token;
+      if (!token) throw new Error("Oturum bulunamadı");
       await streamImage(
         "/api/enhance-image",
         { imageDataUrl: input, mode },
@@ -54,8 +59,9 @@ function HdPage() {
           setOutput(dataUrl);
           if (final) setIsFinal(true);
         },
+        { Authorization: `Bearer ${token}` },
       );
-      toast.success("Tamamlandı");
+      toast.success(`Tamamlandı · ₺${price} düşüldü`);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Hata");
     } finally {
