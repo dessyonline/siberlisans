@@ -145,6 +145,8 @@ export const createOrder = createServerFn({ method: "POST" })
 
 
     const referenceCode = genRef();
+    const clientIp = getRequestIP({ xForwardedFor: true }) ?? null;
+    const clientUa = getRequestHeader("user-agent") ?? null;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order, error } = await supabaseAdmin
       .from("orders")
@@ -154,6 +156,8 @@ export const createOrder = createServerFn({ method: "POST" })
         price_try: product.price_try,
         reference_code: referenceCode,
         status: "pending",
+        client_ip: clientIp,
+        user_agent: clientUa,
       })
       .select("id, reference_code")
       .single();
