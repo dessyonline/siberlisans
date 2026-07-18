@@ -41,6 +41,7 @@ import { Route as ApiSessionRouteImport } from './routes/api/session'
 import { Route as ApiRevokeRouteImport } from './routes/api/revoke'
 import { Route as ApiRemoveWatermarkRouteImport } from './routes/api/remove-watermark'
 import { Route as ApiNotificationsRouteImport } from './routes/api/notifications'
+import { Route as ApiEnhanceImageRouteImport } from './routes/api/enhance-image'
 import { Route as ApiCreateProjectRouteImport } from './routes/api/create-project'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiApprovePlanRouteImport } from './routes/api/approve-plan'
@@ -272,6 +273,11 @@ const ApiRemoveWatermarkRoute = ApiRemoveWatermarkRouteImport.update({
 const ApiNotificationsRoute = ApiNotificationsRouteImport.update({
   id: '/api/notifications',
   path: '/api/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiEnhanceImageRoute = ApiEnhanceImageRouteImport.update({
+  id: '/api/enhance-image',
+  path: '/api/enhance-image',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCreateProjectRoute = ApiCreateProjectRouteImport.update({
@@ -720,6 +726,7 @@ export interface FileRoutesByFullPath {
   '/api/approve-plan': typeof ApiApprovePlanRoute
   '/api/chat': typeof ApiChatRoute
   '/api/create-project': typeof ApiCreateProjectRoute
+  '/api/enhance-image': typeof ApiEnhanceImageRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
@@ -824,6 +831,7 @@ export interface FileRoutesByTo {
   '/api/approve-plan': typeof ApiApprovePlanRoute
   '/api/chat': typeof ApiChatRoute
   '/api/create-project': typeof ApiCreateProjectRoute
+  '/api/enhance-image': typeof ApiEnhanceImageRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
@@ -932,6 +940,7 @@ export interface FileRoutesById {
   '/api/approve-plan': typeof ApiApprovePlanRoute
   '/api/chat': typeof ApiChatRoute
   '/api/create-project': typeof ApiCreateProjectRoute
+  '/api/enhance-image': typeof ApiEnhanceImageRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
@@ -1040,6 +1049,7 @@ export interface FileRouteTypes {
     | '/api/approve-plan'
     | '/api/chat'
     | '/api/create-project'
+    | '/api/enhance-image'
     | '/api/notifications'
     | '/api/remove-watermark'
     | '/api/revoke'
@@ -1144,6 +1154,7 @@ export interface FileRouteTypes {
     | '/api/approve-plan'
     | '/api/chat'
     | '/api/create-project'
+    | '/api/enhance-image'
     | '/api/notifications'
     | '/api/remove-watermark'
     | '/api/revoke'
@@ -1251,6 +1262,7 @@ export interface FileRouteTypes {
     | '/api/approve-plan'
     | '/api/chat'
     | '/api/create-project'
+    | '/api/enhance-image'
     | '/api/notifications'
     | '/api/remove-watermark'
     | '/api/revoke'
@@ -1347,6 +1359,7 @@ export interface RootRouteChildren {
   ApiApprovePlanRoute: typeof ApiApprovePlanRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiCreateProjectRoute: typeof ApiCreateProjectRoute
+  ApiEnhanceImageRoute: typeof ApiEnhanceImageRoute
   ApiNotificationsRoute: typeof ApiNotificationsRoute
   ApiRemoveWatermarkRoute: typeof ApiRemoveWatermarkRoute
   ApiRevokeRoute: typeof ApiRevokeRoute
@@ -1603,6 +1616,13 @@ declare module '@tanstack/react-router' {
       path: '/api/notifications'
       fullPath: '/api/notifications'
       preLoaderRoute: typeof ApiNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/enhance-image': {
+      id: '/api/enhance-image'
+      path: '/api/enhance-image'
+      fullPath: '/api/enhance-image'
+      preLoaderRoute: typeof ApiEnhanceImageRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/create-project': {
@@ -2292,6 +2312,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiApprovePlanRoute: ApiApprovePlanRoute,
   ApiChatRoute: ApiChatRoute,
   ApiCreateProjectRoute: ApiCreateProjectRoute,
+  ApiEnhanceImageRoute: ApiEnhanceImageRoute,
   ApiNotificationsRoute: ApiNotificationsRoute,
   ApiRemoveWatermarkRoute: ApiRemoveWatermarkRoute,
   ApiRevokeRoute: ApiRevokeRoute,
