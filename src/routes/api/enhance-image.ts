@@ -7,6 +7,7 @@ const PRICES: Record<string, number> = {
   restore: 8,
   colorize: 8,
   denoise: 4,
+  custom: 6,
 };
 
 const PROMPTS: Record<string, string> = {
@@ -15,6 +16,7 @@ const PROMPTS: Record<string, string> = {
   colorize: "Colorize this black and white image with natural, realistic colors. Keep composition and details identical.",
   denoise: "Remove noise, grain and compression artifacts from this image. Keep every detail sharp and natural.",
 };
+
 
 export const Route = createFileRoute("/api/enhance-image")({
   server: {
@@ -48,12 +50,22 @@ export const Route = createFileRoute("/api/enhance-image")({
         const body = (await request.json().catch(() => null)) as {
           imageDataUrl?: string;
           mode?: string;
+          prompt?: string;
         } | null;
         if (!body?.imageDataUrl?.startsWith("data:image/")) {
           return new Response("Invalid image", { status: 400 });
         }
         const mode = (body.mode && PRICES[body.mode]) ? body.mode : "hd";
         const price = PRICES[mode];
+        const customPrompt = (body.prompt ?? "").trim().slice(0, 800);
+        const finalPrompt =
+          mode === "custom"
+            ? (customPrompt ||
+                "Enhance this image with high quality improvements while keeping the original subject.")
+            : customPrompt
+              ? `${PROMPTS[mode]}\n\nEk kullanıcı isteği: ${customPrompt}`
+              : PROMPTS[mode];
+
 
         // 3. Cüzdanı düş (yetersizse RPC raise eder)
         const { error: chargeErr } = await sb.rpc("charge_ai_enhance", { _price_try: price });
@@ -80,7 +92,7 @@ export const Route = createFileRoute("/api/enhance-image")({
               {
                 role: "user",
                 content: [
-                  { type: "text", text: PROMPTS[mode] },
+                  { type: "text", text: finalPrompt },
                   { type: "image_url", image_url: { url: body.imageDataUrl } },
                 ],
               },

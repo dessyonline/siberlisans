@@ -10,13 +10,15 @@ export const Route = createFileRoute("/_authenticated/araclar/hd")({
   head: () => ({ meta: [{ title: "Resim HD Yap — AI Araçlar" }] }),
 });
 
-type Mode = "hd" | "restore" | "colorize" | "denoise";
+type Mode = "hd" | "restore" | "colorize" | "denoise" | "custom";
 const MODES: { id: Mode; label: string; desc: string; price: number }[] = [
   { id: "hd", label: "HD / Netleştir", desc: "Detayları keskinleştir, çözünürlük artır", price: 5 },
   { id: "restore", label: "Fotoğraf Onar", desc: "Eski/hasarlı fotoğrafı iyileştir", price: 8 },
   { id: "colorize", label: "Renklendir", desc: "Siyah-beyaz → renkli", price: 8 },
   { id: "denoise", label: "Gürültü Temizle", desc: "Grain / sıkıştırma izlerini kaldır", price: 4 },
+  { id: "custom", label: "Özel Prompt", desc: "Kendi isteğini yaz — AI istediğini uygulasın", price: 6 },
 ];
+
 
 function HdPage() {
   const [input, setInput] = useState<string | null>(null);
@@ -24,7 +26,9 @@ function HdPage() {
   const [isFinal, setIsFinal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<Mode>("hd");
+  const [prompt, setPrompt] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
 
   function onPick(f: File | undefined) {
     if (!f) return;
@@ -43,6 +47,10 @@ function HdPage() {
 
   async function run() {
     if (!input) return;
+    if (mode === "custom" && prompt.trim().length < 3) {
+      toast.error("Özel modda prompt yaz (min 3 karakter)");
+      return;
+    }
     const price = MODES.find((m) => m.id === mode)?.price ?? 5;
     if (!confirm(`Cüzdanınızdan ₺${price} düşülecek. Onaylıyor musunuz?`)) return;
     setLoading(true);
@@ -54,7 +62,7 @@ function HdPage() {
       if (!token) throw new Error("Oturum bulunamadı");
       await streamImage(
         "/api/enhance-image",
-        { imageDataUrl: input, mode },
+        { imageDataUrl: input, mode, prompt: prompt.trim() || undefined },
         (dataUrl, final) => {
           setOutput(dataUrl);
           if (final) setIsFinal(true);
@@ -62,6 +70,7 @@ function HdPage() {
         { Authorization: `Bearer ${token}` },
       );
       toast.success(`Tamamlandı · ₺${price} düşüldü`);
+
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Hata");
     } finally {
@@ -90,11 +99,29 @@ function HdPage() {
           Gemini 3 Pro Image ile üretilir — birkaç saniye sürer.
         </p>
         <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-mono text-primary">
-          <Wallet className="h-3.5 w-3.5" /> Cüzdandan düşer · HD ₺5 · Onar/Renklendir ₺8 · Gürültü ₺4
+          <Wallet className="h-3.5 w-3.5" /> Cüzdandan düşer · HD ₺5 · Onar/Renklendir ₺8 · Gürültü ₺4 · Özel ₺6
+        </div>
+
+        {/* Hızlı seçim (dropdown) */}
+        <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+          <label className="font-mono text-xs text-muted-foreground shrink-0">
+            $ mode →
+          </label>
+          <select
+            value={mode}
+            onChange={(e) => setMode(e.target.value as Mode)}
+            className="w-full sm:w-auto rounded-md border border-primary/30 bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+          >
+            {MODES.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.label} · ₺{m.price}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-5">
         {MODES.map((m) => (
           <button
             key={m.id}
@@ -111,6 +138,28 @@ function HdPage() {
           </button>
         ))}
       </div>
+
+      {/* Prompt alanı — her modda opsiyonel, custom modda zorunlu */}
+      <div className="glass-card rounded-lg p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="font-mono text-xs text-muted-foreground">
+            // prompt {mode === "custom" ? "(zorunlu)" : "(opsiyonel · ek istek)"}
+          </div>
+          <div className="font-mono text-[10px] text-muted-foreground">{prompt.length}/800</div>
+        </div>
+        <textarea
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value.slice(0, 800))}
+          placeholder={
+            mode === "custom"
+              ? "Örn: Bu fotoğrafı stüdyo ışığında profesyonel portre gibi göster, arka planı bulanıklaştır"
+              : "Ek istek yaz (örn: cilt tonunu koru, gözleri belirginleştir) — boş bırakabilirsin"
+          }
+          rows={3}
+          className="w-full rounded-md border border-primary/20 bg-background/50 p-3 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-y"
+        />
+      </div>
+
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="glass-card rounded-lg p-4">
