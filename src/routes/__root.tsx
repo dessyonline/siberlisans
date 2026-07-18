@@ -380,6 +380,11 @@ function MobileMenu({
           <Link to="/nasil-calisir" data-mobile-menu-close className={linkCls}><BookOpen className="h-4 w-4" />nasıl çalışır</Link>
           <Link to="/sss" data-mobile-menu-close className={linkCls}><HelpCircle className="h-4 w-4" />SSS</Link>
           <div className="my-2 border-t border-border/50" />
+          <div className="flex items-center justify-between px-3 py-2 rounded-md border border-border/40">
+            <span className="font-mono text-xs text-muted-foreground">tema</span>
+            <ThemeToggle />
+          </div>
+          <div className="my-2 border-t border-border/50" />
           {user ? (
             <>
               <Link to="/hesabim" data-mobile-menu-close className={linkCls}><UserIcon className="h-4 w-4" />hesabım</Link>
