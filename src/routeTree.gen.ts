@@ -68,10 +68,14 @@ import { Route as AuthenticatedHesabimLisanslarRouteImport } from './routes/_aut
 import { Route as AuthenticatedFaturaOrderIdRouteImport } from './routes/_authenticated/fatura.$orderId'
 import { Route as AuthenticatedAraclarVideoRouteImport } from './routes/_authenticated/araclar/video'
 import { Route as AuthenticatedAraclarSloganRouteImport } from './routes/_authenticated/araclar/slogan'
+import { Route as AuthenticatedAraclarSikistirRouteImport } from './routes/_authenticated/araclar/sikistir'
+import { Route as AuthenticatedAraclarQrRouteImport } from './routes/_authenticated/araclar/qr'
+import { Route as AuthenticatedAraclarPaletRouteImport } from './routes/_authenticated/araclar/palet'
 import { Route as AuthenticatedAraclarOzetRouteImport } from './routes/_authenticated/araclar/ozet'
 import { Route as AuthenticatedAraclarKodRouteImport } from './routes/_authenticated/araclar/kod'
 import { Route as AuthenticatedAraclarChatRouteImport } from './routes/_authenticated/araclar/chat'
 import { Route as AuthenticatedAraclarCeviriRouteImport } from './routes/_authenticated/araclar/ceviri'
+import { Route as AuthenticatedAraclarArkaplanRouteImport } from './routes/_authenticated/araclar/arkaplan'
 import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
 import { Route as AuthenticatedAdminUniquelisansRouteImport } from './routes/_authenticated/admin/uniquelisans'
 import { Route as AuthenticatedAdminTedarikciLogRouteImport } from './routes/_authenticated/admin/tedarikci-log'
@@ -414,6 +418,23 @@ const AuthenticatedAraclarSloganRoute =
     path: '/slogan',
     getParentRoute: () => AuthenticatedAraclarRouteRoute,
   } as any)
+const AuthenticatedAraclarSikistirRoute =
+  AuthenticatedAraclarSikistirRouteImport.update({
+    id: '/sikistir',
+    path: '/sikistir',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarQrRoute = AuthenticatedAraclarQrRouteImport.update({
+  id: '/qr',
+  path: '/qr',
+  getParentRoute: () => AuthenticatedAraclarRouteRoute,
+} as any)
+const AuthenticatedAraclarPaletRoute =
+  AuthenticatedAraclarPaletRouteImport.update({
+    id: '/palet',
+    path: '/palet',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
 const AuthenticatedAraclarOzetRoute =
   AuthenticatedAraclarOzetRouteImport.update({
     id: '/ozet',
@@ -435,6 +456,12 @@ const AuthenticatedAraclarCeviriRoute =
   AuthenticatedAraclarCeviriRouteImport.update({
     id: '/ceviri',
     path: '/ceviri',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarArkaplanRoute =
+  AuthenticatedAraclarArkaplanRouteImport.update({
+    id: '/arkaplan',
+    path: '/arkaplan',
     getParentRoute: () => AuthenticatedAraclarRouteRoute,
   } as any)
 const AuthenticatedAdminUrunlerRoute =
@@ -739,10 +766,14 @@ export interface FileRoutesByFullPath {
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
+  '/araclar/arkaplan': typeof AuthenticatedAraclarArkaplanRoute
   '/araclar/ceviri': typeof AuthenticatedAraclarCeviriRoute
   '/araclar/chat': typeof AuthenticatedAraclarChatRoute
   '/araclar/kod': typeof AuthenticatedAraclarKodRoute
   '/araclar/ozet': typeof AuthenticatedAraclarOzetRoute
+  '/araclar/palet': typeof AuthenticatedAraclarPaletRoute
+  '/araclar/qr': typeof AuthenticatedAraclarQrRoute
+  '/araclar/sikistir': typeof AuthenticatedAraclarSikistirRoute
   '/araclar/slogan': typeof AuthenticatedAraclarSloganRoute
   '/araclar/video': typeof AuthenticatedAraclarVideoRoute
   '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
@@ -839,10 +870,14 @@ export interface FileRoutesByTo {
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
+  '/araclar/arkaplan': typeof AuthenticatedAraclarArkaplanRoute
   '/araclar/ceviri': typeof AuthenticatedAraclarCeviriRoute
   '/araclar/chat': typeof AuthenticatedAraclarChatRoute
   '/araclar/kod': typeof AuthenticatedAraclarKodRoute
   '/araclar/ozet': typeof AuthenticatedAraclarOzetRoute
+  '/araclar/palet': typeof AuthenticatedAraclarPaletRoute
+  '/araclar/qr': typeof AuthenticatedAraclarQrRoute
+  '/araclar/sikistir': typeof AuthenticatedAraclarSikistirRoute
   '/araclar/slogan': typeof AuthenticatedAraclarSloganRoute
   '/araclar/video': typeof AuthenticatedAraclarVideoRoute
   '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
@@ -943,10 +978,14 @@ export interface FileRoutesById {
   '/_authenticated/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/_authenticated/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/_authenticated/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
+  '/_authenticated/araclar/arkaplan': typeof AuthenticatedAraclarArkaplanRoute
   '/_authenticated/araclar/ceviri': typeof AuthenticatedAraclarCeviriRoute
   '/_authenticated/araclar/chat': typeof AuthenticatedAraclarChatRoute
   '/_authenticated/araclar/kod': typeof AuthenticatedAraclarKodRoute
   '/_authenticated/araclar/ozet': typeof AuthenticatedAraclarOzetRoute
+  '/_authenticated/araclar/palet': typeof AuthenticatedAraclarPaletRoute
+  '/_authenticated/araclar/qr': typeof AuthenticatedAraclarQrRoute
+  '/_authenticated/araclar/sikistir': typeof AuthenticatedAraclarSikistirRoute
   '/_authenticated/araclar/slogan': typeof AuthenticatedAraclarSloganRoute
   '/_authenticated/araclar/video': typeof AuthenticatedAraclarVideoRoute
   '/_authenticated/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
@@ -1047,10 +1086,14 @@ export interface FileRouteTypes {
     | '/admin/tedarikci-log'
     | '/admin/uniquelisans'
     | '/admin/urunler'
+    | '/araclar/arkaplan'
     | '/araclar/ceviri'
     | '/araclar/chat'
     | '/araclar/kod'
     | '/araclar/ozet'
+    | '/araclar/palet'
+    | '/araclar/qr'
+    | '/araclar/sikistir'
     | '/araclar/slogan'
     | '/araclar/video'
     | '/fatura/$orderId'
@@ -1147,10 +1190,14 @@ export interface FileRouteTypes {
     | '/admin/tedarikci-log'
     | '/admin/uniquelisans'
     | '/admin/urunler'
+    | '/araclar/arkaplan'
     | '/araclar/ceviri'
     | '/araclar/chat'
     | '/araclar/kod'
     | '/araclar/ozet'
+    | '/araclar/palet'
+    | '/araclar/qr'
+    | '/araclar/sikistir'
     | '/araclar/slogan'
     | '/araclar/video'
     | '/fatura/$orderId'
@@ -1250,10 +1297,14 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/tedarikci-log'
     | '/_authenticated/admin/uniquelisans'
     | '/_authenticated/admin/urunler'
+    | '/_authenticated/araclar/arkaplan'
     | '/_authenticated/araclar/ceviri'
     | '/_authenticated/araclar/chat'
     | '/_authenticated/araclar/kod'
     | '/_authenticated/araclar/ozet'
+    | '/_authenticated/araclar/palet'
+    | '/_authenticated/araclar/qr'
+    | '/_authenticated/araclar/sikistir'
     | '/_authenticated/araclar/slogan'
     | '/_authenticated/araclar/video'
     | '/_authenticated/fatura/$orderId'
@@ -1743,6 +1794,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAraclarSloganRouteImport
       parentRoute: typeof AuthenticatedAraclarRouteRoute
     }
+    '/_authenticated/araclar/sikistir': {
+      id: '/_authenticated/araclar/sikistir'
+      path: '/sikistir'
+      fullPath: '/araclar/sikistir'
+      preLoaderRoute: typeof AuthenticatedAraclarSikistirRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/qr': {
+      id: '/_authenticated/araclar/qr'
+      path: '/qr'
+      fullPath: '/araclar/qr'
+      preLoaderRoute: typeof AuthenticatedAraclarQrRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/palet': {
+      id: '/_authenticated/araclar/palet'
+      path: '/palet'
+      fullPath: '/araclar/palet'
+      preLoaderRoute: typeof AuthenticatedAraclarPaletRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
     '/_authenticated/araclar/ozet': {
       id: '/_authenticated/araclar/ozet'
       path: '/ozet'
@@ -1769,6 +1841,13 @@ declare module '@tanstack/react-router' {
       path: '/ceviri'
       fullPath: '/araclar/ceviri'
       preLoaderRoute: typeof AuthenticatedAraclarCeviriRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/arkaplan': {
+      id: '/_authenticated/araclar/arkaplan'
+      path: '/arkaplan'
+      fullPath: '/araclar/arkaplan'
+      preLoaderRoute: typeof AuthenticatedAraclarArkaplanRouteImport
       parentRoute: typeof AuthenticatedAraclarRouteRoute
     }
     '/_authenticated/admin/urunler': {
@@ -2113,10 +2192,14 @@ const AuthenticatedAdminRouteRouteWithChildren =
   )
 
 interface AuthenticatedAraclarRouteRouteChildren {
+  AuthenticatedAraclarArkaplanRoute: typeof AuthenticatedAraclarArkaplanRoute
   AuthenticatedAraclarCeviriRoute: typeof AuthenticatedAraclarCeviriRoute
   AuthenticatedAraclarChatRoute: typeof AuthenticatedAraclarChatRoute
   AuthenticatedAraclarKodRoute: typeof AuthenticatedAraclarKodRoute
   AuthenticatedAraclarOzetRoute: typeof AuthenticatedAraclarOzetRoute
+  AuthenticatedAraclarPaletRoute: typeof AuthenticatedAraclarPaletRoute
+  AuthenticatedAraclarQrRoute: typeof AuthenticatedAraclarQrRoute
+  AuthenticatedAraclarSikistirRoute: typeof AuthenticatedAraclarSikistirRoute
   AuthenticatedAraclarSloganRoute: typeof AuthenticatedAraclarSloganRoute
   AuthenticatedAraclarVideoRoute: typeof AuthenticatedAraclarVideoRoute
   AuthenticatedAraclarIndexRoute: typeof AuthenticatedAraclarIndexRoute
@@ -2124,10 +2207,14 @@ interface AuthenticatedAraclarRouteRouteChildren {
 
 const AuthenticatedAraclarRouteRouteChildren: AuthenticatedAraclarRouteRouteChildren =
   {
+    AuthenticatedAraclarArkaplanRoute: AuthenticatedAraclarArkaplanRoute,
     AuthenticatedAraclarCeviriRoute: AuthenticatedAraclarCeviriRoute,
     AuthenticatedAraclarChatRoute: AuthenticatedAraclarChatRoute,
     AuthenticatedAraclarKodRoute: AuthenticatedAraclarKodRoute,
     AuthenticatedAraclarOzetRoute: AuthenticatedAraclarOzetRoute,
+    AuthenticatedAraclarPaletRoute: AuthenticatedAraclarPaletRoute,
+    AuthenticatedAraclarQrRoute: AuthenticatedAraclarQrRoute,
+    AuthenticatedAraclarSikistirRoute: AuthenticatedAraclarSikistirRoute,
     AuthenticatedAraclarSloganRoute: AuthenticatedAraclarSloganRoute,
     AuthenticatedAraclarVideoRoute: AuthenticatedAraclarVideoRoute,
     AuthenticatedAraclarIndexRoute: AuthenticatedAraclarIndexRoute,
