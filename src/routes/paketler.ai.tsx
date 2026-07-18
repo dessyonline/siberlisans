@@ -10,8 +10,8 @@ export const Route = createFileRoute("/paketler/ai")({
   component: Page,
   head: () => ({
     meta: [
-      { title: "AI Video Paketleri — Rakiplerden %60 Ucuz | SiberPHP" },
-      { name: "description", content: "AI video üretimi için aylık paketler. Easemate ve Runway'den daha ucuz, ödeme başına video hesabı yok — 30 gün havuz." },
+      { title: "AI Video Paketleri — En Uygun Fiyat | SiberPHP" },
+      { name: "description", content: "AI video üretimi için aylık paketler. Yurtdışı platformlardan çok daha uygun, TL fiyatlama, 30 gün kredi havuzu." },
       { property: "og:title", content: "AI Video Paketleri — SiberPHP" },
       { property: "og:description", content: "₺149'dan başlayan aylık AI video paketleri. Video başına ₺3'ten fiyatlar." },
     ],
@@ -90,8 +90,8 @@ function Page() {
         </div>
         <h1 className="font-mono text-3xl sm:text-5xl neon-text">AI Video Paketleri</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Tek kredi havuzu — <span className="text-primary font-semibold">video + görsel + HD upscale</span> aynı paketten harcanır. Easemate ₺350/ay abonelik zorunlu ·
-          <span className="text-primary font-semibold"> Biz ₺149'dan başlıyor, kullanmasan tek seferlik de alabilirsin</span>.
+          Tek kredi havuzu — <span className="text-primary font-semibold">video + görsel + HD upscale</span> aynı paketten harcanır.
+          <span className="text-primary font-semibold"> ₺149'dan başlıyor, kullanmasan tek seferlik de alabilirsin</span>. Abonelik zorunlu değil.
         </p>
 
 
@@ -215,13 +215,14 @@ function Page() {
       </div>
 
       <div className="glass-card rounded-lg p-5">
-        <h2 className="font-mono text-lg mb-3">Rakip Karşılaştırması</h2>
+        <h2 className="font-mono text-lg mb-3">Piyasa Karşılaştırması</h2>
+        <p className="text-xs text-muted-foreground mb-3">Yurtdışı AI video platformlarının halka açık aylık ortalama fiyatları — kur & abonelik zorunluluğu dahil.</p>
         <div className="overflow-x-auto">
           <table className="w-full text-sm font-mono">
             <thead>
               <tr className="border-b border-border/60 text-xs text-muted-foreground">
-                <th className="text-left py-2 pr-4">Platform</th>
-                <th className="text-left py-2 pr-4">Başlangıç</th>
+                <th className="text-left py-2 pr-4">Sağlayıcı</th>
+                <th className="text-left py-2 pr-4">Aylık başlangıç</th>
                 <th className="text-left py-2 pr-4">Video başına</th>
                 <th className="text-left py-2">Zorunlu abonelik</th>
               </tr>
@@ -234,20 +235,20 @@ function Page() {
                 <td className="py-2">Hayır ✓</td>
               </tr>
               <tr className="border-b border-border/40">
-                <td className="py-2 pr-4 text-muted-foreground">Easemate.ai</td>
-                <td className="py-2 pr-4">$8.9/ay (~₺350)</td>
+                <td className="py-2 pr-4 text-muted-foreground">Yurtdışı rakip A</td>
+                <td className="py-2 pr-4">~₺350/ay</td>
                 <td className="py-2 pr-4">~₺6</td>
                 <td className="py-2">Evet ✗</td>
               </tr>
               <tr className="border-b border-border/40">
-                <td className="py-2 pr-4 text-muted-foreground">Runway</td>
-                <td className="py-2 pr-4">$15/ay (~₺600)</td>
+                <td className="py-2 pr-4 text-muted-foreground">Yurtdışı rakip B</td>
+                <td className="py-2 pr-4">~₺600/ay</td>
                 <td className="py-2 pr-4">~₺180</td>
                 <td className="py-2">Evet ✗</td>
               </tr>
               <tr>
-                <td className="py-2 pr-4 text-muted-foreground">Sora / OpenAI</td>
-                <td className="py-2 pr-4">$20/ay (~₺800)</td>
+                <td className="py-2 pr-4 text-muted-foreground">Yurtdışı rakip C</td>
+                <td className="py-2 pr-4">~₺800/ay</td>
                 <td className="py-2 pr-4">~₺45</td>
                 <td className="py-2">Evet ✗</td>
               </tr>
