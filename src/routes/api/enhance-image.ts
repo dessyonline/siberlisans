@@ -91,7 +91,7 @@ export const Route = createFileRoute("/api/enhance-image")({
         });
         if (!upstream.ok || !upstream.body) {
           // Refund
-          await sb.rpc("charge_ai_enhance", { _price_try: -price }).catch(() => {});
+          try { await sb.rpc("charge_ai_enhance", { _price_try: -price }); } catch { /* noop */ }
           const text = await upstream.text().catch(() => "");
           return new Response(text || "Upstream error", { status: upstream.status });
         }
