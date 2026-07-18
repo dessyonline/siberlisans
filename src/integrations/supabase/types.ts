@@ -100,6 +100,7 @@ export type Database = {
           cost_try: number
           created_at: string
           error: string | null
+          expires_at: string | null
           id: string
           kind: string
           params: Json
@@ -113,6 +114,7 @@ export type Database = {
           cost_try?: number
           created_at?: string
           error?: string | null
+          expires_at?: string | null
           id?: string
           kind: string
           params?: Json
@@ -126,6 +128,7 @@ export type Database = {
           cost_try?: number
           created_at?: string
           error?: string | null
+          expires_at?: string | null
           id?: string
           kind?: string
           params?: Json
@@ -2755,6 +2758,13 @@ export type Database = {
           referred_count: number
           total_earned: number
           total_paid: number
+        }[]
+      }
+      ai_video_prices: {
+        Args: never
+        Returns: {
+          cost_try: number
+          duration: number
         }[]
       }
       apply_promo_code: {
