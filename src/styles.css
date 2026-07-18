@@ -304,9 +304,9 @@ body, .glass-card, header, footer, main, section, aside, nav {
   background-color: oklch(0.20 0.03 240 / 0.55) !important;
 }
 
-/* text-white and hero solid buttons should follow theme foreground on light */
+/* text-white on light theme → follow foreground (bg-white kept as-is for QR/invoice) */
 [data-theme="light"] .text-white { color: var(--color-foreground) !important; }
-[data-theme="light"] .bg-white   { background-color: var(--color-card) !important; }
+
 
 
 
