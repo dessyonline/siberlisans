@@ -68,6 +68,16 @@ import { Route as ApiAdminCreateRouteImport } from './routes/api/admin/create'
 import { Route as AuthenticatedHesabimLisanslarRouteImport } from './routes/_authenticated/hesabim.lisanslar'
 import { Route as AuthenticatedFaturaOrderIdRouteImport } from './routes/_authenticated/fatura.$orderId'
 import { Route as AuthenticatedAraclarWatermarkRouteImport } from './routes/_authenticated/araclar/watermark'
+import { Route as AuthenticatedAraclarVideoWatermarkRouteImport } from './routes/_authenticated/araclar/video-watermark'
+import { Route as AuthenticatedAraclarVideoTrimRouteImport } from './routes/_authenticated/araclar/video-trim'
+import { Route as AuthenticatedAraclarVideoThumbnailRouteImport } from './routes/_authenticated/araclar/video-thumbnail'
+import { Route as AuthenticatedAraclarVideoSikistirRouteImport } from './routes/_authenticated/araclar/video-sikistir'
+import { Route as AuthenticatedAraclarVideoSessizRouteImport } from './routes/_authenticated/araclar/video-sessiz'
+import { Route as AuthenticatedAraclarVideoMp3RouteImport } from './routes/_authenticated/araclar/video-mp3'
+import { Route as AuthenticatedAraclarVideoHizRouteImport } from './routes/_authenticated/araclar/video-hiz'
+import { Route as AuthenticatedAraclarVideoGifRouteImport } from './routes/_authenticated/araclar/video-gif'
+import { Route as AuthenticatedAraclarVideoDondurRouteImport } from './routes/_authenticated/araclar/video-dondur'
+import { Route as AuthenticatedAraclarVideoBirlestirRouteImport } from './routes/_authenticated/araclar/video-birlestir'
 import { Route as AuthenticatedAraclarVideoRouteImport } from './routes/_authenticated/araclar/video'
 import { Route as AuthenticatedAraclarSloganRouteImport } from './routes/_authenticated/araclar/slogan'
 import { Route as AuthenticatedAraclarSikistirRouteImport } from './routes/_authenticated/araclar/sikistir'
@@ -425,6 +435,66 @@ const AuthenticatedAraclarWatermarkRoute =
   AuthenticatedAraclarWatermarkRouteImport.update({
     id: '/watermark',
     path: '/watermark',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoWatermarkRoute =
+  AuthenticatedAraclarVideoWatermarkRouteImport.update({
+    id: '/video-watermark',
+    path: '/video-watermark',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoTrimRoute =
+  AuthenticatedAraclarVideoTrimRouteImport.update({
+    id: '/video-trim',
+    path: '/video-trim',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoThumbnailRoute =
+  AuthenticatedAraclarVideoThumbnailRouteImport.update({
+    id: '/video-thumbnail',
+    path: '/video-thumbnail',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoSikistirRoute =
+  AuthenticatedAraclarVideoSikistirRouteImport.update({
+    id: '/video-sikistir',
+    path: '/video-sikistir',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoSessizRoute =
+  AuthenticatedAraclarVideoSessizRouteImport.update({
+    id: '/video-sessiz',
+    path: '/video-sessiz',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoMp3Route =
+  AuthenticatedAraclarVideoMp3RouteImport.update({
+    id: '/video-mp3',
+    path: '/video-mp3',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoHizRoute =
+  AuthenticatedAraclarVideoHizRouteImport.update({
+    id: '/video-hiz',
+    path: '/video-hiz',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoGifRoute =
+  AuthenticatedAraclarVideoGifRouteImport.update({
+    id: '/video-gif',
+    path: '/video-gif',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoDondurRoute =
+  AuthenticatedAraclarVideoDondurRouteImport.update({
+    id: '/video-dondur',
+    path: '/video-dondur',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoBirlestirRoute =
+  AuthenticatedAraclarVideoBirlestirRouteImport.update({
+    id: '/video-birlestir',
+    path: '/video-birlestir',
     getParentRoute: () => AuthenticatedAraclarRouteRoute,
   } as any)
 const AuthenticatedAraclarVideoRoute =
@@ -852,6 +922,16 @@ export interface FileRoutesByFullPath {
   '/araclar/sikistir': typeof AuthenticatedAraclarSikistirRoute
   '/araclar/slogan': typeof AuthenticatedAraclarSloganRoute
   '/araclar/video': typeof AuthenticatedAraclarVideoRoute
+  '/araclar/video-birlestir': typeof AuthenticatedAraclarVideoBirlestirRoute
+  '/araclar/video-dondur': typeof AuthenticatedAraclarVideoDondurRoute
+  '/araclar/video-gif': typeof AuthenticatedAraclarVideoGifRoute
+  '/araclar/video-hiz': typeof AuthenticatedAraclarVideoHizRoute
+  '/araclar/video-mp3': typeof AuthenticatedAraclarVideoMp3Route
+  '/araclar/video-sessiz': typeof AuthenticatedAraclarVideoSessizRoute
+  '/araclar/video-sikistir': typeof AuthenticatedAraclarVideoSikistirRoute
+  '/araclar/video-thumbnail': typeof AuthenticatedAraclarVideoThumbnailRoute
+  '/araclar/video-trim': typeof AuthenticatedAraclarVideoTrimRoute
+  '/araclar/video-watermark': typeof AuthenticatedAraclarVideoWatermarkRoute
   '/araclar/watermark': typeof AuthenticatedAraclarWatermarkRoute
   '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
   '/hesabim/lisanslar': typeof AuthenticatedHesabimLisanslarRoute
@@ -966,6 +1046,16 @@ export interface FileRoutesByTo {
   '/araclar/sikistir': typeof AuthenticatedAraclarSikistirRoute
   '/araclar/slogan': typeof AuthenticatedAraclarSloganRoute
   '/araclar/video': typeof AuthenticatedAraclarVideoRoute
+  '/araclar/video-birlestir': typeof AuthenticatedAraclarVideoBirlestirRoute
+  '/araclar/video-dondur': typeof AuthenticatedAraclarVideoDondurRoute
+  '/araclar/video-gif': typeof AuthenticatedAraclarVideoGifRoute
+  '/araclar/video-hiz': typeof AuthenticatedAraclarVideoHizRoute
+  '/araclar/video-mp3': typeof AuthenticatedAraclarVideoMp3Route
+  '/araclar/video-sessiz': typeof AuthenticatedAraclarVideoSessizRoute
+  '/araclar/video-sikistir': typeof AuthenticatedAraclarVideoSikistirRoute
+  '/araclar/video-thumbnail': typeof AuthenticatedAraclarVideoThumbnailRoute
+  '/araclar/video-trim': typeof AuthenticatedAraclarVideoTrimRoute
+  '/araclar/video-watermark': typeof AuthenticatedAraclarVideoWatermarkRoute
   '/araclar/watermark': typeof AuthenticatedAraclarWatermarkRoute
   '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
   '/hesabim/lisanslar': typeof AuthenticatedHesabimLisanslarRoute
@@ -1084,6 +1174,16 @@ export interface FileRoutesById {
   '/_authenticated/araclar/sikistir': typeof AuthenticatedAraclarSikistirRoute
   '/_authenticated/araclar/slogan': typeof AuthenticatedAraclarSloganRoute
   '/_authenticated/araclar/video': typeof AuthenticatedAraclarVideoRoute
+  '/_authenticated/araclar/video-birlestir': typeof AuthenticatedAraclarVideoBirlestirRoute
+  '/_authenticated/araclar/video-dondur': typeof AuthenticatedAraclarVideoDondurRoute
+  '/_authenticated/araclar/video-gif': typeof AuthenticatedAraclarVideoGifRoute
+  '/_authenticated/araclar/video-hiz': typeof AuthenticatedAraclarVideoHizRoute
+  '/_authenticated/araclar/video-mp3': typeof AuthenticatedAraclarVideoMp3Route
+  '/_authenticated/araclar/video-sessiz': typeof AuthenticatedAraclarVideoSessizRoute
+  '/_authenticated/araclar/video-sikistir': typeof AuthenticatedAraclarVideoSikistirRoute
+  '/_authenticated/araclar/video-thumbnail': typeof AuthenticatedAraclarVideoThumbnailRoute
+  '/_authenticated/araclar/video-trim': typeof AuthenticatedAraclarVideoTrimRoute
+  '/_authenticated/araclar/video-watermark': typeof AuthenticatedAraclarVideoWatermarkRoute
   '/_authenticated/araclar/watermark': typeof AuthenticatedAraclarWatermarkRoute
   '/_authenticated/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
   '/_authenticated/hesabim/lisanslar': typeof AuthenticatedHesabimLisanslarRoute
@@ -1202,6 +1302,16 @@ export interface FileRouteTypes {
     | '/araclar/sikistir'
     | '/araclar/slogan'
     | '/araclar/video'
+    | '/araclar/video-birlestir'
+    | '/araclar/video-dondur'
+    | '/araclar/video-gif'
+    | '/araclar/video-hiz'
+    | '/araclar/video-mp3'
+    | '/araclar/video-sessiz'
+    | '/araclar/video-sikistir'
+    | '/araclar/video-thumbnail'
+    | '/araclar/video-trim'
+    | '/araclar/video-watermark'
     | '/araclar/watermark'
     | '/fatura/$orderId'
     | '/hesabim/lisanslar'
@@ -1316,6 +1426,16 @@ export interface FileRouteTypes {
     | '/araclar/sikistir'
     | '/araclar/slogan'
     | '/araclar/video'
+    | '/araclar/video-birlestir'
+    | '/araclar/video-dondur'
+    | '/araclar/video-gif'
+    | '/araclar/video-hiz'
+    | '/araclar/video-mp3'
+    | '/araclar/video-sessiz'
+    | '/araclar/video-sikistir'
+    | '/araclar/video-thumbnail'
+    | '/araclar/video-trim'
+    | '/araclar/video-watermark'
     | '/araclar/watermark'
     | '/fatura/$orderId'
     | '/hesabim/lisanslar'
@@ -1433,6 +1553,16 @@ export interface FileRouteTypes {
     | '/_authenticated/araclar/sikistir'
     | '/_authenticated/araclar/slogan'
     | '/_authenticated/araclar/video'
+    | '/_authenticated/araclar/video-birlestir'
+    | '/_authenticated/araclar/video-dondur'
+    | '/_authenticated/araclar/video-gif'
+    | '/_authenticated/araclar/video-hiz'
+    | '/_authenticated/araclar/video-mp3'
+    | '/_authenticated/araclar/video-sessiz'
+    | '/_authenticated/araclar/video-sikistir'
+    | '/_authenticated/araclar/video-thumbnail'
+    | '/_authenticated/araclar/video-trim'
+    | '/_authenticated/araclar/video-watermark'
     | '/_authenticated/araclar/watermark'
     | '/_authenticated/fatura/$orderId'
     | '/_authenticated/hesabim/lisanslar'
@@ -1922,6 +2052,76 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAraclarWatermarkRouteImport
       parentRoute: typeof AuthenticatedAraclarRouteRoute
     }
+    '/_authenticated/araclar/video-watermark': {
+      id: '/_authenticated/araclar/video-watermark'
+      path: '/video-watermark'
+      fullPath: '/araclar/video-watermark'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoWatermarkRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-trim': {
+      id: '/_authenticated/araclar/video-trim'
+      path: '/video-trim'
+      fullPath: '/araclar/video-trim'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoTrimRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-thumbnail': {
+      id: '/_authenticated/araclar/video-thumbnail'
+      path: '/video-thumbnail'
+      fullPath: '/araclar/video-thumbnail'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoThumbnailRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-sikistir': {
+      id: '/_authenticated/araclar/video-sikistir'
+      path: '/video-sikistir'
+      fullPath: '/araclar/video-sikistir'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoSikistirRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-sessiz': {
+      id: '/_authenticated/araclar/video-sessiz'
+      path: '/video-sessiz'
+      fullPath: '/araclar/video-sessiz'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoSessizRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-mp3': {
+      id: '/_authenticated/araclar/video-mp3'
+      path: '/video-mp3'
+      fullPath: '/araclar/video-mp3'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoMp3RouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-hiz': {
+      id: '/_authenticated/araclar/video-hiz'
+      path: '/video-hiz'
+      fullPath: '/araclar/video-hiz'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoHizRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-gif': {
+      id: '/_authenticated/araclar/video-gif'
+      path: '/video-gif'
+      fullPath: '/araclar/video-gif'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoGifRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-dondur': {
+      id: '/_authenticated/araclar/video-dondur'
+      path: '/video-dondur'
+      fullPath: '/araclar/video-dondur'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoDondurRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-birlestir': {
+      id: '/_authenticated/araclar/video-birlestir'
+      path: '/video-birlestir'
+      fullPath: '/araclar/video-birlestir'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoBirlestirRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
     '/_authenticated/araclar/video': {
       id: '/_authenticated/araclar/video'
       path: '/video'
@@ -2408,6 +2608,16 @@ interface AuthenticatedAraclarRouteRouteChildren {
   AuthenticatedAraclarSikistirRoute: typeof AuthenticatedAraclarSikistirRoute
   AuthenticatedAraclarSloganRoute: typeof AuthenticatedAraclarSloganRoute
   AuthenticatedAraclarVideoRoute: typeof AuthenticatedAraclarVideoRoute
+  AuthenticatedAraclarVideoBirlestirRoute: typeof AuthenticatedAraclarVideoBirlestirRoute
+  AuthenticatedAraclarVideoDondurRoute: typeof AuthenticatedAraclarVideoDondurRoute
+  AuthenticatedAraclarVideoGifRoute: typeof AuthenticatedAraclarVideoGifRoute
+  AuthenticatedAraclarVideoHizRoute: typeof AuthenticatedAraclarVideoHizRoute
+  AuthenticatedAraclarVideoMp3Route: typeof AuthenticatedAraclarVideoMp3Route
+  AuthenticatedAraclarVideoSessizRoute: typeof AuthenticatedAraclarVideoSessizRoute
+  AuthenticatedAraclarVideoSikistirRoute: typeof AuthenticatedAraclarVideoSikistirRoute
+  AuthenticatedAraclarVideoThumbnailRoute: typeof AuthenticatedAraclarVideoThumbnailRoute
+  AuthenticatedAraclarVideoTrimRoute: typeof AuthenticatedAraclarVideoTrimRoute
+  AuthenticatedAraclarVideoWatermarkRoute: typeof AuthenticatedAraclarVideoWatermarkRoute
   AuthenticatedAraclarWatermarkRoute: typeof AuthenticatedAraclarWatermarkRoute
   AuthenticatedAraclarIndexRoute: typeof AuthenticatedAraclarIndexRoute
 }
@@ -2432,6 +2642,20 @@ const AuthenticatedAraclarRouteRouteChildren: AuthenticatedAraclarRouteRouteChil
     AuthenticatedAraclarSikistirRoute: AuthenticatedAraclarSikistirRoute,
     AuthenticatedAraclarSloganRoute: AuthenticatedAraclarSloganRoute,
     AuthenticatedAraclarVideoRoute: AuthenticatedAraclarVideoRoute,
+    AuthenticatedAraclarVideoBirlestirRoute:
+      AuthenticatedAraclarVideoBirlestirRoute,
+    AuthenticatedAraclarVideoDondurRoute: AuthenticatedAraclarVideoDondurRoute,
+    AuthenticatedAraclarVideoGifRoute: AuthenticatedAraclarVideoGifRoute,
+    AuthenticatedAraclarVideoHizRoute: AuthenticatedAraclarVideoHizRoute,
+    AuthenticatedAraclarVideoMp3Route: AuthenticatedAraclarVideoMp3Route,
+    AuthenticatedAraclarVideoSessizRoute: AuthenticatedAraclarVideoSessizRoute,
+    AuthenticatedAraclarVideoSikistirRoute:
+      AuthenticatedAraclarVideoSikistirRoute,
+    AuthenticatedAraclarVideoThumbnailRoute:
+      AuthenticatedAraclarVideoThumbnailRoute,
+    AuthenticatedAraclarVideoTrimRoute: AuthenticatedAraclarVideoTrimRoute,
+    AuthenticatedAraclarVideoWatermarkRoute:
+      AuthenticatedAraclarVideoWatermarkRoute,
     AuthenticatedAraclarWatermarkRoute: AuthenticatedAraclarWatermarkRoute,
     AuthenticatedAraclarIndexRoute: AuthenticatedAraclarIndexRoute,
   }
