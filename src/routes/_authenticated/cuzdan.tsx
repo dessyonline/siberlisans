@@ -89,7 +89,7 @@ function WalletPage() {
     setCreating(amount);
     try {
       const res = await createFn({ data: { amount } });
-      toast.success("Bakiye yükleme talebi oluşturuldu");
+      toast.success(res.reused ? "Açık yükleme talebine yönlendiriliyorsunuz" : "Bakiye yükleme talebi oluşturuldu");
       qc.invalidateQueries({ queryKey: ["topups", user?.id] });
       navigate({ to: "/bakiye-yukle/$topupId", params: { topupId: res.topupId } });
     } catch (e) {
@@ -100,6 +100,8 @@ function WalletPage() {
   }
 
   const balance = Number(wallet?.balance_try ?? 0);
+  const activeTopup = topups?.find((t) => t.status === "pending" || t.status === "reviewing") ?? null;
+  const createBlocked = creating !== null || !!activeTopup;
 
   return (
     <div className="mx-auto max-w-5xl px-3 py-6 sm:px-4 md:py-10">
@@ -131,12 +133,28 @@ function WalletPage() {
       {/* Paketler */}
       <div className="mt-6">
         <div className="mb-3 font-mono text-xs text-muted-foreground">$ bakiye_yukle --paket</div>
+        {activeTopup && (
+          <div className="mb-3 glass-card rounded-lg border border-warn/40 bg-warn/10 p-3 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="font-mono text-warn">
+                Açık yükleme talebin var: {fmt(Number(activeTopup.amount_try))} TL · {activeTopup.reference_code}
+              </div>
+              <Link
+                to="/bakiye-yukle/$topupId"
+                params={{ topupId: activeTopup.id }}
+                className="font-mono text-xs text-primary hover:underline"
+              >
+                devam et &rarr;
+              </Link>
+            </div>
+          </div>
+        )}
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {TOPUP_PACKAGES.map((amt) => (
             <button
               key={amt}
               onClick={() => onCreate(amt)}
-              disabled={creating !== null}
+              disabled={createBlocked}
               className="glass-card corner-cut rounded-lg p-4 text-left hover:neon-glow transition disabled:opacity-50"
             >
               <div className="font-mono text-[10px] uppercase text-muted-foreground">paket</div>
@@ -148,7 +166,7 @@ function WalletPage() {
             </button>
           ))}
         </div>
-        <CustomTopupInput onSubmit={onCreate} creating={creating !== null} />
+        <CustomTopupInput onSubmit={onCreate} creating={createBlocked} />
         <Link
           to="/kripto-yukle"
           className="mt-3 glass-card corner-cut rounded-lg p-4 flex items-center justify-between hover:neon-glow transition"
