@@ -7,7 +7,7 @@ export const Route = createFileRoute("/_authenticated/araclar/")({
   head: () => ({ meta: [{ title: "Araçlar — SiberPHP" }] }),
 });
 
-type Category = "resim" | "video" | "gelistirici" | "ai";
+type Category = "resim" | "video" | "gelistirici" | "uretme";
 type Badge = "FREE" | "₺";
 
 interface Tool {
@@ -28,7 +28,7 @@ const TOOLS: Tool[] = [
   { to: "/araclar/exif", label: "EXIF Temizle", desc: "Konum/kamera metadata sil — gizlilik.", icon: ShieldCheck, badge: "FREE", category: "resim" },
   { to: "/araclar/pdf", label: "Resim → PDF", desc: "Birden fazla resmi tek PDF'e birleştir.", icon: FileText, badge: "FREE", category: "resim" },
   { to: "/araclar/palet", label: "Renk Paleti", desc: "Resimden hakim renkleri hex olarak çıkar.", icon: Palette, badge: "FREE", category: "resim" },
-  { to: "/araclar/qr", label: "QR Kod Üret", desc: "URL/metin → özelleştirilebilir QR PNG.", icon: QrCode, badge: "FREE", category: "resim" },
+  { to: "/araclar/qr", label: "QR Kod Üret", desc: "URL/metin → özelleştirilebilir QR PNG.", icon: QrCode, badge: "FREE", category: "uretme" },
   // Video
   { to: "/araclar/video-trim", label: "Video Kırp/Kes", desc: "Başlangıç-bitiş vererek videoyu hızlıca kes.", icon: Scissors, badge: "FREE", category: "video" },
   { to: "/araclar/video-gif", label: "Video → GIF", desc: "Video parçasını GIF'e çevir — FPS + boyut.", icon: Film, badge: "FREE", category: "video" },
@@ -45,9 +45,9 @@ const TOOLS: Tool[] = [
   { to: "/araclar/base64", label: "Base64 Kodla/Çöz", desc: "Metin & dosya ↔ Base64 (data URI).", icon: Binary, badge: "FREE", category: "gelistirici" },
   { to: "/araclar/sayac", label: "Metin Sayaç", desc: "Kelime, karakter, okuma süresi — canlı.", icon: Type, badge: "FREE", category: "gelistirici" },
   { to: "/araclar/renk", label: "Renk Çevirici", desc: "HEX ↔ RGB ↔ HSL + ton skalası.", icon: Palette, badge: "FREE", category: "gelistirici" },
-  // AI (Ücretli)
-  { to: "/araclar/hd", label: "Resim HD Yap", desc: "Bulanık/eski fotoğrafı AI ile netleştir · ₺4-8/resim.", icon: Wand2, badge: "₺", category: "ai" },
-  { to: "/araclar/video", label: "AI Video", desc: "Prompt'tan video üret — cüzdandan düşer.", icon: Video, badge: "₺", category: "ai" },
+  // Üretme (AI + jeneratörler)
+  { to: "/araclar/hd", label: "Resim HD Yap", desc: "Bulanık/eski fotoğrafı AI ile netleştir · ₺4-8/resim.", icon: Wand2, badge: "₺", category: "uretme" },
+  { to: "/araclar/video", label: "AI Video", desc: "Prompt'tan video üret — cüzdandan düşer.", icon: Video, badge: "₺", category: "uretme" },
 ];
 
 const CATEGORIES: { id: "hepsi" | Category; label: string; icon: typeof Video }[] = [
@@ -55,7 +55,7 @@ const CATEGORIES: { id: "hepsi" | Category; label: string; icon: typeof Video }[
   { id: "resim", label: "Resim & Medya", icon: PicIcon },
   { id: "video", label: "Video", icon: VidIcon },
   { id: "gelistirici", label: "Geliştirici", icon: Code2 },
-  { id: "ai", label: "AI · Ücretli", icon: Sparkles },
+  { id: "uretme", label: "Üretme", icon: Sparkles },
 ];
 
 function Hub() {
@@ -68,7 +68,7 @@ function Hub() {
     return true;
   });
 
-  const grouped: Record<Category, Tool[]> = { resim: [], video: [], gelistirici: [], ai: [] };
+  const grouped: Record<Category, Tool[]> = { resim: [], video: [], gelistirici: [], uretme: [] };
   for (const t of filtered) grouped[t.category].push(t);
 
   const showGrouped = cat === "hepsi" && !q.trim();
