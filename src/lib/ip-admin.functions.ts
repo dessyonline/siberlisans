@@ -18,7 +18,14 @@ export const listBlockedIps = createServerFn({ method: "GET" })
       .order("created_at", { ascending: false })
       .limit(200);
     if (error) throw new Error(error.message);
-    return { rows: data ?? [] };
+    const rows = (data ?? []).map((r: any) => ({
+      ip: String(r.ip),
+      reason: (r.reason as string | null) ?? null,
+      blocked_until: r.blocked_until as string,
+      created_at: r.created_at as string,
+      user_id: (r.user_id as string | null) ?? null,
+    }));
+    return { rows };
   });
 
 export const listSuspiciousIps = createServerFn({ method: "GET" })
