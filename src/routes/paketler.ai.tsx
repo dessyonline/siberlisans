@@ -118,7 +118,7 @@ function Page() {
               Kalan: ₺{Number(current.credits_remaining).toFixed(0)} · {new Date(current.expires_at).toLocaleDateString("tr-TR")} tarihinde biter
             </div>
           </div>
-          <Link to={"/_authenticated/araclar/video" as never} className="text-xs font-mono text-primary hover:underline">
+          <Link to={"/araclar/video" as never} className="text-xs font-mono text-primary hover:underline">
             → Video üret
           </Link>
         </div>
