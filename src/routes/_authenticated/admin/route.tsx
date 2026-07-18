@@ -163,8 +163,9 @@ function AdminLayout() {
   const ActiveIcon = activeItem.icon;
 
   return (
-    <div className="mx-auto max-w-7xl px-3 py-3 sm:px-3 sm:py-4 md:px-4 md:py-6">
-      <div className="sticky top-16 z-30 mb-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-background/80 backdrop-blur px-2 py-2">
+    <div className="mx-auto max-w-7xl px-3 py-3 sm:px-3 sm:py-4 md:px-4 md:py-6 md:grid md:gap-6 md:grid-cols-[260px,1fr]">
+      {/* MOBILE header + Sheet */}
+      <div className="md:hidden sticky top-16 z-30 mb-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-background/80 backdrop-blur px-2 py-2">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button
@@ -210,6 +211,26 @@ function AdminLayout() {
           </span>
         </div>
       </div>
+
+      {/* DESKTOP: fixed left sidebar with internal scroll */}
+      <aside className="hidden md:flex md:flex-col md:sticky md:top-20 md:h-[calc(100vh-6rem)] glass-card rounded-lg border border-primary/20 overflow-hidden">
+        <div className="border-b border-border/40 px-4 py-3 shrink-0">
+          <div className="font-mono text-xs text-muted-foreground">
+            $ /admin<span className="terminal-caret" />
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-3">
+          <NavList pathname={loc.pathname} />
+        </div>
+        <div className="border-t border-border/40 p-3 shrink-0">
+          <Link
+            to="/"
+            className="flex items-center gap-1 px-3 py-2 font-mono text-xs text-muted-foreground hover:text-primary"
+          >
+            <ArrowLeft className="h-3 w-3" /> siteye dön
+          </Link>
+        </div>
+      </aside>
 
       <div className="min-w-0">
         <Outlet />
