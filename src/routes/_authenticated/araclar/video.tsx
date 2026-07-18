@@ -302,11 +302,11 @@ function Page() {
         </div>
         <Button
           onClick={submit}
-          disabled={busy || (balance ?? 0) < cost}
+          disabled={busy || (Number(sub?.credits_remaining ?? 0) + (balance ?? 0)) < cost}
           className="font-mono neon-glow"
         >
           {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "> "}
-          {busy ? "kuyruğa alınıyor..." : `üret · ₺${cost}`}
+          {busy ? "kuyruğa alınıyor..." : `üret · ₺${cost}${sub && sub.credits_remaining > 0 ? " (paketten)" : ""}`}
         </Button>
       </div>
 
