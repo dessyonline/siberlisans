@@ -268,7 +268,43 @@ function UsersAdmin() {
                           ? new Date(u.last_sign_in_at).toLocaleString("tr-TR")
                           : "—"}
                       </div>
+                      <div className="sm:col-span-2">
+                        son IP:{" "}
+                        {u.last_seen_ip ? (
+                          <span className="text-cyan">{u.last_seen_ip}</span>
+                        ) : (
+                          "—"
+                        )}
+                        {u.last_seen_at && (
+                          <span className="ml-2 text-[10px]">
+                            ({timeAgo(u.last_seen_at)})
+                          </span>
+                        )}
+                      </div>
                     </div>
+                    {u.recent_ips && u.recent_ips.length > 0 && (
+                      <div className="rounded border border-border/40 p-2 space-y-1">
+                        <div className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+                          son ip adresleri ({u.recent_ips.length})
+                        </div>
+                        <div className="space-y-1 max-h-40 overflow-auto">
+                          {u.recent_ips.map((ip) => (
+                            <div
+                              key={ip.ip}
+                              className="flex items-center justify-between gap-2 text-[11px] font-mono"
+                            >
+                              <span className="text-cyan truncate">{ip.ip}</span>
+                              <span className="text-muted-foreground shrink-0">
+                                {ip.count}× · {timeAgo(ip.last_seen)}
+                                {ip.vpn && (
+                                  <span className="ml-1 text-warn">VPN</span>
+                                )}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <UserOrders userId={u.id} />
                     <div className="flex flex-wrap gap-2 pt-2 border-t border-border/40">
                       <Button
