@@ -280,6 +280,36 @@ body, .glass-card, header, footer, main, section, aside, nav {
   transition: background-color 260ms ease, border-color 260ms ease, color 260ms ease;
 }
 
+/* =================== THEME-AWARE REMAPS FOR HARDCODED bg-black / text-white =================== *
+ * Some legacy components use bg-black/40 etc. Remap them per theme so cards
+ * inherit the palette instead of forcing a black slab on light/matrix/sunset. */
+
+/* Non-dark themes: use card/background tint instead of raw black */
+[data-theme] :is(.bg-black\/10, .bg-black\/20) {
+  background-color: color-mix(in oklch, var(--color-card) 55%, transparent) !important;
+}
+[data-theme] :is(.bg-black\/30, .bg-black\/40, .bg-black\/50) {
+  background-color: color-mix(in oklch, var(--color-card) 78%, transparent) !important;
+}
+[data-theme] :is(.bg-black\/60, .bg-black\/70, .bg-black\/80, .bg-black\/90) {
+  /* modal backdrops → keep dark scrim tuned to theme */
+  background-color: color-mix(in oklch, var(--color-background) 82%, transparent) !important;
+}
+
+/* Light theme: further lift toward paper white for content surfaces */
+[data-theme="light"] :is(.bg-black\/10, .bg-black\/20, .bg-black\/30, .bg-black\/40, .bg-black\/50) {
+  background-color: oklch(0.94 0.012 240 / 0.75) !important;
+}
+[data-theme="light"] :is(.bg-black\/60, .bg-black\/70, .bg-black\/80, .bg-black\/90) {
+  background-color: oklch(0.20 0.03 240 / 0.55) !important;
+}
+
+/* text-white on light theme → follow foreground (bg-white kept as-is for QR/invoice) */
+[data-theme="light"] .text-white { color: var(--color-foreground) !important; }
+
+
+
+
 
 
 @layer base {
