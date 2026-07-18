@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { MessageSquare, Languages, Code2, FileText, Sparkles, Video, Eraser, Minimize2, QrCode, Palette } from "lucide-react";
+import { MessageSquare, Languages, Code2, FileText, Sparkles, Video, Eraser, Minimize2, QrCode, Palette, Wand2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/araclar/")({
   component: Hub,
@@ -16,6 +16,7 @@ const TOOLS = [
   { to: "/araclar/sikistir", label: "Resim Sıkıştır", desc: "JPG/WebP/PNG · yeniden boyutlandır + sıkıştır.", icon: Minimize2, badge: "FREE" as const },
   { to: "/araclar/qr", label: "QR Kod Üret", desc: "URL/metin → özelleştirilebilir QR PNG.", icon: QrCode, badge: "FREE" as const },
   { to: "/araclar/palet", label: "Renk Paleti", desc: "Resimden hakim renkleri hex olarak çıkar.", icon: Palette, badge: "FREE" as const },
+  { to: "/araclar/hd", label: "Resim HD Yap", desc: "Bulanık/eski fotoğrafı AI ile netleştir · renklendir.", icon: Wand2, badge: "AI" as const },
   { to: "/araclar/video", label: "AI Video", desc: "Prompt'tan video üret — cüzdandan düşer.", icon: Video, badge: "₺" as const },
 ];
 
