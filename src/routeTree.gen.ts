@@ -69,6 +69,7 @@ import { Route as AuthenticatedHesabimLisanslarRouteImport } from './routes/_aut
 import { Route as AuthenticatedFaturaOrderIdRouteImport } from './routes/_authenticated/fatura.$orderId'
 import { Route as AuthenticatedAraclarWatermarkRouteImport } from './routes/_authenticated/araclar/watermark'
 import { Route as AuthenticatedAraclarVideoWatermarkRouteImport } from './routes/_authenticated/araclar/video-watermark'
+import { Route as AuthenticatedAraclarVideoUzunRouteImport } from './routes/_authenticated/araclar/video-uzun'
 import { Route as AuthenticatedAraclarVideoTrimRouteImport } from './routes/_authenticated/araclar/video-trim'
 import { Route as AuthenticatedAraclarVideoThumbnailRouteImport } from './routes/_authenticated/araclar/video-thumbnail'
 import { Route as AuthenticatedAraclarVideoSikistirRouteImport } from './routes/_authenticated/araclar/video-sikistir'
@@ -441,6 +442,12 @@ const AuthenticatedAraclarVideoWatermarkRoute =
   AuthenticatedAraclarVideoWatermarkRouteImport.update({
     id: '/video-watermark',
     path: '/video-watermark',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoUzunRoute =
+  AuthenticatedAraclarVideoUzunRouteImport.update({
+    id: '/video-uzun',
+    path: '/video-uzun',
     getParentRoute: () => AuthenticatedAraclarRouteRoute,
   } as any)
 const AuthenticatedAraclarVideoTrimRoute =
@@ -931,6 +938,7 @@ export interface FileRoutesByFullPath {
   '/araclar/video-sikistir': typeof AuthenticatedAraclarVideoSikistirRoute
   '/araclar/video-thumbnail': typeof AuthenticatedAraclarVideoThumbnailRoute
   '/araclar/video-trim': typeof AuthenticatedAraclarVideoTrimRoute
+  '/araclar/video-uzun': typeof AuthenticatedAraclarVideoUzunRoute
   '/araclar/video-watermark': typeof AuthenticatedAraclarVideoWatermarkRoute
   '/araclar/watermark': typeof AuthenticatedAraclarWatermarkRoute
   '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
@@ -1055,6 +1063,7 @@ export interface FileRoutesByTo {
   '/araclar/video-sikistir': typeof AuthenticatedAraclarVideoSikistirRoute
   '/araclar/video-thumbnail': typeof AuthenticatedAraclarVideoThumbnailRoute
   '/araclar/video-trim': typeof AuthenticatedAraclarVideoTrimRoute
+  '/araclar/video-uzun': typeof AuthenticatedAraclarVideoUzunRoute
   '/araclar/video-watermark': typeof AuthenticatedAraclarVideoWatermarkRoute
   '/araclar/watermark': typeof AuthenticatedAraclarWatermarkRoute
   '/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
@@ -1183,6 +1192,7 @@ export interface FileRoutesById {
   '/_authenticated/araclar/video-sikistir': typeof AuthenticatedAraclarVideoSikistirRoute
   '/_authenticated/araclar/video-thumbnail': typeof AuthenticatedAraclarVideoThumbnailRoute
   '/_authenticated/araclar/video-trim': typeof AuthenticatedAraclarVideoTrimRoute
+  '/_authenticated/araclar/video-uzun': typeof AuthenticatedAraclarVideoUzunRoute
   '/_authenticated/araclar/video-watermark': typeof AuthenticatedAraclarVideoWatermarkRoute
   '/_authenticated/araclar/watermark': typeof AuthenticatedAraclarWatermarkRoute
   '/_authenticated/fatura/$orderId': typeof AuthenticatedFaturaOrderIdRoute
@@ -1311,6 +1321,7 @@ export interface FileRouteTypes {
     | '/araclar/video-sikistir'
     | '/araclar/video-thumbnail'
     | '/araclar/video-trim'
+    | '/araclar/video-uzun'
     | '/araclar/video-watermark'
     | '/araclar/watermark'
     | '/fatura/$orderId'
@@ -1435,6 +1446,7 @@ export interface FileRouteTypes {
     | '/araclar/video-sikistir'
     | '/araclar/video-thumbnail'
     | '/araclar/video-trim'
+    | '/araclar/video-uzun'
     | '/araclar/video-watermark'
     | '/araclar/watermark'
     | '/fatura/$orderId'
@@ -1562,6 +1574,7 @@ export interface FileRouteTypes {
     | '/_authenticated/araclar/video-sikistir'
     | '/_authenticated/araclar/video-thumbnail'
     | '/_authenticated/araclar/video-trim'
+    | '/_authenticated/araclar/video-uzun'
     | '/_authenticated/araclar/video-watermark'
     | '/_authenticated/araclar/watermark'
     | '/_authenticated/fatura/$orderId'
@@ -2057,6 +2070,13 @@ declare module '@tanstack/react-router' {
       path: '/video-watermark'
       fullPath: '/araclar/video-watermark'
       preLoaderRoute: typeof AuthenticatedAraclarVideoWatermarkRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-uzun': {
+      id: '/_authenticated/araclar/video-uzun'
+      path: '/video-uzun'
+      fullPath: '/araclar/video-uzun'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoUzunRouteImport
       parentRoute: typeof AuthenticatedAraclarRouteRoute
     }
     '/_authenticated/araclar/video-trim': {
@@ -2617,6 +2637,7 @@ interface AuthenticatedAraclarRouteRouteChildren {
   AuthenticatedAraclarVideoSikistirRoute: typeof AuthenticatedAraclarVideoSikistirRoute
   AuthenticatedAraclarVideoThumbnailRoute: typeof AuthenticatedAraclarVideoThumbnailRoute
   AuthenticatedAraclarVideoTrimRoute: typeof AuthenticatedAraclarVideoTrimRoute
+  AuthenticatedAraclarVideoUzunRoute: typeof AuthenticatedAraclarVideoUzunRoute
   AuthenticatedAraclarVideoWatermarkRoute: typeof AuthenticatedAraclarVideoWatermarkRoute
   AuthenticatedAraclarWatermarkRoute: typeof AuthenticatedAraclarWatermarkRoute
   AuthenticatedAraclarIndexRoute: typeof AuthenticatedAraclarIndexRoute
@@ -2654,6 +2675,7 @@ const AuthenticatedAraclarRouteRouteChildren: AuthenticatedAraclarRouteRouteChil
     AuthenticatedAraclarVideoThumbnailRoute:
       AuthenticatedAraclarVideoThumbnailRoute,
     AuthenticatedAraclarVideoTrimRoute: AuthenticatedAraclarVideoTrimRoute,
+    AuthenticatedAraclarVideoUzunRoute: AuthenticatedAraclarVideoUzunRoute,
     AuthenticatedAraclarVideoWatermarkRoute:
       AuthenticatedAraclarVideoWatermarkRoute,
     AuthenticatedAraclarWatermarkRoute: AuthenticatedAraclarWatermarkRoute,
