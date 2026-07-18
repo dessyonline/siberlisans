@@ -192,10 +192,25 @@ function Page() {
           <span className="text-primary">otomatik indirilir</span>. Geçmiş 30 gün saklanır.
         </p>
         <div className="mt-3 flex items-center gap-3 text-xs font-mono flex-wrap">
+          {sub ? (
+            <span className="inline-flex items-center gap-1 rounded border border-primary/60 bg-primary/10 px-2 py-0.5 text-primary">
+              <Sparkles className="h-3 w-3" />
+              {sub.plan_slug.toUpperCase()} · kalan ₺{Number(sub.credits_remaining).toFixed(0)}
+            </span>
+          ) : null}
           <span className="inline-flex items-center gap-1">
             <Wallet className="h-3 w-3 text-primary" />
             bakiye: <span className="text-primary">₺{balance?.toFixed(2) ?? "0.00"}</span>
           </span>
+          {!sub && (
+            <Link
+              to={"/paketler/ai" as never}
+              className="inline-flex items-center gap-1 rounded border border-yellow-400/50 bg-yellow-400/10 px-2 py-0.5 text-yellow-400 hover:bg-yellow-400/20"
+            >
+              <Sparkles className="h-3 w-3" />
+              Pakete geç · ₺149/ay ile ~50 video →
+            </Link>
+          )}
           {isDiscount && (
             <span className="inline-flex items-center gap-1 rounded border border-primary/40 bg-primary/5 px-2 py-0.5 text-primary">
               <Sparkles className="h-3 w-3" />
