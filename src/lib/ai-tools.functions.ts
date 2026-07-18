@@ -33,7 +33,7 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
     z
       .object({
         prompt: z.string().min(3).max(1000),
-        duration: z.union([z.literal(3), z.literal(5), z.literal(8)]),
+        duration: z.union([z.literal(5), z.literal(10)]),
         aspect: z.enum(["16:9", "9:16", "1:1"]),
       })
       .parse(d),
@@ -47,6 +47,19 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
     return { jobId: jobId as string };
+  });
+
+export const getAiVideoPrices = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase } = context;
+    const { data, error } = await supabase.rpc("ai_video_prices");
+    if (error) throw new Error(error.message);
+    const map: Record<number, number> = { 5: 15, 10: 30 };
+    (data ?? []).forEach((r: { duration: number; cost_try: number }) => {
+      map[r.duration] = Number(r.cost_try);
+    });
+    return map;
   });
 
 export const listMyAiJobs = createServerFn({ method: "GET" })
