@@ -47,6 +47,10 @@ function HdPage() {
 
   async function run() {
     if (!input) return;
+    if (mode === "custom" && prompt.trim().length < 3) {
+      toast.error("Özel modda prompt yaz (min 3 karakter)");
+      return;
+    }
     const price = MODES.find((m) => m.id === mode)?.price ?? 5;
     if (!confirm(`Cüzdanınızdan ₺${price} düşülecek. Onaylıyor musunuz?`)) return;
     setLoading(true);
@@ -58,7 +62,7 @@ function HdPage() {
       if (!token) throw new Error("Oturum bulunamadı");
       await streamImage(
         "/api/enhance-image",
-        { imageDataUrl: input, mode },
+        { imageDataUrl: input, mode, prompt: prompt.trim() || undefined },
         (dataUrl, final) => {
           setOutput(dataUrl);
           if (final) setIsFinal(true);
@@ -66,6 +70,7 @@ function HdPage() {
         { Authorization: `Bearer ${token}` },
       );
       toast.success(`Tamamlandı · ₺${price} düşüldü`);
+
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Hata");
     } finally {
