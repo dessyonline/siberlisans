@@ -32,7 +32,7 @@ function AdminWallet() {
     queryFn: async () => {
       const { data } = await supabase
         .from("wallet_topups")
-        .select("id, user_id, amount_try, reference_code, receipt_path, status, admin_note, created_at")
+        .select("id, user_id, amount_try, reference_code, receipt_path, status, admin_note, created_at, client_ip, user_agent, is_vpn, ip_country")
         .order("created_at", { ascending: false })
         .limit(200);
       return data ?? [];
@@ -120,6 +120,12 @@ function AdminWallet() {
                   <div className="text-sm">{emails?.[t.user_id] ?? t.user_id.slice(0, 8)}</div>
                   <div className="text-[11px] text-muted-foreground font-mono">
                     {new Date(t.created_at).toLocaleString("tr-TR")} · {t.status}
+                    {t.client_ip ? (
+                      <span className="ml-2 text-primary/80">IP: {String(t.client_ip)}{t.ip_country ? ` · ${String(t.ip_country)}` : ""}</span>
+                    ) : null}
+                    {t.is_vpn ? (
+                      <span className="ml-2 rounded bg-destructive/20 text-destructive px-1.5 py-0.5 font-bold">VPN</span>
+                    ) : null}
                   </div>
                 </div>
                 <div className="font-mono text-lg font-bold">{fmt(Number(t.amount_try))} TL</div>

@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { getRequestIP, getRequestHeader } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 // Sabit paketler
@@ -18,6 +19,30 @@ const createTopupInput = z.object({
   }),
 });
 
+/**
+ * ip-api.com üzerinden VPN/hosting tespiti. Fail-open: ağ hatasında
+ * `is_vpn=false` döner, meşru kullanıcıyı kilitlemez.
+ */
+async function detectVpn(ip: string | null): Promise<{ is_vpn: boolean; country: string | null }> {
+  if (!ip || ip === "127.0.0.1" || ip === "::1" || ip.startsWith("10.") || ip.startsWith("192.168.")) {
+    return { is_vpn: false, country: null };
+  }
+  try {
+    const ac = new AbortController();
+    const to = setTimeout(() => ac.abort(), 2500);
+    const res = await fetch(
+      `http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,country,proxy,hosting`,
+      { signal: ac.signal },
+    );
+    clearTimeout(to);
+    if (!res.ok) return { is_vpn: false, country: null };
+    const j = (await res.json()) as { status?: string; country?: string; proxy?: boolean; hosting?: boolean };
+    if (j.status !== "success") return { is_vpn: false, country: null };
+    return { is_vpn: Boolean(j.proxy) || Boolean(j.hosting), country: j.country ?? null };
+  } catch {
+    return { is_vpn: false, country: null };
+  }
+}
 
 export const createTopup = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -44,6 +69,10 @@ export const createTopup = createServerFn({ method: "POST" })
       };
     }
 
+    const ip = getRequestIP({ xForwardedFor: true }) ?? null;
+    const ua = getRequestHeader("user-agent") ?? null;
+    const { is_vpn, country } = await detectVpn(ip);
+
     const reference = genRef();
     const { data: row, error } = await supabase
       .from("wallet_topups")
@@ -52,6 +81,10 @@ export const createTopup = createServerFn({ method: "POST" })
         amount_try: data.amount,
         reference_code: reference,
         status: "pending",
+        client_ip: ip,
+        user_agent: ua,
+        is_vpn,
+        ip_country: country,
       })
       .select("id, reference_code")
       .single();
@@ -62,6 +95,15 @@ export const createTopup = createServerFn({ method: "POST" })
       }
       if (/cok_sik_yukleme_talebi/i.test(msg)) {
         throw new Error("Çok sık bakiye yükleme talebi oluşturuyorsunuz. Lütfen 10 dakika sonra tekrar deneyin.");
+      }
+      if (/ip_cok_sik_talep/i.test(msg)) {
+        throw new Error("Aynı ağdan çok sık yükleme talebi geliyor. 10 dakika sonra tekrar deneyin.");
+      }
+      if (/ip_bloklu/i.test(msg)) {
+        throw new Error("IP adresiniz geçici olarak kısıtlandı (24 saat). Destek ile iletişime geçin.");
+      }
+      if (/vpn_algilandi/i.test(msg)) {
+        throw new Error("VPN/Proxy üzerinden bakiye yükleme yapılamaz. Gerçek bağlantınızla tekrar deneyin.");
       }
       throw new Error(msg);
     }

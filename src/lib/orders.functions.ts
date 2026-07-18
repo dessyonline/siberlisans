@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { getRequestIP, getRequestHeader } from "@tanstack/react-start/server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const createOrderInput = z.object({ productId: z.string().uuid() });
@@ -144,6 +145,8 @@ export const createOrder = createServerFn({ method: "POST" })
 
 
     const referenceCode = genRef();
+    const clientIp = getRequestIP({ xForwardedFor: true }) ?? null;
+    const clientUa = getRequestHeader("user-agent") ?? null;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: order, error } = await supabaseAdmin
       .from("orders")
@@ -153,6 +156,8 @@ export const createOrder = createServerFn({ method: "POST" })
         price_try: product.price_try,
         reference_code: referenceCode,
         status: "pending",
+        client_ip: clientIp,
+        user_agent: clientUa,
       })
       .select("id, reference_code")
       .single();
@@ -320,6 +325,21 @@ export const createCartOrder = createServerFn({ method: "POST" })
 
     const row = Array.isArray(rows) ? rows[0] : rows;
     if (!row?.order_id) throw new Error("Sipariş oluşturulamadı.");
+
+    // IP / user-agent kaydı (best-effort — hata yutulur)
+    try {
+      const cartIp = getRequestIP({ xForwardedFor: true }) ?? null;
+      const cartUa = getRequestHeader("user-agent") ?? null;
+      if (cartIp || cartUa) {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        await supabaseAdmin
+          .from("orders")
+          .update({ client_ip: cartIp, user_agent: cartUa })
+          .eq("id", row.order_id as string);
+      }
+    } catch (e) {
+      console.error("[ip] cart order", (e as Error).message);
+    }
 
     // Aktif flash indirimlerini order_discounts'a yaz
     try {

@@ -784,6 +784,30 @@ export type Database = {
           },
         ]
       }
+      ip_blocks: {
+        Row: {
+          blocked_until: string
+          created_at: string
+          ip: unknown
+          reason: string | null
+          user_id: string | null
+        }
+        Insert: {
+          blocked_until: string
+          created_at?: string
+          ip: unknown
+          reason?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          blocked_until?: string
+          created_at?: string
+          ip?: unknown
+          reason?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       license_events: {
         Row: {
           created_at: string
@@ -1226,6 +1250,7 @@ export type Database = {
           admin_note: string | null
           approved_at: string | null
           checkout_fields: Json | null
+          client_ip: unknown
           created_at: string
           custom_fields: Json | null
           external_delivery_data: string | null
@@ -1242,6 +1267,7 @@ export type Database = {
           shopier_order_id: string | null
           status: Database["public"]["Enums"]["order_status"]
           updated_at: string
+          user_agent: string | null
           user_id: string
           user_note: string | null
         }
@@ -1250,6 +1276,7 @@ export type Database = {
           admin_note?: string | null
           approved_at?: string | null
           checkout_fields?: Json | null
+          client_ip?: unknown
           created_at?: string
           custom_fields?: Json | null
           external_delivery_data?: string | null
@@ -1266,6 +1293,7 @@ export type Database = {
           shopier_order_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           updated_at?: string
+          user_agent?: string | null
           user_id: string
           user_note?: string | null
         }
@@ -1274,6 +1302,7 @@ export type Database = {
           admin_note?: string | null
           approved_at?: string | null
           checkout_fields?: Json | null
+          client_ip?: unknown
           created_at?: string
           custom_fields?: Json | null
           external_delivery_data?: string | null
@@ -1290,6 +1319,7 @@ export type Database = {
           shopier_order_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           updated_at?: string
+          user_agent?: string | null
           user_id?: string
           user_note?: string | null
         }
@@ -2374,12 +2404,16 @@ export type Database = {
           admin_note: string | null
           amount_try: number
           approved_at: string | null
+          client_ip: unknown
           created_at: string
           id: string
+          ip_country: string | null
+          is_vpn: boolean
           receipt_path: string | null
           reference_code: string
           status: Database["public"]["Enums"]["topup_status"]
           updated_at: string
+          user_agent: string | null
           user_id: string
           user_note: string | null
         }
@@ -2387,12 +2421,16 @@ export type Database = {
           admin_note?: string | null
           amount_try: number
           approved_at?: string | null
+          client_ip?: unknown
           created_at?: string
           id?: string
+          ip_country?: string | null
+          is_vpn?: boolean
           receipt_path?: string | null
           reference_code: string
           status?: Database["public"]["Enums"]["topup_status"]
           updated_at?: string
+          user_agent?: string | null
           user_id: string
           user_note?: string | null
         }
@@ -2400,12 +2438,16 @@ export type Database = {
           admin_note?: string | null
           amount_try?: number
           approved_at?: string | null
+          client_ip?: unknown
           created_at?: string
           id?: string
+          ip_country?: string | null
+          is_vpn?: boolean
           receipt_path?: string | null
           reference_code?: string
           status?: Database["public"]["Enums"]["topup_status"]
           updated_at?: string
+          user_agent?: string | null
           user_id?: string
           user_note?: string | null
         }
