@@ -41,6 +41,7 @@ import { Route as ApiSessionRouteImport } from './routes/api/session'
 import { Route as ApiRevokeRouteImport } from './routes/api/revoke'
 import { Route as ApiRemoveWatermarkRouteImport } from './routes/api/remove-watermark'
 import { Route as ApiNotificationsRouteImport } from './routes/api/notifications'
+import { Route as ApiEnhanceImageRouteImport } from './routes/api/enhance-image'
 import { Route as ApiCreateProjectRouteImport } from './routes/api/create-project'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiApprovePlanRouteImport } from './routes/api/approve-plan'
@@ -73,6 +74,7 @@ import { Route as AuthenticatedAraclarQrRouteImport } from './routes/_authentica
 import { Route as AuthenticatedAraclarPaletRouteImport } from './routes/_authenticated/araclar/palet'
 import { Route as AuthenticatedAraclarOzetRouteImport } from './routes/_authenticated/araclar/ozet'
 import { Route as AuthenticatedAraclarKodRouteImport } from './routes/_authenticated/araclar/kod'
+import { Route as AuthenticatedAraclarHdRouteImport } from './routes/_authenticated/araclar/hd'
 import { Route as AuthenticatedAraclarChatRouteImport } from './routes/_authenticated/araclar/chat'
 import { Route as AuthenticatedAraclarCeviriRouteImport } from './routes/_authenticated/araclar/ceviri'
 import { Route as AuthenticatedAraclarArkaplanRouteImport } from './routes/_authenticated/araclar/arkaplan'
@@ -274,6 +276,11 @@ const ApiNotificationsRoute = ApiNotificationsRouteImport.update({
   path: '/api/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiEnhanceImageRoute = ApiEnhanceImageRouteImport.update({
+  id: '/api/enhance-image',
+  path: '/api/enhance-image',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCreateProjectRoute = ApiCreateProjectRouteImport.update({
   id: '/api/create-project',
   path: '/api/create-project',
@@ -444,6 +451,11 @@ const AuthenticatedAraclarOzetRoute =
 const AuthenticatedAraclarKodRoute = AuthenticatedAraclarKodRouteImport.update({
   id: '/kod',
   path: '/kod',
+  getParentRoute: () => AuthenticatedAraclarRouteRoute,
+} as any)
+const AuthenticatedAraclarHdRoute = AuthenticatedAraclarHdRouteImport.update({
+  id: '/hd',
+  path: '/hd',
   getParentRoute: () => AuthenticatedAraclarRouteRoute,
 } as any)
 const AuthenticatedAraclarChatRoute =
@@ -720,6 +732,7 @@ export interface FileRoutesByFullPath {
   '/api/approve-plan': typeof ApiApprovePlanRoute
   '/api/chat': typeof ApiChatRoute
   '/api/create-project': typeof ApiCreateProjectRoute
+  '/api/enhance-image': typeof ApiEnhanceImageRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
@@ -769,6 +782,7 @@ export interface FileRoutesByFullPath {
   '/araclar/arkaplan': typeof AuthenticatedAraclarArkaplanRoute
   '/araclar/ceviri': typeof AuthenticatedAraclarCeviriRoute
   '/araclar/chat': typeof AuthenticatedAraclarChatRoute
+  '/araclar/hd': typeof AuthenticatedAraclarHdRoute
   '/araclar/kod': typeof AuthenticatedAraclarKodRoute
   '/araclar/ozet': typeof AuthenticatedAraclarOzetRoute
   '/araclar/palet': typeof AuthenticatedAraclarPaletRoute
@@ -824,6 +838,7 @@ export interface FileRoutesByTo {
   '/api/approve-plan': typeof ApiApprovePlanRoute
   '/api/chat': typeof ApiChatRoute
   '/api/create-project': typeof ApiCreateProjectRoute
+  '/api/enhance-image': typeof ApiEnhanceImageRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
@@ -873,6 +888,7 @@ export interface FileRoutesByTo {
   '/araclar/arkaplan': typeof AuthenticatedAraclarArkaplanRoute
   '/araclar/ceviri': typeof AuthenticatedAraclarCeviriRoute
   '/araclar/chat': typeof AuthenticatedAraclarChatRoute
+  '/araclar/hd': typeof AuthenticatedAraclarHdRoute
   '/araclar/kod': typeof AuthenticatedAraclarKodRoute
   '/araclar/ozet': typeof AuthenticatedAraclarOzetRoute
   '/araclar/palet': typeof AuthenticatedAraclarPaletRoute
@@ -932,6 +948,7 @@ export interface FileRoutesById {
   '/api/approve-plan': typeof ApiApprovePlanRoute
   '/api/chat': typeof ApiChatRoute
   '/api/create-project': typeof ApiCreateProjectRoute
+  '/api/enhance-image': typeof ApiEnhanceImageRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/remove-watermark': typeof ApiRemoveWatermarkRoute
   '/api/revoke': typeof ApiRevokeRoute
@@ -981,6 +998,7 @@ export interface FileRoutesById {
   '/_authenticated/araclar/arkaplan': typeof AuthenticatedAraclarArkaplanRoute
   '/_authenticated/araclar/ceviri': typeof AuthenticatedAraclarCeviriRoute
   '/_authenticated/araclar/chat': typeof AuthenticatedAraclarChatRoute
+  '/_authenticated/araclar/hd': typeof AuthenticatedAraclarHdRoute
   '/_authenticated/araclar/kod': typeof AuthenticatedAraclarKodRoute
   '/_authenticated/araclar/ozet': typeof AuthenticatedAraclarOzetRoute
   '/_authenticated/araclar/palet': typeof AuthenticatedAraclarPaletRoute
@@ -1040,6 +1058,7 @@ export interface FileRouteTypes {
     | '/api/approve-plan'
     | '/api/chat'
     | '/api/create-project'
+    | '/api/enhance-image'
     | '/api/notifications'
     | '/api/remove-watermark'
     | '/api/revoke'
@@ -1089,6 +1108,7 @@ export interface FileRouteTypes {
     | '/araclar/arkaplan'
     | '/araclar/ceviri'
     | '/araclar/chat'
+    | '/araclar/hd'
     | '/araclar/kod'
     | '/araclar/ozet'
     | '/araclar/palet'
@@ -1144,6 +1164,7 @@ export interface FileRouteTypes {
     | '/api/approve-plan'
     | '/api/chat'
     | '/api/create-project'
+    | '/api/enhance-image'
     | '/api/notifications'
     | '/api/remove-watermark'
     | '/api/revoke'
@@ -1193,6 +1214,7 @@ export interface FileRouteTypes {
     | '/araclar/arkaplan'
     | '/araclar/ceviri'
     | '/araclar/chat'
+    | '/araclar/hd'
     | '/araclar/kod'
     | '/araclar/ozet'
     | '/araclar/palet'
@@ -1251,6 +1273,7 @@ export interface FileRouteTypes {
     | '/api/approve-plan'
     | '/api/chat'
     | '/api/create-project'
+    | '/api/enhance-image'
     | '/api/notifications'
     | '/api/remove-watermark'
     | '/api/revoke'
@@ -1300,6 +1323,7 @@ export interface FileRouteTypes {
     | '/_authenticated/araclar/arkaplan'
     | '/_authenticated/araclar/ceviri'
     | '/_authenticated/araclar/chat'
+    | '/_authenticated/araclar/hd'
     | '/_authenticated/araclar/kod'
     | '/_authenticated/araclar/ozet'
     | '/_authenticated/araclar/palet'
@@ -1347,6 +1371,7 @@ export interface RootRouteChildren {
   ApiApprovePlanRoute: typeof ApiApprovePlanRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiCreateProjectRoute: typeof ApiCreateProjectRoute
+  ApiEnhanceImageRoute: typeof ApiEnhanceImageRoute
   ApiNotificationsRoute: typeof ApiNotificationsRoute
   ApiRemoveWatermarkRoute: typeof ApiRemoveWatermarkRoute
   ApiRevokeRoute: typeof ApiRevokeRoute
@@ -1605,6 +1630,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiNotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/enhance-image': {
+      id: '/api/enhance-image'
+      path: '/api/enhance-image'
+      fullPath: '/api/enhance-image'
+      preLoaderRoute: typeof ApiEnhanceImageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/create-project': {
       id: '/api/create-project'
       path: '/api/create-project'
@@ -1827,6 +1859,13 @@ declare module '@tanstack/react-router' {
       path: '/kod'
       fullPath: '/araclar/kod'
       preLoaderRoute: typeof AuthenticatedAraclarKodRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/hd': {
+      id: '/_authenticated/araclar/hd'
+      path: '/hd'
+      fullPath: '/araclar/hd'
+      preLoaderRoute: typeof AuthenticatedAraclarHdRouteImport
       parentRoute: typeof AuthenticatedAraclarRouteRoute
     }
     '/_authenticated/araclar/chat': {
@@ -2195,6 +2234,7 @@ interface AuthenticatedAraclarRouteRouteChildren {
   AuthenticatedAraclarArkaplanRoute: typeof AuthenticatedAraclarArkaplanRoute
   AuthenticatedAraclarCeviriRoute: typeof AuthenticatedAraclarCeviriRoute
   AuthenticatedAraclarChatRoute: typeof AuthenticatedAraclarChatRoute
+  AuthenticatedAraclarHdRoute: typeof AuthenticatedAraclarHdRoute
   AuthenticatedAraclarKodRoute: typeof AuthenticatedAraclarKodRoute
   AuthenticatedAraclarOzetRoute: typeof AuthenticatedAraclarOzetRoute
   AuthenticatedAraclarPaletRoute: typeof AuthenticatedAraclarPaletRoute
@@ -2210,6 +2250,7 @@ const AuthenticatedAraclarRouteRouteChildren: AuthenticatedAraclarRouteRouteChil
     AuthenticatedAraclarArkaplanRoute: AuthenticatedAraclarArkaplanRoute,
     AuthenticatedAraclarCeviriRoute: AuthenticatedAraclarCeviriRoute,
     AuthenticatedAraclarChatRoute: AuthenticatedAraclarChatRoute,
+    AuthenticatedAraclarHdRoute: AuthenticatedAraclarHdRoute,
     AuthenticatedAraclarKodRoute: AuthenticatedAraclarKodRoute,
     AuthenticatedAraclarOzetRoute: AuthenticatedAraclarOzetRoute,
     AuthenticatedAraclarPaletRoute: AuthenticatedAraclarPaletRoute,
@@ -2292,6 +2333,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiApprovePlanRoute: ApiApprovePlanRoute,
   ApiChatRoute: ApiChatRoute,
   ApiCreateProjectRoute: ApiCreateProjectRoute,
+  ApiEnhanceImageRoute: ApiEnhanceImageRoute,
   ApiNotificationsRoute: ApiNotificationsRoute,
   ApiRemoveWatermarkRoute: ApiRemoveWatermarkRoute,
   ApiRevokeRoute: ApiRevokeRoute,
