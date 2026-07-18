@@ -149,6 +149,95 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_subscription_plans: {
+        Row: {
+          created_at: string
+          credits: number
+          is_active: boolean
+          name: string
+          perks: Json
+          price_try: number
+          slug: string
+          sort_order: number
+          yearly_credits: number | null
+          yearly_price_try: number | null
+        }
+        Insert: {
+          created_at?: string
+          credits: number
+          is_active?: boolean
+          name: string
+          perks?: Json
+          price_try: number
+          slug: string
+          sort_order?: number
+          yearly_credits?: number | null
+          yearly_price_try?: number | null
+        }
+        Update: {
+          created_at?: string
+          credits?: number
+          is_active?: boolean
+          name?: string
+          perks?: Json
+          price_try?: number
+          slug?: string
+          sort_order?: number
+          yearly_credits?: number | null
+          yearly_price_try?: number | null
+        }
+        Relationships: []
+      }
+      ai_subscriptions: {
+        Row: {
+          billing: string
+          created_at: string
+          credits_remaining: number
+          credits_total: number
+          expires_at: string
+          id: string
+          plan_slug: string
+          price_paid: number
+          started_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          billing?: string
+          created_at?: string
+          credits_remaining: number
+          credits_total: number
+          expires_at: string
+          id?: string
+          plan_slug: string
+          price_paid: number
+          started_at?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          billing?: string
+          created_at?: string
+          credits_remaining?: number
+          credits_total?: number
+          expires_at?: string
+          id?: string
+          plan_slug?: string
+          price_paid?: number
+          started_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_subscriptions_plan_slug_fkey"
+            columns: ["plan_slug"]
+            isOneToOne: false
+            referencedRelation: "ai_subscription_plans"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       ai_tool_usage: {
         Row: {
           count: number
@@ -2950,6 +3039,7 @@ export type Database = {
           total_entries: number
         }[]
       }
+      expire_ai_subscriptions: { Args: never; Returns: number }
       finalize_free_order: {
         Args: { _order_id: string }
         Returns: {
@@ -3085,6 +3175,10 @@ export type Database = {
           created_at: string
           name: string
         }[]
+      }
+      purchase_ai_subscription: {
+        Args: { _billing?: string; _plan_slug: string }
+        Returns: string
       }
       push_notification: {
         Args: {
