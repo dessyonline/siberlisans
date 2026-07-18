@@ -67,6 +67,22 @@ export const listUsers = createServerFn({ method: "GET" })
     });
 
     const orderStats = new Map<string, { total: number; approved: number; pending: number; spend: number }>();
+    const ipMap = new Map<string, Map<string, { count: number; lastSeen: string; vpn: boolean; ua: string | null }>>();
+
+    const addIp = (uid: string, ip: string | null, ts: string, vpn: boolean, ua: string | null) => {
+      if (!uid || !ip) return;
+      const bucket = ipMap.get(uid) ?? new Map();
+      const prev = bucket.get(ip);
+      if (prev) {
+        prev.count++;
+        if (ts > prev.lastSeen) prev.lastSeen = ts;
+        if (vpn) prev.vpn = true;
+      } else {
+        bucket.set(ip, { count: 1, lastSeen: ts, vpn, ua });
+      }
+      ipMap.set(uid, bucket);
+    };
+
     (orders ?? []).forEach((o) => {
       const s = orderStats.get(o.user_id) ?? { total: 0, approved: 0, pending: 0, spend: 0 };
       s.total++;
@@ -76,10 +92,22 @@ export const listUsers = createServerFn({ method: "GET" })
       }
       if (o.status === "pending" || o.status === "reviewing") s.pending++;
       orderStats.set(o.user_id, s);
+      addIp(o.user_id, o.client_ip as string | null, o.created_at, false, o.user_agent as string | null);
+    });
+
+    (topups ?? []).forEach((t) => {
+      addIp(t.user_id, t.client_ip as string | null, t.created_at, !!t.is_vpn, null);
     });
 
     return (profiles ?? []).map((p) => {
       const a = authMap.get(p.id);
+      const ipBucket = ipMap.get(p.id);
+      const recentIps = ipBucket
+        ? [...ipBucket.entries()]
+            .map(([ip, v]) => ({ ip, count: v.count, last_seen: v.lastSeen, vpn: v.vpn, ua: v.ua }))
+            .sort((a, b) => b.last_seen.localeCompare(a.last_seen))
+            .slice(0, 8)
+        : [];
       return {
         id: p.id,
         email: p.email,
@@ -87,6 +115,9 @@ export const listUsers = createServerFn({ method: "GET" })
         created_at: p.created_at,
         last_sign_in_at: a?.last_sign_in_at ?? null,
         email_confirmed: a?.confirmed ?? false,
+        last_seen_ip: (p as { last_seen_ip?: string | null }).last_seen_ip ?? null,
+        last_seen_at: (p as { last_seen_at?: string | null }).last_seen_at ?? null,
+        recent_ips: recentIps,
         roles: roleMap.get(p.id) ?? [],
         stats: orderStats.get(p.id) ?? { total: 0, approved: 0, pending: 0, spend: 0 },
       };
