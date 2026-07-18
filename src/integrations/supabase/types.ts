@@ -105,6 +105,9 @@ export type Database = {
           kind: string
           params: Json
           prompt: string
+          provider: string
+          provider_model: string | null
+          provider_request_id: string | null
           result_url: string | null
           status: string
           updated_at: string
@@ -119,6 +122,9 @@ export type Database = {
           kind: string
           params?: Json
           prompt: string
+          provider?: string
+          provider_model?: string | null
+          provider_request_id?: string | null
           result_url?: string | null
           status?: string
           updated_at?: string
@@ -133,6 +139,9 @@ export type Database = {
           kind?: string
           params?: Json
           prompt?: string
+          provider?: string
+          provider_model?: string | null
+          provider_request_id?: string | null
           result_url?: string | null
           status?: string
           updated_at?: string
@@ -2765,6 +2774,7 @@ export type Database = {
         Returns: {
           cost_try: number
           duration: number
+          quality: string
         }[]
       }
       apply_promo_code: {
@@ -2875,7 +2885,12 @@ export type Database = {
       }
       consume_ai_quota: { Args: { _tool_key: string }; Returns: Json }
       create_ai_video_job: {
-        Args: { _aspect: string; _duration: number; _prompt: string }
+        Args: {
+          _aspect: string
+          _duration: number
+          _prompt: string
+          _quality?: string
+        }
         Returns: string
       }
       create_cart_order:
@@ -3170,6 +3185,70 @@ export type Database = {
         }[]
       }
       validate_license: { Args: { _hwid: string; _key: string }; Returns: Json }
+      worker_claim_ai_jobs: {
+        Args: { _limit?: number }
+        Returns: {
+          cost_try: number
+          created_at: string
+          error: string | null
+          expires_at: string | null
+          id: string
+          kind: string
+          params: Json
+          prompt: string
+          provider: string
+          provider_model: string | null
+          provider_request_id: string | null
+          result_url: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "ai_jobs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      worker_complete_ai_job: {
+        Args: { _job: string; _url: string }
+        Returns: undefined
+      }
+      worker_fail_ai_job: {
+        Args: { _job: string; _reason: string; _refund?: boolean }
+        Returns: undefined
+      }
+      worker_pending_ai_jobs: {
+        Args: { _limit?: number }
+        Returns: {
+          cost_try: number
+          created_at: string
+          error: string | null
+          expires_at: string | null
+          id: string
+          kind: string
+          params: Json
+          prompt: string
+          provider: string
+          provider_model: string | null
+          provider_request_id: string | null
+          result_url: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "ai_jobs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      worker_set_provider_request: {
+        Args: { _job: string; _model: string; _req_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"
