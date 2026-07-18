@@ -89,6 +89,9 @@ function HdPage() {
           Bulanık, düşük çözünürlüklü veya eski fotoğrafları AI ile netleştir.
           Gemini 3 Pro Image ile üretilir — birkaç saniye sürer.
         </p>
+        <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-mono text-primary">
+          <Wallet className="h-3.5 w-3.5" /> Cüzdandan düşer · HD ₺5 · Onar/Renklendir ₺8 · Gürültü ₺4
+        </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-4">
@@ -100,7 +103,10 @@ function HdPage() {
               mode === m.id ? "border-primary shadow-[0_0_18px_hsl(var(--primary)/0.35)]" : ""
             }`}
           >
-            <div className="font-mono text-sm">{m.label}</div>
+            <div className="flex items-center justify-between">
+              <div className="font-mono text-sm">{m.label}</div>
+              <span className="text-xs font-mono text-yellow-400">₺{m.price}</span>
+            </div>
             <div className="text-xs text-muted-foreground mt-1">{m.desc}</div>
           </button>
         ))}
