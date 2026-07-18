@@ -23,7 +23,27 @@ export const createTopup = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => createTopupInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId, claims } = context;
+    const { supabase, userId } = context;
+
+    const { data: active, error: activeError } = await supabase
+      .from("wallet_topups")
+      .select("id, reference_code, amount_try, status")
+      .eq("user_id", userId)
+      .in("status", ["pending", "reviewing"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (activeError) throw new Error(activeError.message);
+    if (active) {
+      return {
+        topupId: active.id,
+        referenceCode: active.reference_code,
+        reused: true,
+        amount: Number(active.amount_try ?? 0),
+        status: active.status,
+      };
+    }
+
     const reference = genRef();
     const { data: row, error } = await supabase
       .from("wallet_topups")
@@ -35,23 +55,18 @@ export const createTopup = createServerFn({ method: "POST" })
       })
       .select("id, reference_code")
       .single();
-    if (error) throw new Error(error.message);
-
-    try {
-      const { notifyTelegram } = await import("@/lib/telegram.server");
-      await notifyTelegram(
-        [
-          "💰 <b>YENİ BAKİYE YÜKLEME</b>",
-          `Ref: <code>${row.reference_code}</code>`,
-          `Tutar: <b>${data.amount} TL</b>`,
-          `Kullanıcı: ${(claims as { email?: string } | null)?.email ?? "—"}`,
-        ].join("\n"),
-      );
-    } catch (e) {
-      console.error("[notify] createTopup", (e as Error).message);
+    if (error) {
+      const msg = error.message || "";
+      if (/aktif_yukleme_talebi_var/i.test(msg)) {
+        throw new Error("Zaten açık bir bakiye yükleme talebiniz var. Önce onu tamamlayın veya admin kararını bekleyin.");
+      }
+      if (/cok_sik_yukleme_talebi/i.test(msg)) {
+        throw new Error("Çok sık bakiye yükleme talebi oluşturuyorsunuz. Lütfen 10 dakika sonra tekrar deneyin.");
+      }
+      throw new Error(msg);
     }
 
-    return { topupId: row.id, referenceCode: row.reference_code };
+    return { topupId: row.id, referenceCode: row.reference_code, reused: false, amount: data.amount, status: "pending" };
   });
 
 const markTopupPaidInput = z.object({
