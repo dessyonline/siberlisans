@@ -69,6 +69,7 @@ import { Route as AuthenticatedFaturaOrderIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedAraclarVideoRouteImport } from './routes/_authenticated/araclar/video'
 import { Route as AuthenticatedAraclarSloganRouteImport } from './routes/_authenticated/araclar/slogan'
 import { Route as AuthenticatedAraclarSikistirRouteImport } from './routes/_authenticated/araclar/sikistir'
+import { Route as AuthenticatedAraclarQrRouteImport } from './routes/_authenticated/araclar/qr'
 import { Route as AuthenticatedAraclarOzetRouteImport } from './routes/_authenticated/araclar/ozet'
 import { Route as AuthenticatedAraclarKodRouteImport } from './routes/_authenticated/araclar/kod'
 import { Route as AuthenticatedAraclarChatRouteImport } from './routes/_authenticated/araclar/chat'
@@ -422,6 +423,11 @@ const AuthenticatedAraclarSikistirRoute =
     path: '/sikistir',
     getParentRoute: () => AuthenticatedAraclarRouteRoute,
   } as any)
+const AuthenticatedAraclarQrRoute = AuthenticatedAraclarQrRouteImport.update({
+  id: '/qr',
+  path: '/qr',
+  getParentRoute: () => AuthenticatedAraclarRouteRoute,
+} as any)
 const AuthenticatedAraclarOzetRoute =
   AuthenticatedAraclarOzetRouteImport.update({
     id: '/ozet',
@@ -758,6 +764,7 @@ export interface FileRoutesByFullPath {
   '/araclar/chat': typeof AuthenticatedAraclarChatRoute
   '/araclar/kod': typeof AuthenticatedAraclarKodRoute
   '/araclar/ozet': typeof AuthenticatedAraclarOzetRoute
+  '/araclar/qr': typeof AuthenticatedAraclarQrRoute
   '/araclar/sikistir': typeof AuthenticatedAraclarSikistirRoute
   '/araclar/slogan': typeof AuthenticatedAraclarSloganRoute
   '/araclar/video': typeof AuthenticatedAraclarVideoRoute
@@ -860,6 +867,7 @@ export interface FileRoutesByTo {
   '/araclar/chat': typeof AuthenticatedAraclarChatRoute
   '/araclar/kod': typeof AuthenticatedAraclarKodRoute
   '/araclar/ozet': typeof AuthenticatedAraclarOzetRoute
+  '/araclar/qr': typeof AuthenticatedAraclarQrRoute
   '/araclar/sikistir': typeof AuthenticatedAraclarSikistirRoute
   '/araclar/slogan': typeof AuthenticatedAraclarSloganRoute
   '/araclar/video': typeof AuthenticatedAraclarVideoRoute
@@ -966,6 +974,7 @@ export interface FileRoutesById {
   '/_authenticated/araclar/chat': typeof AuthenticatedAraclarChatRoute
   '/_authenticated/araclar/kod': typeof AuthenticatedAraclarKodRoute
   '/_authenticated/araclar/ozet': typeof AuthenticatedAraclarOzetRoute
+  '/_authenticated/araclar/qr': typeof AuthenticatedAraclarQrRoute
   '/_authenticated/araclar/sikistir': typeof AuthenticatedAraclarSikistirRoute
   '/_authenticated/araclar/slogan': typeof AuthenticatedAraclarSloganRoute
   '/_authenticated/araclar/video': typeof AuthenticatedAraclarVideoRoute
@@ -1072,6 +1081,7 @@ export interface FileRouteTypes {
     | '/araclar/chat'
     | '/araclar/kod'
     | '/araclar/ozet'
+    | '/araclar/qr'
     | '/araclar/sikistir'
     | '/araclar/slogan'
     | '/araclar/video'
@@ -1174,6 +1184,7 @@ export interface FileRouteTypes {
     | '/araclar/chat'
     | '/araclar/kod'
     | '/araclar/ozet'
+    | '/araclar/qr'
     | '/araclar/sikistir'
     | '/araclar/slogan'
     | '/araclar/video'
@@ -1279,6 +1290,7 @@ export interface FileRouteTypes {
     | '/_authenticated/araclar/chat'
     | '/_authenticated/araclar/kod'
     | '/_authenticated/araclar/ozet'
+    | '/_authenticated/araclar/qr'
     | '/_authenticated/araclar/sikistir'
     | '/_authenticated/araclar/slogan'
     | '/_authenticated/araclar/video'
@@ -1776,6 +1788,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAraclarSikistirRouteImport
       parentRoute: typeof AuthenticatedAraclarRouteRoute
     }
+    '/_authenticated/araclar/qr': {
+      id: '/_authenticated/araclar/qr'
+      path: '/qr'
+      fullPath: '/araclar/qr'
+      preLoaderRoute: typeof AuthenticatedAraclarQrRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
     '/_authenticated/araclar/ozet': {
       id: '/_authenticated/araclar/ozet'
       path: '/ozet'
@@ -2158,6 +2177,7 @@ interface AuthenticatedAraclarRouteRouteChildren {
   AuthenticatedAraclarChatRoute: typeof AuthenticatedAraclarChatRoute
   AuthenticatedAraclarKodRoute: typeof AuthenticatedAraclarKodRoute
   AuthenticatedAraclarOzetRoute: typeof AuthenticatedAraclarOzetRoute
+  AuthenticatedAraclarQrRoute: typeof AuthenticatedAraclarQrRoute
   AuthenticatedAraclarSikistirRoute: typeof AuthenticatedAraclarSikistirRoute
   AuthenticatedAraclarSloganRoute: typeof AuthenticatedAraclarSloganRoute
   AuthenticatedAraclarVideoRoute: typeof AuthenticatedAraclarVideoRoute
@@ -2171,6 +2191,7 @@ const AuthenticatedAraclarRouteRouteChildren: AuthenticatedAraclarRouteRouteChil
     AuthenticatedAraclarChatRoute: AuthenticatedAraclarChatRoute,
     AuthenticatedAraclarKodRoute: AuthenticatedAraclarKodRoute,
     AuthenticatedAraclarOzetRoute: AuthenticatedAraclarOzetRoute,
+    AuthenticatedAraclarQrRoute: AuthenticatedAraclarQrRoute,
     AuthenticatedAraclarSikistirRoute: AuthenticatedAraclarSikistirRoute,
     AuthenticatedAraclarSloganRoute: AuthenticatedAraclarSloganRoute,
     AuthenticatedAraclarVideoRoute: AuthenticatedAraclarVideoRoute,

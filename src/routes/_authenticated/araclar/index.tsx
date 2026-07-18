@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { MessageSquare, Languages, Code2, FileText, Sparkles, Video } from "lucide-react";
+import { MessageSquare, Languages, Code2, FileText, Sparkles, Video, Eraser, Minimize2, QrCode, Palette } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/araclar/")({
   component: Hub,
@@ -7,12 +7,16 @@ export const Route = createFileRoute("/_authenticated/araclar/")({
 });
 
 const TOOLS = [
-  { to: "/araclar/chat", label: "AI Chat", desc: "Genel amaçlı asistan — sorularını sor.", icon: MessageSquare, free: true },
-  { to: "/araclar/ceviri", label: "Çevirmen", desc: "Anında dil çevirisi (TR/EN/DE/FR/AR...).", icon: Languages, free: true },
-  { to: "/araclar/kod", label: "Kod Açıklayıcı", desc: "Kodu satır satır açıkla + refactor önerisi.", icon: Code2, free: true },
-  { to: "/araclar/ozet", label: "Metin Özetleyici", desc: "Uzun metni 6 madde özete indirger.", icon: FileText, free: true },
-  { to: "/araclar/slogan", label: "Slogan Üretici", desc: "Ürün açıklamandan 5 slogan çıkarır.", icon: Sparkles, free: true },
-  { to: "/araclar/video", label: "AI Video (₺)", desc: "Prompt'tan kısa video üret — cüzdandan düşer.", icon: Video, free: false },
+  { to: "/araclar/chat", label: "AI Chat", desc: "Genel amaçlı asistan — sorularını sor.", icon: MessageSquare, badge: "AI" as const },
+  { to: "/araclar/ceviri", label: "Çevirmen", desc: "Anında dil çevirisi (TR/EN/DE/FR/AR...).", icon: Languages, badge: "AI" as const },
+  { to: "/araclar/kod", label: "Kod Açıklayıcı", desc: "Kodu satır satır açıkla + refactor önerisi.", icon: Code2, badge: "AI" as const },
+  { to: "/araclar/ozet", label: "Metin Özetleyici", desc: "Uzun metni 6 madde özete indirger.", icon: FileText, badge: "AI" as const },
+  { to: "/araclar/slogan", label: "Slogan Üretici", desc: "Ürün açıklamandan 5 slogan çıkarır.", icon: Sparkles, badge: "AI" as const },
+  { to: "/araclar/arkaplan", label: "Arkaplan Kaldır", desc: "Resmin arkaplanını tarayıcıda kaldır — sınırsız.", icon: Eraser, badge: "FREE" as const },
+  { to: "/araclar/sikistir", label: "Resim Sıkıştır", desc: "JPG/WebP/PNG · yeniden boyutlandır + sıkıştır.", icon: Minimize2, badge: "FREE" as const },
+  { to: "/araclar/qr", label: "QR Kod Üret", desc: "URL/metin → özelleştirilebilir QR PNG.", icon: QrCode, badge: "FREE" as const },
+  { to: "/araclar/palet", label: "Renk Paleti", desc: "Resimden hakim renkleri hex olarak çıkar.", icon: Palette, badge: "FREE" as const },
+  { to: "/araclar/video", label: "AI Video", desc: "Prompt'tan video üret — cüzdandan düşer.", icon: Video, badge: "₺" as const },
 ];
 
 function Hub() {
