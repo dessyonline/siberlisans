@@ -90,9 +90,10 @@ function Page() {
         </div>
         <h1 className="font-mono text-3xl sm:text-5xl neon-text">AI Video Paketleri</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
-          Easemate ₺350/ay abonelik zorunlu · Runway ₺180/video ·
-          <span className="text-primary font-semibold"> Biz ₺149'dan başlıyor</span>. Kullanmasan bile ödeme başına tek video da alabilirsin.
+          Tek kredi havuzu — <span className="text-primary font-semibold">video + görsel + HD upscale</span> aynı paketten harcanır. Easemate ₺350/ay abonelik zorunlu ·
+          <span className="text-primary font-semibold"> Biz ₺149'dan başlıyor, kullanmasan tek seferlik de alabilirsin</span>.
         </p>
+
 
         <div className="inline-flex rounded-lg border border-border/60 p-1 mt-3">
           <button
