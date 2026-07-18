@@ -59,8 +59,8 @@ export const getAiVideoPrices = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     const map: Record<string, Record<number, number>> = {
       fast: { 5: 10, 10: 20 },
-      hd: { 5: 25, 10: 50 },
-      cinematic: { 5: 50, 10: 100 },
+      hd: { 5: 30, 10: 60 },
+      cinematic: { 5: 70, 10: 140 },
     };
     (data ?? []).forEach((r: { quality: string; duration: number; cost_try: number }) => {
       if (!map[r.quality]) map[r.quality] = {};
