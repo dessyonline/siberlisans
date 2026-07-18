@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -6,6 +6,7 @@ import {
   listMyAiJobs,
   getAiVideoPrices,
 } from "@/lib/ai-tools.functions";
+import { getMyAiSubscription } from "@/lib/ai-subscriptions.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -102,6 +103,7 @@ function Page() {
   const [balance, setBalance] = useState<number | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [prices, setPrices] = useState<Record<Quality, Record<number, number>>>(DEFAULT_PRICES);
+  const [sub, setSub] = useState<{ plan_slug: string; credits_remaining: number; expires_at: string } | null>(null);
   const autoDownloaded = useRef<Set<string>>(new Set());
 
   const refresh = async () => {
@@ -122,11 +124,13 @@ function Page() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: user }, priceMap] = await Promise.all([
+      const [{ data: user }, priceMap, s] = await Promise.all([
         supabase.auth.getUser(),
         getAiVideoPrices().catch(() => DEFAULT_PRICES),
+        getMyAiSubscription().catch(() => null),
       ]);
       setPrices(priceMap as Record<Quality, Record<number, number>>);
+      setSub(s as typeof sub);
       if (!user.user) return;
       const { data: w } = await supabase
         .from("wallets")
@@ -188,10 +192,25 @@ function Page() {
           <span className="text-primary">otomatik indirilir</span>. Geçmiş 30 gün saklanır.
         </p>
         <div className="mt-3 flex items-center gap-3 text-xs font-mono flex-wrap">
+          {sub ? (
+            <span className="inline-flex items-center gap-1 rounded border border-primary/60 bg-primary/10 px-2 py-0.5 text-primary">
+              <Sparkles className="h-3 w-3" />
+              {sub.plan_slug.toUpperCase()} · kalan ₺{Number(sub.credits_remaining).toFixed(0)}
+            </span>
+          ) : null}
           <span className="inline-flex items-center gap-1">
             <Wallet className="h-3 w-3 text-primary" />
             bakiye: <span className="text-primary">₺{balance?.toFixed(2) ?? "0.00"}</span>
           </span>
+          {!sub && (
+            <Link
+              to={"/paketler/ai" as never}
+              className="inline-flex items-center gap-1 rounded border border-yellow-400/50 bg-yellow-400/10 px-2 py-0.5 text-yellow-400 hover:bg-yellow-400/20"
+            >
+              <Sparkles className="h-3 w-3" />
+              Pakete geç · ₺149/ay ile ~50 video →
+            </Link>
+          )}
           {isDiscount && (
             <span className="inline-flex items-center gap-1 rounded border border-primary/40 bg-primary/5 px-2 py-0.5 text-primary">
               <Sparkles className="h-3 w-3" />
@@ -283,11 +302,11 @@ function Page() {
         </div>
         <Button
           onClick={submit}
-          disabled={busy || (balance ?? 0) < cost}
+          disabled={busy || (Number(sub?.credits_remaining ?? 0) + (balance ?? 0)) < cost}
           className="font-mono neon-glow"
         >
           {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "> "}
-          {busy ? "kuyruğa alınıyor..." : `üret · ₺${cost}`}
+          {busy ? "kuyruğa alınıyor..." : `üret · ₺${cost}${sub && sub.credits_remaining > 0 ? " (paketten)" : ""}`}
         </Button>
       </div>
 

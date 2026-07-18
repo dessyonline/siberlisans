@@ -28,6 +28,7 @@ import { Route as PaketlerIndexRouteImport } from './routes/paketler.index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
 import { Route as SiparisRefRouteImport } from './routes/siparis.$ref'
+import { Route as PaketlerAiRouteImport } from './routes/paketler.ai'
 import { Route as PaketlerSlugRouteImport } from './routes/paketler.$slug'
 import { Route as PCodeRouteImport } from './routes/p.$code'
 import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
@@ -228,6 +229,11 @@ const UrunSlugRoute = UrunSlugRouteImport.update({
 const SiparisRefRoute = SiparisRefRouteImport.update({
   id: '/siparis/$ref',
   path: '/siparis/$ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaketlerAiRoute = PaketlerAiRouteImport.update({
+  id: '/paketler/ai',
+  path: '/paketler/ai',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PaketlerSlugRoute = PaketlerSlugRouteImport.update({
@@ -878,6 +884,7 @@ export interface FileRoutesByFullPath {
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/p/$code': typeof PCodeRoute
   '/paketler/$slug': typeof PaketlerSlugRoute
+  '/paketler/ai': typeof PaketlerAiRoute
   '/siparis/$ref': typeof SiparisRefRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/blog/': typeof BlogIndexRoute
@@ -1003,6 +1010,7 @@ export interface FileRoutesByTo {
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/p/$code': typeof PCodeRoute
   '/paketler/$slug': typeof PaketlerSlugRoute
+  '/paketler/ai': typeof PaketlerAiRoute
   '/siparis/$ref': typeof SiparisRefRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/blog': typeof BlogIndexRoute
@@ -1132,6 +1140,7 @@ export interface FileRoutesById {
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/p/$code': typeof PCodeRoute
   '/paketler/$slug': typeof PaketlerSlugRoute
+  '/paketler/ai': typeof PaketlerAiRoute
   '/siparis/$ref': typeof SiparisRefRoute
   '/urun/$slug': typeof UrunSlugRoute
   '/blog/': typeof BlogIndexRoute
@@ -1261,6 +1270,7 @@ export interface FileRouteTypes {
     | '/odeme/$orderId'
     | '/p/$code'
     | '/paketler/$slug'
+    | '/paketler/ai'
     | '/siparis/$ref'
     | '/urun/$slug'
     | '/blog/'
@@ -1386,6 +1396,7 @@ export interface FileRouteTypes {
     | '/odeme/$orderId'
     | '/p/$code'
     | '/paketler/$slug'
+    | '/paketler/ai'
     | '/siparis/$ref'
     | '/urun/$slug'
     | '/blog'
@@ -1514,6 +1525,7 @@ export interface FileRouteTypes {
     | '/odeme/$orderId'
     | '/p/$code'
     | '/paketler/$slug'
+    | '/paketler/ai'
     | '/siparis/$ref'
     | '/urun/$slug'
     | '/blog/'
@@ -1631,6 +1643,7 @@ export interface RootRouteChildren {
   OdemeOrderIdRoute: typeof OdemeOrderIdRoute
   PCodeRoute: typeof PCodeRoute
   PaketlerSlugRoute: typeof PaketlerSlugRoute
+  PaketlerAiRoute: typeof PaketlerAiRoute
   SiparisRefRoute: typeof SiparisRefRoute
   UrunSlugRoute: typeof UrunSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
@@ -1783,6 +1796,13 @@ declare module '@tanstack/react-router' {
       path: '/siparis/$ref'
       fullPath: '/siparis/$ref'
       preLoaderRoute: typeof SiparisRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/paketler/ai': {
+      id: '/paketler/ai'
+      path: '/paketler/ai'
+      fullPath: '/paketler/ai'
+      preLoaderRoute: typeof PaketlerAiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/paketler/$slug': {
@@ -2768,6 +2788,7 @@ const rootRouteChildren: RootRouteChildren = {
   OdemeOrderIdRoute: OdemeOrderIdRoute,
   PCodeRoute: PCodeRoute,
   PaketlerSlugRoute: PaketlerSlugRoute,
+  PaketlerAiRoute: PaketlerAiRoute,
   SiparisRefRoute: SiparisRefRoute,
   UrunSlugRoute: UrunSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
