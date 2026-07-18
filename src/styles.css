@@ -116,18 +116,24 @@
 
 [data-theme="light"] body {
   background-image:
-    radial-gradient(ellipse 1000px 600px at 10% -5%, oklch(0.53 0.22 268 / 0.09), transparent 62%),
-    radial-gradient(ellipse 900px 550px at 92% 100%, oklch(0.66 0.18 305 / 0.07), transparent 62%),
-    radial-gradient(ellipse 700px 400px at 50% 50%, oklch(0.62 0.15 220 / 0.035), transparent 70%);
+    radial-gradient(ellipse 1100px 650px at 8% -6%, oklch(0.53 0.22 268 / 0.11), transparent 62%),
+    radial-gradient(ellipse 950px 580px at 94% 102%, oklch(0.66 0.20 305 / 0.09), transparent 62%),
+    radial-gradient(ellipse 780px 460px at 50% 52%, oklch(0.62 0.15 220 / 0.05), transparent 70%);
 }
 
 [data-theme="light"] .glass-card {
-  background: oklch(1 0 0 / 0.92);
-  backdrop-filter: blur(10px) saturate(140%);
-  border: 1px solid oklch(0.90 0.018 260 / 0.9);
+  background: oklch(1 0 0 / 0.86) !important;
+  backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid oklch(0.90 0.018 260 / 0.9) !important;
   box-shadow:
-    0 1px 2px oklch(0.20 0.03 260 / 0.04),
-    0 10px 32px oklch(0.53 0.22 268 / 0.06);
+    0 1px 2px oklch(0.20 0.03 260 / 0.05),
+    0 12px 36px oklch(0.53 0.22 268 / 0.08);
+}
+[data-theme="light"] .glass-card-hover:hover {
+  border-color: oklch(0.53 0.22 268 / 0.55) !important;
+  box-shadow:
+    0 0 0 1px oklch(0.53 0.22 268 / 0.35),
+    0 22px 55px oklch(0.66 0.20 305 / 0.18) !important;
 }
 
 [data-theme="light"] .neon-glow {
@@ -143,18 +149,115 @@
 }
 [data-theme="light"] .neon-text,
 [data-theme="light"] .neon-text-glow {
-  color: var(--color-primary);
-  text-shadow: none;
+  color: var(--color-primary) !important;
+  text-shadow: none !important;
 }
 [data-theme="light"] .cyber-grid {
   background-image:
-    linear-gradient(oklch(0.53 0.22 268 / 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, oklch(0.53 0.22 268 / 0.08) 1px, transparent 1px);
+    linear-gradient(oklch(0.53 0.22 268 / 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, oklch(0.53 0.22 268 / 0.09) 1px, transparent 1px) !important;
 }
 [data-theme="light"] ::selection {
-  background: oklch(0.53 0.22 268 / 0.25);
+  background: oklch(0.53 0.22 268 / 0.22);
   color: var(--color-foreground);
 }
+
+/* Hero orbs — inline greens replaced with indigo/violet/cyan on light */
+[data-theme="light"] .hero-orb {
+  filter: blur(90px);
+  opacity: 0.55;
+}
+[data-theme="light"] .hero-orb:nth-of-type(3n+1) {
+  background: radial-gradient(circle, oklch(0.62 0.22 268 / 0.55), transparent 70%) !important;
+}
+[data-theme="light"] .hero-orb:nth-of-type(3n+2) {
+  background: radial-gradient(circle, oklch(0.70 0.20 305 / 0.45), transparent 70%) !important;
+}
+[data-theme="light"] .hero-orb:nth-of-type(3n) {
+  background: radial-gradient(circle, oklch(0.70 0.16 220 / 0.40), transparent 70%) !important;
+}
+
+/* Neon sweep headline — swap green for indigo→violet gradient */
+[data-theme="light"] .neon-sweep {
+  background-image: linear-gradient(
+    90deg,
+    oklch(0.53 0.22 268 / 0.85) 0%,
+    oklch(0.66 0.20 305) 50%,
+    oklch(0.53 0.22 268 / 0.85) 100%
+  ) !important;
+}
+
+/* Scan line / feed flash / terminal caret / glitch — retint to primary */
+[data-theme="light"] .scan-line::before {
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 3px,
+    oklch(0.53 0.22 268 / 0.05) 3px,
+    oklch(0.53 0.22 268 / 0.05) 4px
+  ) !important;
+}
+[data-theme="light"] .terminal-caret::after { color: var(--color-primary) !important; }
+
+/* Epic tier card retuned for paper white — plum/violet/gold on white */
+[data-theme="light"] .epic-card {
+  background:
+    linear-gradient(oklch(1 0 0 / 0.94), oklch(0.985 0.005 260 / 0.94)) padding-box,
+    linear-gradient(
+      135deg,
+      oklch(0.78 0.16 75) 0%,
+      oklch(0.72 0.20 55) 25%,
+      oklch(0.60 0.22 305) 55%,
+      oklch(0.53 0.22 268) 100%
+    ) border-box !important;
+  box-shadow:
+    0 0 0 1px oklch(0.72 0.18 75 / 0.15),
+    0 14px 40px oklch(0.60 0.22 305 / 0.14) !important;
+}
+[data-theme="light"] .epic-text-glow {
+  color: oklch(0.42 0.20 300);
+  text-shadow:
+    0 0 8px oklch(0.72 0.20 55 / 0.30),
+    0 0 22px oklch(0.60 0.22 305 / 0.25) !important;
+}
+[data-theme="light"] .epic-shimmer {
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    oklch(0.53 0.22 268 / 0.14) 50%,
+    transparent 65%
+  ) !important;
+}
+
+/* Feed-in row flash — retint from green to primary tint */
+[data-theme="light"] .feed-in { animation: feed-in-light 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes feed-in-light {
+  0%   { opacity: 0; transform: translateY(-8px); background-color: oklch(0.53 0.22 268 / 0.10); }
+  60%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 1; background-color: transparent; }
+}
+
+/* Neutralize hardcoded dark surface classes on light */
+[data-theme="light"] :is(
+  .bg-zinc-900, .bg-zinc-950, .bg-slate-900, .bg-slate-950,
+  .bg-neutral-900, .bg-neutral-950, .bg-gray-900, .bg-gray-950, .bg-stone-900
+) {
+  background-color: oklch(1 0 0 / 0.94) !important;
+  color: var(--color-foreground) !important;
+}
+[data-theme="light"] :is(.text-zinc-100, .text-slate-100, .text-neutral-100, .text-gray-100) {
+  color: var(--color-foreground) !important;
+}
+
+/* Tilt-3d hover halo retuned to indigo */
+[data-theme="light"] .tilt-3d::before {
+  background: radial-gradient(
+    480px circle at var(--tilt-x, 50%) var(--tilt-y, 50%),
+    oklch(0.53 0.22 268 / 0.14),
+    transparent 45%
+  ) !important;
+}
+
 
 /* =================== MATRIX — pure black + emerald =================== */
 [data-theme="matrix"] {
