@@ -48,6 +48,8 @@ import { SocialPopup } from "../components/SocialPopup";
 import { OnboardingTour } from "../components/OnboardingTour";
 import { PwaInstallPrompt } from "../components/PwaInstallPrompt";
 import { PushEnablePrompt } from "../components/PushEnablePrompt";
+import { ThemeToggle } from "../components/ThemeToggle";
+import { THEME_BOOT_SCRIPT } from "../lib/theme";
 import { useQuery } from "@tanstack/react-query";
 
 
@@ -178,6 +180,7 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
         <script dangerouslySetInnerHTML={{ __html: MOBILE_MENU_SCRIPT }} />
         {children}
         <Scripts />
@@ -235,6 +238,8 @@ function SiteHeader() {
 
           <CartButton compact />
           <div className="hidden sm:block"><NotificationBell /></div>
+          <ThemeToggle className="hidden sm:inline-flex" />
+
 
 
 
@@ -374,6 +379,11 @@ function MobileMenu({
           <Link to="/blog" data-mobile-menu-close className={linkCls}><Newspaper className="h-4 w-4" />blog</Link>
           <Link to="/nasil-calisir" data-mobile-menu-close className={linkCls}><BookOpen className="h-4 w-4" />nasıl çalışır</Link>
           <Link to="/sss" data-mobile-menu-close className={linkCls}><HelpCircle className="h-4 w-4" />SSS</Link>
+          <div className="my-2 border-t border-border/50" />
+          <div className="flex items-center justify-between px-3 py-2 rounded-md border border-border/40">
+            <span className="font-mono text-xs text-muted-foreground">tema</span>
+            <ThemeToggle />
+          </div>
           <div className="my-2 border-t border-border/50" />
           {user ? (
             <>

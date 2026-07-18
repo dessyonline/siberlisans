@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { toast } from "sonner";
-import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck, RefreshCw, Users, Trophy } from "lucide-react";
+import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck, RefreshCw, Users, Trophy, Palette } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { TierCard } from "@/components/TierCard";
 import { AVATARS, UserAvatar } from "@/components/UserAvatar";
 import { SubscriptionsBlock } from "@/components/SubscriptionsBlock";
@@ -725,6 +726,18 @@ function ProfileTab({ userId, email, onSignOut }: { userId: string; email: strin
         <Button asChild variant="outline" size="sm" className="font-mono self-start sm:self-auto shrink-0">
           <Link to="/bildirimler"><Bell className="mr-1.5 h-3.5 w-3.5" /> yönet</Link>
         </Button>
+      </div>
+
+      <div className="glass-card rounded-lg p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 font-mono text-sm font-semibold">
+            <Palette className="h-4 w-4 text-primary" /> Tema
+          </div>
+          <div className="mt-0.5 font-mono text-xs text-muted-foreground">
+            koyu (cyber neon) veya açık (beyaz / mavimsi) tema arasında geçiş yap
+          </div>
+        </div>
+        <ThemeToggle className="self-start sm:self-auto shrink-0 border border-border/60" />
       </div>
 
       <div className="glass-card rounded-lg p-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
