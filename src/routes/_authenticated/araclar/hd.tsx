@@ -99,11 +99,29 @@ function HdPage() {
           Gemini 3 Pro Image ile üretilir — birkaç saniye sürer.
         </p>
         <div className="mt-3 inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-mono text-primary">
-          <Wallet className="h-3.5 w-3.5" /> Cüzdandan düşer · HD ₺5 · Onar/Renklendir ₺8 · Gürültü ₺4
+          <Wallet className="h-3.5 w-3.5" /> Cüzdandan düşer · HD ₺5 · Onar/Renklendir ₺8 · Gürültü ₺4 · Özel ₺6
+        </div>
+
+        {/* Hızlı seçim (dropdown) */}
+        <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+          <label className="font-mono text-xs text-muted-foreground shrink-0">
+            $ mode →
+          </label>
+          <select
+            value={mode}
+            onChange={(e) => setMode(e.target.value as Mode)}
+            className="w-full sm:w-auto rounded-md border border-primary/30 bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
+          >
+            {MODES.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.label} · ₺{m.price}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-5">
         {MODES.map((m) => (
           <button
             key={m.id}
@@ -120,6 +138,28 @@ function HdPage() {
           </button>
         ))}
       </div>
+
+      {/* Prompt alanı — her modda opsiyonel, custom modda zorunlu */}
+      <div className="glass-card rounded-lg p-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="font-mono text-xs text-muted-foreground">
+            // prompt {mode === "custom" ? "(zorunlu)" : "(opsiyonel · ek istek)"}
+          </div>
+          <div className="font-mono text-[10px] text-muted-foreground">{prompt.length}/800</div>
+        </div>
+        <textarea
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value.slice(0, 800))}
+          placeholder={
+            mode === "custom"
+              ? "Örn: Bu fotoğrafı stüdyo ışığında profesyonel portre gibi göster, arka planı bulanıklaştır"
+              : "Ek istek yaz (örn: cilt tonunu koru, gözleri belirginleştir) — boş bırakabilirsin"
+          }
+          rows={3}
+          className="w-full rounded-md border border-primary/20 bg-background/50 p-3 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 resize-y"
+        />
+      </div>
+
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="glass-card rounded-lg p-4">
