@@ -107,6 +107,7 @@ import { Route as ApiPublicHooksSyncUniquelisansRouteImport } from './routes/api
 import { Route as ApiPublicHooksSubscriptionsRenewRouteImport } from './routes/api/public/hooks/subscriptions-renew'
 import { Route as ApiPublicHooksShopierRouteImport } from './routes/api/public/hooks/shopier'
 import { Route as ApiPublicHooksPushTickRouteImport } from './routes/api/public/hooks/push-tick'
+import { Route as ApiPublicHooksProcessAiVideosRouteImport } from './routes/api/public/hooks/process-ai-videos'
 import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
 import { Route as ApiPublicHooksAbandonmentReminderRouteImport } from './routes/api/public/hooks/abandonment-reminder'
 
@@ -641,6 +642,12 @@ const ApiPublicHooksPushTickRoute = ApiPublicHooksPushTickRouteImport.update({
   path: '/api/public/hooks/push-tick',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksProcessAiVideosRoute =
+  ApiPublicHooksProcessAiVideosRouteImport.update({
+    id: '/api/public/hooks/process-ai-videos',
+    path: '/api/public/hooks/process-ai-videos',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksCampaignTickRoute =
   ApiPublicHooksCampaignTickRouteImport.update({
     id: '/api/public/hooks/campaign-tick',
@@ -748,6 +755,7 @@ export interface FileRoutesByFullPath {
   '/araclar/': typeof AuthenticatedAraclarIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/subscriptions-renew': typeof ApiPublicHooksSubscriptionsRenewRoute
@@ -847,6 +855,7 @@ export interface FileRoutesByTo {
   '/araclar': typeof AuthenticatedAraclarIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/subscriptions-renew': typeof ApiPublicHooksSubscriptionsRenewRoute
@@ -950,6 +959,7 @@ export interface FileRoutesById {
   '/_authenticated/araclar/': typeof AuthenticatedAraclarIndexRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/subscriptions-renew': typeof ApiPublicHooksSubscriptionsRenewRoute
@@ -1053,6 +1063,7 @@ export interface FileRouteTypes {
     | '/araclar/'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/process-ai-videos'
     | '/api/public/hooks/push-tick'
     | '/api/public/hooks/shopier'
     | '/api/public/hooks/subscriptions-renew'
@@ -1152,6 +1163,7 @@ export interface FileRouteTypes {
     | '/araclar'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/process-ai-videos'
     | '/api/public/hooks/push-tick'
     | '/api/public/hooks/shopier'
     | '/api/public/hooks/subscriptions-renew'
@@ -1254,6 +1266,7 @@ export interface FileRouteTypes {
     | '/_authenticated/araclar/'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/process-ai-videos'
     | '/api/public/hooks/push-tick'
     | '/api/public/hooks/shopier'
     | '/api/public/hooks/subscriptions-renew'
@@ -1306,6 +1319,7 @@ export interface RootRouteChildren {
   ApiToolsAiRoute: typeof ApiToolsAiRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
+  ApiPublicHooksProcessAiVideosRoute: typeof ApiPublicHooksProcessAiVideosRoute
   ApiPublicHooksPushTickRoute: typeof ApiPublicHooksPushTickRoute
   ApiPublicHooksShopierRoute: typeof ApiPublicHooksShopierRoute
   ApiPublicHooksSubscriptionsRenewRoute: typeof ApiPublicHooksSubscriptionsRenewRoute
@@ -2002,6 +2016,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPushTickRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/process-ai-videos': {
+      id: '/api/public/hooks/process-ai-videos'
+      path: '/api/public/hooks/process-ai-videos'
+      fullPath: '/api/public/hooks/process-ai-videos'
+      preLoaderRoute: typeof ApiPublicHooksProcessAiVideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/campaign-tick': {
       id: '/api/public/hooks/campaign-tick'
       path: '/api/public/hooks/campaign-tick'
@@ -2208,6 +2229,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksAbandonmentReminderRoute:
     ApiPublicHooksAbandonmentReminderRoute,
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,
+  ApiPublicHooksProcessAiVideosRoute: ApiPublicHooksProcessAiVideosRoute,
   ApiPublicHooksPushTickRoute: ApiPublicHooksPushTickRoute,
   ApiPublicHooksShopierRoute: ApiPublicHooksShopierRoute,
   ApiPublicHooksSubscriptionsRenewRoute: ApiPublicHooksSubscriptionsRenewRoute,
