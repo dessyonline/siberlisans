@@ -120,6 +120,12 @@ function AdminWallet() {
                   <div className="text-sm">{emails?.[t.user_id] ?? t.user_id.slice(0, 8)}</div>
                   <div className="text-[11px] text-muted-foreground font-mono">
                     {new Date(t.created_at).toLocaleString("tr-TR")} · {t.status}
+                    {t.client_ip && (
+                      <span className="ml-2 text-primary/80">IP: {String(t.client_ip)}{t.ip_country ? ` · ${t.ip_country}` : ""}</span>
+                    )}
+                    {t.is_vpn && (
+                      <span className="ml-2 rounded bg-destructive/20 text-destructive px-1.5 py-0.5 font-bold">VPN</span>
+                    )}
                   </div>
                 </div>
                 <div className="font-mono text-lg font-bold">{fmt(Number(t.amount_try))} TL</div>
