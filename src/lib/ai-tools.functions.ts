@@ -35,6 +35,7 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
         prompt: z.string().min(3).max(1000),
         duration: z.union([z.literal(5), z.literal(10)]),
         aspect: z.enum(["16:9", "9:16", "1:1"]),
+        quality: z.enum(["fast", "hd", "cinematic"]).default("fast"),
       })
       .parse(d),
   )
@@ -44,6 +45,7 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
       _prompt: data.prompt,
       _duration: data.duration,
       _aspect: data.aspect,
+      _quality: data.quality,
     });
     if (error) throw new Error(error.message);
     return { jobId: jobId as string };
@@ -55,9 +57,14 @@ export const getAiVideoPrices = createServerFn({ method: "GET" })
     const { supabase } = context;
     const { data, error } = await supabase.rpc("ai_video_prices");
     if (error) throw new Error(error.message);
-    const map: Record<number, number> = { 5: 15, 10: 30 };
-    (data ?? []).forEach((r: { duration: number; cost_try: number }) => {
-      map[r.duration] = Number(r.cost_try);
+    const map: Record<string, Record<number, number>> = {
+      fast: { 5: 10, 10: 20 },
+      hd: { 5: 25, 10: 50 },
+      cinematic: { 5: 50, 10: 100 },
+    };
+    (data ?? []).forEach((r: { quality: string; duration: number; cost_try: number }) => {
+      if (!map[r.quality]) map[r.quality] = {};
+      map[r.quality][r.duration] = Number(r.cost_try);
     });
     return map;
   });
