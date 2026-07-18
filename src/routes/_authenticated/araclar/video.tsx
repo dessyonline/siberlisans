@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -6,6 +6,7 @@ import {
   listMyAiJobs,
   getAiVideoPrices,
 } from "@/lib/ai-tools.functions";
+import { getMyAiSubscription } from "@/lib/ai-subscriptions.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
