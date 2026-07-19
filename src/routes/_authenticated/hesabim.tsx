@@ -236,7 +236,7 @@ function MyAccount() {
       </div>
 
       <Tabs defaultValue="orders" className="mt-6 md:mt-8">
-        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 font-mono h-auto">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-7 font-mono h-auto">
           <TabsTrigger value="orders" className="text-[11px] sm:text-sm py-2">
             <ShoppingCart className="mr-1 h-3.5 w-3.5 shrink-0" />
             <span className="truncate">siparişler</span>
@@ -244,6 +244,10 @@ function MyAccount() {
           <TabsTrigger value="keys" className="text-[11px] sm:text-sm py-2">
             <KeyRound className="mr-1 h-3.5 w-3.5 shrink-0" />
             <span className="truncate">anahtarlar</span>
+          </TabsTrigger>
+          <TabsTrigger value="videos" className="text-[11px] sm:text-sm py-2">
+            <Film className="mr-1 h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">videolar</span>
           </TabsTrigger>
           <TabsTrigger value="subs" className="text-[11px] sm:text-sm py-2">
             <RefreshCw className="mr-1 h-3.5 w-3.5 shrink-0" />
@@ -268,6 +272,9 @@ function MyAccount() {
         </TabsContent>
         <TabsContent value="keys" className="mt-6">
           <KeysTab keys={approvedKeys} />
+        </TabsContent>
+        <TabsContent value="videos" className="mt-6">
+          <MyVideosTab fetchJobs={jobsFn} />
         </TabsContent>
         <TabsContent value="subs" className="mt-6">
           <SubscriptionsBlock />
