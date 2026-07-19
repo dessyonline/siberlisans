@@ -931,3 +931,138 @@ function UserBalanceWelcome() {
     </section>
   );
 }
+
+// ============================================================================
+// ANNOUNCEMENT BAR — üst ince neon şerit, kapatılabilir
+// ============================================================================
+function AnnouncementBar() {
+  const [hidden, setHidden] = useState(true);
+  useEffect(() => {
+    try {
+      const dismissed = localStorage.getItem("announce_lab_v2");
+      if (!dismissed) setHidden(false);
+    } catch {
+      setHidden(false);
+    }
+  }, []);
+  if (hidden) return null;
+  const dismiss = () => {
+    try { localStorage.setItem("announce_lab_v2", "1"); } catch {}
+    setHidden(true);
+  };
+  return (
+    <div className="relative border-b border-primary/25 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 backdrop-blur">
+      <div className="mx-auto max-w-6xl px-3 py-2 flex items-center gap-2 sm:gap-3">
+        <span className="relative flex h-2 w-2 shrink-0">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-primary" />
+        </span>
+        <span className="font-mono text-[10px] sm:text-[11px] rounded border border-primary/40 bg-primary/10 px-1.5 py-0.5 text-primary shrink-0">
+          YENİ
+        </span>
+        <div className="flex-1 min-w-0 truncate font-mono text-[11px] sm:text-xs text-foreground/90">
+          <span className="text-primary">AI Araç Laboratuvarı v2.0</span>
+          <span className="text-muted-foreground"> · 26 araç + AI video üretimi çevrimiçi</span>
+        </div>
+        <Link
+          to="/araclar"
+          className="hidden sm:inline-flex items-center gap-1 font-mono text-[11px] text-primary hover:brightness-125 whitespace-nowrap"
+        >
+          keşfet <ArrowRight className="h-3 w-3" />
+        </Link>
+        <Link
+          to="/araclar"
+          className="sm:hidden inline-flex items-center font-mono text-[11px] text-primary whitespace-nowrap"
+        >
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
+        <button
+          type="button"
+          onClick={dismiss}
+          aria-label="Duyuruyu kapat"
+          className="ml-1 rounded p-1 text-muted-foreground hover:text-primary hover:bg-primary/10 transition"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// QUICK ACCESS — Araç Lab + AI Paketleri hızlı erişim kart çifti
+// ============================================================================
+function QuickAccessCards() {
+  return (
+    <section className="mx-auto max-w-6xl px-4 pt-10 sm:pt-14">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-2">
+          <Zap className="h-4 w-4 text-primary" />
+          <h2 className="font-mono text-sm text-primary">Hızlı erişim</h2>
+        </div>
+        <span className="hidden sm:inline font-mono text-[10px] text-muted-foreground">// tek tıkla</span>
+      </div>
+
+      <div className="grid gap-3 md:grid-cols-2">
+        {/* ARAÇ LABORATUVARI */}
+        <Link
+          to="/araclar"
+          className="group relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-background via-background to-primary/10 p-5 sm:p-6 hover:border-primary hover:shadow-[0_0_35px_hsl(var(--primary)/0.35)] transition-all"
+        >
+          <div className="absolute inset-0 cyber-grid opacity-25 pointer-events-none" aria-hidden />
+          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/20 blur-3xl group-hover:bg-primary/30 transition" aria-hidden />
+          <div className="relative flex items-start justify-between gap-3">
+            <div className="rounded-lg border border-primary/40 bg-primary/10 p-2.5 text-primary">
+              <Sparkles className="h-6 w-6" />
+            </div>
+            <div className="flex flex-col items-end gap-1">
+              <span className="font-mono text-[10px] rounded-full border border-primary/40 bg-primary/5 px-2 py-0.5 text-primary">
+                FREE + AI
+              </span>
+              <span className="font-mono text-[10px] text-muted-foreground">26 araç</span>
+            </div>
+          </div>
+          <div className="relative mt-4 space-y-1.5">
+            <div className="font-mono text-lg sm:text-xl text-foreground">Araç Laboratuvarı</div>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              Arka plan kaldır, video kes, JSON formatla veya <span className="text-primary">AI ile cinematic video üret</span> — tarayıcında, sınırsız.
+            </p>
+          </div>
+          <div className="relative mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-primary opacity-80 group-hover:opacity-100 transition">
+            lab'a gir <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition" />
+          </div>
+        </Link>
+
+        {/* AI PAKETLERİ */}
+        <Link
+          to="/paketler/ai"
+          className="group relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-background via-background to-primary/10 p-5 sm:p-6 hover:border-primary hover:shadow-[0_0_35px_hsl(var(--primary)/0.35)] transition-all"
+        >
+          <div className="absolute inset-0 cyber-grid opacity-25 pointer-events-none" aria-hidden />
+          <div className="absolute -left-10 -bottom-10 h-32 w-32 rounded-full bg-primary/20 blur-3xl group-hover:bg-primary/30 transition" aria-hidden />
+          <div className="relative flex items-start justify-between gap-3">
+            <div className="rounded-lg border border-primary/40 bg-primary/10 p-2.5 text-primary">
+              <Cpu className="h-6 w-6" />
+            </div>
+            <div className="flex flex-col items-end gap-1">
+              <span className="font-mono text-[10px] rounded-full border border-yellow-400/40 bg-yellow-400/5 px-2 py-0.5 text-yellow-400">
+                AYLIK
+              </span>
+              <span className="font-mono text-[10px] text-muted-foreground">₺49'dan</span>
+            </div>
+          </div>
+          <div className="relative mt-4 space-y-1.5">
+            <div className="font-mono text-lg sm:text-xl text-foreground">AI Kredi Paketleri</div>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              Aylık kredi ile <span className="text-primary">video, görsel, chat & çeviri</span> — rakiplerin yarı fiyatına, cüzdanla ödenir.
+            </p>
+          </div>
+          <div className="relative mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-primary opacity-80 group-hover:opacity-100 transition">
+            paketleri gör <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition" />
+          </div>
+        </Link>
+      </div>
+    </section>
+  );
+}
+
