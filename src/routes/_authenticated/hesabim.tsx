@@ -807,3 +807,123 @@ function WalletBalance() {
   return <>{n.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL</>;
 }
 
+
+type AiJob = {
+  id: string;
+  kind: string;
+  prompt: string;
+  params: { duration?: number; aspect?: string; quality?: string } | null;
+  cost_try: number | null;
+  status: string;
+  result_url: string | null;
+  error: string | null;
+  created_at: string;
+};
+
+function MyVideosTab({ fetchJobs }: { fetchJobs: () => Promise<AiJob[]> }) {
+  const { data: jobs = [], isLoading, refetch } = useQuery({
+    queryKey: ["my-ai-jobs"],
+    queryFn: () => fetchJobs() as Promise<AiJob[]>,
+    refetchInterval: 15000,
+  });
+
+  const videos = useMemo(
+    () => jobs.filter((j) => (j.kind ?? "").toLowerCase().startsWith("video")),
+    [jobs],
+  );
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <div className="font-mono text-xs text-muted-foreground">
+          $ ./my-videos —— toplam {videos.length}
+        </div>
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="font-mono h-8">
+          <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> yenile
+        </Button>
+      </div>
+
+      {isLoading && (
+        <div className="glass-card rounded-lg p-8 text-center font-mono text-sm text-muted-foreground animate-pulse">
+          yükleniyor…
+        </div>
+      )}
+
+      {!isLoading && videos.length === 0 && (
+        <div className="glass-card rounded-lg p-8 text-center font-mono text-muted-foreground">
+          henüz AI video yok ·{" "}
+          <Link to="/araclar/video" className="text-primary">video üret →</Link>
+        </div>
+      )}
+
+      <div className="grid gap-3 md:grid-cols-2">
+        {videos.map((j) => {
+          const badge =
+            j.status === "completed"
+              ? "bg-primary/20 text-primary"
+              : j.status === "failed"
+                ? "bg-destructive/20 text-destructive"
+                : "bg-warn/20 text-warn";
+          return (
+            <div key={j.id} className="glass-card rounded-lg p-3 font-mono text-xs space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className={`px-1.5 py-0.5 rounded text-[10px] ${badge}`}>{j.status}</span>
+                <span className="text-muted-foreground">
+                  {new Date(j.created_at).toLocaleString("tr-TR")}
+                </span>
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                {j.params?.duration ?? "-"}s · {j.params?.aspect ?? "-"} · {j.params?.quality ?? "-"} · ₺
+                {Number(j.cost_try ?? 0).toFixed(2)}
+              </div>
+              <div className="text-foreground/90 line-clamp-3">{j.prompt}</div>
+
+              {j.result_url && (
+                <div className="space-y-2">
+                  <video
+                    src={j.result_url}
+                    controls
+                    className="w-full rounded-md border border-border/40 bg-black/40"
+                  />
+                  <div className="flex gap-2">
+                    <a
+                      href={j.result_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1"
+                    >
+                      <Button variant="outline" size="sm" className="w-full font-mono h-8">
+                        <Download className="mr-1.5 h-3.5 w-3.5" /> indir
+                      </Button>
+                    </a>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="font-mono h-8"
+                      onClick={() => {
+                        navigator.clipboard.writeText(j.result_url!);
+                        toast.success("Bağlantı kopyalandı");
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {j.error && (
+                <div className="text-destructive text-[11px]">hata: {j.error}</div>
+              )}
+
+              {(j.status === "queued" || j.status === "processing") && !j.result_url && (
+                <div className="text-[11px] text-muted-foreground animate-pulse">
+                  işleniyor… (bir kaç dakika sürebilir)
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
