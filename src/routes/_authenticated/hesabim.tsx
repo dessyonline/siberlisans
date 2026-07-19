@@ -177,12 +177,31 @@ function MyAccount() {
           </Link>
           <Link
             to="/davet"
-            className="glass-card corner-cut col-span-2 sm:col-span-1 flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
+            className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
           >
             <Gift className="h-4 w-4 text-primary shrink-0" />
             <div className="min-w-0">
               <div className="text-muted-foreground text-[10px] uppercase tracking-wider">davet et & ₺25 kazan</div>
               <div className="text-primary text-sm truncate">$ arkadaşını davet et →</div>
+            </div>
+          </Link>
+          <Link
+            to="/paketler/ai"
+            className="glass-card corner-cut col-span-2 sm:col-span-1 flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
+          >
+            <Sparkles className="h-4 w-4 text-primary shrink-0" />
+            <div className="min-w-0">
+              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">ai kredi</div>
+              <div className="text-primary text-sm font-bold truncate">
+                {aiSub
+                  ? `${aiSub.credits_remaining} / ${aiSub.credits_total}`
+                  : "paket al →"}
+              </div>
+              {aiSub?.expires_at && (
+                <div className="text-[10px] text-muted-foreground truncate">
+                  bitiş: {new Date(aiSub.expires_at).toLocaleDateString("tr-TR")}
+                </div>
+              )}
             </div>
           </Link>
         </div>
