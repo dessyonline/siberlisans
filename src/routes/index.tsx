@@ -354,9 +354,11 @@ function Index() {
         </div>
       </section>
 
-
+      {/* HIZLI ERİŞİM — Araç Laboratuvarı + AI Paketleri */}
+      <QuickAccessCards />
 
       {/* ARAMA + SON EKLENENLER */}
+
       <section className="mx-auto max-w-6xl px-4 pt-12">
         <div className="relative max-w-2xl mx-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
