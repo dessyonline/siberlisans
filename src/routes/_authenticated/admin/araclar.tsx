@@ -18,6 +18,7 @@ function Page() {
   const qc = useQueryClient();
   const listFn = useServerFn(listAdminAiJobs);
   const statsFn = useServerFn(getAdminAiStats);
+  const falFn = useServerFn(getFalBalance);
 
   const [status, setStatus] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
@@ -33,6 +34,12 @@ function Page() {
   const { data: stats } = useQuery({
     queryKey: ["admin-ai-stats"],
     queryFn: () => statsFn(),
+  });
+
+  const { data: fal } = useQuery({
+    queryKey: ["admin-fal-balance"],
+    queryFn: () => falFn(),
+    staleTime: 60_000,
   });
 
   const refetch = () => {
