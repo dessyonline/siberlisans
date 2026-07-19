@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { listAdminAiJobs, getAdminAiStats } from "@/lib/admin-ai.functions";
+import { listAdminAiJobs, getAdminAiStats, getFalBalance } from "@/lib/admin-ai.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/araclar")({
   component: Page,
