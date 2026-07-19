@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -8,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { toast } from "sonner";
-import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck, RefreshCw, Users, Trophy, Palette } from "lucide-react";
+import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck, RefreshCw, Users, Trophy, Palette, Sparkles, Film } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TierCard } from "@/components/TierCard";
 import { AVATARS, UserAvatar } from "@/components/UserAvatar";
@@ -17,6 +18,8 @@ import { BadgesBlock } from "@/components/BadgesBlock";
 import { DailyStreakCard } from "@/components/DailyStreakCard";
 import { AffiliateBlock } from "@/components/AffiliateBlock";
 import { TransferButton } from "@/components/TransferButton";
+import { getMyAiSubscription } from "@/lib/ai-subscriptions.functions";
+import { listMyAiJobs } from "@/lib/ai-tools.functions";
 
 export const Route = createFileRoute("/_authenticated/hesabim")({
   component: MyAccount,
