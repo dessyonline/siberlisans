@@ -7,6 +7,46 @@ async function assertAdmin(supabase: any, userId: string) {
   if (!data) throw new Error("forbidden");
 }
 
+export const getFalBalance = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const key = process.env.FAL_API_KEY;
+    if (!key) return { ok: false as const, error: "FAL_API_KEY tanımlı değil", balance: null, currency: null };
+
+    // fal.ai has no stable public balance endpoint; try known ones, fail soft.
+    const endpoints = [
+      "https://rest.alpha.fal.ai/billing/user/balance",
+      "https://rest.alpha.fal.ai/billing/balance",
+    ];
+    for (const url of endpoints) {
+      try {
+        const ac = new AbortController();
+        const to = setTimeout(() => ac.abort(), 4000);
+        const res = await fetch(url, {
+          headers: { Authorization: `Key ${key}` },
+          signal: ac.signal,
+        });
+        clearTimeout(to);
+        if (!res.ok) continue;
+        const j = (await res.json()) as Record<string, unknown>;
+        const num = (v: unknown) => (typeof v === "number" ? v : null);
+        const bal =
+          num(j.balance) ?? num(j.available) ?? num(j.credits) ?? num(j.amount) ?? null;
+        return {
+          ok: true as const,
+          error: null,
+          balance: bal,
+          currency: (j.currency as string) ?? "USD",
+        };
+      } catch {
+        // try next
+      }
+    }
+    return { ok: false as const, error: "fal.ai bakiye endpoint'ine erişilemedi", balance: null, currency: null };
+  });
+
 export const listAdminAiJobs = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) =>
