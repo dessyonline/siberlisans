@@ -65,6 +65,8 @@ type Order = {
 
 function MyAccount() {
   const { user, signOut } = useAuth();
+  const subFn = useServerFn(getMyAiSubscription);
+  const jobsFn = useServerFn(listMyAiJobs);
   const { data: orders, isLoading } = useQuery({
     queryKey: ["my-orders", user?.id],
     enabled: !!user,
@@ -79,6 +81,12 @@ function MyAccount() {
       if (error) throw error;
       return (data ?? []) as unknown as Order[];
     },
+  });
+
+  const { data: aiSub } = useQuery({
+    queryKey: ["my-ai-sub", user?.id],
+    enabled: !!user,
+    queryFn: () => subFn(),
   });
 
   const approvedKeys = useMemo(
