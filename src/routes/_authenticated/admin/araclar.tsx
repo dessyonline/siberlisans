@@ -88,7 +88,16 @@ function Page() {
 
       {/* Stats grid */}
       {stats && (
-        <div className="grid gap-3 md:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-5">
+          <StatCard
+            label="fal.ai bakiye"
+            value={
+              fal?.ok && fal.balance != null
+                ? `${fal.currency === "USD" ? "$" : ""}${Number(fal.balance).toFixed(2)}${fal.currency && fal.currency !== "USD" ? " " + fal.currency : ""}`
+                : "—"
+            }
+            sub={fal?.ok ? "provider kredisi" : (fal?.error ?? "yükleniyor…")}
+          />
           <StatCard label="toplam istem" value={String(stats.totalJobs)} />
           <StatCard label="toplam maliyet" value={`₺${stats.totalCost.toFixed(2)}`} />
           <StatCard label="aktif abonelik" value={String(stats.activeSubs)} sub={`₺${stats.subRevenue.toFixed(0)} ciro`} />
