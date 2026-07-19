@@ -212,7 +212,9 @@ function Index() {
     <div>
       <RaffleFloatingBadge />
       <UserBalanceWelcome />
+      <AnnouncementBar />
       {/* HERO — cinematic */}
+
       <section className="relative overflow-hidden border-b border-border/40">
         {/* animated grid backdrop */}
         <div className="pointer-events-none absolute inset-0 cyber-grid grid-drift" aria-hidden />
