@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -8,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { toast } from "sonner";
-import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck, RefreshCw, Users, Trophy, Palette } from "lucide-react";
+import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck, RefreshCw, Users, Trophy, Palette, Sparkles, Film } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TierCard } from "@/components/TierCard";
 import { AVATARS, UserAvatar } from "@/components/UserAvatar";
@@ -17,6 +18,8 @@ import { BadgesBlock } from "@/components/BadgesBlock";
 import { DailyStreakCard } from "@/components/DailyStreakCard";
 import { AffiliateBlock } from "@/components/AffiliateBlock";
 import { TransferButton } from "@/components/TransferButton";
+import { getMyAiSubscription } from "@/lib/ai-subscriptions.functions";
+import { listMyAiJobs } from "@/lib/ai-tools.functions";
 
 export const Route = createFileRoute("/_authenticated/hesabim")({
   component: MyAccount,
@@ -62,6 +65,8 @@ type Order = {
 
 function MyAccount() {
   const { user, signOut } = useAuth();
+  const subFn = useServerFn(getMyAiSubscription);
+  const jobsFn = useServerFn(listMyAiJobs);
   const { data: orders, isLoading } = useQuery({
     queryKey: ["my-orders", user?.id],
     enabled: !!user,
@@ -76,6 +81,12 @@ function MyAccount() {
       if (error) throw error;
       return (data ?? []) as unknown as Order[];
     },
+  });
+
+  const { data: aiSub } = useQuery({
+    queryKey: ["my-ai-sub", user?.id],
+    enabled: !!user,
+    queryFn: () => subFn(),
   });
 
   const approvedKeys = useMemo(
@@ -166,12 +177,31 @@ function MyAccount() {
           </Link>
           <Link
             to="/davet"
-            className="glass-card corner-cut col-span-2 sm:col-span-1 flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
+            className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
           >
             <Gift className="h-4 w-4 text-primary shrink-0" />
             <div className="min-w-0">
               <div className="text-muted-foreground text-[10px] uppercase tracking-wider">davet et & ₺25 kazan</div>
               <div className="text-primary text-sm truncate">$ arkadaşını davet et →</div>
+            </div>
+          </Link>
+          <Link
+            to="/paketler/ai"
+            className="glass-card corner-cut col-span-2 sm:col-span-1 flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
+          >
+            <Sparkles className="h-4 w-4 text-primary shrink-0" />
+            <div className="min-w-0">
+              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">ai kredi</div>
+              <div className="text-primary text-sm font-bold truncate">
+                {aiSub
+                  ? `${aiSub.credits_remaining} / ${aiSub.credits_total}`
+                  : "paket al →"}
+              </div>
+              {aiSub?.expires_at && (
+                <div className="text-[10px] text-muted-foreground truncate">
+                  bitiş: {new Date(aiSub.expires_at).toLocaleDateString("tr-TR")}
+                </div>
+              )}
             </div>
           </Link>
         </div>
@@ -206,7 +236,7 @@ function MyAccount() {
       </div>
 
       <Tabs defaultValue="orders" className="mt-6 md:mt-8">
-        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 font-mono h-auto">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-7 font-mono h-auto">
           <TabsTrigger value="orders" className="text-[11px] sm:text-sm py-2">
             <ShoppingCart className="mr-1 h-3.5 w-3.5 shrink-0" />
             <span className="truncate">siparişler</span>
@@ -214,6 +244,10 @@ function MyAccount() {
           <TabsTrigger value="keys" className="text-[11px] sm:text-sm py-2">
             <KeyRound className="mr-1 h-3.5 w-3.5 shrink-0" />
             <span className="truncate">anahtarlar</span>
+          </TabsTrigger>
+          <TabsTrigger value="videos" className="text-[11px] sm:text-sm py-2">
+            <Film className="mr-1 h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">videolar</span>
           </TabsTrigger>
           <TabsTrigger value="subs" className="text-[11px] sm:text-sm py-2">
             <RefreshCw className="mr-1 h-3.5 w-3.5 shrink-0" />
@@ -238,6 +272,9 @@ function MyAccount() {
         </TabsContent>
         <TabsContent value="keys" className="mt-6">
           <KeysTab keys={approvedKeys} />
+        </TabsContent>
+        <TabsContent value="videos" className="mt-6">
+          <MyVideosTab fetchJobs={jobsFn} />
         </TabsContent>
         <TabsContent value="subs" className="mt-6">
           <SubscriptionsBlock />
@@ -770,3 +807,123 @@ function WalletBalance() {
   return <>{n.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL</>;
 }
 
+
+type AiJob = {
+  id: string;
+  kind: string;
+  prompt: string;
+  params: { duration?: number; aspect?: string; quality?: string } | null;
+  cost_try: number | null;
+  status: string;
+  result_url: string | null;
+  error: string | null;
+  created_at: string;
+};
+
+function MyVideosTab({ fetchJobs }: { fetchJobs: () => Promise<AiJob[]> }) {
+  const { data: jobs = [], isLoading, refetch } = useQuery({
+    queryKey: ["my-ai-jobs"],
+    queryFn: () => fetchJobs() as Promise<AiJob[]>,
+    refetchInterval: 15000,
+  });
+
+  const videos = useMemo(
+    () => jobs.filter((j) => (j.kind ?? "").toLowerCase().startsWith("video")),
+    [jobs],
+  );
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <div className="font-mono text-xs text-muted-foreground">
+          $ ./my-videos —— toplam {videos.length}
+        </div>
+        <Button variant="outline" size="sm" onClick={() => refetch()} className="font-mono h-8">
+          <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> yenile
+        </Button>
+      </div>
+
+      {isLoading && (
+        <div className="glass-card rounded-lg p-8 text-center font-mono text-sm text-muted-foreground animate-pulse">
+          yükleniyor…
+        </div>
+      )}
+
+      {!isLoading && videos.length === 0 && (
+        <div className="glass-card rounded-lg p-8 text-center font-mono text-muted-foreground">
+          henüz AI video yok ·{" "}
+          <Link to="/araclar/video" className="text-primary">video üret →</Link>
+        </div>
+      )}
+
+      <div className="grid gap-3 md:grid-cols-2">
+        {videos.map((j) => {
+          const badge =
+            j.status === "completed"
+              ? "bg-primary/20 text-primary"
+              : j.status === "failed"
+                ? "bg-destructive/20 text-destructive"
+                : "bg-warn/20 text-warn";
+          return (
+            <div key={j.id} className="glass-card rounded-lg p-3 font-mono text-xs space-y-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className={`px-1.5 py-0.5 rounded text-[10px] ${badge}`}>{j.status}</span>
+                <span className="text-muted-foreground">
+                  {new Date(j.created_at).toLocaleString("tr-TR")}
+                </span>
+              </div>
+              <div className="text-[11px] text-muted-foreground">
+                {j.params?.duration ?? "-"}s · {j.params?.aspect ?? "-"} · {j.params?.quality ?? "-"} · ₺
+                {Number(j.cost_try ?? 0).toFixed(2)}
+              </div>
+              <div className="text-foreground/90 line-clamp-3">{j.prompt}</div>
+
+              {j.result_url && (
+                <div className="space-y-2">
+                  <video
+                    src={j.result_url}
+                    controls
+                    className="w-full rounded-md border border-border/40 bg-black/40"
+                  />
+                  <div className="flex gap-2">
+                    <a
+                      href={j.result_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1"
+                    >
+                      <Button variant="outline" size="sm" className="w-full font-mono h-8">
+                        <Download className="mr-1.5 h-3.5 w-3.5" /> indir
+                      </Button>
+                    </a>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="font-mono h-8"
+                      onClick={() => {
+                        navigator.clipboard.writeText(j.result_url!);
+                        toast.success("Bağlantı kopyalandı");
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {j.error && (
+                <div className="text-destructive text-[11px]">hata: {j.error}</div>
+              )}
+
+              {(j.status === "queued" || j.status === "processing") && !j.result_url && (
+                <div className="text-[11px] text-muted-foreground animate-pulse">
+                  işleniyor… (bir kaç dakika sürebilir)
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

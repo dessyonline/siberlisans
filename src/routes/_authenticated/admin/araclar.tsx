@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { listAdminAiJobs, getAdminAiStats } from "@/lib/admin-ai.functions";
+import { listAdminAiJobs, getAdminAiStats, getFalBalance } from "@/lib/admin-ai.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/araclar")({
   component: Page,
@@ -18,6 +18,7 @@ function Page() {
   const qc = useQueryClient();
   const listFn = useServerFn(listAdminAiJobs);
   const statsFn = useServerFn(getAdminAiStats);
+  const falFn = useServerFn(getFalBalance);
 
   const [status, setStatus] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
@@ -33,6 +34,12 @@ function Page() {
   const { data: stats } = useQuery({
     queryKey: ["admin-ai-stats"],
     queryFn: () => statsFn(),
+  });
+
+  const { data: fal } = useQuery({
+    queryKey: ["admin-fal-balance"],
+    queryFn: () => falFn(),
+    staleTime: 60_000,
   });
 
   const refetch = () => {
@@ -81,7 +88,16 @@ function Page() {
 
       {/* Stats grid */}
       {stats && (
-        <div className="grid gap-3 md:grid-cols-4">
+        <div className="grid gap-3 md:grid-cols-5">
+          <StatCard
+            label="fal.ai bakiye"
+            value={
+              fal?.ok && fal.balance != null
+                ? `${fal.currency === "USD" ? "$" : ""}${Number(fal.balance).toFixed(2)}${fal.currency && fal.currency !== "USD" ? " " + fal.currency : ""}`
+                : "—"
+            }
+            sub={fal?.ok ? "provider kredisi" : (fal?.error ?? "yükleniyor…")}
+          />
           <StatCard label="toplam istem" value={String(stats.totalJobs)} />
           <StatCard label="toplam maliyet" value={`₺${stats.totalCost.toFixed(2)}`} />
           <StatCard label="aktif abonelik" value={String(stats.activeSubs)} sub={`₺${stats.subRevenue.toFixed(0)} ciro`} />
