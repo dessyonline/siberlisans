@@ -157,13 +157,15 @@ function AdminRafflesPage() {
   });
 
   const drawMut = useMutation({
-    mutationFn: (id: string) => drawFn({ data: { id } }),
-    onSuccess: (r) => {
+    mutationFn: (v: { id: string; redraw?: boolean; title: string }) => drawFn({ data: { id: v.id, redraw: v.redraw } }),
+    onSuccess: async (r, v) => {
       toast.success(`Çekim tamamlandı · ${r.delivered_keys?.length ?? 0} key teslim · hash: ${r.draw_hash.slice(0, 12)}…`);
       qc.invalidateQueries({ queryKey: ["admin-raffles"] });
+      await playLiveDraw(v.id, v.title);
     },
     onError: (e: Error) => toast.error(e.message.replace(/^.*: /, "")),
   });
+
 
   const delMut = useMutation({
     mutationFn: (id: string) => delFn({ data: { id } }),
