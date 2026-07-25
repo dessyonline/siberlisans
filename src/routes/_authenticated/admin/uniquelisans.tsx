@@ -353,7 +353,7 @@ type ImportedProduct = {
 
 function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => void }) {
   const updateFn = useServerFn(ulUpdateImported);
-  const suggestFn = useServerFn(suggestRetailPrice);
+  
   const [busy, setBusy] = useState<null | "active" | "lock" | "price" | "markup" | "retail" | "ai">(null);
   const [mode, setMode] = useState<"idle" | "price" | "markup" | "retail">("idle");
   const cost = Number(p.external_price ?? 0);
