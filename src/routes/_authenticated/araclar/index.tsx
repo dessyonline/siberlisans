@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
-  Video, Eraser, Minimize2, QrCode, Palette, Wand2, Braces, Binary, Type,
+  Video, Eraser, Minimize2, QrCode, Palette, Braces, Binary, Type,
   Crop, Stamp, ShieldCheck, FileText, Scissors, Film, Music, Layers, Gauge,
   RotateCw, VolumeX, Image as ImageIcon, Search, LayoutGrid, ImageIcon as PicIcon,
   Video as VidIcon, Code2, Sparkles, Zap, Infinity as InfIcon, Cpu, ArrowRight,
