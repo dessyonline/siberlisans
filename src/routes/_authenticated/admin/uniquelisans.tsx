@@ -13,7 +13,7 @@ import {
   ulUpdateImported,
   DEFAULT_MARKUP_PERCENT,
 } from "@/lib/uniquelisans.functions";
-import { suggestRetailPrice, batchSuggestRetailPrices } from "@/lib/retail-price.functions";
+
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Wallet, Loader2, Download, RefreshCw, Package, CheckCircle2, Zap, Lock, Unlock, Check, X, Pencil, Sparkles, ExternalLink, Wand2 } from "lucide-react";
