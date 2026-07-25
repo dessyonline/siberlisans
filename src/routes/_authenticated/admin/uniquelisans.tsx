@@ -37,7 +37,7 @@ function UniquelisansPage() {
   const importedFn = useServerFn(ulImportedProducts);
   const syncFn = useServerFn(ulSyncStock);
   const catalogFn = useServerFn(ulSyncCatalog);
-  const batchAiFn = useServerFn(batchSuggestRetailPrices);
+  
   const [syncing, setSyncing] = useState(false);
   const [catalogSyncing, setCatalogSyncing] = useState(false);
   const [batchAiBusy, setBatchAiBusy] = useState(false);
