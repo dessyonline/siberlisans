@@ -545,9 +545,8 @@ function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => vo
               {busy === "retail" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setMode("idle")}><X className="h-3 w-3" /></Button>
-            <Button size="sm" variant="ghost" onClick={aiSuggest} disabled={busy === "ai"} title="AI öneri">
-              {busy === "ai" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 text-cyan" />}
-            </Button>
+
+
           </div>
         )}
       </div>
