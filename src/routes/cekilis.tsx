@@ -257,9 +257,19 @@ function RafflesPage() {
           </div>
         </section>
       )}
+
+      {reel && (
+        <LiveDrawReel
+          title={reel.title}
+          participants={reel.participants}
+          winners={reel.winners}
+          onClose={() => setReel(null)}
+        />
+      )}
     </div>
   );
 }
+
 
 function RaffleCard({
   r,
