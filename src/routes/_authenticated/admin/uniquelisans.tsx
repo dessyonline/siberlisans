@@ -13,7 +13,7 @@ import {
   ulUpdateImported,
   DEFAULT_MARKUP_PERCENT,
 } from "@/lib/uniquelisans.functions";
-import { suggestRetailPrice, batchSuggestRetailPrices } from "@/lib/retail-price.functions";
+
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Wallet, Loader2, Download, RefreshCw, Package, CheckCircle2, Zap, Lock, Unlock, Check, X, Pencil, Sparkles, ExternalLink, Wand2 } from "lucide-react";
@@ -37,10 +37,10 @@ function UniquelisansPage() {
   const importedFn = useServerFn(ulImportedProducts);
   const syncFn = useServerFn(ulSyncStock);
   const catalogFn = useServerFn(ulSyncCatalog);
-  const batchAiFn = useServerFn(batchSuggestRetailPrices);
+  
   const [syncing, setSyncing] = useState(false);
   const [catalogSyncing, setCatalogSyncing] = useState(false);
-  const [batchAiBusy, setBatchAiBusy] = useState(false);
+  
 
   const { data: balance, refetch: refetchBalance, isFetching: balLoading } = useQuery({
     queryKey: ["ul-balance"],
@@ -290,31 +290,8 @@ function UniquelisansPage() {
               {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <RefreshCw className="h-3.5 w-3.5 mr-1" />}
               stokları senkronize et
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={batchAiBusy}
-              className="border-cyan/40 text-cyan hover:bg-cyan/10"
-              onClick={async () => {
-                setBatchAiBusy(true);
-                try {
-                  const r = await batchAiFn({ data: { force: false, limit: 100 } });
-                  toast.success(
-                    `Toplu AI fiyat: ${r.total} tarandı · ${r.updated} güncel · ${r.skipped} atlandı${r.failed ? ` · ${r.failed} hata` : ""}`,
-                  );
-                  qc.invalidateQueries({ queryKey: ["ul-imported"] });
-                  qc.invalidateQueries({ queryKey: ["admin-products"] });
-                } catch (e) {
-                  toast.error((e as Error).message);
-                } finally {
-                  setBatchAiBusy(false);
-                }
-              }}
-              title="Orijinal fiyatı olmayan tüm içe aktarılmış ürünler için AI ile toplu fiyat çeker"
-            >
-              {batchAiBusy ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Wand2 className="h-3.5 w-3.5 mr-1" />}
-              toplu AI fiyat
-            </Button>
+
+
           </div>
         </div>
         {imported && imported.length > 0 ? (
@@ -353,7 +330,7 @@ type ImportedProduct = {
 
 function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => void }) {
   const updateFn = useServerFn(ulUpdateImported);
-  const suggestFn = useServerFn(suggestRetailPrice);
+  
   const [busy, setBusy] = useState<null | "active" | "lock" | "price" | "markup" | "retail" | "ai">(null);
   const [mode, setMode] = useState<"idle" | "price" | "markup" | "retail">("idle");
   const cost = Number(p.external_price ?? 0);
@@ -403,21 +380,8 @@ function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => vo
     }
   }
 
-  async function aiSuggest() {
-    setBusy("ai");
-    try {
-      const r = await suggestFn({ data: { productId: p.id } });
-      if (r.retail_price_try) setRetailInput(String(Math.round(r.retail_price_try)));
-      if (r.duration_label) setDurationInput(r.duration_label);
-      if (r.source_url) setSourceInput(r.source_url);
-      setMode("retail");
-      toast.success(`AI önerisi hazır (güven: %${Math.round((r.confidence ?? 0) * 100)})`);
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setBusy(null);
-    }
-  }
+
+
 
   const retail = Number(p.retail_price_try ?? 0);
   const showRetailChip = retail > Number(p.price_try);
@@ -522,10 +486,8 @@ function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => vo
             <button type="button" onClick={() => setMode("retail")} className="p-1 rounded border border-primary/30 hover:bg-primary/10" title="düzenle">
               <Pencil className="h-3 w-3" />
             </button>
-            <button type="button" onClick={aiSuggest} disabled={busy === "ai"} className="px-1.5 py-0.5 rounded border border-cyan/40 bg-cyan/10 text-cyan hover:bg-cyan/20 font-mono text-[10px] inline-flex items-center gap-1" title="AI öneri">
-              {busy === "ai" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-              AI öner
-            </button>
+
+
           </>
         ) : (
           <div className="flex flex-wrap items-center gap-1 flex-1">
@@ -545,9 +507,8 @@ function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => vo
               {busy === "retail" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setMode("idle")}><X className="h-3 w-3" /></Button>
-            <Button size="sm" variant="ghost" onClick={aiSuggest} disabled={busy === "ai"} title="AI öneri">
-              {busy === "ai" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3 text-cyan" />}
-            </Button>
+
+
           </div>
         )}
       </div>
