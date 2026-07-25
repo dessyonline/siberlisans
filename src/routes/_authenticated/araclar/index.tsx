@@ -57,9 +57,9 @@ const TOOLS: Tool[] = [
   { to: "/araclar/sayac", label: "Metin Sayaç", desc: "Kelime, karakter, okuma süresi — canlı.", icon: Type, badge: "FREE", category: "gelistirici" },
   { to: "/araclar/renk", label: "Renk Çevirici", desc: "HEX ↔ RGB ↔ HSL + ton skalası.", icon: Palette, badge: "FREE", category: "gelistirici" },
   // AI Üretme
-  { to: "/araclar/hd", label: "Resim HD Yap", desc: "Bulanık/eski fotoğrafı AI ile netleştir.", icon: Wand2, badge: "AI", category: "uretme", featured: true },
   { to: "/araclar/video", label: "AI Video", desc: "Prompt'tan cinematic video üret.", icon: Video, badge: "AI", category: "uretme", featured: true },
   { to: "/araclar/video-uzun", label: "AI Uzun Video", desc: "2-6 sahne yaz — otomatik birleştir.", icon: Film, badge: "AI", category: "uretme" },
+
 ];
 
 const CATEGORIES: { id: "hepsi" | Category; label: string; icon: typeof Video; hint: string }[] = [
