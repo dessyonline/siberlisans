@@ -12,7 +12,7 @@ export const Route = createFileRoute("/_authenticated/araclar/")({
   head: () => ({
     meta: [
       { title: "Araçlar Laboratuvarı — SiberPHP" },
-      { name: "description", content: "26 profesyonel araç — arka plan kaldırma, video düzenleme, AI görsel & video üretimi. Tarayıcında çalışır, hesap dışına veri çıkmaz." },
+      { name: "description", content: "25 profesyonel araç — arka plan kaldırma, video düzenleme, AI video üretimi. Tarayıcında çalışır, hesap dışına veri çıkmaz." },
     ],
   }),
 });
