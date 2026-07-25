@@ -288,14 +288,27 @@ export const upsertRaffle = createServerFn({ method: "POST" })
 
 export const drawRaffle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), redraw: z.boolean().optional() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { data: r, error } = await context.supabase.rpc("draw_raffle" as never, { _raffle_id: data.id } as never);
+    const { data: r, error } = await context.supabase.rpc("draw_raffle" as never, {
+      _raffle_id: data.id,
+      _redraw: !!data.redraw,
+    } as never);
     if (error) throw new Error(error.message);
     const row = Array.isArray(r) ? r[0] : r;
     return row as { winner_user_id: string; delivered_keys: string[] | null; draw_hash: string };
   });
+
+export const listRaffleParticipants = createServerFn({ method: "GET" })
+  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data }) => {
+    const sb = pubClient();
+    const { data: rows, error } = await sb.rpc("raffle_participants_preview" as never, { _raffle_id: data.id, _limit: 120 } as never);
+    if (error) throw new Error(error.message);
+    return (rows ?? []) as Array<{ user_id: string; display_name: string; avatar_id: string | null; tier: string | null; tickets: number }>;
+  });
+
 
 export const disqualifyWinner = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
