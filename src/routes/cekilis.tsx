@@ -78,6 +78,29 @@ function RafflesPage() {
   const [authed, setAuthed] = useState(false);
   const [myTier, setMyTier] = useState<string | null>(null);
   const [buyCounts, setBuyCounts] = useState<Record<string, number>>({});
+  const [reel, setReel] = useState<{ title: string; participants: ReelParticipant[]; winners: ReelWinner[] } | null>(null);
+  const seenDrawnRef = useRef<Set<string>>(new Set());
+  const partsFn = useServerFn(listRaffleParticipants);
+
+  async function playLive(r: any) {
+    try {
+      const parts = (await partsFn({ data: { id: r.id } })) as ReelParticipant[];
+      const winners: ReelWinner[] = (r.winners ?? []).map((w: any) => {
+        const p = parts.find((x) => x.display_name === w.display_name);
+        return {
+          user_id: p?.user_id ?? w.display_name,
+          display_name: w.display_name,
+          avatar_id: w.avatar_id ?? p?.avatar_id ?? null,
+          tier: w.tier ?? p?.tier ?? null,
+          place: w.place,
+          masked_email: w.masked_email,
+        };
+      });
+      if (!winners.length) return;
+      setReel({ title: r.title, participants: parts, winners });
+    } catch { /* ignore */ }
+  }
+
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
