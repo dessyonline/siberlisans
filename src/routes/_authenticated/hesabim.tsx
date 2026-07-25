@@ -274,7 +274,7 @@ function MyAccount() {
           <KeysTab keys={approvedKeys} />
         </TabsContent>
         <TabsContent value="videos" className="mt-6">
-          <MyVideosTab fetchJobs={jobsFn} />
+          <MyVideosTab fetchJobs={() => jobsFn() as Promise<AiJob[]>} />
         </TabsContent>
         <TabsContent value="subs" className="mt-6">
           <SubscriptionsBlock />
