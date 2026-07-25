@@ -273,6 +273,7 @@ function RaffleCard({
   onEnter,
   onDaily,
   onShare,
+  onReplay,
   busy,
 }: {
   r: any;
@@ -286,8 +287,10 @@ function RaffleCard({
   onEnter: (c: number) => void;
   onDaily: () => void;
   onShare: (p: "twitter" | "telegram" | "whatsapp") => void;
+  onReplay?: () => void;
   busy: boolean;
 }) {
+
   const closed = new Date(r.end_at).getTime() < Date.now();
   const drawn = r.status === "drawn";
   const prizeName = r.product?.name ?? r.custom_prize_name ?? "Sürpriz ödül";
