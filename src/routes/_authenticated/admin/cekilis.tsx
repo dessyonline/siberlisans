@@ -89,6 +89,40 @@ function AdminRafflesPage() {
   const delFn = useServerFn(deleteRaffle);
   const dqFn = useServerFn(disqualifyWinner);
   const bcFn = useServerFn(broadcastRaffle);
+  const partsFn = useServerFn(listRaffleParticipants);
+  const winFn = useServerFn(adminRaffleWinners);
+
+  const [reel, setReel] = useState<{
+    title: string;
+    participants: ReelParticipant[];
+    winners: ReelWinner[];
+  } | null>(null);
+
+  async function playLiveDraw(raffleId: string, title: string) {
+    try {
+      const [parts, wins] = await Promise.all([
+        partsFn({ data: { id: raffleId } }),
+        winFn({ data: { id: raffleId } }),
+      ]);
+      const winners: ReelWinner[] = (wins as any[])
+        .filter((w) => !w.disqualified_at)
+        .map((w) => {
+          const p = (parts as any[]).find((x) => x.user_id === w.user_id);
+          return {
+            user_id: w.user_id,
+            display_name: w.display_name ?? p?.display_name ?? "Anonim",
+            avatar_id: p?.avatar_id ?? null,
+            tier: p?.tier ?? null,
+            place: w.place,
+          };
+        });
+      if (!winners.length) return;
+      setReel({ title, participants: parts as ReelParticipant[], winners });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Canlı çekim başlatılamadı");
+    }
+  }
+
 
   const save = useMutation({
     mutationFn: async () => {
