@@ -151,6 +151,24 @@ function RafflesPage() {
   const featured = (list.data ?? []).filter((r: any) => r.featured && r.status === "active");
   const others = (list.data ?? []).filter((r: any) => !r.featured || r.status === "drawn");
 
+  // Detect active→drawn transition and auto-play live reel once per raffle
+  useEffect(() => {
+    if (!list.data) return;
+    for (const r of list.data as any[]) {
+      if (r.status === "drawn" && (r.winners?.length ?? 0) > 0 && !seenDrawnRef.current.has(r.id)) {
+        // Skip on first load: only trigger when we've seen it before as active
+        if (seenDrawnRef.current.has(r.id + ":seen")) {
+          playLive(r);
+        }
+        seenDrawnRef.current.add(r.id);
+      }
+      if (r.status === "active") seenDrawnRef.current.add(r.id + ":seen");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [list.data]);
+
+
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <header className="mb-8 text-center">
