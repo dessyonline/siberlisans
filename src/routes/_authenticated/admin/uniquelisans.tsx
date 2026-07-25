@@ -522,10 +522,8 @@ function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => vo
             <button type="button" onClick={() => setMode("retail")} className="p-1 rounded border border-primary/30 hover:bg-primary/10" title="düzenle">
               <Pencil className="h-3 w-3" />
             </button>
-            <button type="button" onClick={aiSuggest} disabled={busy === "ai"} className="px-1.5 py-0.5 rounded border border-cyan/40 bg-cyan/10 text-cyan hover:bg-cyan/20 font-mono text-[10px] inline-flex items-center gap-1" title="AI öneri">
-              {busy === "ai" ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
-              AI öner
-            </button>
+
+
           </>
         ) : (
           <div className="flex flex-wrap items-center gap-1 flex-1">
