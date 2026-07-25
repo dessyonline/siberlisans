@@ -209,8 +209,10 @@ function RafflesPage() {
                 onEnter={(c) => enterMut.mutate({ raffleId: r.id, count: c })}
                 onDaily={() => dailyMut.mutate(r.id)}
                 onShare={(p) => shareMut.mutate({ raffleId: r.id, platform: p })}
+                onReplay={() => playLive(r)}
                 busy={enterMut.isPending || dailyMut.isPending || shareMut.isPending}
               />
+
             ))}
           </div>
         </section>
