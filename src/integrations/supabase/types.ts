@@ -3023,14 +3023,23 @@ export type Database = {
           new_winner_id: string
         }[]
       }
-      draw_raffle: {
-        Args: { _raffle_id: string }
-        Returns: {
-          delivered_keys: string[]
-          draw_hash: string
-          winner_user_id: string
-        }[]
-      }
+      draw_raffle:
+        | {
+            Args: { _raffle_id: string }
+            Returns: {
+              delivered_keys: string[]
+              draw_hash: string
+              winner_user_id: string
+            }[]
+          }
+        | {
+            Args: { _raffle_id: string; _redraw?: boolean }
+            Returns: {
+              delivered_keys: string[]
+              draw_hash: string
+              winner_user_id: string
+            }[]
+          }
       enter_raffle: {
         Args: { _count?: number; _raffle_id: string }
         Returns: {
@@ -3198,6 +3207,16 @@ export type Database = {
           top_users: Json
           total_entries: number
           unique_participants: number
+        }[]
+      }
+      raffle_participants_preview: {
+        Args: { _limit?: number; _raffle_id: string }
+        Returns: {
+          avatar_id: string
+          display_name: string
+          tickets: number
+          tier: string
+          user_id: string
         }[]
       }
       recompute_badges: { Args: { _user_id: string }; Returns: undefined }
