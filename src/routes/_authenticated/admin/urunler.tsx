@@ -460,7 +460,7 @@ function ProductsAdmin() {
               <BulkBtn onClick={() => bulkUpdate({ tier: "standard" }, "standart")} busy={bulkBusy}>standart</BulkBtn>
               <BulkBtn onClick={bulkCategory} busy={bulkBusy}>kategori…</BulkBtn>
               <BulkBtn onClick={bulkPricePercent} busy={bulkBusy}><Percent className="h-3 w-3 mr-1" />fiyat %…</BulkBtn>
-              <BulkBtn onClick={bulkFindRetail} busy={bulkBusy}><Sparkles className="h-3 w-3 mr-1" />AI orijinal fiyat</BulkBtn>
+              
               <BulkBtn onClick={bulkDelete} busy={bulkBusy} danger><Trash2 className="h-3 w-3 mr-1" />sil</BulkBtn>
               <BulkBtn onClick={clearSel} busy={bulkBusy}>×</BulkBtn>
             </div>
