@@ -771,23 +771,8 @@ function ProductsAdmin() {
 
               {/* SECTION: RETAIL PRICE (orijinal satıcı fiyatı) */}
               <Section title="orijinal fiyat (resmi satıcı)">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="font-mono text-xs"
-                    onClick={findRetailForEditing}
-                    disabled={aiBusy || !editing.id}
-                    title={!editing.id ? "Önce ürünü kaydet" : "AI ile ara"}
-                  >
-                    <Sparkles className="h-3.5 w-3.5 mr-1" />
-                    {aiBusy ? "aranıyor…" : "AI ile orijinal fiyatı bul"}
-                  </Button>
-                  {!editing.id && (
-                    <span className="font-mono text-[10px] text-warn">önce kaydet, sonra AI ile ara</span>
-                  )}
-                </div>
+                <div className="font-mono text-[10px] text-muted-foreground">Orijinal satıcı fiyatını manuel gir; müşteriye "tasarruf" rozeti göstermek için kullanılır.</div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <Field
                     label="orijinal fiyat (₺)"
