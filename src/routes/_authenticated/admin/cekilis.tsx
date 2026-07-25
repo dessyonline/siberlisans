@@ -336,15 +336,27 @@ function AdminRafflesPage() {
                 <Megaphone className="h-3 w-3" /> duyur
               </button>
               {r.status === "drawn" && (
-                <button onClick={() => setWinnersFor(winnersFor === r.id ? null : r.id)} className="flex items-center gap-1 rounded border border-primary/30 px-2 py-1 font-mono text-xs">
-                  <Users className="h-3 w-3" /> kazananlar
-                </button>
+                <>
+                  <button onClick={() => setWinnersFor(winnersFor === r.id ? null : r.id)} className="flex items-center gap-1 rounded border border-primary/30 px-2 py-1 font-mono text-xs">
+                    <Users className="h-3 w-3" /> kazananlar
+                  </button>
+                  <button onClick={() => playLiveDraw(r.id, r.title)} className="flex items-center gap-1 rounded border border-primary/30 px-2 py-1 font-mono text-xs">
+                    <Play className="h-3 w-3" /> canlı göster
+                  </button>
+                  <button
+                    onClick={() => { if (confirm("Mevcut kazananlar iptal edilip yeniden çekilsin mi?")) drawMut.mutate({ id: r.id, redraw: true, title: r.title }); }}
+                    className="flex items-center gap-1 rounded border border-yellow-500/50 bg-yellow-500/10 px-2 py-1 font-mono text-xs text-yellow-400 hover:bg-yellow-500/20"
+                  >
+                    <Repeat className="h-3 w-3" /> yeniden çek
+                  </button>
+                </>
               )}
               {r.status === "active" && (
-                <button onClick={() => { if (confirm(`${r.num_winners} kazanan seçilecek. Devam?`)) drawMut.mutate(r.id); }} className="flex items-center gap-1 rounded border border-primary/50 bg-primary/10 px-2 py-1 font-mono text-xs text-primary hover:bg-primary/20">
+                <button onClick={() => { if (confirm(`${r.num_winners} kazanan seçilecek. Devam?`)) drawMut.mutate({ id: r.id, title: r.title }); }} className="flex items-center gap-1 rounded border border-primary/50 bg-primary/10 px-2 py-1 font-mono text-xs text-primary hover:bg-primary/20">
                   <Play className="h-3 w-3" /> çek
                 </button>
               )}
+
               <button
                 onClick={() => {
                   setForm({
