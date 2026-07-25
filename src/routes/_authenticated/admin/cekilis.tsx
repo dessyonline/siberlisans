@@ -411,9 +411,19 @@ function AdminRafflesPage() {
           </div>
         </div>
       )}
+
+      {reel && (
+        <LiveDrawReel
+          title={reel.title}
+          participants={reel.participants}
+          winners={reel.winners}
+          onClose={() => setReel(null)}
+        />
+      )}
     </div>
   );
 }
+
 
 function AnalyticsBlock({ raffleId }: { raffleId: string }) {
   const q = useQuery({
