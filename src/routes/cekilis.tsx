@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   listActiveRaffles,
   getMyEntries,
@@ -10,11 +10,14 @@ import {
   claimShareTicket,
   listPastWinners,
   getMyRaffleWins,
+  listRaffleParticipants,
 } from "@/lib/raffles.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { Ticket, Trophy, Clock, Users, Sparkles, Gift, Share2, Lock, Shield, Star, Copy, PartyPopper } from "lucide-react";
+import { Ticket, Trophy, Clock, Users, Sparkles, Gift, Share2, Lock, Shield, Star, Copy, PartyPopper, Play } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
+import { LiveDrawReel, type ReelParticipant, type ReelWinner } from "@/components/LiveDrawReel";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/cekilis")({
   head: () => ({
@@ -75,6 +78,29 @@ function RafflesPage() {
   const [authed, setAuthed] = useState(false);
   const [myTier, setMyTier] = useState<string | null>(null);
   const [buyCounts, setBuyCounts] = useState<Record<string, number>>({});
+  const [reel, setReel] = useState<{ title: string; participants: ReelParticipant[]; winners: ReelWinner[] } | null>(null);
+  const seenDrawnRef = useRef<Set<string>>(new Set());
+  const partsFn = useServerFn(listRaffleParticipants);
+
+  async function playLive(r: any) {
+    try {
+      const parts = (await partsFn({ data: { id: r.id } })) as ReelParticipant[];
+      const winners: ReelWinner[] = (r.winners ?? []).map((w: any) => {
+        const p = parts.find((x) => x.display_name === w.display_name);
+        return {
+          user_id: p?.user_id ?? w.display_name,
+          display_name: w.display_name,
+          avatar_id: w.avatar_id ?? p?.avatar_id ?? null,
+          tier: w.tier ?? p?.tier ?? null,
+          place: w.place,
+          masked_email: w.masked_email,
+        };
+      });
+      if (!winners.length) return;
+      setReel({ title: r.title, participants: parts, winners });
+    } catch { /* ignore */ }
+  }
+
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data }) => {
@@ -125,6 +151,24 @@ function RafflesPage() {
   const featured = (list.data ?? []).filter((r: any) => r.featured && r.status === "active");
   const others = (list.data ?? []).filter((r: any) => !r.featured || r.status === "drawn");
 
+  // Detect active→drawn transition and auto-play live reel once per raffle
+  useEffect(() => {
+    if (!list.data) return;
+    for (const r of list.data as any[]) {
+      if (r.status === "drawn" && (r.winners?.length ?? 0) > 0 && !seenDrawnRef.current.has(r.id)) {
+        // Skip on first load: only trigger when we've seen it before as active
+        if (seenDrawnRef.current.has(r.id + ":seen")) {
+          playLive(r);
+        }
+        seenDrawnRef.current.add(r.id);
+      }
+      if (r.status === "active") seenDrawnRef.current.add(r.id + ":seen");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [list.data]);
+
+
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <header className="mb-8 text-center">
@@ -165,8 +209,10 @@ function RafflesPage() {
                 onEnter={(c) => enterMut.mutate({ raffleId: r.id, count: c })}
                 onDaily={() => dailyMut.mutate(r.id)}
                 onShare={(p) => shareMut.mutate({ raffleId: r.id, platform: p })}
+                onReplay={() => playLive(r)}
                 busy={enterMut.isPending || dailyMut.isPending || shareMut.isPending}
               />
+
             ))}
           </div>
         </section>
@@ -186,8 +232,10 @@ function RafflesPage() {
             onEnter={(c) => enterMut.mutate({ raffleId: r.id, count: c })}
             onDaily={() => dailyMut.mutate(r.id)}
             onShare={(p) => shareMut.mutate({ raffleId: r.id, platform: p })}
+            onReplay={() => playLive(r)}
             busy={enterMut.isPending || dailyMut.isPending || shareMut.isPending}
           />
+
         ))}
       </div>
 
@@ -209,9 +257,19 @@ function RafflesPage() {
           </div>
         </section>
       )}
+
+      {reel && (
+        <LiveDrawReel
+          title={reel.title}
+          participants={reel.participants}
+          winners={reel.winners}
+          onClose={() => setReel(null)}
+        />
+      )}
     </div>
   );
 }
+
 
 function RaffleCard({
   r,
@@ -225,6 +283,7 @@ function RaffleCard({
   onEnter,
   onDaily,
   onShare,
+  onReplay,
   busy,
 }: {
   r: any;
@@ -238,8 +297,10 @@ function RaffleCard({
   onEnter: (c: number) => void;
   onDaily: () => void;
   onShare: (p: "twitter" | "telegram" | "whatsapp") => void;
+  onReplay?: () => void;
   busy: boolean;
 }) {
+
   const closed = new Date(r.end_at).getTime() < Date.now();
   const drawn = r.status === "drawn";
   const prizeName = r.product?.name ?? r.custom_prize_name ?? "Sürpriz ödül";
@@ -425,8 +486,17 @@ function RaffleCard({
                   <Trophy className="h-3 w-3 text-primary" />
                 </div>
               ))}
+              {onReplay && (r.winners?.length ?? 0) > 0 && (
+                <button
+                  onClick={onReplay}
+                  className="mt-1 flex w-full items-center justify-center gap-2 rounded border border-primary/40 bg-primary/5 py-1.5 font-mono text-xs text-primary hover:bg-primary/15"
+                >
+                  <Play className="h-3 w-3" /> canlı çekimi izle
+                </button>
+              )}
             </div>
           )}
+
 
           {r.seed_commit && (
             <details className="rounded border border-primary/10 bg-card/40 px-2 py-1 font-mono text-[10px] text-muted-foreground">

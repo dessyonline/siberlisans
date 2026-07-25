@@ -11,15 +11,18 @@ import {
   broadcastRaffle,
   raffleAnalytics,
   adminRaffleWinners,
+  listRaffleParticipants,
 } from "@/lib/raffles.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Trophy, Trash2, Play, Plus, BarChart3, Megaphone, Users, Ban, X, Star, RefreshCw } from "lucide-react";
+import { Trophy, Trash2, Play, Plus, BarChart3, Megaphone, Users, Ban, X, Star, RefreshCw, Repeat } from "lucide-react";
+import { LiveDrawReel, type ReelParticipant, type ReelWinner } from "@/components/LiveDrawReel";
 
 export const Route = createFileRoute("/_authenticated/admin/cekilis")({
   ssr: false,
   component: AdminRafflesPage,
 });
+
 
 type Tier = "bronze" | "silver" | "gold" | "platinum";
 type Form = {
@@ -86,6 +89,40 @@ function AdminRafflesPage() {
   const delFn = useServerFn(deleteRaffle);
   const dqFn = useServerFn(disqualifyWinner);
   const bcFn = useServerFn(broadcastRaffle);
+  const partsFn = useServerFn(listRaffleParticipants);
+  const winFn = useServerFn(adminRaffleWinners);
+
+  const [reel, setReel] = useState<{
+    title: string;
+    participants: ReelParticipant[];
+    winners: ReelWinner[];
+  } | null>(null);
+
+  async function playLiveDraw(raffleId: string, title: string) {
+    try {
+      const [parts, wins] = await Promise.all([
+        partsFn({ data: { id: raffleId } }),
+        winFn({ data: { id: raffleId } }),
+      ]);
+      const winners: ReelWinner[] = (wins as any[])
+        .filter((w) => !w.disqualified_at)
+        .map((w) => {
+          const p = (parts as any[]).find((x) => x.user_id === w.user_id);
+          return {
+            user_id: w.user_id,
+            display_name: w.display_name ?? p?.display_name ?? "Anonim",
+            avatar_id: p?.avatar_id ?? null,
+            tier: p?.tier ?? null,
+            place: w.place,
+          };
+        });
+      if (!winners.length) return;
+      setReel({ title, participants: parts as ReelParticipant[], winners });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Canlı çekim başlatılamadı");
+    }
+  }
+
 
   const save = useMutation({
     mutationFn: async () => {
@@ -120,13 +157,15 @@ function AdminRafflesPage() {
   });
 
   const drawMut = useMutation({
-    mutationFn: (id: string) => drawFn({ data: { id } }),
-    onSuccess: (r) => {
+    mutationFn: (v: { id: string; redraw?: boolean; title: string }) => drawFn({ data: { id: v.id, redraw: v.redraw } }),
+    onSuccess: async (r, v) => {
       toast.success(`Çekim tamamlandı · ${r.delivered_keys?.length ?? 0} key teslim · hash: ${r.draw_hash.slice(0, 12)}…`);
       qc.invalidateQueries({ queryKey: ["admin-raffles"] });
+      await playLiveDraw(v.id, v.title);
     },
     onError: (e: Error) => toast.error(e.message.replace(/^.*: /, "")),
   });
+
 
   const delMut = useMutation({
     mutationFn: (id: string) => delFn({ data: { id } }),
@@ -297,15 +336,27 @@ function AdminRafflesPage() {
                 <Megaphone className="h-3 w-3" /> duyur
               </button>
               {r.status === "drawn" && (
-                <button onClick={() => setWinnersFor(winnersFor === r.id ? null : r.id)} className="flex items-center gap-1 rounded border border-primary/30 px-2 py-1 font-mono text-xs">
-                  <Users className="h-3 w-3" /> kazananlar
-                </button>
+                <>
+                  <button onClick={() => setWinnersFor(winnersFor === r.id ? null : r.id)} className="flex items-center gap-1 rounded border border-primary/30 px-2 py-1 font-mono text-xs">
+                    <Users className="h-3 w-3" /> kazananlar
+                  </button>
+                  <button onClick={() => playLiveDraw(r.id, r.title)} className="flex items-center gap-1 rounded border border-primary/30 px-2 py-1 font-mono text-xs">
+                    <Play className="h-3 w-3" /> canlı göster
+                  </button>
+                  <button
+                    onClick={() => { if (confirm("Mevcut kazananlar iptal edilip yeniden çekilsin mi?")) drawMut.mutate({ id: r.id, redraw: true, title: r.title }); }}
+                    className="flex items-center gap-1 rounded border border-yellow-500/50 bg-yellow-500/10 px-2 py-1 font-mono text-xs text-yellow-400 hover:bg-yellow-500/20"
+                  >
+                    <Repeat className="h-3 w-3" /> yeniden çek
+                  </button>
+                </>
               )}
               {r.status === "active" && (
-                <button onClick={() => { if (confirm(`${r.num_winners} kazanan seçilecek. Devam?`)) drawMut.mutate(r.id); }} className="flex items-center gap-1 rounded border border-primary/50 bg-primary/10 px-2 py-1 font-mono text-xs text-primary hover:bg-primary/20">
+                <button onClick={() => { if (confirm(`${r.num_winners} kazanan seçilecek. Devam?`)) drawMut.mutate({ id: r.id, title: r.title }); }} className="flex items-center gap-1 rounded border border-primary/50 bg-primary/10 px-2 py-1 font-mono text-xs text-primary hover:bg-primary/20">
                   <Play className="h-3 w-3" /> çek
                 </button>
               )}
+
               <button
                 onClick={() => {
                   setForm({
@@ -360,9 +411,19 @@ function AdminRafflesPage() {
           </div>
         </div>
       )}
+
+      {reel && (
+        <LiveDrawReel
+          title={reel.title}
+          participants={reel.participants}
+          winners={reel.winners}
+          onClose={() => setReel(null)}
+        />
+      )}
     </div>
   );
 }
+
 
 function AnalyticsBlock({ raffleId }: { raffleId: string }) {
   const q = useQuery({
