@@ -403,21 +403,8 @@ function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => vo
     }
   }
 
-  async function aiSuggest() {
-    setBusy("ai");
-    try {
-      const r = await suggestFn({ data: { productId: p.id } });
-      if (r.retail_price_try) setRetailInput(String(Math.round(r.retail_price_try)));
-      if (r.duration_label) setDurationInput(r.duration_label);
-      if (r.source_url) setSourceInput(r.source_url);
-      setMode("retail");
-      toast.success(`AI önerisi hazır (güven: %${Math.round((r.confidence ?? 0) * 100)})`);
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setBusy(null);
-    }
-  }
+
+
 
   const retail = Number(p.retail_price_try ?? 0);
   const showRetailChip = retail > Number(p.price_try);
