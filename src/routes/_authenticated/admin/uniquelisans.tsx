@@ -40,7 +40,7 @@ function UniquelisansPage() {
   
   const [syncing, setSyncing] = useState(false);
   const [catalogSyncing, setCatalogSyncing] = useState(false);
-  const [batchAiBusy, setBatchAiBusy] = useState(false);
+  
 
   const { data: balance, refetch: refetchBalance, isFetching: balLoading } = useQuery({
     queryKey: ["ul-balance"],
