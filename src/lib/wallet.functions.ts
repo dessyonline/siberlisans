@@ -275,6 +275,22 @@ export const approveTopup = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Yetkisiz.");
     const { data: balance, error } = await supabase.rpc("approve_topup", { _topup_id: data.topupId });
     if (error) throw new Error(error.message);
+    try {
+      const { notifyTelegram } = await import("@/lib/telegram.server");
+      const { data: t } = await supabase
+        .from("wallet_topups")
+        .select("reference_code, amount_try, user_id")
+        .eq("id", data.topupId)
+        .single();
+      if (t) {
+        const { data: prof } = await supabase
+          .from("profiles").select("email, display_name").eq("id", t.user_id).maybeSingle();
+        const who = prof?.display_name || prof?.email || String(t.user_id).slice(0, 8);
+        await notifyTelegram(
+          `✅ <b>Bakiye yükleme onaylandı</b>\n👤 ${who}\n💰 ₺${Number(t.amount_try).toLocaleString("tr-TR")}\n🔖 <code>${t.reference_code}</code>`,
+        );
+      }
+    } catch (e) { console.error("[tg] approveTopup", (e as Error).message); }
     return { ok: true, balance: Number(balance ?? 0) };
   });
 
