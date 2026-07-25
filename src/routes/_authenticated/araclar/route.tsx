@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, Link, useLocation } from "@tanstack/react-router";
-import { MessageSquare, Languages, Code2, FileText, Sparkles, Video, Terminal, ArrowLeft } from "lucide-react";
+import { Video, Film, Terminal, ArrowLeft } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/araclar")({
   ssr: false,
@@ -8,12 +8,8 @@ export const Route = createFileRoute("/_authenticated/araclar")({
 
 const NAV = [
   { to: "/araclar", label: "hub", icon: Terminal, exact: true },
-  { to: "/araclar/chat", label: "AI chat", icon: MessageSquare },
-  { to: "/araclar/ceviri", label: "çevirmen", icon: Languages },
-  { to: "/araclar/kod", label: "kod açıkla", icon: Code2 },
-  { to: "/araclar/ozet", label: "özetleyici", icon: FileText },
-  { to: "/araclar/slogan", label: "slogan üret", icon: Sparkles },
   { to: "/araclar/video", label: "AI video · ₺", icon: Video },
+  { to: "/araclar/video-uzun", label: "AI uzun video", icon: Film },
 ];
 
 function AraclarLayout() {
