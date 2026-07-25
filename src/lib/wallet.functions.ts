@@ -108,6 +108,23 @@ export const createTopup = createServerFn({ method: "POST" })
       throw new Error(msg);
     }
 
+    try {
+      const { notifyTelegram } = await import("@/lib/telegram.server");
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("email, display_name")
+        .eq("id", userId)
+        .maybeSingle();
+      const who = prof?.display_name || prof?.email || userId.slice(0, 8);
+      await notifyTelegram(
+        `🆕 <b>Yeni bakiye yükleme talebi</b>\n` +
+        `👤 ${who}\n` +
+        `💰 ₺${Number(data.amount).toLocaleString("tr-TR")}\n` +
+        `🔖 <code>${row.reference_code}</code>\n` +
+        `📶 IP: ${ip ?? "?"}${country ? ` (${country})` : ""}${is_vpn ? " ⚠️VPN" : ""}`,
+      );
+    } catch (e) { console.error("[tg] createTopup", (e as Error).message); }
+
     return { topupId: row.id, referenceCode: row.reference_code, reused: false, amount: data.amount, status: "pending" };
   });
 
