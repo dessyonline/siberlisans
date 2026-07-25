@@ -476,8 +476,17 @@ function RaffleCard({
                   <Trophy className="h-3 w-3 text-primary" />
                 </div>
               ))}
+              {onReplay && (r.winners?.length ?? 0) > 0 && (
+                <button
+                  onClick={onReplay}
+                  className="mt-1 flex w-full items-center justify-center gap-2 rounded border border-primary/40 bg-primary/5 py-1.5 font-mono text-xs text-primary hover:bg-primary/15"
+                >
+                  <Play className="h-3 w-3" /> canlı çekimi izle
+                </button>
+              )}
             </div>
           )}
+
 
           {r.seed_commit && (
             <details className="rounded border border-primary/10 bg-card/40 px-2 py-1 font-mono text-[10px] text-muted-foreground">
