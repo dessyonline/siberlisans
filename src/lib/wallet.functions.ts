@@ -152,9 +152,19 @@ export const markTopupPaid = createServerFn({ method: "POST" })
         .select("reference_code, amount_try")
         .eq("id", data.topupId)
         .single();
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("email, display_name")
+        .eq("id", userId)
+        .maybeSingle();
+      const who = prof?.display_name || prof?.email || userId.slice(0, 8);
       if (t) {
         await notifyTelegram(
-          `📎 Bakiye dekontu yüklendi — ${t.reference_code} — ${t.amount_try} TL`,
+          `📎 <b>Bakiye dekontu yüklendi</b>\n` +
+          `👤 ${who}\n` +
+          `💰 ₺${Number(t.amount_try).toLocaleString("tr-TR")}\n` +
+          `🔖 <code>${t.reference_code}</code>\n` +
+          `⏳ inceleme bekliyor → /admin/cuzdan`,
         );
       }
     } catch (e) {
