@@ -108,6 +108,23 @@ export const createTopup = createServerFn({ method: "POST" })
       throw new Error(msg);
     }
 
+    try {
+      const { notifyTelegram } = await import("@/lib/telegram.server");
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("email, display_name")
+        .eq("id", userId)
+        .maybeSingle();
+      const who = prof?.display_name || prof?.email || userId.slice(0, 8);
+      await notifyTelegram(
+        `🆕 <b>Yeni bakiye yükleme talebi</b>\n` +
+        `👤 ${who}\n` +
+        `💰 ₺${Number(data.amount).toLocaleString("tr-TR")}\n` +
+        `🔖 <code>${row.reference_code}</code>\n` +
+        `📶 IP: ${ip ?? "?"}${country ? ` (${country})` : ""}${is_vpn ? " ⚠️VPN" : ""}`,
+      );
+    } catch (e) { console.error("[tg] createTopup", (e as Error).message); }
+
     return { topupId: row.id, referenceCode: row.reference_code, reused: false, amount: data.amount, status: "pending" };
   });
 
@@ -135,9 +152,19 @@ export const markTopupPaid = createServerFn({ method: "POST" })
         .select("reference_code, amount_try")
         .eq("id", data.topupId)
         .single();
+      const { data: prof } = await supabase
+        .from("profiles")
+        .select("email, display_name")
+        .eq("id", userId)
+        .maybeSingle();
+      const who = prof?.display_name || prof?.email || userId.slice(0, 8);
       if (t) {
         await notifyTelegram(
-          `📎 Bakiye dekontu yüklendi — ${t.reference_code} — ${t.amount_try} TL`,
+          `📎 <b>Bakiye dekontu yüklendi</b>\n` +
+          `👤 ${who}\n` +
+          `💰 ₺${Number(t.amount_try).toLocaleString("tr-TR")}\n` +
+          `🔖 <code>${t.reference_code}</code>\n` +
+          `⏳ inceleme bekliyor → /admin/cuzdan`,
         );
       }
     } catch (e) {
@@ -248,6 +275,22 @@ export const approveTopup = createServerFn({ method: "POST" })
     if (!isAdmin) throw new Error("Yetkisiz.");
     const { data: balance, error } = await supabase.rpc("approve_topup", { _topup_id: data.topupId });
     if (error) throw new Error(error.message);
+    try {
+      const { notifyTelegram } = await import("@/lib/telegram.server");
+      const { data: t } = await supabase
+        .from("wallet_topups")
+        .select("reference_code, amount_try, user_id")
+        .eq("id", data.topupId)
+        .single();
+      if (t) {
+        const { data: prof } = await supabase
+          .from("profiles").select("email, display_name").eq("id", t.user_id).maybeSingle();
+        const who = prof?.display_name || prof?.email || String(t.user_id).slice(0, 8);
+        await notifyTelegram(
+          `✅ <b>Bakiye yükleme onaylandı</b>\n👤 ${who}\n💰 ₺${Number(t.amount_try).toLocaleString("tr-TR")}\n🔖 <code>${t.reference_code}</code>`,
+        );
+      }
+    } catch (e) { console.error("[tg] approveTopup", (e as Error).message); }
     return { ok: true, balance: Number(balance ?? 0) };
   });
 
@@ -269,6 +312,22 @@ export const rejectTopup = createServerFn({ method: "POST" })
     });
 
     if (error) throw new Error(error.message);
+    try {
+      const { notifyTelegram } = await import("@/lib/telegram.server");
+      const { data: t } = await supabase
+        .from("wallet_topups")
+        .select("reference_code, amount_try, user_id")
+        .eq("id", data.topupId)
+        .single();
+      if (t) {
+        const { data: prof } = await supabase
+          .from("profiles").select("email, display_name").eq("id", t.user_id).maybeSingle();
+        const who = prof?.display_name || prof?.email || String(t.user_id).slice(0, 8);
+        await notifyTelegram(
+          `❌ <b>Bakiye yükleme reddedildi</b>\n👤 ${who}\n💰 ₺${Number(t.amount_try).toLocaleString("tr-TR")}\n🔖 <code>${t.reference_code}</code>${data.note ? `\n📝 ${data.note}` : ""}`,
+        );
+      }
+    } catch (e) { console.error("[tg] rejectTopup", (e as Error).message); }
     return { ok: true };
   });
 
