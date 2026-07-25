@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   listActiveRaffles,
   getMyEntries,
@@ -10,11 +10,14 @@ import {
   claimShareTicket,
   listPastWinners,
   getMyRaffleWins,
+  listRaffleParticipants,
 } from "@/lib/raffles.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { Ticket, Trophy, Clock, Users, Sparkles, Gift, Share2, Lock, Shield, Star, Copy, PartyPopper } from "lucide-react";
+import { Ticket, Trophy, Clock, Users, Sparkles, Gift, Share2, Lock, Shield, Star, Copy, PartyPopper, Play } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
+import { LiveDrawReel, type ReelParticipant, type ReelWinner } from "@/components/LiveDrawReel";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/cekilis")({
   head: () => ({
