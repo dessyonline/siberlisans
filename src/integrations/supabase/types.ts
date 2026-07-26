@@ -2699,6 +2699,10 @@ export type Database = {
         Args: { _note?: string; _order_id: string }
         Returns: Json
       }
+      admin_change_order_product: {
+        Args: { _note?: string; _order_id: string; _product_id: string }
+        Returns: Json
+      }
       admin_complete_ai_job: {
         Args: { _job: string; _url: string }
         Returns: undefined
@@ -2770,6 +2774,19 @@ export type Database = {
           slug: string
           threshold: number
         }[]
+      }
+      admin_manual_deliver: {
+        Args: {
+          _duration_days?: number
+          _note?: string
+          _order_id: string
+          _payload: string
+        }
+        Returns: Json
+      }
+      admin_partial_refund: {
+        Args: { _amount: number; _note?: string; _order_id: string }
+        Returns: Json
       }
       admin_product_profitability: {
         Args: { _days?: number }
