@@ -123,8 +123,8 @@ export function AdminCommandPalette() {
         const [ordersRes, usersRes, productsRes] = await Promise.all([
           supabase
             .from("orders")
-            .select("id, reference_code, status, price_try, created_at, buyer_email")
-            .or(`reference_code.ilike.${like},buyer_email.ilike.${like}`)
+            .select("id, reference_code, status, price_try, created_at, user_id, buyer:profiles!orders_user_id_fkey(email)")
+            .ilike("reference_code", like)
             .order("created_at", { ascending: false })
             .limit(6),
           supabase
@@ -140,17 +140,18 @@ export function AdminCommandPalette() {
             .limit(6),
         ]);
         const out: ResultRow[] = [];
-        (ordersRes.data ?? []).forEach((o) =>
+        (ordersRes.data ?? []).forEach((o) => {
+          const buyer = (o as { buyer?: { email?: string | null } | null }).buyer;
           out.push({
             kind: "order",
             id: o.id as string,
             ref: o.reference_code as string,
             status: o.status as string,
             price: Number(o.price_try),
-            email: (o as { buyer_email?: string | null }).buyer_email ?? null,
+            email: buyer?.email ?? null,
             created_at: o.created_at as string,
-          }),
-        );
+          });
+        });
         (usersRes.data ?? []).forEach((u) =>
           out.push({
             kind: "user",
