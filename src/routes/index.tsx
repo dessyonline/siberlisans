@@ -42,9 +42,90 @@ import { Wallet } from "lucide-react";
 import { AdminEditBadge } from "@/components/AdminEditBadge";
 import { RaffleFloatingBadge } from "@/components/RaffleFloatingBadge";
 
+const SITE_URL = "https://siberlisans.com";
+
+const HOME_FAQ = [
+  {
+    q: "Nasıl ödeme yapabilirim?",
+    a: "Site cüzdanına bakiye yükleyip tek tıkla satın alabilir ya da kart ile güvenli ödeme sayfası üzerinden ilerleyebilirsin. Bakiye yüklemede alt limit 200 TL'dir.",
+  },
+  {
+    q: "Ödeme sonrası anahtarı ne kadar sürede alırım?",
+    a: "Cüzdan bakiyesiyle alınan ürünlerde teslim genellikle saniyeler içindedir. Manuel onay gereken ürünlerde ortalama süre çalışma saatlerinde 5-15 dakikadır.",
+  },
+  {
+    q: "Anahtarım çalışmazsa ne olur?",
+    a: "24 saat içinde destek talebi açarsan anahtarı ücretsiz yenisiyle değiştiririz.",
+  },
+  {
+    q: "Ücretsiz araçları kullanmak için ödeme gerekiyor mu?",
+    a: "Hayır. Arka plan kaldırma, video düzenleme, şifre ve hash üretimi gibi 25+ araç tamamen ücretsizdir ve dosyaların tarayıcından çıkmaz. Yalnızca AI video üretimi kredi harcar.",
+  },
+  {
+    q: "Arkadaşımı davet edersem ne kazanırım?",
+    a: "Davet ettiğin kişi alışveriş yaptığında sana nakit komisyon, ona da indirim kuponu tanımlanır. Detayları davet panelinden takip edebilirsin.",
+  },
+  {
+    q: "Faturamı alabilir miyim?",
+    a: "Evet, kurumsal müşteriler için e-arşiv fatura düzenlenir ve panelinden PDF olarak indirebilirsin.",
+  },
+];
+
 export const Route = createFileRoute("/")({
   component: Index,
+  head: () => ({
+    meta: [
+      { title: "SiberLisans — Orijinal Yazılım Lisansları ve Ücretsiz Araçlar" },
+      {
+        name: "description",
+        content:
+          "Windows, Office, Adobe, ChatGPT ve daha fazlası için orijinal lisans anahtarları. Cüzdanla anında teslim, 25+ ücretsiz tarayıcı aracı ve AI video üretimi.",
+      },
+      { property: "og:title", content: "SiberLisans — Orijinal Yazılım Lisansları ve Ücretsiz Araçlar" },
+      {
+        property: "og:description",
+        content: "Cüzdanla anında teslim edilen orijinal lisanslar, 25+ ücretsiz araç ve AI video laboratuvarı.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [{ rel: "canonical", href: `${SITE_URL}/` }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              name: "SiberLisans",
+              url: SITE_URL,
+              sameAs: [
+                "https://www.youtube.com/@Siber.php",
+                "https://www.instagram.com/siber.php",
+                "https://www.tiktok.com/@siberphp",
+              ],
+            },
+            {
+              "@type": "WebSite",
+              name: "SiberLisans",
+              url: SITE_URL,
+            },
+            {
+              "@type": "FAQPage",
+              mainEntity: HOME_FAQ.map((f) => ({
+                "@type": "Question",
+                name: f.q,
+                acceptedAnswer: { "@type": "Answer", text: f.a },
+              })),
+            },
+          ],
+        }),
+      },
+    ],
+  }),
 });
+
 
 const DURATION_LABEL: Record<string, string> = {
   monthly: "aylık",
@@ -251,7 +332,7 @@ function Index() {
               </h1>
               <p className="mt-6 max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
                 <span className="text-primary font-mono">//</span>{" "}
-                <TypedLine text="Havale/EFT ile öde. Referans kodunla eşleş." delay={300} />
+                <TypedLine text="Cüzdanına bakiye yükle veya kartla öde." delay={300} />
                 <br />
                 <span className="text-primary font-mono">//</span>{" "}
                 <TypedLine
@@ -476,7 +557,11 @@ function Index() {
       </section>
 
 
+      {/* KATEGORİ HIZLI GEZİNME */}
+      <CategoryStrip products={products ?? []} />
+
       {/* FEATURED */}
+
       {featured.length > 0 && (
         <section className="mx-auto max-w-6xl px-4 pt-20 pb-4">
           <div className="mb-8 flex items-end justify-between gap-4">
@@ -537,9 +622,10 @@ function Index() {
           <div className="hidden lg:block absolute top-8 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" aria-hidden />
           {[
             { n: "01", t: "Ürün Seç", d: "Kataloğumuzdan lisansı seç, satın al butonuna bas." },
-            { n: "02", t: "Havale Yap", d: "Otomatik oluşturulan referans kodunu açıklamaya yazarak transfer et." },
-            { n: "03", t: "Dekont Yükle", d: "Panel üzerinden dekont/makbuz görselini yükle." },
+            { n: "02", t: "Bakiye Yükle", d: "Cüzdanına bakiye yükle (min. 200 TL) veya kartla güvenli ödemeye geç." },
+            { n: "03", t: "Onay", d: "Cüzdan ödemesi anında onaylanır; manuel ürünlerde ekip dakikalar içinde doğrular." },
             { n: "04", t: "Anahtarını Al", d: "Onay sonrası key panelde ve e-postanda görünür." },
+
           ].map((s) => (
             <div key={s.n} className="relative glass-card glass-card-hover rounded-xl p-5 corner-cut">
               <div className="flex items-center gap-3">
@@ -602,30 +688,18 @@ function Index() {
           <h2 className="mt-2 text-2xl sm:text-3xl neon-text">Sık Sorulan Sorular</h2>
         </div>
         <Accordion type="single" collapsible className="glass-card rounded-lg px-6">
-          {[
-            {
-              q: "Kredi kartı ile ödeme yapabilir miyim?",
-              a: "Hayır. SiberPHP güvenlik politikası gereği yalnızca banka havalesi / EFT kabul eder.",
-            },
-            {
-              q: "Ödeme sonrası anahtarı ne kadar sürede alırım?",
-              a: "Dekont onayından sonra saniyeler içinde e-postanıza ve panelinize düşer. Ortalama onay süresi çalışma saatlerinde 5–15 dakikadır.",
-            },
-            {
-              q: "Anahtarım çalışmazsa ne olur?",
-              a: "24 saat içinde destek üzerinden ulaşırsanız yeni bir key ile değiştiririz.",
-            },
-            {
-              q: "Faturamı alabilir miyim?",
-              a: "Evet, kurumsal müşteriler için e-arşiv fatura düzenlenir.",
-            },
-          ].map((item, i) => (
+          {HOME_FAQ.map((item, i) => (
             <AccordionItem key={i} value={`i${i}`}>
               <AccordionTrigger className="font-mono text-left">{item.q}</AccordionTrigger>
               <AccordionContent className="text-muted-foreground">{item.a}</AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
+        <div className="mt-4 text-center">
+          <Link to="/sss" className="font-mono text-xs text-primary hover:underline">
+            tüm soruları gör →
+          </Link>
+        </div>
       </section>
 
       {/* SUPPORT */}
@@ -638,11 +712,14 @@ function Index() {
               <div className="text-xs text-muted-foreground">7/24 · Ortalama yanıt: 3 dk</div>
             </div>
           </div>
-          <Button variant="outline" className="font-mono">
-            <Terminal className="mr-2 h-4 w-4" />destek başlat
+          <Button asChild variant="outline" className="font-mono">
+            <Link to="/destek">
+              <Terminal className="mr-2 h-4 w-4" />destek başlat
+            </Link>
           </Button>
         </div>
       </section>
+
     </div>
   );
 }
@@ -1066,3 +1143,73 @@ function QuickAccessCards() {
   );
 }
 
+
+type CatStripProduct = { category: string | null; price_try: number | string };
+
+function CategoryStrip({ products }: { products: CatStripProduct[] }) {
+  const cats = useMemo(() => {
+    const map = new Map<string, { count: number; min: number }>();
+    for (const p of products) {
+      const c = (p.category ?? "").trim();
+      if (!c) continue;
+      const price = Number(p.price_try) || 0;
+      const cur = map.get(c);
+      if (cur) {
+        cur.count += 1;
+        if (price > 0 && price < cur.min) cur.min = price;
+      } else {
+        map.set(c, { count: 1, min: price > 0 ? price : Infinity });
+      }
+    }
+    return [...map.entries()]
+      .sort((a, b) => b[1].count - a[1].count)
+      .slice(0, 12)
+      .map(([name, v]) => ({ name, count: v.count, min: Number.isFinite(v.min) ? v.min : null }));
+  }, [products]);
+
+  if (cats.length === 0) return null;
+
+  return (
+    <section className="mx-auto max-w-6xl px-4 pt-16">
+      <div className="mb-6 font-mono">
+        <div className="text-xs text-muted-foreground">$ ls /categories --sort=popular</div>
+        <h2 className="mt-2 text-2xl sm:text-3xl neon-text">Kategoriye Göre Gez</h2>
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+        {cats.map((c) => {
+          const cv = catVisual(c.name);
+          const Icon = cv.Icon;
+          return (
+            <Link
+              key={c.name}
+              to="/urunler"
+              search={{ q: c.name }}
+              className="group relative overflow-hidden rounded-xl border border-border/60 bg-card/40 backdrop-blur p-4 hover:border-primary/60 hover:bg-card/70 transition-all"
+            >
+              <div
+                className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full blur-2xl opacity-40 group-hover:opacity-70 transition"
+                style={{ background: cv.hue }}
+                aria-hidden
+              />
+              <div className="relative flex items-start justify-between gap-2">
+                <div
+                  className="rounded-lg border p-2"
+                  style={{ borderColor: cv.ring, color: cv.hue, background: "color-mix(in oklab, currentColor 12%, transparent)" }}
+                >
+                  <Icon className="h-4 w-4" />
+                </div>
+                <span className="font-mono text-[10px] text-muted-foreground">{c.count} ürün</span>
+              </div>
+              <div className="relative mt-3 text-sm font-medium tracking-tight truncate">{c.name}</div>
+              {c.min !== null && (
+                <div className="relative mt-1 font-mono text-xs text-primary">
+                  ₺{Number(c.min).toLocaleString("tr-TR")}'den başlayan
+                </div>
+              )}
+            </Link>
+          );
+        })}
+      </div>
+    </section>
+  );
+}

@@ -16,6 +16,10 @@ import {
 
 export const Route = createFileRoute("/urunler")({
   component: ProductsPage,
+  validateSearch: (s: Record<string, unknown>): { q?: string } => ({
+    q: typeof s.q === "string" && s.q.trim() ? s.q.trim().slice(0, 60) : undefined,
+  }),
+
   head: () => ({
     meta: [
       { title: "Lisans Kataloğu — SiberPHP" },
@@ -270,7 +274,9 @@ function ProductsPage() {
   }, [byCategory]);
 
   const [group, setGroup] = useState<string>("all");
-  const [search, setSearch] = useState("");
+  const { q: initialQ } = Route.useSearch();
+  const [search, setSearch] = useState(initialQ ?? "");
+
   const [sort, setSort] = useState<SortKey>("default");
 
 
