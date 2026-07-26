@@ -9,7 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { toast } from "sonner";
-import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck, RefreshCw, Users, Trophy, Palette, Sparkles, Film } from "lucide-react";
+import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck, RefreshCw, Users, Trophy, Palette, Sparkles, Film, LayoutDashboard } from "lucide-react";
+import { AccountHero } from "@/components/account/AccountHero";
+import { ActivityFeed } from "@/components/account/ActivityFeed";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TierCard } from "@/components/TierCard";
 import { AVATARS, UserAvatar } from "@/components/UserAvatar";
@@ -114,129 +116,29 @@ function MyAccount() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 md:py-12">
-      {/* header */}
-      <div className="space-y-4">
-        <div className="min-w-0">
-          <div className="font-mono text-[11px] text-muted-foreground truncate">
-            $ whoami · <span className="text-foreground/80">{user?.email}</span>
-          </div>
-          <h1 className="mt-1.5 font-mono text-2xl md:text-3xl neon-text">Hesabım</h1>
+      <div className="min-w-0">
+        <div className="font-mono text-[11px] text-muted-foreground truncate">
+          $ whoami · <span className="text-foreground/80">{user?.email}</span>
         </div>
-
-        {/* stats grid: 3 cols on all sizes, cüzdan spans 3 on mobile for tap target */}
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 font-mono">
-          <Link
-            to="/cuzdan"
-            className="glass-card corner-cut col-span-2 sm:col-span-1 flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
-          >
-            <Wallet className="h-4 w-4 text-primary shrink-0" />
-            <div className="min-w-0">
-              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">cüzdan</div>
-              <div className="text-primary text-sm font-bold truncate">
-                <WalletBalance />
-              </div>
-            </div>
-          </Link>
-          <div className="glass-card rounded-md px-3 py-2.5">
-            <div className="text-muted-foreground text-[10px] uppercase tracking-wider">sipariş</div>
-            <div className="text-lg neon-text leading-tight">{orders?.length ?? 0}</div>
-          </div>
-          <div className="glass-card rounded-md px-3 py-2.5">
-            <div className="text-muted-foreground text-[10px] uppercase tracking-wider">anahtar</div>
-            <div className="text-lg neon-text leading-tight">{approvedKeys.length}</div>
-          </div>
-          <Link
-            to="/hesabim/lisanslar"
-            className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
-          >
-            <KeyRound className="h-4 w-4 text-primary shrink-0" />
-            <div className="min-w-0">
-              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">lisanslarım</div>
-              <div className="text-primary text-sm truncate">$ HWID & süre →</div>
-            </div>
-          </Link>
-          <Link
-            to="/favorilerim"
-            className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
-          >
-            <Heart className="h-4 w-4 text-destructive fill-destructive shrink-0" />
-            <div className="min-w-0">
-              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">favoriler</div>
-              <div className="text-primary text-sm truncate">$ favorilerin →</div>
-            </div>
-          </Link>
-          <Link
-            to="/faturalar"
-            className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
-          >
-            <Download className="h-4 w-4 text-primary shrink-0" />
-            <div className="min-w-0">
-              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">faturalar</div>
-              <div className="text-primary text-sm truncate">$ pdf indir →</div>
-            </div>
-          </Link>
-          <Link
-            to="/davet"
-            className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
-          >
-            <Gift className="h-4 w-4 text-primary shrink-0" />
-            <div className="min-w-0">
-              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">davet et & ₺25 kazan</div>
-              <div className="text-primary text-sm truncate">$ arkadaşını davet et →</div>
-            </div>
-          </Link>
-          <Link
-            to="/paketler/ai"
-            className="glass-card corner-cut col-span-2 sm:col-span-1 flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
-          >
-            <Sparkles className="h-4 w-4 text-primary shrink-0" />
-            <div className="min-w-0">
-              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">ai kredi</div>
-              <div className="text-primary text-sm font-bold truncate">
-                {aiSub
-                  ? `${aiSub.credits_remaining} / ${aiSub.credits_total}`
-                  : "paket al →"}
-              </div>
-              {aiSub?.expires_at && (
-                <div className="text-[10px] text-muted-foreground truncate">
-                  bitiş: {new Date(aiSub.expires_at).toLocaleDateString("tr-TR")}
-                </div>
-              )}
-            </div>
-          </Link>
-        </div>
+        <h1 className="mt-1.5 font-mono text-2xl md:text-3xl neon-text">Hesabım</h1>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
-        <TierCard />
-        <DailyStreakCard />
+      <div className="mt-4">
+        <AccountHero
+          userId={user?.id ?? ""}
+          email={user?.email ?? ""}
+          aiCredits={
+            aiSub ? { remaining: aiSub.credits_remaining, total: aiSub.credits_total } : null
+          }
+        />
       </div>
 
-
-
-
-
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
-        <BadgesBlock />
-        <Link
-          to="/gorevler"
-          className="glass-card corner-cut rounded-md p-4 flex items-center gap-3 hover:border-primary/60 transition group"
-        >
-          <Trophy className="h-8 w-8 text-primary shrink-0 group-hover:scale-110 transition" />
-          <div className="flex-1 min-w-0">
-            <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
-              görevler & liderlik
-            </div>
-            <div className="font-semibold">Puan kazan · Kupona çevir</div>
-            <div className="text-[11px] font-mono text-muted-foreground mt-0.5">
-              görevleri tamamla · aylık top 20'ye gir
-            </div>
-          </div>
-        </Link>
-      </div>
-
-      <Tabs defaultValue="orders" className="mt-6 md:mt-8">
-        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-7 font-mono h-auto">
+      <Tabs defaultValue="overview" className="mt-6 md:mt-8">
+        <TabsList className="grid w-full grid-cols-4 sm:grid-cols-8 font-mono h-auto">
+          <TabsTrigger value="overview" className="text-[11px] sm:text-sm py-2">
+            <LayoutDashboard className="mr-1 h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">genel</span>
+          </TabsTrigger>
           <TabsTrigger value="orders" className="text-[11px] sm:text-sm py-2">
             <ShoppingCart className="mr-1 h-3.5 w-3.5 shrink-0" />
             <span className="truncate">siparişler</span>
@@ -267,6 +169,87 @@ function MyAccount() {
           </TabsTrigger>
         </TabsList>
 
+        <TabsContent value="overview" className="mt-6 space-y-4">
+          {/* hızlı erişim */}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 font-mono">
+            <div className="glass-card rounded-md px-3 py-2.5">
+              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">sipariş</div>
+              <div className="text-lg neon-text leading-tight">{orders?.length ?? 0}</div>
+            </div>
+            <div className="glass-card rounded-md px-3 py-2.5">
+              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">anahtar</div>
+              <div className="text-lg neon-text leading-tight">{approvedKeys.length}</div>
+            </div>
+            <Link
+              to="/hesabim/lisanslar"
+              className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
+            >
+              <KeyRound className="h-4 w-4 text-primary shrink-0" />
+              <div className="min-w-0">
+                <div className="text-muted-foreground text-[10px] uppercase tracking-wider">lisanslarım</div>
+                <div className="text-primary text-sm truncate">$ HWID & süre →</div>
+              </div>
+            </Link>
+            <Link
+              to="/favorilerim"
+              className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
+            >
+              <Heart className="h-4 w-4 text-destructive fill-destructive shrink-0" />
+              <div className="min-w-0">
+                <div className="text-muted-foreground text-[10px] uppercase tracking-wider">favoriler</div>
+                <div className="text-primary text-sm truncate">$ favorilerin →</div>
+              </div>
+            </Link>
+            <Link
+              to="/faturalar"
+              className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
+            >
+              <Download className="h-4 w-4 text-primary shrink-0" />
+              <div className="min-w-0">
+                <div className="text-muted-foreground text-[10px] uppercase tracking-wider">faturalar</div>
+                <div className="text-primary text-sm truncate">$ pdf indir →</div>
+              </div>
+            </Link>
+            <Link
+              to="/davet"
+              className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
+            >
+              <Gift className="h-4 w-4 text-primary shrink-0" />
+              <div className="min-w-0">
+                <div className="text-muted-foreground text-[10px] uppercase tracking-wider">davet et & ₺25 kazan</div>
+                <div className="text-primary text-sm truncate">$ arkadaşını davet et →</div>
+              </div>
+            </Link>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <TierCard />
+            <DailyStreakCard />
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-2">
+            <ActivityFeed userId={user?.id ?? ""} />
+            <div className="space-y-3">
+              <BadgesBlock />
+              <Link
+                to="/gorevler"
+                className="glass-card corner-cut rounded-md p-4 flex items-center gap-3 hover:border-primary/60 transition group"
+              >
+                <Trophy className="h-8 w-8 text-primary shrink-0 group-hover:scale-110 transition" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                    görevler & liderlik
+                  </div>
+                  <div className="font-semibold">Puan kazan · Kupona çevir</div>
+                  <div className="text-[11px] font-mono text-muted-foreground mt-0.5">
+                    görevleri tamamla · aylık top 20'ye gir
+                  </div>
+                </div>
+              </Link>
+            </div>
+          </div>
+        </TabsContent>
+
         <TabsContent value="orders" className="mt-6">
           <OrdersTab orders={orders ?? []} isLoading={isLoading} />
         </TabsContent>
@@ -292,6 +275,7 @@ function MyAccount() {
     </div>
   );
 }
+
 
 function OrdersTab({ orders, isLoading }: { orders: Order[]; isLoading: boolean }) {
   const [q, setQ] = useState("");
