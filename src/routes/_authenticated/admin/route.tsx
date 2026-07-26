@@ -3,6 +3,7 @@ import { createFileRoute, Outlet, redirect, Link, useLocation } from "@tanstack/
 import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { AdminCommandPalette } from "@/components/admin/CommandPalette";
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -235,6 +236,7 @@ function AdminLayout() {
       <div className="min-w-0 md:ml-72 md:min-h-[calc(100vh-3.5rem)] md:px-6 md:py-6">
         <Outlet />
       </div>
+      <AdminCommandPalette />
     </div>
   );
 }
