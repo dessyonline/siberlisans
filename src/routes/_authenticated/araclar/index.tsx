@@ -271,7 +271,7 @@ function FeaturedCard({ tool }: { tool: Tool }) {
   const Icon = tool.icon;
   return (
     <Link
-      to={tool.to as "/araclar/chat"}
+      to={tool.to as "/araclar/palet"}
       className="group relative overflow-hidden rounded-lg border border-primary/30 bg-gradient-to-br from-background to-primary/5 p-4 hover:border-primary hover:shadow-[0_0_30px_hsl(var(--primary)/0.35)] transition-all"
     >
       <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 blur-2xl group-hover:bg-primary/20 transition" aria-hidden />
@@ -300,7 +300,7 @@ function ToolGrid({ tools }: { tools: Tool[] }) {
         return (
           <Link
             key={t.to}
-            to={t.to as "/araclar/chat"}
+            to={t.to as "/araclar/palet"}
             className="group relative overflow-hidden rounded-lg border border-primary/15 bg-card/40 backdrop-blur p-4 hover:border-primary/60 hover:bg-card/70 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)] transition-all"
           >
             <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition" aria-hidden />
