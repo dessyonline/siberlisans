@@ -41,6 +41,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Wallet } from "lucide-react";
 import { AdminEditBadge } from "@/components/AdminEditBadge";
 import { RaffleFloatingBadge } from "@/components/RaffleFloatingBadge";
+import { LiveSalesTicker } from "@/components/LiveSalesTicker";
 
 const SITE_URL = "https://siberlisans.com";
 
@@ -434,6 +435,9 @@ function Index() {
           </div>
         </div>
       </section>
+
+      {/* CANLI SATIŞ AKIŞI — sosyal kanıt */}
+      <LiveSalesTicker />
 
       {/* HIZLI ERİŞİM — Araç Laboratuvarı + AI Paketleri */}
       <QuickAccessCards />

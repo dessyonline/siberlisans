@@ -23,18 +23,16 @@ const productMetaQuery = (slug: string) => ({
   queryFn: async () => {
     const { data: product } = await supabase
       .from("products")
-      .select("id, name, description, image_url, price_try, category")
+      .select("id, name, description, image_url, price_try, category, avg_rating, review_count")
       .eq("slug", slug)
       .eq("active", true)
       .maybeSingle();
     if (!product) return null;
-    const { data: reviews } = await supabase
-      .from("product_reviews")
-      .select("rating")
-      .eq("product_id", product.id);
-    const count = reviews?.length ?? 0;
-    const avg = count > 0 ? reviews!.reduce((s, r) => s + Number(r.rating || 0), 0) / count : 0;
-    return { ...product, reviewCount: count, ratingAvg: avg };
+    return {
+      ...product,
+      reviewCount: Number(product.review_count ?? 0),
+      ratingAvg: Number(product.avg_rating ?? 0),
+    };
   },
 });
 

@@ -48,6 +48,7 @@ import { SocialPopup } from "../components/SocialPopup";
 import { OnboardingTour } from "../components/OnboardingTour";
 import { PwaInstallPrompt } from "../components/PwaInstallPrompt";
 import { PushEnablePrompt } from "../components/PushEnablePrompt";
+import { CartReminder } from "../components/CartReminder";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { THEME_BOOT_SCRIPT } from "../lib/theme";
 import { useQuery } from "@tanstack/react-query";
@@ -547,6 +548,7 @@ function RootComponent() {
         </div>
         <SupportFab />
         <CartDrawer />
+        <CartReminder />
         <IpChangeGuard />
         <SocialPopup />
         <OnboardingTour />
