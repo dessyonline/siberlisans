@@ -584,6 +584,12 @@ function Payment() {
             </div>
           )}
 
+          {order.status === "approved" && (
+            <ReviewPromptCard productId={order.product_id ?? undefined} />
+          )}
+
+
+
           {needsManualContact && (order.status === "reviewing" || order.status === "approved") && (
             <ManualContactBlock
               orderId={orderId}
