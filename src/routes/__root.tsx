@@ -421,7 +421,7 @@ const MOBILE_MENU_SCRIPT = `(function(){
     var t = e.target && e.target.closest ? e.target.closest('[data-mobile-menu-toggle]') : null;
     if (t) { e.preventDefault(); set(!document.documentElement.classList.contains('mm-open')); return; }
     var c = e.target && e.target.closest ? e.target.closest('[data-mobile-menu-close]') : null;
-    if (c) { set(false); return; }
+    if (c) { setTimeout(function(){ set(false); }, 0); return; }
     var b = e.target && e.target.closest ? e.target.closest('[data-mobile-menu-backdrop]') : null;
     if (b) { set(false); return; }
   }, true);
