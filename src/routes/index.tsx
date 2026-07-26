@@ -435,6 +435,9 @@ function Index() {
         </div>
       </section>
 
+      {/* CANLI SATIŞ AKIŞI — sosyal kanıt */}
+      <LiveSalesTicker />
+
       {/* HIZLI ERİŞİM — Araç Laboratuvarı + AI Paketleri */}
       <QuickAccessCards />
 
