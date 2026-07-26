@@ -3185,6 +3185,16 @@ export type Database = {
           license_token: string
         }[]
       }
+      pending_review_products: {
+        Args: never
+        Returns: {
+          image_url: string
+          name: string
+          product_id: string
+          purchased_at: string
+          slug: string
+        }[]
+      }
       process_due_subscriptions: {
         Args: never
         Returns: {
@@ -3234,6 +3244,17 @@ export type Database = {
           tickets: number
           tier: string
           user_id: string
+        }[]
+      }
+      recent_public_sales: {
+        Args: { _limit?: number }
+        Returns: {
+          created_at: string
+          id: string
+          image_url: string
+          masked_buyer: string
+          product_name: string
+          product_slug: string
         }[]
       }
       recompute_badges: { Args: { _user_id: string }; Returns: undefined }
