@@ -3,6 +3,7 @@ import { createFileRoute, Outlet, redirect, Link, useLocation } from "@tanstack/
 import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import { AdminCommandPalette } from "@/components/admin/CommandPalette";
 import {
   LayoutDashboard,
   ShoppingCart,
