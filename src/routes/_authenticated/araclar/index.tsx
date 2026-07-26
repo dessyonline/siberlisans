@@ -229,6 +229,43 @@ function Hub() {
         </div>
       </section>
 
+      {/* FAVORİLER */}
+      {favTools.length > 0 && (
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Star className="h-4 w-4 text-yellow-400" />
+            <h2 className="font-mono text-sm text-yellow-400">Favorilerim</h2>
+            <span className="font-mono text-[10px] text-muted-foreground">// yıldıza basarak ekle</span>
+          </div>
+          <ToolGrid tools={favTools} favs={favs} onFav={toggleFav} onOpen={pushRecent} />
+        </section>
+      )}
+
+      {/* SON KULLANILANLAR */}
+      {recentTools.length > 0 && (
+        <section className="space-y-2">
+          <div className="flex items-center gap-2">
+            <History className="h-4 w-4 text-primary" />
+            <h2 className="font-mono text-sm text-primary">Son kullandıkların</h2>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {recentTools.map((t) => {
+              const Icon = t.icon;
+              return (
+                <Link
+                  key={`r-${t.to}`}
+                  to={t.to as "/araclar/palet"}
+                  onClick={() => pushRecent(t.to)}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-primary/25 bg-card/40 px-3 py-1.5 font-mono text-xs text-muted-foreground hover:border-primary hover:text-primary transition"
+                >
+                  <Icon className="h-3.5 w-3.5" /> {t.label}
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
       {/* SPOTLIGHT / FEATURED */}
       <section className="space-y-3">
         <div className="flex items-center justify-between">
@@ -236,10 +273,10 @@ function Hub() {
             <Sparkles className="h-4 w-4 text-primary" />
             <h2 className="font-mono text-sm text-primary">Öne çıkanlar</h2>
           </div>
-          <span className="font-mono text-[10px] text-muted-foreground">// en çok kullanılan 3 araç</span>
+          <span className="font-mono text-[10px] text-muted-foreground">// en çok kullanılan araçlar</span>
         </div>
         <div className="grid gap-3 md:grid-cols-3">
-          {featured.map((t) => <FeaturedCard key={t.to} tool={t} />)}
+          {featured.map((t) => <FeaturedCard key={t.to} tool={t} onOpen={pushRecent} />)}
         </div>
       </section>
 
@@ -248,12 +285,25 @@ function Hub() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
+            ref={searchRef}
             type="text"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Araç ara — örn: 'arka plan', 'gif', 'json'..."
-            className="w-full rounded-md bg-black/40 border border-primary/30 pl-9 pr-3 py-2.5 font-mono text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:shadow-[0_0_20px_hsl(var(--primary)/0.2)] transition"
+            placeholder="Araç ara — örn: 'arka plan', 'gif', 'şifre'..."
+            className="w-full rounded-md bg-black/40 border border-primary/30 pl-9 pr-20 py-2.5 font-mono text-sm placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary focus:shadow-[0_0_20px_hsl(var(--primary)/0.2)] transition"
           />
+          {q ? (
+            <button
+              type="button"
+              onClick={() => setQ("")}
+              aria-label="Aramayı temizle"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-primary"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          ) : (
+            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 hidden sm:block rounded border border-primary/25 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">/</kbd>
+          )}
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -305,14 +355,15 @@ function Hub() {
                     <div className="font-mono text-[10px] text-muted-foreground">{c.hint} · {list.length} araç</div>
                   </div>
                 </div>
-                <ToolGrid tools={list} />
+                <ToolGrid tools={list} favs={favs} onFav={toggleFav} onOpen={pushRecent} />
               </section>
             );
           })}
         </div>
       ) : (
-        <ToolGrid tools={filtered} />
+        <ToolGrid tools={filtered} favs={favs} onFav={toggleFav} onOpen={pushRecent} />
       )}
+
     </div>
   );
 }
