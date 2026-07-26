@@ -79,6 +79,7 @@ import { Route as AuthenticatedAraclarVideoDondurRouteImport } from './routes/_a
 import { Route as AuthenticatedAraclarVideoBirlestirRouteImport } from './routes/_authenticated/araclar/video-birlestir'
 import { Route as AuthenticatedAraclarVideoRouteImport } from './routes/_authenticated/araclar/video'
 import { Route as AuthenticatedAraclarSikistirRouteImport } from './routes/_authenticated/araclar/sikistir'
+import { Route as AuthenticatedAraclarSifreRouteImport } from './routes/_authenticated/araclar/sifre'
 import { Route as AuthenticatedAraclarSayacRouteImport } from './routes/_authenticated/araclar/sayac'
 import { Route as AuthenticatedAraclarRenkRouteImport } from './routes/_authenticated/araclar/renk'
 import { Route as AuthenticatedAraclarQrRouteImport } from './routes/_authenticated/araclar/qr'
@@ -498,6 +499,12 @@ const AuthenticatedAraclarSikistirRoute =
     path: '/sikistir',
     getParentRoute: () => AuthenticatedAraclarRouteRoute,
   } as any)
+const AuthenticatedAraclarSifreRoute =
+  AuthenticatedAraclarSifreRouteImport.update({
+    id: '/sifre',
+    path: '/sifre',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
 const AuthenticatedAraclarSayacRoute =
   AuthenticatedAraclarSayacRouteImport.update({
     id: '/sayac',
@@ -868,6 +875,7 @@ export interface FileRoutesByFullPath {
   '/araclar/qr': typeof AuthenticatedAraclarQrRoute
   '/araclar/renk': typeof AuthenticatedAraclarRenkRoute
   '/araclar/sayac': typeof AuthenticatedAraclarSayacRoute
+  '/araclar/sifre': typeof AuthenticatedAraclarSifreRoute
   '/araclar/sikistir': typeof AuthenticatedAraclarSikistirRoute
   '/araclar/video': typeof AuthenticatedAraclarVideoRoute
   '/araclar/video-birlestir': typeof AuthenticatedAraclarVideoBirlestirRoute
@@ -985,6 +993,7 @@ export interface FileRoutesByTo {
   '/araclar/qr': typeof AuthenticatedAraclarQrRoute
   '/araclar/renk': typeof AuthenticatedAraclarRenkRoute
   '/araclar/sayac': typeof AuthenticatedAraclarSayacRoute
+  '/araclar/sifre': typeof AuthenticatedAraclarSifreRoute
   '/araclar/sikistir': typeof AuthenticatedAraclarSikistirRoute
   '/araclar/video': typeof AuthenticatedAraclarVideoRoute
   '/araclar/video-birlestir': typeof AuthenticatedAraclarVideoBirlestirRoute
@@ -1106,6 +1115,7 @@ export interface FileRoutesById {
   '/_authenticated/araclar/qr': typeof AuthenticatedAraclarQrRoute
   '/_authenticated/araclar/renk': typeof AuthenticatedAraclarRenkRoute
   '/_authenticated/araclar/sayac': typeof AuthenticatedAraclarSayacRoute
+  '/_authenticated/araclar/sifre': typeof AuthenticatedAraclarSifreRoute
   '/_authenticated/araclar/sikistir': typeof AuthenticatedAraclarSikistirRoute
   '/_authenticated/araclar/video': typeof AuthenticatedAraclarVideoRoute
   '/_authenticated/araclar/video-birlestir': typeof AuthenticatedAraclarVideoBirlestirRoute
@@ -1227,6 +1237,7 @@ export interface FileRouteTypes {
     | '/araclar/qr'
     | '/araclar/renk'
     | '/araclar/sayac'
+    | '/araclar/sifre'
     | '/araclar/sikistir'
     | '/araclar/video'
     | '/araclar/video-birlestir'
@@ -1344,6 +1355,7 @@ export interface FileRouteTypes {
     | '/araclar/qr'
     | '/araclar/renk'
     | '/araclar/sayac'
+    | '/araclar/sifre'
     | '/araclar/sikistir'
     | '/araclar/video'
     | '/araclar/video-birlestir'
@@ -1464,6 +1476,7 @@ export interface FileRouteTypes {
     | '/_authenticated/araclar/qr'
     | '/_authenticated/araclar/renk'
     | '/_authenticated/araclar/sayac'
+    | '/_authenticated/araclar/sifre'
     | '/_authenticated/araclar/sikistir'
     | '/_authenticated/araclar/video'
     | '/_authenticated/araclar/video-birlestir'
@@ -2040,6 +2053,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAraclarSikistirRouteImport
       parentRoute: typeof AuthenticatedAraclarRouteRoute
     }
+    '/_authenticated/araclar/sifre': {
+      id: '/_authenticated/araclar/sifre'
+      path: '/sifre'
+      fullPath: '/araclar/sifre'
+      preLoaderRoute: typeof AuthenticatedAraclarSifreRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
     '/_authenticated/araclar/sayac': {
       id: '/_authenticated/araclar/sayac'
       path: '/sayac'
@@ -2462,6 +2482,7 @@ interface AuthenticatedAraclarRouteRouteChildren {
   AuthenticatedAraclarQrRoute: typeof AuthenticatedAraclarQrRoute
   AuthenticatedAraclarRenkRoute: typeof AuthenticatedAraclarRenkRoute
   AuthenticatedAraclarSayacRoute: typeof AuthenticatedAraclarSayacRoute
+  AuthenticatedAraclarSifreRoute: typeof AuthenticatedAraclarSifreRoute
   AuthenticatedAraclarSikistirRoute: typeof AuthenticatedAraclarSikistirRoute
   AuthenticatedAraclarVideoRoute: typeof AuthenticatedAraclarVideoRoute
   AuthenticatedAraclarVideoBirlestirRoute: typeof AuthenticatedAraclarVideoBirlestirRoute
@@ -2491,6 +2512,7 @@ const AuthenticatedAraclarRouteRouteChildren: AuthenticatedAraclarRouteRouteChil
     AuthenticatedAraclarQrRoute: AuthenticatedAraclarQrRoute,
     AuthenticatedAraclarRenkRoute: AuthenticatedAraclarRenkRoute,
     AuthenticatedAraclarSayacRoute: AuthenticatedAraclarSayacRoute,
+    AuthenticatedAraclarSifreRoute: AuthenticatedAraclarSifreRoute,
     AuthenticatedAraclarSikistirRoute: AuthenticatedAraclarSikistirRoute,
     AuthenticatedAraclarVideoRoute: AuthenticatedAraclarVideoRoute,
     AuthenticatedAraclarVideoBirlestirRoute:
