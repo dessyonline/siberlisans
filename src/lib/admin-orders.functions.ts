@@ -322,7 +322,7 @@ export const getOrderDetail = createServerFn({ method: "POST" })
         action: a.action as string,
         actor_email: (a.actor_email as string) ?? null,
         created_at: a.created_at as string,
-        metadata: (a.metadata as Record<string, unknown>) ?? null,
+        metadata: a.metadata ? (JSON.stringify(a.metadata) as string) : null,
       })),
       customer: profile
         ? {
