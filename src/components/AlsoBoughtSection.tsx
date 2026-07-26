@@ -43,7 +43,7 @@ export function AlsoBoughtSection({ productId }: { productId: string }) {
             params={{ slug: p.slug }}
             className="glass-card corner-cut p-3 group hover:border-primary/50 transition-colors flex flex-col gap-2"
           >
-            <ProductLogo name={p.name} imageUrl={p.image_url} className="h-10 w-10" />
+            <ProductLogo name={p.name} src={p.image_url} className="h-10 w-10" />
             <span className="text-xs font-medium line-clamp-2 group-hover:text-primary transition-colors">
               {p.name}
             </span>
