@@ -193,7 +193,7 @@ function AdminOrdersPage() {
       const res = await syncOneFn({ data: { orderId: id } });
       if (res.result === "delivered") toast.success(`${res.ref} teslim edildi`);
       else if (res.result === "still_pending") toast.info(`${res.ref} hâlâ pending`);
-      else toast.error(`${res.ref}: ${res.message ?? "hata"}`);
+      else toast.error(`${res.ref}: ${"message" in res ? res.message : res.reason}`);
     });
 
   const resetFilters = () => {
