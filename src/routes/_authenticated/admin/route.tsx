@@ -236,6 +236,7 @@ function AdminLayout() {
       <div className="min-w-0 md:ml-72 md:min-h-[calc(100vh-3.5rem)] md:px-6 md:py-6">
         <Outlet />
       </div>
+      <AdminCommandPalette />
     </div>
   );
 }
