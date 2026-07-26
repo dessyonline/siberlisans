@@ -550,6 +550,7 @@ function RootComponent() {
         <SupportFab />
         <CartDrawer />
         <CartReminder />
+        <LiveActivityPopup />
         <IpChangeGuard />
         <SocialPopup />
         <OnboardingTour />
