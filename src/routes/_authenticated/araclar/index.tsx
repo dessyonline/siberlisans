@@ -379,11 +379,12 @@ function StatRow({ icon: Icon, label, value, accent, mute }: { icon: typeof Vide
   );
 }
 
-function FeaturedCard({ tool }: { tool: Tool }) {
+function FeaturedCard({ tool, onOpen }: { tool: Tool; onOpen: (to: string) => void }) {
   const Icon = tool.icon;
   return (
     <Link
       to={tool.to as "/araclar/palet"}
+      onClick={() => onOpen(tool.to)}
       className="group relative overflow-hidden rounded-lg border border-primary/30 bg-gradient-to-br from-background to-primary/5 p-4 hover:border-primary hover:shadow-[0_0_30px_hsl(var(--primary)/0.35)] transition-all"
     >
       <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 blur-2xl group-hover:bg-primary/20 transition" aria-hidden />
@@ -404,31 +405,56 @@ function FeaturedCard({ tool }: { tool: Tool }) {
   );
 }
 
-function ToolGrid({ tools }: { tools: Tool[] }) {
+function ToolGrid({
+  tools,
+  favs,
+  onFav,
+  onOpen,
+}: {
+  tools: Tool[];
+  favs: string[];
+  onFav: (to: string) => void;
+  onOpen: (to: string) => void;
+}) {
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {tools.map((t) => {
         const Icon = t.icon;
+        const isFav = favs.includes(t.to);
         return (
-          <Link
-            key={t.to}
-            to={t.to as "/araclar/palet"}
-            className="group relative overflow-hidden rounded-lg border border-primary/15 bg-card/40 backdrop-blur p-4 hover:border-primary/60 hover:bg-card/70 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)] transition-all"
-          >
-            <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition" aria-hidden />
-            <div className="flex items-center gap-2">
-              <div className="rounded-md bg-primary/10 p-2 text-primary group-hover:bg-primary/20 group-hover:scale-105 transition-transform">
-                <Icon className="h-5 w-5" />
+          <div key={`${t.category}-${t.to}`} className="relative">
+            <Link
+              to={t.to as "/araclar/palet"}
+              onClick={() => onOpen(t.to)}
+              className="group block relative overflow-hidden rounded-lg border border-primary/15 bg-card/40 backdrop-blur p-4 hover:border-primary/60 hover:bg-card/70 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)] transition-all"
+            >
+              <div className="absolute inset-x-0 -top-px h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-0 group-hover:opacity-100 transition" aria-hidden />
+              <div className="flex items-center gap-2 pr-7">
+                <div className="rounded-md bg-primary/10 p-2 text-primary group-hover:bg-primary/20 group-hover:scale-105 transition-transform">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div className="font-mono text-sm text-foreground flex-1 truncate">{t.label}</div>
+                {t.isNew && (
+                  <span className="text-[9px] font-mono rounded px-1.5 py-0.5 border border-primary/50 bg-primary/10 text-primary">YENİ</span>
+                )}
+                <span className={`text-[10px] font-mono rounded px-1.5 py-0.5 border ${t.badge === "FREE" ? "border-primary/30 text-primary/80" : "border-yellow-400/30 text-yellow-400/80"}`}>
+                  {t.badge}
+                </span>
               </div>
-              <div className="font-mono text-sm text-foreground flex-1 truncate">{t.label}</div>
-              <span className={`text-[10px] font-mono rounded px-1.5 py-0.5 border ${t.badge === "FREE" ? "border-primary/30 text-primary/80" : "border-yellow-400/30 text-yellow-400/80"}`}>
-                {t.badge}
-              </span>
-            </div>
-            <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{t.desc}</p>
-          </Link>
+              <p className="mt-2 text-xs text-muted-foreground line-clamp-2">{t.desc}</p>
+            </Link>
+            <button
+              type="button"
+              onClick={() => onFav(t.to)}
+              aria-label={isFav ? `${t.label} favorilerden çıkar` : `${t.label} favorilere ekle`}
+              className={`absolute right-2 top-2 z-10 rounded p-1 transition ${isFav ? "text-yellow-400" : "text-muted-foreground/40 hover:text-yellow-400"}`}
+            >
+              <Star className={`h-3.5 w-3.5 ${isFav ? "fill-current" : ""}`} />
+            </button>
+          </div>
         );
       })}
+
     </div>
   );
 }
