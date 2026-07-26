@@ -2883,6 +2883,18 @@ export type Database = {
           quality: string
         }[]
       }
+      also_bought_products: {
+        Args: { _limit?: number; _product_id: string }
+        Returns: {
+          buyers: number
+          category: string
+          id: string
+          image_url: string
+          name: string
+          price_try: number
+          slug: string
+        }[]
+      }
       apply_promo_code: {
         Args: { _code: string; _order_id: string }
         Returns: {
