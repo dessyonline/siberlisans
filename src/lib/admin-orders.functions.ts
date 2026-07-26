@@ -68,7 +68,8 @@ export const listAdminOrders = createServerFn({ method: "POST" })
         { count: "exact" },
       );
 
-    if (data.status && data.status !== "all") q = q.eq("status", data.status);
+    if (data.status && data.status !== "all")
+      q = q.eq("status", data.status as "pending" | "reviewing" | "approved" | "rejected" | "failed" | "cancelled");
     if (data.paidWith) q = q.eq("paid_with", data.paidWith);
     if (data.productId) q = q.eq("product_id", data.productId);
     if (data.minAmount != null) q = q.gte("price_try", data.minAmount);
