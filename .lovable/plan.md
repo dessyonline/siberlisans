@@ -1,84 +1,43 @@
+## Amaç
 
-Seçtiklerinden yola çıkarak 7 fazlı bir yol haritası. Öncelik sırasına göre gidilecek; her faz canlıya çıkabilir bağımsız parça.
+`/admin/siparisler` şu an tek dosyada (630 satır) kart listesi olarak çalışıyor: tüm siparişler tek seferde çekiliyor, detay yok, işlem seti onayla/reddet/iptal + UL sync ile sınırlı. Dört alanda yenileyeceğiz.
 
-## Faz 1 — Fatura Sistemi (Öncelik: yüksek, senin özel isteğin)
+## 1. Üst KPI şeridi + canlı akış
 
-**Kullanıcı tarafı** (`/hesabim` içine "Faturalar" sekmesi + `/fatura/$orderId` sayfası)
-- Onaylı her sipariş için otomatik fatura no: `SP-YYYYMM-000123` (yıl-ay + sıralı)
-- Panelden PDF indir (client-side, `jspdf` + `jspdf-autotable` — mevcut logo, sipariş kalemleri, KDV %20 dahil/hariç ayrımı, kullanıcı adı-email)
-- Kullanıcı fatura profili: ad soyad / şirket adı / VKN-TCKN / adres (opsiyonel, girmezse "Bireysel Müşteri")
-- Fatura önizleme + "e-postaya gönder" butonu
+- Sayfanın üstüne 4 kart: bekleyen (pending+reviewing), bugünkü onaylı ciro, bugünkü sipariş adedi, ortalama onay süresi.
+- Değerler tek bir admin server fonksiyonundan gelir (`getOrderKpis`), 30 sn'de bir tazelenir.
+- `orders` tablosuna realtime aboneliği: yeni sipariş/durum değişiminde liste ve KPI otomatik tazelenir, yeni kayıt gelirse toast + kısa "yeni sipariş" vurgusu. Kanal `useEffect` içinde açılıp unmount'ta kapatılır.
 
-**Admin tarafı** (`/admin/faturalar`)
-- Tüm faturaları listeleme, arama (no, kullanıcı, tarih, tutar)
-- Toplu CSV export (muhasebeci için: no, tarih, müşteri, tutar, KDV)
-- Aylık PDF özet (tek sayfa)
+## 2. Liste/tablo modu + gelişmiş filtre
 
-**DB**: `invoices` tablosu (order_id, invoice_number, issued_at, buyer_name, buyer_tax_id, buyer_address, subtotal, vat_amount, total, pdf_snapshot jsonb), `profiles` üzerine `billing_name/tax_id/address` kolonları. `approve_order` RPC'sine fatura üretim adımı eklenecek.
+- Görünüm anahtarı: **tablo** (varsayılan, kompakt) / **kart** (mevcut görünüm korunur).
+- Tablo kolonları: seçim, referans, müşteri, ürün, tutar (indirim varsa brüt→net), ödeme yöntemi, durum, tarih, hızlı işlemler.
+- Filtreler URL search param'a taşınır (durum, tarih aralığı, arama, ürün, ödeme yöntemi, min/max tutar, sadece mesajlı) — böylece filtreli görünüm paylaşılabilir/yenilemede korunur.
+- Sıralama: tarih / tutar / durum. Sunucu tarafında sayfalama (50'lik sayfalar) + toplam sayaç; artık tüm tablo tek seferde çekilmez.
+- Arama referans, ürün adı, müşteri e-postası/adı ve dış sipariş kimliği üzerinde çalışır.
 
-## Faz 2 — Lisanslarım Paneli (`/hesabim/lisanslar`)
+## 3. Sipariş detay paneli (drawer)
 
-Tek ekranda:
-- Kullanıcının tüm aktif/geçmiş lisansları — ürün logosu, key/mail, HWID durumu, kalan süre çubuğu, aktivasyon geçmişi
-- Aksiyonlar: key kopyala, HWID sıfırla (limit dahilinde), süre uzat (yenile → sepet), transfer et, fatura indir
-- Süresi <7 gün kalanlar için üstte uyarı bandı + tek tıkla yenile
-- Filtreler: aktif / süresi doldu / iptal / tüm
+Satıra tıklayınca sağdan açılan panel:
+- **Özet**: durum, tutar kırılımı (liste fiyatı, kupon/indirim, ödenen), ödeme yöntemi, dekont önizleme.
+- **Müşteri**: ad/e-posta, cüzdan bakiyesi, toplam sipariş sayısı ve harcaması, son 5 siparişi, risk işareti (ilk sipariş / iade geçmişi).
+- **Teslimat**: teslim edilen anahtar/mail-şifre/link kayıtları (maskeli, kopyala butonu), dış sağlayıcı durumu ve yanıtı.
+- **Zaman çizelgesi**: oluşturma, dekont yükleme, durum değişimleri, admin işlemleri — denetim kaydından okunur.
+- **Notlar**: müşteri notu + admin notu ekleme/düzenleme.
 
-## Faz 3 — Performans & SEO (site geneli)
+## 4. Manuel teslim & işlem araçları
 
-- **Route-level head**: her ürün sayfasında Product JSON-LD (fiyat, availability, aggregateRating), Breadcrumb JSON-LD; blog'da Article
-- **Sitemap zenginleştirme**: mevcut `sitemap.xml`'e `<image:image>`, `<lastmod>`, `changefreq` per-route
-- **LCP preload**: anasayfa hero, ürün sayfası hero image `<link rel="preload">`
-- **Image conversions**: `vite-imagetools` ile AVIF/WebP variant
-- **SEO landing sayfaları**: en aranan 8 ürün için `/lisans/{slug}` ayrı içerik sayfası (özellikler, SSS, karşılaştırma, kullanıcı yorumları) — mevcut ürün sayfasından ayrı, SEO-optimize
-- **`seo_chat--trigger_scan`** sonunda otomatik çalıştırılacak
+Panel içinden:
+- **Manuel teslim**: serbest metin/anahtar/mail-şifre/link girip siparişi onaylı-teslim edilmiş işaretleme (havuz stoğuna dokunmadan), müşteriye bildirim gönderilir.
+- **Kısmi iade**: tutar girilerek cüzdana iade; işlem cüzdan hareketi ve denetim kaydı bırakır.
+- **Müşteriye mesaj**: sipariş bağlamıyla bildirim (ve varsa destek bileti mesajı) gönderme.
+- **Ürün değiştirme**: siparişi başka ürüne taşıma, fiyat farkı cüzdana yansır.
+- Toplu işlemler tablo modunda korunur: toplu onay, toplu red, seçili kayıtları CSV dışa aktarma (mevcut CSV filtreli sonucun tamamını verir).
 
-## Faz 4 — Anasayfa & Ürün UI Yenileme (cyber-terminal)
+## Teknik notlar
 
-- Hero: matrix rain arka planda daha yoğun, "system online" typing efekti, canlı istatistik ticker (bugün X kişi lisans aldı)
-- Ürün kartı: hover'da 3D tilt, fiyat animasyonu, indirim varsa neon çerçeve
-- Ürün detay: sol tarafta terminal-style özellik listesi (`> feature detected`), sağda büyük satın alma paneli, altta rakip fiyat karşılaştırma tablosu (retail_price zaten var)
-- Sepet drawer: cyber-glitch aç/kapa animasyonu
-- Mobil: bottom-nav (anasayfa · ürünler · sepet · hesabım) — mevcut sheet menüye ek
-
-## Faz 5 — Onboarding + PWA + Bildirim (Kullanıcı deneyimi)
-
-- **Onboarding**: kayıt sonrası ilk girişte 3 adımlı tur (`shepherd.js` yerine kendi cyber-tour componentimiz) — 1) ilk ürününü seç, 2) sepete ekle & öde, 3) uzantıyı bağla
-- **PWA (installable)**: manifest + ikonlar + `theme-color`, "Ana ekrana ekle" prompt. Offline modu şimdilik yok (kullanıcı asıl istemedi).
-- **Push bildirimleri**: browser Notification API + service worker (yalnızca push için) — stok geldi, flash başladı, sipariş onaylandı. Kullanıcı `notification_preferences`'tan tek tek açar.
-- **Email digest**: haftalık cron `pg_cron` → `/api/public/hooks/weekly-digest` (favorilerdeki ürünlerin indirim/stok durumu)
-
-## Faz 6 — Sadakat 2.0
-
-- **Görev sistemi**: `user_missions` tablosu — "ilk yorumunu yaz +50p", "arkadaşını davet et +100p", "3 gün üst üste giriş yap +30p"
-- **Leaderboard**: `/liderlik` — bu ay en çok puan kazananlar top 20 (anonim rumuz + rozet), tier boyaması
-- **Sezonluk rozetler**: `badges` tablosuna `season` kolonu, admin panelden aç/kapa
-- **Puan → indirim kuponu dönüşümü** (mevcut cüzdana ek): 500p = ₺10, 1000p = ₺25
-
-## Faz 7 — Reseller/Bayi Paneli
-
-- Rol: `reseller` (mevcut `app_role` enum'a eklenecek)
-- Kademe fiyatlandırma: `products` üzerine `reseller_discount_pct` (varsayılan %15) — bayi girişinde tüm fiyatlar otomatik düşer
-- Bayi paneli `/bayi`: aylık alım ciro, ödenmiş/bekleyen fatura, API anahtarı üretimi
-- **Bayi API**: `/api/reseller/order` (Bearer bayi-key) — programmatic sipariş, key otomatik teslim, fatura otomatik oluştur
-- Admin'de "Bayi Onayı" akışı — kayıt formu → admin manuel onay → rol atama
-
-## Uygulama sırası
-
-1. **Faz 1 (Fatura)** — DB migration + PDF üretimi + admin listesi (~1 tur)
-2. **Faz 2 (Lisanslarım)** — sadece frontend + mevcut fonksiyonlar (~1 tur)
-3. **Faz 3 (SEO/Perf)** — çoklu dosya, kritik ama görünmez (~1 tur)
-4. **Faz 4 (UI yenileme)** — görsel etki en yüksek (~1-2 tur)
-5. **Faz 5 (Onboarding + PWA + Push)** — service worker + manifest + tur (~1-2 tur)
-6. **Faz 6 (Sadakat 2.0)** — DB heavy + leaderboard (~1 tur)
-7. **Faz 7 (Bayi)** — en büyük iş, ayrı hesap tipi + API (~2 tur)
-
-## Teknik notlar (özet)
-
-- **Fatura PDF**: client-side `jspdf` (bundle boyutunu düşürmek için lazy import); pdf yığınında saklamıyoruz, `pdf_snapshot` sadece renderlenmesi için gerekli veri (kalemler, fiyatlar, buyer bilgisi)
-- **KDV**: %20 dahil kabul edilecek — Türkiye standart; iki satır gösterim (matrah + KDV = toplam)
-- **Push**: `web-push` VAPID, Firebase kullanmıyoruz — kendi VAPID anahtarımızı `generate_secret` ile üretiriz
-- **Bayi API auth**: `reseller_api_keys` tablosu, hashed key (sha256), `has_role` benzeri `is_active_reseller_key` fonksiyonu
-- **Fatura no üretimi**: sequence + `to_char(now(), 'YYYYMM')` — race-safe advisory lock ile
-
-Onaylıyor musun? İstersen fazları at, ekle ya da sıra değiştir. Sipariş anlamlı geliyor mu, yoksa "önce X sonra Y" der misin?
+- Yeni `src/lib/admin-orders.functions.ts`: `listOrders` (sayfalı/filtreli), `getOrderKpis`, `getOrderDetail`, `manualDeliver`, `partialRefund`, `messageCustomer`, `changeOrderProduct`. Hepsi `requireSupabaseAuth` + `has_role(admin)` kontrolü ile.
+- Sayfa parçalanır: `src/components/admin/orders/` altında `OrdersKpiBar`, `OrdersTable`, `OrdersFilters`, `OrderDetailDrawer`, `ManualDeliverDialog`.
+- Para hareketi gerektiren işlemler (kısmi iade, ürün değişimi, manuel teslim) atomik olması için SQL fonksiyonu olarak yazılır; bunun için bir migration gerekir (yeni tablo yok, yalnız fonksiyonlar + denetim kaydı). `orders` realtime yayına eklenir.
+- Mevcut `approveOrder` / `rejectOrder` / `adminCancelOrder` / UL sync akışları aynen korunur.
+- Tasarım dili değişmez: cyber/terminal, neon yeşil vurgular, mono etiketler.
