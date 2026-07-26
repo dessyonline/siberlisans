@@ -6,7 +6,6 @@ import {
   ArrowDownLeft,
   ArrowUpRight,
   Bell,
-  KeyRound,
   ShoppingCart,
 } from "lucide-react";
 
@@ -41,7 +40,7 @@ export function ActivityFeed({ userId }: { userId: string }) {
     enabled: !!userId,
     refetchInterval: 20000,
     queryFn: async (): Promise<Item[]> => {
-      const [orders, txns, notifs, keys] = await Promise.all([
+      const [orders, txns, notifs] = await Promise.all([
         supabase
           .from("orders")
           .select("id, status, price_try, reference_code, created_at, product:products(name)")
@@ -59,13 +58,6 @@ export function ActivityFeed({ userId }: { userId: string }) {
           .select("id, title, body, created_at")
           .eq("user_id", userId)
           .order("created_at", { ascending: false })
-          .limit(6),
-        supabase
-          .from("license_keys")
-          .select("id, key_value, delivered_at, product:products(name)")
-          .eq("assigned_user_id", userId)
-          .not("delivered_at", "is", null)
-          .order("delivered_at", { ascending: false })
           .limit(6),
       ]);
 
@@ -102,17 +94,6 @@ export function ActivityFeed({ userId }: { userId: string }) {
           title: n.title,
           detail: n.body ?? "",
           tone: "muted",
-        });
-      });
-
-      (keys.data ?? []).forEach((k) => {
-        out.push({
-          id: `k-${k.id}`,
-          ts: k.delivered_at as string,
-          icon: KeyRound,
-          title: `Anahtar teslim: ${(k.product as { name?: string } | null)?.name ?? "-"}`,
-          detail: `${String(k.key_value).slice(0, 6)}••••`,
-          tone: "primary",
         });
       });
 
