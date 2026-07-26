@@ -22,6 +22,7 @@ import { AffiliateBlock } from "@/components/AffiliateBlock";
 import { TransferButton } from "@/components/TransferButton";
 import { getMyAiSubscription } from "@/lib/ai-subscriptions.functions";
 import { listMyAiJobs } from "@/lib/ai-tools.functions";
+import { ReviewPromptCard } from "@/components/ReviewPromptCard";
 
 export const Route = createFileRoute("/_authenticated/hesabim")({
   component: MyAccount,
