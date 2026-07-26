@@ -49,6 +49,7 @@ import { OnboardingTour } from "../components/OnboardingTour";
 import { PwaInstallPrompt } from "../components/PwaInstallPrompt";
 import { PushEnablePrompt } from "../components/PushEnablePrompt";
 import { CartReminder } from "../components/CartReminder";
+import { LiveActivityPopup } from "../components/LiveActivityPopup";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { THEME_BOOT_SCRIPT } from "../lib/theme";
 import { useQuery } from "@tanstack/react-query";

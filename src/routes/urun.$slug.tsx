@@ -14,6 +14,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { useCart } from "@/lib/cart-store";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ReviewsSection } from "@/components/ReviewsSection";
+import { AlsoBoughtSection } from "@/components/AlsoBoughtSection";
 import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
 import { RetailPriceBadge } from "@/components/RetailPriceBadge";
 import { ProductLogo } from "@/components/ProductLogo";
@@ -684,6 +685,11 @@ function ProductDetail() {
 
         {/* Reviews */}
         <ReviewsSection productId={product.id} />
+
+        {/* Others also bought */}
+        <AlsoBoughtSection productId={product.id} />
+
+
 
 
         {/* Related products */}
