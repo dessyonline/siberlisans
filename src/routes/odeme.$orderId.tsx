@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { PointsBlock } from "@/components/PointsBlock";
+import { ReviewPromptCard } from "@/components/ReviewPromptCard";
 import enparaQr from "@/assets/enpara-qr.png";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart-store";
