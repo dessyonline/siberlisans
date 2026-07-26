@@ -547,6 +547,7 @@ function RootComponent() {
         </div>
         <SupportFab />
         <CartDrawer />
+        <CartReminder />
         <IpChangeGuard />
         <SocialPopup />
         <OnboardingTour />
