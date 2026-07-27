@@ -51,8 +51,8 @@ export function LiveActivityPopup() {
         setIndex((i) => (i + 1) % sales.length);
       }, 6600);
     };
-    const first = window.setTimeout(cycle, 8000);
-    const interval = window.setInterval(cycle, 20000);
+    const first = window.setTimeout(cycle, 60000);
+    const interval = window.setInterval(cycle, 900000);
     return () => {
       mounted = false;
       window.clearTimeout(first);
