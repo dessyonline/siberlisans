@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { Plus, Trash2, Pencil, BookOpen, Eye } from "lucide-react";
+import { BlogAiPanel } from "@/components/admin/BlogAiPanel";
 
 export const Route = createFileRoute("/_authenticated/admin/blog")({
   component: AdminBlogPage,
@@ -88,6 +89,8 @@ function AdminBlogPage() {
           </DialogContent>
         </Dialog>
       </div>
+
+      <BlogAiPanel />
 
       <div className="glass-card rounded-lg overflow-hidden">
         {posts.length === 0 ? (
