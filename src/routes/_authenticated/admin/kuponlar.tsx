@@ -12,6 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Plus, Ticket, Trash2, Pencil } from "lucide-react";
+import { CouponCampaignPanel } from "@/components/admin/CouponCampaignPanel";
+
 
 export const Route = createFileRoute("/_authenticated/admin/kuponlar")({
   component: AdminCouponsPage,
