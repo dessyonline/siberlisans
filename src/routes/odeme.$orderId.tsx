@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { PointsBlock } from "@/components/PointsBlock";
 import { ReviewPromptCard } from "@/components/ReviewPromptCard";
+import { AlsoBoughtSection } from "@/components/AlsoBoughtSection";
+
 import enparaQr from "@/assets/enpara-qr.png";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/lib/cart-store";
@@ -587,6 +589,11 @@ function Payment() {
 
           {order.status === "approved" && (
             <ReviewPromptCard productId={order.product_id ?? undefined} />
+          )}
+
+          {order.status === "approved" && order.product_id && (
+            <AlsoBoughtSection productId={order.product_id} />
+
           )}
 
 

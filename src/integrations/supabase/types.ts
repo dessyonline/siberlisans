@@ -2748,6 +2748,20 @@ export type Database = {
         Returns: undefined
       }
       admin_force_delete_license: { Args: { _id: string }; Returns: boolean }
+      admin_issue_segment_coupons: {
+        Args: {
+          _days_valid?: number
+          _discount_type: string
+          _discount_value: number
+          _limit?: number
+          _min_order_try?: number
+          _segment: string
+        }
+        Returns: {
+          issued: number
+          sample_code: string
+        }[]
+      }
       admin_list_assigned_keys: {
         Args: { _limit?: number }
         Returns: {
