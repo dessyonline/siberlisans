@@ -120,7 +120,7 @@ export const adminSuggestBlogTopics = createServerFn({ method: "POST" })
     const out = await callGateway(
       "Türkçe SEO editörüsün. Dijital lisans/yazılım satan bir e-ticaret sitesi için arama hacmi yüksek, satın alma niyetli blog konuları üretirsin. Sadece JSON döndür.",
       `Katalog: ${JSON.stringify(products ?? [])}
-Mevcut yazı başlıkları (tekrarlama): ${JSON.stringify((posts ?? []).map((p: { title?: string }) => p.title))}
+Mevcut yazı başlıkları (tekrarlama): ${JSON.stringify(((posts ?? []) as unknown as Array<{ title?: string }>).map((p) => p.title))}
 
 Şu formatta JSON döndür:
 {"topics":[{"title":"...","keyword":"ana anahtar kelime","angle":"yazının açısı, 1 cümle"}]}
@@ -185,8 +185,9 @@ JSON formatı:
       .from("blog_posts" as any)
       .select("slug")
       .like("slug", `${slug}%`);
-    if ((existing ?? []).some((p: { slug: string }) => p.slug === slug)) {
-      slug = `${slug}-${(existing ?? []).length + 1}`.slice(0, 140);
+    const existingSlugs = ((existing ?? []) as unknown as Array<{ slug: string }>).map((p) => p.slug);
+    if (existingSlugs.includes(slug)) {
+      slug = `${slug}-${existingSlugs.length + 1}`.slice(0, 140);
     }
 
     const { data: inserted, error } = await supabase

@@ -26,7 +26,7 @@ export function BlogAiPanel() {
   async function suggest() {
     setLoadingTopics(true);
     try {
-      const res = await suggestFn({ data: {} });
+      const res = await suggestFn();
       setTopics(res.topics ?? []);
       if (!res.topics?.length) toast.info("Konu önerisi üretilemedi");
     } catch (e) {
