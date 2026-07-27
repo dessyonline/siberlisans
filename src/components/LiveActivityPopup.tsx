@@ -28,7 +28,7 @@ export function LiveActivityPopup() {
 
   const { data: sales = [] } = useQuery({
     queryKey: ["recent-public-sales", "popup"],
-    refetchInterval: 120_000,
+    refetchInterval: 900_000,
     enabled: !dismissed,
     queryFn: async () => {
       const { data, error } = await supabase
