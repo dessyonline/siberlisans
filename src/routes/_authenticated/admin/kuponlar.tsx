@@ -161,6 +161,10 @@ function AdminCouponsPage() {
         </Dialog>
       </div>
 
+      <CouponCampaignPanel />
+
+
+
       {isLoading ? (
         <div className="font-mono text-muted-foreground">yükleniyor…</div>
       ) : coupons.length === 0 ? (
