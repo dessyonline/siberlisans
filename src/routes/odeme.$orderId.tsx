@@ -591,6 +591,11 @@ function Payment() {
             <ReviewPromptCard productId={order.product_id ?? undefined} />
           )}
 
+          {order.status === "approved" && order.product_id && (
+            <AlsoBoughtSection productId={order.product_id} />
+
+          )}
+
 
 
           {needsManualContact && (order.status === "reviewing" || order.status === "approved") && (
