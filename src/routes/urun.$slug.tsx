@@ -200,6 +200,19 @@ function ProductDetail() {
     },
   });
 
+  useEffect(() => {
+    if (!product) return;
+    pushRecent({
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      priceTry: Number(product.price_try),
+      imageUrl: product.image_url ?? null,
+    });
+  }, [product]);
+
+
+
   const flashSale = useActiveFlashSale(product?.id);
   const flash = (() => {
     const price = Number(product?.price_try ?? 0);
