@@ -3272,11 +3272,11 @@ export type Database = {
       }
       apply_for_dealership: {
         Args: {
-          _channel: string
+          _channel?: string
           _company_name: string
-          _contact_phone: string
-          _monthly_volume: number
-          _note: string
+          _contact_phone?: string
+          _monthly_volume?: number
+          _note?: string
         }
         Returns: string
       }

@@ -84,6 +84,21 @@ function DealerLanding() {
   const pending = mine?.application?.status === "pending";
   const rejected = mine?.application?.status === "rejected";
 
+  const { data: wallet } = useQuery({
+    queryKey: ["dealer-apply-wallet", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("wallets")
+        .select("balance_try")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return Number(data?.balance_try ?? 0);
+    },
+  });
+  const balance = Number(wallet ?? 0);
+  const balanceOk = balance >= 1000;
+
   return (
     <div className="relative overflow-hidden">
       <div className="cyber-grid absolute inset-0 opacity-30" aria-hidden />
@@ -198,11 +213,30 @@ function DealerLanding() {
             ) : (
               <>
                 <h2 className="font-mono text-lg">$ bayilik başvurusu</h2>
+                <div
+                  className={`mt-3 rounded-md border p-3 font-mono text-xs ${
+                    balanceOk ? "border-primary/40 bg-primary/5 text-primary" : "border-amber-500/40 bg-amber-500/10 text-amber-500"
+                  }`}
+                >
+                  <div>şart: cüzdanında en az ₺1.000 bakiye</div>
+                  <div className="mt-1 text-foreground/80">
+                    mevcut bakiye: ₺{balance.toLocaleString("tr-TR")}
+                  </div>
+                  <p className="mt-1 text-muted-foreground">
+                    Bu tutar senden alınmaz — kendi cüzdanında kalır, dilediğin an lisans alımında kullanırsın.
+                  </p>
+                  {!balanceOk && (
+                    <Button asChild size="sm" variant="outline" className="mt-2 w-full font-mono">
+                      <Link to="/cuzdan">$ bakiye yükle</Link>
+                    </Button>
+                  )}
+                </div>
                 {rejected && mine?.application?.admin_note && (
                   <p className="mt-2 rounded-md border border-destructive/40 bg-destructive/10 p-2 font-mono text-xs text-destructive">
                     önceki başvuru reddedildi: {mine.application.admin_note}
                   </p>
                 )}
+
                 <div className="mt-4 space-y-3">
                   <Input
                     placeholder="Firma / rumuz adı *"
@@ -236,7 +270,7 @@ function DealerLanding() {
                     value={form.note}
                     onChange={(e) => setForm({ ...form, note: e.target.value })}
                   />
-                  <Button onClick={submit} disabled={sending} className="w-full font-mono">
+                  <Button onClick={submit} disabled={sending || !balanceOk} className="w-full font-mono">
                     {sending ? "gönderiliyor…" : "$ başvuruyu gönder"}
                   </Button>
                 </div>
