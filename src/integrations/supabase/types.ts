@@ -649,6 +649,182 @@ export type Database = {
         }
         Relationships: []
       }
+      dealer_applications: {
+        Row: {
+          admin_note: string | null
+          channel: string | null
+          company_name: string
+          contact_phone: string | null
+          created_at: string
+          id: string
+          monthly_volume_try: number | null
+          note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_note?: string | null
+          channel?: string | null
+          company_name: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          monthly_volume_try?: number | null
+          note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_note?: string | null
+          channel?: string | null
+          company_name?: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          monthly_volume_try?: number | null
+          note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      dealer_commissions: {
+        Row: {
+          amount_try: number
+          base_amount_try: number
+          buyer_user_id: string
+          created_at: string
+          dealer_user_id: string
+          id: string
+          order_id: string
+          paid_at: string | null
+          rate_percent: number
+          status: string
+        }
+        Insert: {
+          amount_try: number
+          base_amount_try: number
+          buyer_user_id: string
+          created_at?: string
+          dealer_user_id: string
+          id?: string
+          order_id: string
+          paid_at?: string | null
+          rate_percent: number
+          status?: string
+        }
+        Update: {
+          amount_try?: number
+          base_amount_try?: number
+          buyer_user_id?: string
+          created_at?: string
+          dealer_user_id?: string
+          id?: string
+          order_id?: string
+          paid_at?: string | null
+          rate_percent?: number
+          status?: string
+        }
+        Relationships: []
+      }
+      dealer_tiers: {
+        Row: {
+          commission_percent: number
+          created_at: string
+          discount_percent: number
+          min_volume_try: number
+          name: string
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          commission_percent?: number
+          created_at?: string
+          discount_percent?: number
+          min_volume_try?: number
+          name: string
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          commission_percent?: number
+          created_at?: string
+          discount_percent?: number
+          min_volume_try?: number
+          name?: string
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      dealers: {
+        Row: {
+          active: boolean
+          approved_at: string | null
+          approved_by: string | null
+          code: string
+          commission_percent: number | null
+          company_name: string | null
+          created_at: string
+          discount_percent: number | null
+          paid_commission_try: number
+          tier_slug: string
+          total_commission_try: number
+          total_volume_try: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          approved_at?: string | null
+          approved_by?: string | null
+          code: string
+          commission_percent?: number | null
+          company_name?: string | null
+          created_at?: string
+          discount_percent?: number | null
+          paid_commission_try?: number
+          tier_slug?: string
+          total_commission_try?: number
+          total_volume_try?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          approved_at?: string | null
+          approved_by?: string | null
+          code?: string
+          commission_percent?: number | null
+          company_name?: string | null
+          created_at?: string
+          discount_percent?: number | null
+          paid_commission_try?: number
+          tier_slug?: string
+          total_commission_try?: number
+          total_volume_try?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dealers_tier_slug_fkey"
+            columns: ["tier_slug"]
+            isOneToOne: false
+            referencedRelation: "dealer_tiers"
+            referencedColumns: ["slug"]
+          },
+        ]
+      }
       favorites: {
         Row: {
           created_at: string
@@ -1712,6 +1888,7 @@ export type Database = {
           billing_name: string | null
           billing_tax_id: string | null
           created_at: string
+          dealer_id: string | null
           display_name: string | null
           email: string | null
           id: string
@@ -1735,6 +1912,7 @@ export type Database = {
           billing_name?: string | null
           billing_tax_id?: string | null
           created_at?: string
+          dealer_id?: string | null
           display_name?: string | null
           email?: string | null
           id: string
@@ -1758,6 +1936,7 @@ export type Database = {
           billing_name?: string | null
           billing_tax_id?: string | null
           created_at?: string
+          dealer_id?: string | null
           display_name?: string | null
           email?: string | null
           id?: string
@@ -2829,6 +3008,43 @@ export type Database = {
           user_email: string
         }[]
       }
+      admin_list_dealer_applications: {
+        Args: never
+        Returns: {
+          admin_note: string
+          channel: string
+          company_name: string
+          contact_phone: string
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          monthly_volume_try: number
+          note: string
+          status: string
+          user_id: string
+        }[]
+      }
+      admin_list_dealers: {
+        Args: never
+        Returns: {
+          active: boolean
+          code: string
+          commission_percent: number
+          company_name: string
+          created_at: string
+          customer_count: number
+          discount_percent: number
+          display_name: string
+          email: string
+          paid_commission_try: number
+          pending_commission_try: number
+          tier_slug: string
+          total_commission_try: number
+          total_volume_try: number
+          user_id: string
+        }[]
+      }
       admin_low_stock_products: {
         Args: never
         Returns: {
@@ -2851,6 +3067,10 @@ export type Database = {
       admin_partial_refund: {
         Args: { _amount: number; _note?: string; _order_id: string }
         Returns: Json
+      }
+      admin_pay_dealer_commissions: {
+        Args: { _dealer_user_id: string }
+        Returns: number
       }
       admin_product_profitability: {
         Args: { _days?: number }
@@ -2892,6 +3112,14 @@ export type Database = {
         Args: { _product_id: string }
         Returns: number
       }
+      admin_review_dealer_application: {
+        Args: {
+          _admin_note?: string
+          _application_id: string
+          _approve: boolean
+        }
+        Returns: undefined
+      }
       admin_revoke_license_key: {
         Args: { _key_value: string }
         Returns: number
@@ -2929,6 +3157,16 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_update_dealer: {
+        Args: {
+          _active?: boolean
+          _commission_percent?: number
+          _discount_percent?: number
+          _tier_slug?: string
+          _user_id: string
+        }
+        Returns: undefined
+      }
       affiliate_stats: {
         Args: { _user_id: string }
         Returns: {
@@ -2959,6 +3197,16 @@ export type Database = {
           slug: string
         }[]
       }
+      apply_for_dealership: {
+        Args: {
+          _channel: string
+          _company_name: string
+          _contact_phone: string
+          _monthly_volume: number
+          _note: string
+        }
+        Returns: string
+      }
       apply_promo_code: {
         Args: { _code: string; _order_id: string }
         Returns: {
@@ -2987,6 +3235,7 @@ export type Database = {
         }[]
       }
       approve_topup: { Args: { _topup_id: string }; Returns: number }
+      attach_dealer_code: { Args: { _code: string }; Returns: boolean }
       award_points: {
         Args: {
           _delta: number
@@ -3106,6 +3355,42 @@ export type Database = {
         }
         Returns: string
       }
+      dealer_create_order: {
+        Args: { _product_id: string; _quantity: number }
+        Returns: {
+          discount_try: number
+          order_id: string
+          reference_code: string
+          total_try: number
+        }[]
+      }
+      dealer_customers: {
+        Args: never
+        Returns: {
+          commission_earned: number
+          display_name: string
+          email_masked: string
+          joined_at: string
+          order_count: number
+          total_spent: number
+          user_id: string
+        }[]
+      }
+      dealer_price_list: {
+        Args: never
+        Returns: {
+          available: number
+          category: string
+          dealer_price_try: number
+          id: string
+          image_url: string
+          name: string
+          price_try: number
+          slug: string
+          unlimited_stock: boolean
+        }[]
+      }
+      dealer_stats: { Args: never; Returns: Json }
       digest:
         | { Args: { data: string; type: string }; Returns: string }
         | { Args: { data: string; type: string }; Returns: string }
