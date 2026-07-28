@@ -215,7 +215,78 @@ function MonthlyTable({ monthly, inviteUrl }: { monthly: Stats["monthly"]; invit
           Bu linkten kayıt olan her müşterinin onaylanan siparişinden komisyon kazanırsın.
         </p>
       </div>
+
+      {monthly.length > 0 && (
+        <div className="glass-card rounded-xl border border-border/60 p-4">
+          <div className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+            aylık ciro &amp; komisyon
+          </div>
+          <div className="mt-4 h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={[...monthly].reverse()} margin={{ left: -12, right: 8, top: 8 }}>
+                <defs>
+                  <linearGradient id="dlrVol" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.45} />
+                    <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" />
+                <YAxis tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" width={64} />
+                <RTooltip
+                  contentStyle={{
+                    background: "var(--card)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 12,
+                    fontSize: 12,
+                  }}
+                  formatter={(v: number, n) => [try_(v), n === "volume" ? "ciro" : "komisyon"]}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: 11 }}
+                  formatter={(v) => (v === "volume" ? "ciro" : "komisyon")}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="volume"
+                  stroke="var(--primary)"
+                  strokeWidth={2}
+                  fill="url(#dlrVol)"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="commission"
+                  stroke="var(--accent-foreground)"
+                  strokeWidth={2}
+                  fillOpacity={0}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-4 h-40 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={[...monthly].reverse()} margin={{ left: -12, right: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" width={40} />
+                <RTooltip
+                  contentStyle={{
+                    background: "var(--card)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 12,
+                    fontSize: 12,
+                  }}
+                  formatter={(v: number) => [String(v), "sipariş"]}
+                />
+                <Bar dataKey="orders" fill="var(--primary)" radius={[4, 4, 0, 0]} maxBarSize={36} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
       <div className="overflow-x-auto">
+
         <table className="w-full min-w-[520px] text-sm">
           <thead>
             <tr className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
