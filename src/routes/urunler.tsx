@@ -540,10 +540,16 @@ function ProductsPage() {
             );
           })}
         </div>
+
+        <div className="mt-12">
+          <RecentlyViewed />
+        </div>
       </div>
+      <CompareBar />
     </div>
   );
 }
+
 
 function ProductCard({ product: p }: { product: Row }) {
   const manual = !!p.manual_fulfillment;
