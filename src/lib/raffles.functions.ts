@@ -288,12 +288,21 @@ export const upsertRaffle = createServerFn({ method: "POST" })
 
 export const drawRaffle = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid(), redraw: z.boolean().optional() }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        redraw: z.boolean().optional(),
+        forcedUserIds: z.array(z.string().uuid()).max(20).optional(),
+      })
+      .parse(d)
+  )
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     const { data: r, error } = await context.supabase.rpc("draw_raffle" as never, {
       _raffle_id: data.id,
       _redraw: !!data.redraw,
+      _forced_user_ids: data.forcedUserIds?.length ? data.forcedUserIds : null,
     } as never);
     if (error) throw new Error(error.message);
     const row = Array.isArray(r) ? r[0] : r;

@@ -3552,23 +3552,18 @@ export type Database = {
           new_winner_id: string
         }[]
       }
-      draw_raffle:
-        | {
-            Args: { _raffle_id: string }
-            Returns: {
-              delivered_keys: string[]
-              draw_hash: string
-              winner_user_id: string
-            }[]
-          }
-        | {
-            Args: { _raffle_id: string; _redraw?: boolean }
-            Returns: {
-              delivered_keys: string[]
-              draw_hash: string
-              winner_user_id: string
-            }[]
-          }
+      draw_raffle: {
+        Args: {
+          _forced_user_ids?: string[]
+          _raffle_id: string
+          _redraw?: boolean
+        }
+        Returns: {
+          delivered_keys: string[]
+          draw_hash: string
+          winner_user_id: string
+        }[]
+      }
       enter_raffle: {
         Args: { _count?: number; _raffle_id: string }
         Returns: {
