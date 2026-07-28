@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProductLogo } from "@/components/ProductLogo";
 import { ProductTags } from "@/components/ProductTags";
-import { CompareToggle, CompareBar } from "@/components/CompareBar";
+import { CompareToggle } from "@/components/CompareBar";
 import { RecentlyViewed } from "@/components/RecentlyViewed";
 import { AdminEditBadge } from "@/components/AdminEditBadge";
 import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
@@ -545,7 +545,6 @@ function ProductsPage() {
           <RecentlyViewed />
         </div>
       </div>
-      <CompareBar />
     </div>
   );
 }
