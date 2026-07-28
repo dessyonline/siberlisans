@@ -172,6 +172,7 @@ function DealerPanel() {
           [
             ["ozet", "özet"],
             ["fiyat", "toptan fiyat listesi"],
+            ["siparis", "siparişlerim & anahtarlar"],
             ["musteri", "müşterilerim"],
             ["kazanc", "kazanç geçmişi"],
             ["api", "api erişimi"],
