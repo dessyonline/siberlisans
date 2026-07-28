@@ -195,6 +195,7 @@ function DealerPanel() {
       <div className="mt-5">
         {tab === "ozet" && <MonthlyTable monthly={stats.monthly ?? []} inviteUrl={inviteUrl} />}
         {tab === "fiyat" && <PriceList onOrdered={() => qc.invalidateQueries({ queryKey: ["dealer-stats"] })} />}
+        {tab === "siparis" && <DealerOrders />}
         {tab === "musteri" && <Customers />}
         {tab === "kazanc" && <Commissions />}
         {tab === "api" && <ApiAccess />}
