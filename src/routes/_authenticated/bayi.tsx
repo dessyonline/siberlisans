@@ -150,6 +150,7 @@ function DealerPanel() {
             ["fiyat", "toptan fiyat listesi"],
             ["musteri", "müşterilerim"],
             ["kazanc", "kazanç geçmişi"],
+            ["api", "api erişimi"],
           ] as const
         ).map(([k, label]) => (
           <button
@@ -171,7 +172,9 @@ function DealerPanel() {
         {tab === "fiyat" && <PriceList onOrdered={() => qc.invalidateQueries({ queryKey: ["dealer-stats"] })} />}
         {tab === "musteri" && <Customers />}
         {tab === "kazanc" && <Commissions />}
+        {tab === "api" && <ApiAccess />}
       </div>
+
     </div>
   );
 }
