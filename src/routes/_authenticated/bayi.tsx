@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Handshake, Copy, Wallet, Users, TrendingUp, Package, ShoppingCart } from "lucide-react";
+import { Handshake, Copy, Wallet, Users, TrendingUp, Package, ShoppingCart, KeyRound } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/bayi")({
   head: () => ({
@@ -43,7 +43,7 @@ const try_ = (n: number | string | null | undefined) => `₺${Number(n ?? 0).toL
 
 function DealerPanel() {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"ozet" | "fiyat" | "musteri" | "kazanc">("ozet");
+  const [tab, setTab] = useState<"ozet" | "fiyat" | "musteri" | "kazanc" | "api">("ozet");
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dealer-stats"],
@@ -150,6 +150,7 @@ function DealerPanel() {
             ["fiyat", "toptan fiyat listesi"],
             ["musteri", "müşterilerim"],
             ["kazanc", "kazanç geçmişi"],
+            ["api", "api erişimi"],
           ] as const
         ).map(([k, label]) => (
           <button
@@ -171,7 +172,9 @@ function DealerPanel() {
         {tab === "fiyat" && <PriceList onOrdered={() => qc.invalidateQueries({ queryKey: ["dealer-stats"] })} />}
         {tab === "musteri" && <Customers />}
         {tab === "kazanc" && <Commissions />}
+        {tab === "api" && <ApiAccess />}
       </div>
+
     </div>
   );
 }
@@ -434,6 +437,166 @@ function Commissions() {
           )}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+function ApiAccess() {
+  const qc = useQueryClient();
+  const [label, setLabel] = useState("");
+  const [fresh, setFresh] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const { data: keys } = useQuery({
+    queryKey: ["dealer-api-keys"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("dealer_api_keys")
+        .select("id, label, key_prefix, revoked, call_count, last_used_at, created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const base = typeof window !== "undefined" ? window.location.origin : "https://siberlisans.com";
+
+  const issue = async () => {
+    setBusy(true);
+    const { data, error } = await supabase.rpc("dealer_issue_api_key", { _label: label || "API anahtarı" });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    const row = Array.isArray(data) ? data[0] : data;
+    setFresh(row?.api_key ?? null);
+    setLabel("");
+    qc.invalidateQueries({ queryKey: ["dealer-api-keys"] });
+    toast.success("Anahtar oluşturuldu — sadece bir kez gösterilir!");
+  };
+
+  const revoke = async (id: string) => {
+    const { error } = await supabase.rpc("dealer_revoke_api_key", { _id: id });
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["dealer-api-keys"] });
+    toast.success("Anahtar iptal edildi");
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="glass-card rounded-xl border border-border/60 p-4">
+        <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground">
+          <KeyRound className="h-4 w-4 text-primary" /> api anahtarların
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Kendi sitenden veya botundan toptan fiyat çekebilir, sipariş açıp anahtarı anında teslim alabilirsin.
+          En fazla 5 aktif anahtar tutabilirsin.
+        </p>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Input
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+            placeholder="anahtar adı (örn. site-entegrasyon)"
+            maxLength={40}
+            className="max-w-xs font-mono text-sm"
+          />
+          <Button onClick={issue} disabled={busy} className="font-mono">
+            {busy ? "oluşturuluyor…" : "$ yeni anahtar"}
+          </Button>
+        </div>
+
+        {fresh && (
+          <div className="mt-4 rounded-lg border border-primary/50 bg-primary/10 p-3">
+            <div className="font-mono text-[11px] uppercase tracking-wider text-primary">
+              anahtarını şimdi kopyala — tekrar gösterilmeyecek
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+              <code className="min-w-0 flex-1 truncate rounded bg-background/70 px-2 py-1.5 font-mono text-xs">
+                {fresh}
+              </code>
+              <Button
+                size="sm"
+                variant="outline"
+                className="font-mono"
+                onClick={() => {
+                  navigator.clipboard.writeText(fresh);
+                  toast.success("Kopyalandı");
+                }}
+              >
+                <Copy className="mr-1 h-3 w-3" /> kopyala
+              </Button>
+            </div>
+          </div>
+        )}
+
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full min-w-[560px] text-sm">
+            <thead>
+              <tr className="border-b border-border/60 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                <th className="p-2 text-left">ad</th>
+                <th className="p-2 text-left">önek</th>
+                <th className="p-2 text-right">çağrı</th>
+                <th className="p-2 text-left">son kullanım</th>
+                <th className="p-2 text-right">işlem</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(keys ?? []).map((k) => (
+                <tr key={k.id} className="border-b border-border/30">
+                  <td className="p-2">{k.label}</td>
+                  <td className="p-2 font-mono text-xs text-muted-foreground">{k.key_prefix}…</td>
+                  <td className="p-2 text-right font-mono text-xs">{k.call_count}</td>
+                  <td className="p-2 font-mono text-xs text-muted-foreground">
+                    {k.last_used_at ? new Date(k.last_used_at).toLocaleString("tr-TR") : "—"}
+                  </td>
+                  <td className="p-2 text-right">
+                    {k.revoked ? (
+                      <span className="font-mono text-[11px] text-muted-foreground">iptal</span>
+                    ) : (
+                      <Button size="sm" variant="ghost" className="font-mono text-xs text-destructive" onClick={() => revoke(k.id)}>
+                        iptal et
+                      </Button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+              {(keys ?? []).length === 0 && (
+                <tr>
+                  <td colSpan={5} className="p-6 text-center font-mono text-xs text-muted-foreground">
+                    henüz anahtar yok
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="glass-card rounded-xl border border-border/60 p-4">
+        <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">dokümantasyon</div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Tüm isteklerde <code className="font-mono text-primary">Authorization: Bearer &lt;api_key&gt;</code> başlığı
+          gönderilmeli. Temel adres: <code className="font-mono text-primary">{base}/api/public/dealer</code>
+        </p>
+        <pre className="mt-3 overflow-x-auto rounded-lg border border-border/50 bg-background/70 p-3 font-mono text-[11px] leading-relaxed">
+{`# toptan fiyat listesi + stok
+GET  /api/public/dealer/products
+
+# bakiye, seviye, komisyon durumu
+GET  /api/public/dealer/balance
+
+# sipariş oluştur + cüzdandan öde + anahtarı al
+POST /api/public/dealer/orders
+{ "product_id": "uuid", "quantity": 1 }
+# ödemeden sadece sipariş açmak için: "pay": false
+
+# sipariş sorgula (teslim edilen anahtarlarla birlikte)
+GET  /api/public/dealer/orders/SBR-XXXXXXXX
+
+# örnek
+curl -H "Authorization: Bearer sbr_live_..." \\
+  ${base}/api/public/dealer/products`}
+        </pre>
+      </div>
     </div>
   );
 }
