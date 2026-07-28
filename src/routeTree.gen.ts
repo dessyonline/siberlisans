@@ -65,6 +65,7 @@ import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAraclarIndexRouteImport } from './routes/_authenticated/araclar/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
+import { Route as ApiPublicCatalogDotxmlRouteImport } from './routes/api/public/catalog[.]xml'
 import { Route as ApiPublicCatalogDotjsonRouteImport } from './routes/api/public/catalog[.]json'
 import { Route as ApiAdminRevokeRouteImport } from './routes/api/admin/revoke'
 import { Route as ApiAdminCreateRouteImport } from './routes/api/admin/create'
@@ -424,6 +425,11 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
 const ApiPublicSitemapDotxmlRoute = ApiPublicSitemapDotxmlRouteImport.update({
   id: '/api/public/sitemap.xml',
   path: '/api/public/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCatalogDotxmlRoute = ApiPublicCatalogDotxmlRouteImport.update({
+  id: '/api/public/catalog.xml',
+  path: '/api/public/catalog.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicCatalogDotjsonRoute = ApiPublicCatalogDotjsonRouteImport.update({
@@ -989,6 +995,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/create': typeof ApiAdminCreateRoute
   '/api/admin/revoke': typeof ApiAdminRevokeRoute
   '/api/public/catalog.json': typeof ApiPublicCatalogDotjsonRoute
+  '/api/public/catalog.xml': typeof ApiPublicCatalogDotxmlRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/araclar/': typeof AuthenticatedAraclarIndexRoute
@@ -1120,6 +1127,7 @@ export interface FileRoutesByTo {
   '/api/admin/create': typeof ApiAdminCreateRoute
   '/api/admin/revoke': typeof ApiAdminRevokeRoute
   '/api/public/catalog.json': typeof ApiPublicCatalogDotjsonRoute
+  '/api/public/catalog.xml': typeof ApiPublicCatalogDotxmlRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/araclar': typeof AuthenticatedAraclarIndexRoute
@@ -1255,6 +1263,7 @@ export interface FileRoutesById {
   '/api/admin/create': typeof ApiAdminCreateRoute
   '/api/admin/revoke': typeof ApiAdminRevokeRoute
   '/api/public/catalog.json': typeof ApiPublicCatalogDotjsonRoute
+  '/api/public/catalog.xml': typeof ApiPublicCatalogDotxmlRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/araclar/': typeof AuthenticatedAraclarIndexRoute
@@ -1390,6 +1399,7 @@ export interface FileRouteTypes {
     | '/api/admin/create'
     | '/api/admin/revoke'
     | '/api/public/catalog.json'
+    | '/api/public/catalog.xml'
     | '/api/public/sitemap.xml'
     | '/admin/'
     | '/araclar/'
@@ -1521,6 +1531,7 @@ export interface FileRouteTypes {
     | '/api/admin/create'
     | '/api/admin/revoke'
     | '/api/public/catalog.json'
+    | '/api/public/catalog.xml'
     | '/api/public/sitemap.xml'
     | '/admin'
     | '/araclar'
@@ -1655,6 +1666,7 @@ export interface FileRouteTypes {
     | '/api/admin/create'
     | '/api/admin/revoke'
     | '/api/public/catalog.json'
+    | '/api/public/catalog.xml'
     | '/api/public/sitemap.xml'
     | '/_authenticated/admin/'
     | '/_authenticated/araclar/'
@@ -1714,6 +1726,7 @@ export interface RootRouteChildren {
   ApiAdminCreateRoute: typeof ApiAdminCreateRoute
   ApiAdminRevokeRoute: typeof ApiAdminRevokeRoute
   ApiPublicCatalogDotjsonRoute: typeof ApiPublicCatalogDotjsonRoute
+  ApiPublicCatalogDotxmlRoute: typeof ApiPublicCatalogDotxmlRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicDealerSplatRoute: typeof ApiPublicDealerSplatRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
@@ -2119,6 +2132,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/sitemap.xml'
       fullPath: '/api/public/sitemap.xml'
       preLoaderRoute: typeof ApiPublicSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/catalog.xml': {
+      id: '/api/public/catalog.xml'
+      path: '/api/public/catalog.xml'
+      fullPath: '/api/public/catalog.xml'
+      preLoaderRoute: typeof ApiPublicCatalogDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/catalog.json': {
@@ -2902,6 +2922,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminCreateRoute: ApiAdminCreateRoute,
   ApiAdminRevokeRoute: ApiAdminRevokeRoute,
   ApiPublicCatalogDotjsonRoute: ApiPublicCatalogDotjsonRoute,
+  ApiPublicCatalogDotxmlRoute: ApiPublicCatalogDotxmlRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
   ApiPublicDealerSplatRoute: ApiPublicDealerSplatRoute,
   ApiPublicHooksAbandonmentReminderRoute:
