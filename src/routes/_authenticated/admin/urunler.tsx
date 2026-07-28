@@ -66,6 +66,7 @@ type Product = {
   tier: "standard" | "epic";
   image_url: string | null;
   shopier_url: string | null;
+  demo_video_url: string | null;
   requires_email: boolean;
   retail_price_try: number | null;
   retail_price_source_url: string | null;
@@ -185,6 +186,7 @@ function ProductsAdmin() {
           tier: (editing.tier ?? "standard") as "standard" | "epic",
           image_url: editing.image_url && editing.image_url.trim() !== "" ? editing.image_url : null,
           shopier_url: editing.shopier_url && editing.shopier_url.trim() !== "" ? editing.shopier_url : null,
+          demo_video_url: editing.demo_video_url && editing.demo_video_url.trim() !== "" ? editing.demo_video_url : null,
           requires_email: editing.requires_email ?? false,
         },
       });
@@ -227,6 +229,7 @@ function ProductsAdmin() {
           tier: p.tier,
           image_url: p.image_url && p.image_url.trim() !== "" ? p.image_url : null,
           shopier_url: p.shopier_url && p.shopier_url.trim() !== "" ? p.shopier_url : null,
+          demo_video_url: p.demo_video_url && p.demo_video_url.trim() !== "" ? p.demo_video_url : null,
           requires_email: p.requires_email,
         },
       });
@@ -723,6 +726,18 @@ function ProductsAdmin() {
                   />
                   <p className="mt-1 font-mono text-[10px] text-muted-foreground">
                     Doluysa ödeme sayfasında "Shopier ile Öde" butonu görünür. Ödeme tamamlanınca webhook siparişi otomatik onaylar.
+                  </p>
+                </div>
+                <div className="mt-3">
+                  <Label className="font-mono text-xs">demo_video_url (ürün tanıtım videosu)</Label>
+                  <Input
+                    value={editing.demo_video_url ?? ""}
+                    onChange={(e) => setEditing((p) => ({ ...p!, demo_video_url: e.target.value }))}
+                    className="font-mono text-xs"
+                    placeholder="https://youtu.be/… veya .mp4 linki"
+                  />
+                  <p className="mt-1 font-mono text-[10px] text-muted-foreground">
+                    YouTube / Vimeo / doğrudan mp4 linki desteklenir. Ürün sayfasında oynatıcı olarak gösterilir.
                   </p>
                 </div>
               </Section>
