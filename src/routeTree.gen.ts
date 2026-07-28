@@ -22,6 +22,7 @@ import { Route as IletisimRouteImport } from './routes/iletisim'
 import { Route as IadeRouteImport } from './routes/iade'
 import { Route as GizlilikRouteImport } from './routes/gizlilik'
 import { Route as CekilisRouteImport } from './routes/cekilis'
+import { Route as BayilikRouteImport } from './routes/bayilik'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -200,6 +201,11 @@ const GizlilikRoute = GizlilikRouteImport.update({
 const CekilisRoute = CekilisRouteImport.update({
   id: '/cekilis',
   path: '/cekilis',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BayilikRoute = BayilikRouteImport.update({
+  id: '/bayilik',
+  path: '/bayilik',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -842,6 +848,7 @@ const ApiPublicHooksAbandonmentReminderRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/bayilik': typeof BayilikRoute
   '/cekilis': typeof CekilisRoute
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
@@ -970,6 +977,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/bayilik': typeof BayilikRoute
   '/cekilis': typeof CekilisRoute
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
@@ -1098,6 +1106,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/bayilik': typeof BayilikRoute
   '/cekilis': typeof CekilisRoute
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
@@ -1228,6 +1237,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/bayilik'
     | '/cekilis'
     | '/gizlilik'
     | '/iade'
@@ -1356,6 +1366,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/bayilik'
     | '/cekilis'
     | '/gizlilik'
     | '/iade'
@@ -1483,6 +1494,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/bayilik'
     | '/cekilis'
     | '/gizlilik'
     | '/iade'
@@ -1613,6 +1625,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  BayilikRoute: typeof BayilikRoute
   CekilisRoute: typeof CekilisRoute
   GizlilikRoute: typeof GizlilikRoute
   IadeRoute: typeof IadeRoute
@@ -1754,6 +1767,13 @@ declare module '@tanstack/react-router' {
       path: '/cekilis'
       fullPath: '/cekilis'
       preLoaderRoute: typeof CekilisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bayilik': {
+      id: '/bayilik'
+      path: '/bayilik'
+      fullPath: '/bayilik'
+      preLoaderRoute: typeof BayilikRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -2759,6 +2779,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  BayilikRoute: BayilikRoute,
   CekilisRoute: CekilisRoute,
   GizlilikRoute: GizlilikRoute,
   IadeRoute: IadeRoute,
