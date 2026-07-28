@@ -51,6 +51,7 @@ import { PushEnablePrompt } from "../components/PushEnablePrompt";
 import { CartReminder } from "../components/CartReminder";
 import { LiveActivityPopup } from "../components/LiveActivityPopup";
 import { CompareBar } from "../components/CompareBar";
+import { DealerAttach } from "../components/DealerAttach";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { THEME_BOOT_SCRIPT } from "../lib/theme";
 import { useQuery } from "@tanstack/react-query";
@@ -228,6 +229,7 @@ function SiteHeader() {
           <Link to="/paketler" className="text-muted-foreground hover:text-primary">./paketler</Link>
           <Link to="/cekilis" className="text-primary hover:text-primary/80">./çekiliş</Link>
           <Link to="/araclar" className="text-primary hover:text-primary/80">./araçlar</Link>
+          <Link to="/bayilik" className="text-muted-foreground hover:text-primary">./bayilik</Link>
           <Link to="/blog" className="text-muted-foreground hover:text-primary">./blog</Link>
           <Link to="/nasil-calisir" className="text-muted-foreground hover:text-primary">./nasıl-çalışır</Link>
           <Link to="/sss" className="text-muted-foreground hover:text-primary">./SSS</Link>
@@ -379,6 +381,7 @@ function MobileMenu({
           <Link to="/paketler" data-mobile-menu-close className={linkCls}><Boxes className="h-4 w-4" />paketler</Link>
           <Link to="/cekilis" data-mobile-menu-close className={linkCls}><Ticket className="h-4 w-4" />çekiliş</Link>
           <Link to="/araclar" data-mobile-menu-close className={linkCls}><Sparkles className="h-4 w-4" />araçlar</Link>
+          <Link to="/bayilik" data-mobile-menu-close className={linkCls}><Handshake className="h-4 w-4" />bayilik</Link>
           <Link to="/blog" data-mobile-menu-close className={linkCls}><Newspaper className="h-4 w-4" />blog</Link>
           <Link to="/nasil-calisir" data-mobile-menu-close className={linkCls}><BookOpen className="h-4 w-4" />nasıl çalışır</Link>
           <Link to="/sss" data-mobile-menu-close className={linkCls}><HelpCircle className="h-4 w-4" />SSS</Link>
@@ -553,6 +556,7 @@ function RootComponent() {
         <CartReminder />
         <LiveActivityPopup />
         <CompareBar />
+        <DealerAttach />
         <IpChangeGuard />
         <SocialPopup />
         <OnboardingTour />

@@ -31,6 +31,7 @@ import {
   Shield,
   Menu,
   MessageCircleQuestion,
+  Handshake,
 } from "lucide-react";
 
 
@@ -99,6 +100,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/admin/capraz-satis", label: "çapraz satış", icon: Sparkles },
       { to: "/admin/blog", label: "blog", icon: BookOpen },
       { to: "/admin/sorular", label: "sorular", icon: MessageCircleQuestion },
+      { to: "/admin/bayiler", label: "bayiler", icon: Handshake },
     ],
   },
   {
