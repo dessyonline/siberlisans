@@ -59,6 +59,7 @@ import { Route as AuthenticatedDestekRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedDavetRouteImport } from './routes/_authenticated/davet'
 import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated/cuzdan'
 import { Route as AuthenticatedBildirimlerRouteImport } from './routes/_authenticated/bildirimler'
+import { Route as AuthenticatedBayiRouteImport } from './routes/_authenticated/bayi'
 import { Route as AuthenticatedAraclarRouteRouteImport } from './routes/_authenticated/araclar/route'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAraclarIndexRouteImport } from './routes/_authenticated/araclar/index'
@@ -390,6 +391,11 @@ const AuthenticatedBildirimlerRoute =
     path: '/bildirimler',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBayiRoute = AuthenticatedBayiRouteImport.update({
+  id: '/bayi',
+  path: '/bayi',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAraclarRouteRoute =
   AuthenticatedAraclarRouteRouteImport.update({
     id: '/araclar',
@@ -864,6 +870,7 @@ export interface FileRoutesByFullPath {
   '/urunler': typeof UrunlerRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/araclar': typeof AuthenticatedAraclarRouteRouteWithChildren
+  '/bayi': typeof AuthenticatedBayiRoute
   '/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/davet': typeof AuthenticatedDavetRoute
@@ -991,6 +998,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
+  '/bayi': typeof AuthenticatedBayiRoute
   '/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/davet': typeof AuthenticatedDavetRoute
@@ -1122,6 +1130,7 @@ export interface FileRoutesById {
   '/urunler': typeof UrunlerRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/araclar': typeof AuthenticatedAraclarRouteRouteWithChildren
+  '/_authenticated/bayi': typeof AuthenticatedBayiRoute
   '/_authenticated/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/_authenticated/cuzdan': typeof AuthenticatedCuzdanRoute
   '/_authenticated/davet': typeof AuthenticatedDavetRoute
@@ -1253,6 +1262,7 @@ export interface FileRouteTypes {
     | '/urunler'
     | '/admin'
     | '/araclar'
+    | '/bayi'
     | '/bildirimler'
     | '/cuzdan'
     | '/davet'
@@ -1380,6 +1390,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sss'
     | '/urunler'
+    | '/bayi'
     | '/bildirimler'
     | '/cuzdan'
     | '/davet'
@@ -1510,6 +1521,7 @@ export interface FileRouteTypes {
     | '/urunler'
     | '/_authenticated/admin'
     | '/_authenticated/araclar'
+    | '/_authenticated/bayi'
     | '/_authenticated/bildirimler'
     | '/_authenticated/cuzdan'
     | '/_authenticated/davet'
@@ -2026,6 +2038,13 @@ declare module '@tanstack/react-router' {
       path: '/bildirimler'
       fullPath: '/bildirimler'
       preLoaderRoute: typeof AuthenticatedBildirimlerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/bayi': {
+      id: '/_authenticated/bayi'
+      path: '/bayi'
+      fullPath: '/bayi'
+      preLoaderRoute: typeof AuthenticatedBayiRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/araclar': {
@@ -2743,6 +2762,7 @@ const AuthenticatedHesabimRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedAraclarRouteRoute: typeof AuthenticatedAraclarRouteRouteWithChildren
+  AuthenticatedBayiRoute: typeof AuthenticatedBayiRoute
   AuthenticatedBildirimlerRoute: typeof AuthenticatedBildirimlerRoute
   AuthenticatedCuzdanRoute: typeof AuthenticatedCuzdanRoute
   AuthenticatedDavetRoute: typeof AuthenticatedDavetRoute
@@ -2759,6 +2779,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedAraclarRouteRoute: AuthenticatedAraclarRouteRouteWithChildren,
+  AuthenticatedBayiRoute: AuthenticatedBayiRoute,
   AuthenticatedBildirimlerRoute: AuthenticatedBildirimlerRoute,
   AuthenticatedCuzdanRoute: AuthenticatedCuzdanRoute,
   AuthenticatedDavetRoute: AuthenticatedDavetRoute,
