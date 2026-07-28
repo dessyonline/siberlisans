@@ -508,3 +508,112 @@ function WinnersBlock({ raffleId, onDisqualify }: { raffleId: string; onDisquali
     </div>
   );
 }
+
+type PickRow = { user_id: string; display_name: string | null; email?: string | null; tickets?: number };
+
+function ManualWinnerPicker({
+  raffleId,
+  title,
+  redraw,
+  pending,
+  onClose,
+  onConfirm,
+}: {
+  raffleId: string;
+  title: string;
+  redraw?: boolean;
+  pending: boolean;
+  onClose: () => void;
+  onConfirm: (ids: string[]) => void;
+}) {
+  const [q, setQ] = useState("");
+  const [picked, setPicked] = useState<PickRow[]>([]);
+
+  const parts = useQuery({
+    queryKey: ["raffle-parts-pick", raffleId],
+    queryFn: () => listRaffleParticipants({ data: { id: raffleId } }),
+  });
+
+  const search = useQuery({
+    queryKey: ["raffle-pick-users", q],
+    enabled: q.trim().length >= 2,
+    queryFn: async () => {
+      const term = `%${q.trim()}%`;
+      const { data } = await supabase
+        .from("profiles")
+        .select("id, display_name, email")
+        .or(`display_name.ilike.${term},email.ilike.${term}`)
+        .limit(20);
+      return (data ?? []).map((p: any) => ({ user_id: p.id, display_name: p.display_name, email: p.email })) as PickRow[];
+    },
+  });
+
+  const rows: PickRow[] =
+    q.trim().length >= 2
+      ? (search.data ?? [])
+      : ((parts.data ?? []) as any[]).map((p) => ({ user_id: p.user_id, display_name: p.display_name, tickets: p.tickets }));
+
+  function toggle(r: PickRow) {
+    setPicked((prev) =>
+      prev.some((x) => x.user_id === r.user_id) ? prev.filter((x) => x.user_id !== r.user_id) : [...prev, r]
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={onClose}>
+      <div className="glass-card w-full max-w-lg space-y-3 rounded-lg p-4" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h3 className="font-mono text-sm text-primary">$ kazanan seç · {title}</h3>
+          <button onClick={onClose}><X className="h-4 w-4" /></button>
+        </div>
+        <p className="font-mono text-[11px] text-muted-foreground">
+          Seçtiğin kişiler sırayla 1., 2., … kazanan olur. Kalan yerler rastgele dolar. Boş bırakırsan tamamen rastgele çekilir.
+        </p>
+
+        {picked.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {picked.map((p, i) => (
+              <span key={p.user_id} className="flex items-center gap-1 rounded border border-primary/40 bg-primary/10 px-2 py-0.5 font-mono text-[11px] text-primary">
+                {i + 1}. {p.display_name ?? p.email ?? p.user_id.slice(0, 8)}
+                <button onClick={() => toggle(p)}><X className="h-3 w-3" /></button>
+              </span>
+            ))}
+          </div>
+        )}
+
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="isim veya e-posta ara (katılmamış kişiler dahil)"
+          className="w-full rounded border border-primary/30 bg-card px-2 py-1.5 text-sm"
+        />
+
+        <div className="max-h-64 space-y-1 overflow-y-auto">
+          {rows.map((r) => {
+            const on = picked.some((x) => x.user_id === r.user_id);
+            return (
+              <button
+                key={r.user_id}
+                onClick={() => toggle(r)}
+                className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left font-mono text-xs ${on ? "bg-primary/15 text-primary" : "bg-card/60 hover:bg-card"}`}
+              >
+                <span className="truncate">{r.display_name ?? "anon"}</span>
+                {r.email && <span className="truncate text-muted-foreground">{r.email}</span>}
+                {typeof r.tickets === "number" && <span className="ml-auto text-muted-foreground">{r.tickets} bilet</span>}
+              </button>
+            );
+          })}
+          {rows.length === 0 && <div className="p-3 text-center font-mono text-xs text-muted-foreground">kayıt yok.</div>}
+        </div>
+
+        <button
+          disabled={pending}
+          onClick={() => onConfirm(picked.map((p) => p.user_id))}
+          className="w-full rounded bg-primary py-2 font-mono text-sm text-background disabled:opacity-40"
+        >
+          {pending ? "çekiliyor…" : redraw ? "> yeniden çek" : "> çekilişi tamamla"}
+        </button>
+      </div>
+    </div>
+  );
+}
