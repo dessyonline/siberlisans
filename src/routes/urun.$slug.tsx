@@ -704,11 +704,44 @@ function ProductDetail() {
           </Accordion>
         </div>
 
+        {/* Demo video */}
+        <ProductVideo url={product.demo_video_url} title={product.name} />
+
+        {/* Auto tags + compare */}
+        <div className="mt-6 flex flex-wrap items-center gap-2">
+          <ProductTags
+            product={{
+              createdAt: product.created_at,
+              ordersCount: product.orders_count,
+              avgRating: Number(product.avg_rating ?? 0),
+              reviewCount: product.review_count,
+              stock: product.stock_hint,
+              unlimited: product.unlimited_stock,
+              manual: product.manual_fulfillment,
+              hasSale: flash.hasSale,
+            }}
+            max={4}
+          />
+          <CompareToggle productId={product.id} />
+        </div>
+
+        {/* Q&A */}
+        <div className="mt-8">
+          <ProductQnA productId={product.id} />
+        </div>
+
         {/* Reviews */}
         <ReviewsSection productId={product.id} />
 
         {/* Others also bought */}
         <AlsoBoughtSection productId={product.id} />
+
+        {/* Recently viewed */}
+        <div className="mt-10">
+          <RecentlyViewed excludeId={product.id} />
+        </div>
+
+
 
 
 
