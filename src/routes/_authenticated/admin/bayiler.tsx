@@ -83,7 +83,7 @@ function Applications({ qc }: { qc: ReturnType<typeof useQueryClient> }) {
     const { error } = await supabase.rpc("admin_review_dealer_application", {
       _application_id: id,
       _approve: approve,
-      _admin_note: notes[id]?.trim() || null,
+      _admin_note: notes[id]?.trim() || undefined,
     });
     setBusy(null);
     if (error) return toast.error(error.message);
