@@ -21,6 +21,7 @@ import {
   Boxes,
   Ticket,
   Newspaper,
+  Handshake,
   User as UserIcon,
   LogOut,
   X,
