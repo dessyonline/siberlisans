@@ -270,7 +270,7 @@ function DealerLanding() {
                     value={form.note}
                     onChange={(e) => setForm({ ...form, note: e.target.value })}
                   />
-                  <Button onClick={submit} disabled={sending} className="w-full font-mono">
+                  <Button onClick={submit} disabled={sending || !balanceOk} className="w-full font-mono">
                     {sending ? "gönderiliyor…" : "$ başvuruyu gönder"}
                   </Button>
                 </div>
