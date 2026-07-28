@@ -16,12 +16,12 @@ export const Route = createFileRoute("/bayilik")({
       {
         name: "description",
         content:
-          "SiberLisans bayisi ol: satışlarından %20'ye varan komisyon, bayiye özel toptan fiyat listesi ve toplu lisans alımı. Başvur, onay al, kazanmaya başla.",
+          "SiberLisans bayisi ol: bayiye özel toptan fiyat listesi, toplu lisans alımı ve müşteri paneli. Başvur, onay al, satmaya başla.",
       },
       { property: "og:title", content: "Bayilik Programı | SiberLisans" },
       {
         property: "og:description",
-        content: "%20'ye varan komisyon, toptan fiyat listesi ve toplu lisans alımı ile bayi ol.",
+        content: "Toptan fiyat listesi ve toplu lisans alımı ile bayi ol.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -114,17 +114,17 @@ function DealerLanding() {
             SiberLisans <span className="neon-text">Bayilik Programı</span>
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-            Kendi müşteri kitlene lisans sat, her onaylanan siparişten <strong className="text-primary">%20'ye varan
-            komisyon</strong> kazan. Üstüne bayiye özel toptan fiyatlarla kendi stoğunu oluştur.
+            Kendi müşteri kitlene lisans sat, <strong className="text-primary">bayiye özel toptan fiyatlarla</strong>{" "}
+            kendi stoğunu oluştur ve aradaki farkı kâr olarak cebinde bırak.
           </p>
         </div>
 
         <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { icon: Percent, t: "Komisyon", d: "Bayi linkinden gelen her onaylı siparişte %8–%20 kazanç" },
-            { icon: TrendingUp, t: "Toptan fiyat", d: "Kendi alımlarında %3–%12 bayi indirimi" },
-            { icon: Users, t: "Müşteri paneli", d: "Getirdiğin müşteriler, ciro ve kazanç raporu" },
-            { icon: ShieldCheck, t: "Anında ödeme", d: "Komisyonlar cüzdanına aktarılır, hemen kullanılır" },
+            { icon: Percent, t: "Toptan indirim", d: "Seviyene göre kendi alımlarında bayi indirimi" },
+            { icon: TrendingUp, t: "Seviye sistemi", d: "Ciron arttıkça indirim oranın yükselir" },
+            { icon: Users, t: "Müşteri paneli", d: "Getirdiğin müşteriler ve ciro raporu" },
+            { icon: ShieldCheck, t: "API & entegrasyon", d: "Kendi sitende satış için bayi API'si ve katalog akışı" },
           ].map((f) => (
             <div key={f.t} className="glass-card rounded-xl border border-border/60 p-4">
               <f.icon className="h-5 w-5 text-primary" />
@@ -144,10 +144,9 @@ function DealerLanding() {
             >
               <div className="font-mono text-xs uppercase tracking-wider text-primary">{t.slug}</div>
               <div className="mt-1 text-lg font-semibold">{t.name}</div>
-              <div className="mt-4 font-mono text-3xl neon-text">%{Number(t.commission_percent)}</div>
-              <div className="font-mono text-[11px] text-muted-foreground">satış komisyonu</div>
+              <div className="mt-4 font-mono text-3xl neon-text">%{Number(t.discount_percent)}</div>
+              <div className="font-mono text-[11px] text-muted-foreground">toptan indirim</div>
               <div className="mt-3 space-y-1 font-mono text-xs text-muted-foreground">
-                <div>toptan indirim: <span className="text-foreground">%{Number(t.discount_percent)}</span></div>
                 <div>
                   gereken ciro:{" "}
                   <span className="text-foreground">₺{Number(t.min_volume_try).toLocaleString("tr-TR")}</span>
@@ -166,8 +165,8 @@ function DealerLanding() {
                 "Aşağıdaki formu doldurup bayilik başvurusu yap.",
                 "Ekibimiz başvuruyu inceler ve onaylar.",
                 "Sana özel bayi kodun ve davet linkin oluşur.",
-                "Linkinden gelen müşterilerin her onaylı siparişinden komisyon kazanırsın.",
-                "Kazançların bayi panelinden tek tıkla cüzdanına aktarılır.",
+                "Toptan fiyat listesinden dilediğin ürünü indirimli alırsın.",
+                "Sattıkça ciron artar, seviyen ve indirim oranın yükselir.",
               ].map((s, i) => (
                 <li key={i} className="flex gap-3">
                   <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-primary/50 font-mono text-[10px] text-primary">
