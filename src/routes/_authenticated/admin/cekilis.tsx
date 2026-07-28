@@ -81,6 +81,7 @@ function AdminRafflesPage() {
   const [analyticsFor, setAnalyticsFor] = useState<string | null>(null);
   const [winnersFor, setWinnersFor] = useState<string | null>(null);
   const [broadcastFor, setBroadcastFor] = useState<string | null>(null);
+  const [pickFor, setPickFor] = useState<{ id: string; title: string; redraw?: boolean } | null>(null);
   const [bTitle, setBTitle] = useState("");
   const [bBody, setBBody] = useState("");
 
