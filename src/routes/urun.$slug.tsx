@@ -18,6 +18,13 @@ import { AlsoBoughtSection } from "@/components/AlsoBoughtSection";
 import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
 import { RetailPriceBadge } from "@/components/RetailPriceBadge";
 import { ProductLogo } from "@/components/ProductLogo";
+import { ProductQnA } from "@/components/ProductQnA";
+import { ProductTags } from "@/components/ProductTags";
+import { ProductVideo } from "@/components/ProductVideo";
+import { RecentlyViewed } from "@/components/RecentlyViewed";
+import { CompareToggle } from "@/components/CompareBar";
+import { pushRecent } from "@/lib/recently-viewed";
+
 
 const productMetaQuery = (slug: string) => ({
   queryKey: ["product-meta", slug],
