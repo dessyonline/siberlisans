@@ -227,7 +227,7 @@ function Dealers({ qc }: { qc: ReturnType<typeof useQueryClient> }) {
                     setEdit({
                       ...edit,
                       [d.user_id]: {
-                        c: edit[d.user_id]?.c ?? String(Number(d.commission_percent)),
+                        c: "0",
                         d: e.target.value,
                       },
                     })
