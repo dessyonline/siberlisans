@@ -414,6 +414,20 @@ function AdminRafflesPage() {
         </div>
       )}
 
+      {pickFor && (
+        <ManualWinnerPicker
+          raffleId={pickFor.id}
+          title={pickFor.title}
+          redraw={pickFor.redraw}
+          pending={drawMut.isPending}
+          onClose={() => setPickFor(null)}
+          onConfirm={(ids) => {
+            drawMut.mutate({ id: pickFor.id, title: pickFor.title, redraw: pickFor.redraw, forcedUserIds: ids });
+            setPickFor(null);
+          }}
+        />
+      )}
+
       {reel && (
         <LiveDrawReel
           title={reel.title}
