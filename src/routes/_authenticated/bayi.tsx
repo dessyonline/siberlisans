@@ -35,9 +35,9 @@ export const Route = createFileRoute("/_authenticated/bayi")({
   head: () => ({
     meta: [
       { title: "Bayi Paneli | SiberLisans" },
-      { name: "description", content: "Bayi cirosu, komisyon kazançların, müşteri listen ve toptan fiyat listesi." },
+      { name: "description", content: "Bayi cirosu, müşteri listen ve toptan fiyat listesi." },
       { property: "og:title", content: "Bayi Paneli | SiberLisans" },
-      { property: "og:description", content: "Bayi cirosu, komisyon kazançları ve toptan fiyat listesi." },
+      { property: "og:description", content: "Bayi cirosu ve toptan fiyat listesi." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -67,7 +67,7 @@ const try_ = (n: number | string | null | undefined) => `₺${Number(n ?? 0).toL
 
 function DealerPanel() {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"ozet" | "fiyat" | "siparis" | "musteri" | "kazanc" | "api">("ozet");
+  const [tab, setTab] = useState<"ozet" | "fiyat" | "siparis" | "musteri" | "api">("ozet");
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dealer-stats"],
@@ -110,8 +110,7 @@ function DealerPanel() {
             <Handshake className="h-6 w-6 text-primary" /> Bayi Paneli
           </h1>
           <p className="mt-1 font-mono text-xs text-muted-foreground">
-            {stats.tier_name} · komisyon %{Number(stats.commission_percent)} · toptan indirim %
-            {Number(stats.discount_percent)}
+            {stats.tier_name} · toptan indirim %{Number(stats.discount_percent)}
             {!stats.active && <span className="ml-2 text-destructive">[pasif]</span>}
           </p>
         </div>
@@ -137,8 +136,7 @@ function DealerPanel() {
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { icon: TrendingUp, label: "toplam ciro", value: try_(stats.total_volume_try) },
-          { icon: Wallet, label: "bekleyen komisyon", value: try_(stats.pending_commission_try) },
-          { icon: Wallet, label: "ödenen komisyon", value: try_(stats.paid_commission_try) },
+          { icon: Package, label: "sipariş", value: String(stats.order_count) },
           { icon: Users, label: "müşteri", value: String(stats.customer_count) },
         ].map((k) => (
           <div key={k.label} className="glass-card rounded-xl border border-border/60 p-4">
@@ -153,8 +151,8 @@ function DealerPanel() {
         <div className="glass-card mt-4 rounded-xl border border-primary/25 p-4">
           <div className="flex items-center justify-between font-mono text-xs">
             <span className="text-muted-foreground">
-              sonraki seviye: <span className="text-primary">{stats.next_tier.name}</span> (komisyon %
-              {Number(stats.next_tier.commission_percent)})
+              sonraki seviye: <span className="text-primary">{stats.next_tier.name}</span> (toptan indirim %
+              {Number(stats.next_tier.discount_percent)})
             </span>
             <span>
               {try_(stats.total_volume_try)} / {try_(stats.next_tier.min_volume_try)}
@@ -174,7 +172,6 @@ function DealerPanel() {
             ["fiyat", "toptan fiyat listesi"],
             ["siparis", "siparişlerim & anahtarlar"],
             ["musteri", "müşterilerim"],
-            ["kazanc", "kazanç geçmişi"],
             ["api", "api erişimi"],
           ] as const
         ).map(([k, label]) => (
@@ -197,7 +194,6 @@ function DealerPanel() {
         {tab === "fiyat" && <PriceList onOrdered={() => qc.invalidateQueries({ queryKey: ["dealer-stats"] })} />}
         {tab === "siparis" && <DealerOrders />}
         {tab === "musteri" && <Customers />}
-        {tab === "kazanc" && <Commissions />}
         {tab === "api" && <ApiAccess />}
       </div>
 
@@ -212,14 +208,14 @@ function MonthlyTable({ monthly, inviteUrl }: { monthly: Stats["monthly"]; invit
         <div className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">bayi davet linkin</div>
         <div className="mt-2 break-all font-mono text-sm text-primary">{inviteUrl}</div>
         <p className="mt-2 text-xs text-muted-foreground">
-          Bu linkten kayıt olan her müşterinin onaylanan siparişinden komisyon kazanırsın.
+          Bu linkten kayıt olan müşteriler bayi hesabına bağlanır ve ciron artar.
         </p>
       </div>
 
       {monthly.length > 0 && (
         <div className="glass-card rounded-xl border border-border/60 p-4">
           <div className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-            aylık ciro &amp; komisyon
+            aylık ciro
           </div>
           <div className="mt-4 h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -240,25 +236,15 @@ function MonthlyTable({ monthly, inviteUrl }: { monthly: Stats["monthly"]; invit
                     borderRadius: 12,
                     fontSize: 12,
                   }}
-                  formatter={(v: number, n) => [try_(v), n === "volume" ? "ciro" : "komisyon"]}
+                  formatter={(v: number) => [try_(v), "ciro"]}
                 />
-                <Legend
-                  wrapperStyle={{ fontSize: 11 }}
-                  formatter={(v) => (v === "volume" ? "ciro" : "komisyon")}
-                />
+                <Legend wrapperStyle={{ fontSize: 11 }} formatter={() => "ciro"} />
                 <Area
                   type="monotone"
                   dataKey="volume"
                   stroke="var(--primary)"
                   strokeWidth={2}
                   fill="url(#dlrVol)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey="commission"
-                  stroke="var(--accent-foreground)"
-                  strokeWidth={2}
-                  fillOpacity={0}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -293,14 +279,13 @@ function MonthlyTable({ monthly, inviteUrl }: { monthly: Stats["monthly"]; invit
               <th className="p-2 text-left">ay</th>
               <th className="p-2 text-right">sipariş</th>
               <th className="p-2 text-right">ciro</th>
-              <th className="p-2 text-right">komisyon</th>
             </tr>
           </thead>
           <tbody>
             {monthly.length === 0 && (
               <tr>
-                <td colSpan={4} className="p-6 text-center font-mono text-xs text-muted-foreground">
-                  henüz kazanç kaydı yok
+                <td colSpan={3} className="p-6 text-center font-mono text-xs text-muted-foreground">
+                  henüz ciro kaydı yok
                 </td>
               </tr>
             )}
@@ -309,7 +294,6 @@ function MonthlyTable({ monthly, inviteUrl }: { monthly: Stats["monthly"]; invit
                 <td className="p-2 font-mono">{m.month}</td>
                 <td className="p-2 text-right">{m.orders}</td>
                 <td className="p-2 text-right font-mono">{try_(m.volume)}</td>
-                <td className="p-2 text-right font-mono text-primary">{try_(m.commission)}</td>
               </tr>
             ))}
           </tbody>
@@ -713,7 +697,6 @@ function Customers() {
             <th className="p-2 text-left">e-posta</th>
             <th className="p-2 text-right">sipariş</th>
             <th className="p-2 text-right">harcama</th>
-            <th className="p-2 text-right">kazancın</th>
           </tr>
         </thead>
         <tbody>
@@ -723,71 +706,12 @@ function Customers() {
               <td className="p-2 font-mono text-xs text-muted-foreground">{c.email_masked ?? "—"}</td>
               <td className="p-2 text-right">{c.order_count}</td>
               <td className="p-2 text-right font-mono">{try_(c.total_spent)}</td>
-              <td className="p-2 text-right font-mono text-primary">{try_(c.commission_earned)}</td>
             </tr>
           ))}
           {(data ?? []).length === 0 && (
             <tr>
-              <td colSpan={5} className="p-6 text-center font-mono text-xs text-muted-foreground">
+              <td colSpan={4} className="p-6 text-center font-mono text-xs text-muted-foreground">
                 henüz müşterin yok — bayi linkini paylaş
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function Commissions() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["dealer-commissions"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("dealer_commissions")
-        .select("id, base_amount_try, rate_percent, amount_try, status, created_at, paid_at")
-        .order("created_at", { ascending: false })
-        .limit(100);
-      return data ?? [];
-    },
-  });
-
-  if (isLoading) return <p className="font-mono text-sm text-muted-foreground">yükleniyor…</p>;
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[560px] text-sm">
-        <thead>
-          <tr className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-            <th className="p-2 text-left">tarih</th>
-            <th className="p-2 text-right">sipariş tutarı</th>
-            <th className="p-2 text-right">oran</th>
-            <th className="p-2 text-right">komisyon</th>
-            <th className="p-2 text-right">durum</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(data ?? []).map((c, i) => (
-            <tr key={c.id} className={i % 2 ? "bg-card/30" : ""}>
-              <td className="p-2 font-mono text-xs">
-                {new Date(c.created_at).toLocaleDateString("tr-TR")}
-              </td>
-              <td className="p-2 text-right font-mono">{try_(c.base_amount_try)}</td>
-              <td className="p-2 text-right font-mono text-xs">%{Number(c.rate_percent)}</td>
-              <td className="p-2 text-right font-mono text-primary">{try_(c.amount_try)}</td>
-              <td className="p-2 text-right font-mono text-xs">
-                {c.status === "paid" ? (
-                  <span className="text-primary">ödendi</span>
-                ) : (
-                  <span className="text-muted-foreground">bekliyor</span>
-                )}
-              </td>
-            </tr>
-          ))}
-          {(data ?? []).length === 0 && (
-            <tr>
-              <td colSpan={5} className="p-6 text-center font-mono text-xs text-muted-foreground">
-                henüz komisyon kaydı yok
               </td>
             </tr>
           )}
@@ -937,7 +861,7 @@ function ApiAccess() {
 {`# toptan fiyat listesi + stok
 GET  /api/public/dealer/products
 
-# bakiye, seviye, komisyon durumu
+# bakiye ve seviye durumu
 GET  /api/public/dealer/balance
 
 # sipariş oluştur + cüzdandan öde + anahtarı al

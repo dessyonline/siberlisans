@@ -6,15 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { Handshake, Check, X, Wallet } from "lucide-react";
+import { Handshake, Check, X } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/bayiler")({
   head: () => ({
     meta: [
       { title: "Bayi Yönetimi | SiberLisans Admin" },
-      { name: "description", content: "Bayilik başvurularını onayla, bayi oranlarını yönet, komisyon ödemesi yap." },
+      { name: "description", content: "Bayilik başvurularını onayla ve bayi indirim oranlarını yönet." },
       { property: "og:title", content: "Bayi Yönetimi | SiberLisans Admin" },
-      { property: "og:description", content: "Bayilik başvuruları ve komisyon ödemeleri." },
+      { property: "og:description", content: "Bayilik başvuruları ve bayi yönetimi." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -35,7 +35,7 @@ function AdminDealers() {
           <Handshake className="h-5 w-5 text-primary" /> Bayi Yönetimi
         </h1>
         <p className="mt-1 font-mono text-xs text-muted-foreground">
-          başvuruları onayla, oranları düzenle, komisyonları öde
+          başvuruları onayla, toptan indirim oranlarını düzenle
         </p>
       </div>
 
@@ -178,7 +178,6 @@ function Dealers({ qc }: { qc: ReturnType<typeof useQueryClient> }) {
     setBusy(userId);
     const { error } = await supabase.rpc("admin_update_dealer", {
       _user_id: userId,
-      _commission_percent: e?.c === "" ? -1 : Number(e?.c),
       _discount_percent: e?.d === "" ? -1 : Number(e?.d),
     });
     setBusy(null);
@@ -190,15 +189,6 @@ function Dealers({ qc }: { qc: ReturnType<typeof useQueryClient> }) {
   const toggle = async (userId: string, active: boolean) => {
     const { error } = await supabase.rpc("admin_update_dealer", { _user_id: userId, _active: !active });
     if (error) return toast.error(error.message);
-    refresh();
-  };
-
-  const pay = async (userId: string) => {
-    setBusy(userId);
-    const { data: amount, error } = await supabase.rpc("admin_pay_dealer_commissions", { _dealer_user_id: userId });
-    setBusy(null);
-    if (error) return toast.error(error.message);
-    toast.success(`${try_(amount as number)} cüzdana aktarıldı`);
     refresh();
   };
 
@@ -214,8 +204,6 @@ function Dealers({ qc }: { qc: ReturnType<typeof useQueryClient> }) {
             <th className="p-2 text-left">seviye</th>
             <th className="p-2 text-right">ciro</th>
             <th className="p-2 text-right">müşteri</th>
-            <th className="p-2 text-right">bekleyen</th>
-            <th className="p-2 text-center">komisyon %</th>
             <th className="p-2 text-center">indirim %</th>
             <th className="p-2 text-right">işlem</th>
           </tr>
@@ -231,22 +219,6 @@ function Dealers({ qc }: { qc: ReturnType<typeof useQueryClient> }) {
               <td className="p-2 font-mono text-xs">{d.tier_slug}</td>
               <td className="p-2 text-right font-mono">{try_(d.total_volume_try)}</td>
               <td className="p-2 text-right">{d.customer_count}</td>
-              <td className="p-2 text-right font-mono text-primary">{try_(d.pending_commission_try)}</td>
-              <td className="p-2 text-center">
-                <Input
-                  className="mx-auto h-8 w-20 text-center font-mono"
-                  value={edit[d.user_id]?.c ?? String(Number(d.commission_percent))}
-                  onChange={(e) =>
-                    setEdit({
-                      ...edit,
-                      [d.user_id]: {
-                        c: e.target.value,
-                        d: edit[d.user_id]?.d ?? String(Number(d.discount_percent)),
-                      },
-                    })
-                  }
-                />
-              </td>
               <td className="p-2 text-center">
                 <Input
                   className="mx-auto h-8 w-20 text-center font-mono"
@@ -255,7 +227,7 @@ function Dealers({ qc }: { qc: ReturnType<typeof useQueryClient> }) {
                     setEdit({
                       ...edit,
                       [d.user_id]: {
-                        c: edit[d.user_id]?.c ?? String(Number(d.commission_percent)),
+                        c: "0",
                         d: e.target.value,
                       },
                     })
@@ -266,14 +238,6 @@ function Dealers({ qc }: { qc: ReturnType<typeof useQueryClient> }) {
                 <div className="flex justify-end gap-1">
                   <Button size="sm" variant="outline" className="font-mono" disabled={busy === d.user_id} onClick={() => save(d.user_id)}>
                     kaydet
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="font-mono"
-                    disabled={busy === d.user_id || Number(d.pending_commission_try) <= 0}
-                    onClick={() => pay(d.user_id)}
-                  >
-                    <Wallet className="mr-1 h-3.5 w-3.5" /> öde
                   </Button>
                   <Button
                     size="sm"
@@ -289,7 +253,7 @@ function Dealers({ qc }: { qc: ReturnType<typeof useQueryClient> }) {
           ))}
           {(data ?? []).length === 0 && (
             <tr>
-              <td colSpan={9} className="p-6 text-center font-mono text-xs text-muted-foreground">
+              <td colSpan={7} className="p-6 text-center font-mono text-xs text-muted-foreground">
                 henüz bayi yok
               </td>
             </tr>
