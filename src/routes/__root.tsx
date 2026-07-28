@@ -53,6 +53,7 @@ import { CartReminder } from "../components/CartReminder";
 import { LiveActivityPopup } from "../components/LiveActivityPopup";
 import { CompareBar } from "../components/CompareBar";
 import { DealerAttach } from "../components/DealerAttach";
+import { DealerNavLink } from "../components/DealerNavLink";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { THEME_BOOT_SCRIPT } from "../lib/theme";
 import { useQuery } from "@tanstack/react-query";
