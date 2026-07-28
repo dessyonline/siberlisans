@@ -385,6 +385,7 @@ function MobileMenu({
           <Link to="/cekilis" data-mobile-menu-close className={linkCls}><Ticket className="h-4 w-4" />çekiliş</Link>
           <Link to="/araclar" data-mobile-menu-close className={linkCls}><Sparkles className="h-4 w-4" />araçlar</Link>
           <Link to="/bayilik" data-mobile-menu-close className={linkCls}><Handshake className="h-4 w-4" />bayilik</Link>
+          <DealerNavLink userId={user?.id} className={linkCls} mobile />
           <Link to="/blog" data-mobile-menu-close className={linkCls}><Newspaper className="h-4 w-4" />blog</Link>
           <Link to="/nasil-calisir" data-mobile-menu-close className={linkCls}><BookOpen className="h-4 w-4" />nasıl çalışır</Link>
           <Link to="/sss" data-mobile-menu-close className={linkCls}><HelpCircle className="h-4 w-4" />SSS</Link>
