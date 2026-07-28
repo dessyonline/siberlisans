@@ -140,6 +140,7 @@ import { Route as ApiPublicHooksSubscriptionsRenewRouteImport } from './routes/a
 import { Route as ApiPublicHooksShopierRouteImport } from './routes/api/public/hooks/shopier'
 import { Route as ApiPublicHooksPushTickRouteImport } from './routes/api/public/hooks/push-tick'
 import { Route as ApiPublicHooksProcessAiVideosRouteImport } from './routes/api/public/hooks/process-ai-videos'
+import { Route as ApiPublicHooksCatalogWebhooksRouteImport } from './routes/api/public/hooks/catalog-webhooks'
 import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
 import { Route as ApiPublicHooksAbandonmentReminderRouteImport } from './routes/api/public/hooks/abandonment-reminder'
 import { Route as ApiPublicDealerSplatRouteImport } from './routes/api/public/dealer/$'
@@ -864,6 +865,12 @@ const ApiPublicHooksProcessAiVideosRoute =
     path: '/api/public/hooks/process-ai-videos',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksCatalogWebhooksRoute =
+  ApiPublicHooksCatalogWebhooksRouteImport.update({
+    id: '/api/public/hooks/catalog-webhooks',
+    path: '/api/public/hooks/catalog-webhooks',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksCampaignTickRoute =
   ApiPublicHooksCampaignTickRouteImport.update({
     id: '/api/public/hooks/campaign-tick',
@@ -1009,6 +1016,7 @@ export interface FileRoutesByFullPath {
   '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/catalog-webhooks': typeof ApiPublicHooksCatalogWebhooksRoute
   '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
@@ -1142,6 +1150,7 @@ export interface FileRoutesByTo {
   '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/catalog-webhooks': typeof ApiPublicHooksCatalogWebhooksRoute
   '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
@@ -1279,6 +1288,7 @@ export interface FileRoutesById {
   '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/catalog-webhooks': typeof ApiPublicHooksCatalogWebhooksRoute
   '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
@@ -1416,6 +1426,7 @@ export interface FileRouteTypes {
     | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/catalog-webhooks'
     | '/api/public/hooks/process-ai-videos'
     | '/api/public/hooks/push-tick'
     | '/api/public/hooks/shopier'
@@ -1549,6 +1560,7 @@ export interface FileRouteTypes {
     | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/catalog-webhooks'
     | '/api/public/hooks/process-ai-videos'
     | '/api/public/hooks/push-tick'
     | '/api/public/hooks/shopier'
@@ -1685,6 +1697,7 @@ export interface FileRouteTypes {
     | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/catalog-webhooks'
     | '/api/public/hooks/process-ai-videos'
     | '/api/public/hooks/push-tick'
     | '/api/public/hooks/shopier'
@@ -1744,6 +1757,7 @@ export interface RootRouteChildren {
   ApiPublicDealerSplatRoute: typeof ApiPublicDealerSplatRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
+  ApiPublicHooksCatalogWebhooksRoute: typeof ApiPublicHooksCatalogWebhooksRoute
   ApiPublicHooksProcessAiVideosRoute: typeof ApiPublicHooksProcessAiVideosRoute
   ApiPublicHooksPushTickRoute: typeof ApiPublicHooksPushTickRoute
   ApiPublicHooksShopierRoute: typeof ApiPublicHooksShopierRoute
@@ -2672,6 +2686,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessAiVideosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/catalog-webhooks': {
+      id: '/api/public/hooks/catalog-webhooks'
+      path: '/api/public/hooks/catalog-webhooks'
+      fullPath: '/api/public/hooks/catalog-webhooks'
+      preLoaderRoute: typeof ApiPublicHooksCatalogWebhooksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/campaign-tick': {
       id: '/api/public/hooks/campaign-tick'
       path: '/api/public/hooks/campaign-tick'
@@ -2949,6 +2970,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksAbandonmentReminderRoute:
     ApiPublicHooksAbandonmentReminderRoute,
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,
+  ApiPublicHooksCatalogWebhooksRoute: ApiPublicHooksCatalogWebhooksRoute,
   ApiPublicHooksProcessAiVideosRoute: ApiPublicHooksProcessAiVideosRoute,
   ApiPublicHooksPushTickRoute: ApiPublicHooksPushTickRoute,
   ApiPublicHooksShopierRoute: ApiPublicHooksShopierRoute,
