@@ -17,6 +17,7 @@ import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
 import { Route as LiderlikRouteImport } from './routes/liderlik'
 import { Route as KvkkRouteImport } from './routes/kvkk'
 import { Route as KosullarRouteImport } from './routes/kosullar'
+import { Route as KarsilastirRouteImport } from './routes/karsilastir'
 import { Route as IletisimRouteImport } from './routes/iletisim'
 import { Route as IadeRouteImport } from './routes/iade'
 import { Route as GizlilikRouteImport } from './routes/gizlilik'
@@ -172,6 +173,11 @@ const KvkkRoute = KvkkRouteImport.update({
 const KosullarRoute = KosullarRouteImport.update({
   id: '/kosullar',
   path: '/kosullar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KarsilastirRoute = KarsilastirRouteImport.update({
+  id: '/karsilastir',
+  path: '/karsilastir',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IletisimRoute = IletisimRouteImport.update({
@@ -827,6 +833,7 @@ export interface FileRoutesByFullPath {
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
   '/iletisim': typeof IletisimRoute
+  '/karsilastir': typeof KarsilastirRoute
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/liderlik': typeof LiderlikRoute
@@ -952,6 +959,7 @@ export interface FileRoutesByTo {
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
   '/iletisim': typeof IletisimRoute
+  '/karsilastir': typeof KarsilastirRoute
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/liderlik': typeof LiderlikRoute
@@ -1077,6 +1085,7 @@ export interface FileRoutesById {
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
   '/iletisim': typeof IletisimRoute
+  '/karsilastir': typeof KarsilastirRoute
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/liderlik': typeof LiderlikRoute
@@ -1204,6 +1213,7 @@ export interface FileRouteTypes {
     | '/gizlilik'
     | '/iade'
     | '/iletisim'
+    | '/karsilastir'
     | '/kosullar'
     | '/kvkk'
     | '/liderlik'
@@ -1329,6 +1339,7 @@ export interface FileRouteTypes {
     | '/gizlilik'
     | '/iade'
     | '/iletisim'
+    | '/karsilastir'
     | '/kosullar'
     | '/kvkk'
     | '/liderlik'
@@ -1453,6 +1464,7 @@ export interface FileRouteTypes {
     | '/gizlilik'
     | '/iade'
     | '/iletisim'
+    | '/karsilastir'
     | '/kosullar'
     | '/kvkk'
     | '/liderlik'
@@ -1580,6 +1592,7 @@ export interface RootRouteChildren {
   GizlilikRoute: typeof GizlilikRoute
   IadeRoute: typeof IadeRoute
   IletisimRoute: typeof IletisimRoute
+  KarsilastirRoute: typeof KarsilastirRoute
   KosullarRoute: typeof KosullarRoute
   KvkkRoute: typeof KvkkRoute
   LiderlikRoute: typeof LiderlikRoute
@@ -1680,6 +1693,13 @@ declare module '@tanstack/react-router' {
       path: '/kosullar'
       fullPath: '/kosullar'
       preLoaderRoute: typeof KosullarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/karsilastir': {
+      id: '/karsilastir'
+      path: '/karsilastir'
+      fullPath: '/karsilastir'
+      preLoaderRoute: typeof KarsilastirRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/iletisim': {
@@ -2701,6 +2721,7 @@ const rootRouteChildren: RootRouteChildren = {
   GizlilikRoute: GizlilikRoute,
   IadeRoute: IadeRoute,
   IletisimRoute: IletisimRoute,
+  KarsilastirRoute: KarsilastirRoute,
   KosullarRoute: KosullarRoute,
   KvkkRoute: KvkkRoute,
   LiderlikRoute: LiderlikRoute,
