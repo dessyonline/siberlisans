@@ -84,6 +84,21 @@ function DealerLanding() {
   const pending = mine?.application?.status === "pending";
   const rejected = mine?.application?.status === "rejected";
 
+  const { data: wallet } = useQuery({
+    queryKey: ["dealer-apply-wallet", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("wallets")
+        .select("balance_try")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return Number(data?.balance_try ?? 0);
+    },
+  });
+  const balance = Number(wallet ?? 0);
+  const balanceOk = balance >= 1000;
+
   return (
     <div className="relative overflow-hidden">
       <div className="cyber-grid absolute inset-0 opacity-30" aria-hidden />
