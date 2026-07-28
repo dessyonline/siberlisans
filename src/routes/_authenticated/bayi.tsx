@@ -43,7 +43,7 @@ const try_ = (n: number | string | null | undefined) => `₺${Number(n ?? 0).toL
 
 function DealerPanel() {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"ozet" | "fiyat" | "musteri" | "kazanc">("ozet");
+  const [tab, setTab] = useState<"ozet" | "fiyat" | "musteri" | "kazanc" | "api">("ozet");
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dealer-stats"],
