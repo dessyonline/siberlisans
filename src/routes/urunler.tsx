@@ -613,7 +613,27 @@ function ProductCard({ product: p }: { product: Row }) {
           {hasSale && <FlashSaleBadge sale={flashSale} />}
         </div>
 
+        <ProductTags
+          className="mt-2"
+          product={{
+            createdAt: p.created_at,
+            ordersCount: p.orders_count,
+            avgRating: Number(p.avg_rating ?? 0),
+            reviewCount: p.review_count,
+            stock,
+            unlimited,
+            manual,
+            hasSale,
+          }}
+        />
+
         <CyberStockLoader stock={stock} manual={manual} unlimited={unlimited} soldOut={soldOut} />
+
+        <div className="mt-3">
+          <CompareToggle productId={p.id} />
+        </div>
+
+
 
         {/* Price + CTA */}
         <div className="mt-auto pt-4 flex items-end justify-between gap-3">
