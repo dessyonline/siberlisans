@@ -157,7 +157,9 @@ function AdminRafflesPage() {
   });
 
   const drawMut = useMutation({
-    mutationFn: (v: { id: string; redraw?: boolean; title: string }) => drawFn({ data: { id: v.id, redraw: v.redraw } }),
+    mutationFn: (v: { id: string; redraw?: boolean; title: string; forcedUserIds?: string[] }) =>
+      drawFn({ data: { id: v.id, redraw: v.redraw, forcedUserIds: v.forcedUserIds } }),
+
     onSuccess: async (r, v) => {
       toast.success(`Çekim tamamlandı · ${r.delivered_keys?.length ?? 0} key teslim · hash: ${r.draw_hash.slice(0, 12)}…`);
       qc.invalidateQueries({ queryKey: ["admin-raffles"] });
