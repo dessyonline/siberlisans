@@ -721,64 +721,6 @@ function Customers() {
   );
 }
 
-function Commissions() {
-  const { data, isLoading } = useQuery({
-    queryKey: ["dealer-commissions"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("dealer_commissions")
-        .select("id, base_amount_try, rate_percent, amount_try, status, created_at, paid_at")
-        .order("created_at", { ascending: false })
-        .limit(100);
-      return data ?? [];
-    },
-  });
-
-  if (isLoading) return <p className="font-mono text-sm text-muted-foreground">yükleniyor…</p>;
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[560px] text-sm">
-        <thead>
-          <tr className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-            <th className="p-2 text-left">tarih</th>
-            <th className="p-2 text-right">sipariş tutarı</th>
-            <th className="p-2 text-right">oran</th>
-            <th className="p-2 text-right">komisyon</th>
-            <th className="p-2 text-right">durum</th>
-          </tr>
-        </thead>
-        <tbody>
-          {(data ?? []).map((c, i) => (
-            <tr key={c.id} className={i % 2 ? "bg-card/30" : ""}>
-              <td className="p-2 font-mono text-xs">
-                {new Date(c.created_at).toLocaleDateString("tr-TR")}
-              </td>
-              <td className="p-2 text-right font-mono">{try_(c.base_amount_try)}</td>
-              <td className="p-2 text-right font-mono text-xs">%{Number(c.rate_percent)}</td>
-              <td className="p-2 text-right font-mono text-primary">{try_(c.amount_try)}</td>
-              <td className="p-2 text-right font-mono text-xs">
-                {c.status === "paid" ? (
-                  <span className="text-primary">ödendi</span>
-                ) : (
-                  <span className="text-muted-foreground">bekliyor</span>
-                )}
-              </td>
-            </tr>
-          ))}
-          {(data ?? []).length === 0 && (
-            <tr>
-              <td colSpan={5} className="p-6 text-center font-mono text-xs text-muted-foreground">
-                henüz komisyon kaydı yok
-              </td>
-            </tr>
-          )}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
 function ApiAccess() {
   const qc = useQueryClient();
   const [label, setLabel] = useState("");
