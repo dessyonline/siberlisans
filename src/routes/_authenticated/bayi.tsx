@@ -5,7 +5,31 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Handshake, Copy, Wallet, Users, TrendingUp, Package, ShoppingCart, KeyRound } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Handshake,
+  Copy,
+  Wallet,
+  Users,
+  TrendingUp,
+  Package,
+  ShoppingCart,
+  KeyRound,
+  Download,
+  Receipt,
+} from "lucide-react";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip as RTooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 export const Route = createFileRoute("/_authenticated/bayi")({
   head: () => ({
@@ -43,7 +67,7 @@ const try_ = (n: number | string | null | undefined) => `₺${Number(n ?? 0).toL
 
 function DealerPanel() {
   const qc = useQueryClient();
-  const [tab, setTab] = useState<"ozet" | "fiyat" | "musteri" | "kazanc" | "api">("ozet");
+  const [tab, setTab] = useState<"ozet" | "fiyat" | "siparis" | "musteri" | "kazanc" | "api">("ozet");
 
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dealer-stats"],
@@ -148,6 +172,7 @@ function DealerPanel() {
           [
             ["ozet", "özet"],
             ["fiyat", "toptan fiyat listesi"],
+            ["siparis", "siparişlerim & anahtarlar"],
             ["musteri", "müşterilerim"],
             ["kazanc", "kazanç geçmişi"],
             ["api", "api erişimi"],
@@ -170,6 +195,7 @@ function DealerPanel() {
       <div className="mt-5">
         {tab === "ozet" && <MonthlyTable monthly={stats.monthly ?? []} inviteUrl={inviteUrl} />}
         {tab === "fiyat" && <PriceList onOrdered={() => qc.invalidateQueries({ queryKey: ["dealer-stats"] })} />}
+        {tab === "siparis" && <DealerOrders />}
         {tab === "musteri" && <Customers />}
         {tab === "kazanc" && <Commissions />}
         {tab === "api" && <ApiAccess />}
@@ -189,7 +215,78 @@ function MonthlyTable({ monthly, inviteUrl }: { monthly: Stats["monthly"]; invit
           Bu linkten kayıt olan her müşterinin onaylanan siparişinden komisyon kazanırsın.
         </p>
       </div>
+
+      {monthly.length > 0 && (
+        <div className="glass-card rounded-xl border border-border/60 p-4">
+          <div className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
+            aylık ciro &amp; komisyon
+          </div>
+          <div className="mt-4 h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={[...monthly].reverse()} margin={{ left: -12, right: 8, top: 8 }}>
+                <defs>
+                  <linearGradient id="dlrVol" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.45} />
+                    <stop offset="100%" stopColor="var(--primary)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.4} />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" />
+                <YAxis tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" width={64} />
+                <RTooltip
+                  contentStyle={{
+                    background: "var(--card)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 12,
+                    fontSize: 12,
+                  }}
+                  formatter={(v: number, n) => [try_(v), n === "volume" ? "ciro" : "komisyon"]}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: 11 }}
+                  formatter={(v) => (v === "volume" ? "ciro" : "komisyon")}
+                />
+                <Area
+                  type="monotone"
+                  dataKey="volume"
+                  stroke="var(--primary)"
+                  strokeWidth={2}
+                  fill="url(#dlrVol)"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="commission"
+                  stroke="var(--accent-foreground)"
+                  strokeWidth={2}
+                  fillOpacity={0}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+          <div className="mt-4 h-40 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={[...monthly].reverse()} margin={{ left: -12, right: 8 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
+                <XAxis dataKey="month" tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11 }} stroke="var(--muted-foreground)" width={40} />
+                <RTooltip
+                  contentStyle={{
+                    background: "var(--card)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 12,
+                    fontSize: 12,
+                  }}
+                  formatter={(v: number) => [String(v), "sipariş"]}
+                />
+                <Bar dataKey="orders" fill="var(--primary)" radius={[4, 4, 0, 0]} maxBarSize={36} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      )}
+
       <div className="overflow-x-auto">
+
         <table className="w-full min-w-[520px] text-sm">
           <thead>
             <tr className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -225,7 +322,9 @@ function MonthlyTable({ monthly, inviteUrl }: { monthly: Stats["monthly"]; invit
 function PriceList({ onOrdered }: { onOrdered: () => void }) {
   const [q, setQ] = useState("");
   const [qty, setQty] = useState<Record<string, number>>({});
+  const [sel, setSel] = useState<Record<string, boolean>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["dealer-price-list"],
@@ -241,37 +340,130 @@ function PriceList({ onOrdered }: { onOrdered: () => void }) {
     [data, q],
   );
 
-  const buy = async (productId: string, name: string) => {
+  const selected = useMemo(
+    () => (data ?? []).filter((p) => sel[p.id]),
+    [data, sel],
+  );
+  const cartTotal = selected.reduce(
+    (s, p) => s + Number(p.dealer_price_try) * Math.max(1, Math.min(50, qty[p.id] || 1)),
+    0,
+  );
+  const cartQty = selected.reduce((s, p) => s + Math.max(1, Math.min(50, qty[p.id] || 1)), 0);
+
+  const purchase = async (productId: string) => {
     const n = Math.max(1, Math.min(50, qty[productId] || 1));
-    setBusy(productId);
     const { data: created, error } = await supabase.rpc("dealer_create_order", {
       _product_id: productId,
       _quantity: n,
     });
-    if (error || !created?.[0]) {
-      setBusy(null);
-      return toast.error(error?.message ?? "Sipariş oluşturulamadı");
-    }
+    if (error || !created?.[0]) throw new Error(error?.message ?? "Sipariş oluşturulamadı");
     const order = created[0];
     const { error: payErr } = await supabase.rpc("pay_order_with_wallet", { _order_id: order.order_id });
-    setBusy(null);
-    if (payErr) {
-      toast.error(payErr.message);
-      return;
+    if (payErr) throw new Error(payErr.message);
+    return order;
+  };
+
+  const buy = async (productId: string, name: string) => {
+    setBusy(productId);
+    try {
+      const order = await purchase(productId);
+      toast.success(`${qty[productId] ?? 1} adet ${name} alındı — ${try_(order.total_try)}`);
+      onOrdered();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(null);
     }
-    toast.success(`${n} adet ${name} alındı — ${try_(order.total_try)}`);
+  };
+
+  const buyBulk = async () => {
+    if (!selected.length) return;
+    setBulkBusy(true);
+    let ok = 0;
+    let spent = 0;
+    const failed: string[] = [];
+    for (const p of selected) {
+      try {
+        const order = await purchase(p.id);
+        ok++;
+        spent += Number(order.total_try);
+      } catch (e) {
+        failed.push(`${p.name}: ${(e as Error).message}`);
+      }
+    }
+    setBulkBusy(false);
+    setSel({});
+    if (ok) toast.success(`${ok} kalem alındı — toplam ${try_(spent)}`);
+    if (failed.length) toast.error(failed.slice(0, 3).join(" · "));
     onOrdered();
+  };
+
+  const exportCsv = () => {
+    const head = "urun;liste_fiyat;bayi_fiyat;stok\n";
+    const body = rows
+      .map(
+        (p) =>
+          `"${p.name.replace(/"/g, "'")}";${Number(p.price_try)};${Number(p.dealer_price_try)};${
+            p.unlimited_stock ? "sinirsiz" : p.available
+          }`,
+      )
+      .join("\n");
+    const url = URL.createObjectURL(new Blob(["\uFEFF" + head + body], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bayi-fiyat-listesi-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   if (isLoading) return <p className="font-mono text-sm text-muted-foreground">yükleniyor…</p>;
 
+  const allSelected = rows.length > 0 && rows.every((p) => sel[p.id]);
+
   return (
     <div>
-      <Input placeholder="ürün ara…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
+      <div className="flex flex-wrap items-center gap-2">
+        <Input placeholder="ürün ara…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
+        <Button variant="outline" size="sm" className="font-mono" onClick={exportCsv}>
+          <Download className="mr-1 h-3.5 w-3.5" /> csv indir
+        </Button>
+      </div>
+
+      {selected.length > 0 && (
+        <div className="glass-card sticky top-16 z-10 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/40 p-3">
+          <div className="font-mono text-xs">
+            <span className="text-primary">{selected.length}</span> kalem ·{" "}
+            <span className="text-primary">{cartQty}</span> adet · toplam{" "}
+            <span className="text-primary">{try_(cartTotal)}</span>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="ghost" className="font-mono" onClick={() => setSel({})}>
+              temizle
+            </Button>
+            <Button size="sm" className="font-mono" disabled={bulkBusy} onClick={buyBulk}>
+              <ShoppingCart className="mr-1 h-3.5 w-3.5" />
+              {bulkBusy ? "alınıyor…" : "toplu al"}
+            </Button>
+          </div>
+        </div>
+      )}
+
       <div className="mt-4 overflow-x-auto">
-        <table className="w-full min-w-[720px] text-sm">
+        <table className="w-full min-w-[780px] text-sm">
           <thead>
             <tr className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+              <th className="p-2 text-left">
+                <Checkbox
+                  checked={allSelected}
+                  onCheckedChange={(v) => {
+                    const next: Record<string, boolean> = { ...sel };
+                    rows.forEach((p) => {
+                      next[p.id] = !!v;
+                    });
+                    setSel(next);
+                  }}
+                />
+              </th>
               <th className="p-2 text-left">ürün</th>
               <th className="p-2 text-right">liste</th>
               <th className="p-2 text-right">bayi fiyatı</th>
@@ -283,6 +475,12 @@ function PriceList({ onOrdered }: { onOrdered: () => void }) {
           <tbody>
             {rows.map((p, i) => (
               <tr key={p.id} className={i % 2 ? "bg-card/30" : ""}>
+                <td className="p-2">
+                  <Checkbox
+                    checked={!!sel[p.id]}
+                    onCheckedChange={(v) => setSel({ ...sel, [p.id]: !!v })}
+                  />
+                </td>
                 <td className="p-2">
                   <div className="flex items-center gap-2">
                     <Package className="h-3.5 w-3.5 text-muted-foreground" />
@@ -310,7 +508,7 @@ function PriceList({ onOrdered }: { onOrdered: () => void }) {
                   <Button
                     size="sm"
                     className="font-mono"
-                    disabled={busy === p.id}
+                    disabled={busy === p.id || bulkBusy}
                     onClick={() => buy(p.id, p.name)}
                   >
                     <ShoppingCart className="mr-1 h-3.5 w-3.5" />
@@ -321,7 +519,7 @@ function PriceList({ onOrdered }: { onOrdered: () => void }) {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={6} className="p-6 text-center font-mono text-xs text-muted-foreground">
+                <td colSpan={7} className="p-6 text-center font-mono text-xs text-muted-foreground">
                   ürün bulunamadı
                 </td>
               </tr>
@@ -335,6 +533,164 @@ function PriceList({ onOrdered }: { onOrdered: () => void }) {
     </div>
   );
 }
+
+type DealerOrderRow = {
+  id: string;
+  reference_code: string;
+  status: string;
+  price_try: number;
+  item_count: number;
+  created_at: string;
+  product: { name: string } | null;
+  items: { quantity: number; product_name_snapshot: string }[];
+  keys: { license_key: { key_value: string; activation_token: string | null } | null }[];
+};
+
+function DealerOrders() {
+  const [q, setQ] = useState("");
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["dealer-orders"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select(
+          "id, reference_code, status, price_try, item_count, created_at, product:products(name), items:order_items(quantity, product_name_snapshot), keys:order_keys(license_key:license_keys(key_value, activation_token))",
+        )
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return (data ?? []) as unknown as DealerOrderRow[];
+    },
+  });
+
+  const rows = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    if (!term) return data ?? [];
+    return (data ?? []).filter(
+      (o) =>
+        o.reference_code.toLowerCase().includes(term) ||
+        (o.product?.name ?? "").toLowerCase().includes(term) ||
+        o.items.some((i) => i.product_name_snapshot.toLowerCase().includes(term)),
+    );
+  }, [data, q]);
+
+  const allKeys = (o: DealerOrderRow) =>
+    o.keys.map((k) => k.license_key?.key_value).filter(Boolean) as string[];
+
+  const exportCsv = () => {
+    const head = "referans;tarih;durum;tutar;urun;anahtarlar\n";
+    const body = rows
+      .map((o) => {
+        const name = o.product?.name ?? o.items.map((i) => `${i.quantity}x ${i.product_name_snapshot}`).join(" | ");
+        return `${o.reference_code};${new Date(o.created_at).toLocaleString("tr-TR")};${o.status};${Number(
+          o.price_try,
+        )};"${name.replace(/"/g, "'")}";"${allKeys(o).join(" | ")}"`;
+      })
+      .join("\n");
+    const url = URL.createObjectURL(new Blob(["\uFEFF" + head + body], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `bayi-siparisler-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  if (isLoading) return <p className="font-mono text-sm text-muted-foreground">yükleniyor…</p>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          placeholder="referans veya ürün ara…"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          className="max-w-xs"
+        />
+        <Button variant="outline" size="sm" className="font-mono" onClick={exportCsv} disabled={!rows.length}>
+          <Download className="mr-1 h-3.5 w-3.5" /> csv indir
+        </Button>
+      </div>
+
+      {rows.length === 0 && (
+        <p className="glass-card rounded-xl border border-border/60 p-6 text-center font-mono text-xs text-muted-foreground">
+          henüz sipariş yok
+        </p>
+      )}
+
+      {rows.map((o) => {
+        const keys = allKeys(o);
+        return (
+          <div key={o.id} className="glass-card rounded-xl border border-border/60 p-4">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 font-mono text-sm text-primary">
+                  <Receipt className="h-4 w-4" /> {o.reference_code}
+                </div>
+                <div className="mt-1 text-sm">
+                  {o.product?.name ??
+                    o.items.map((i) => `${i.quantity}x ${i.product_name_snapshot}`).join(", ") ??
+                    "—"}
+                </div>
+                <div className="mt-1 font-mono text-[11px] text-muted-foreground">
+                  {new Date(o.created_at).toLocaleString("tr-TR")} · {o.item_count} adet
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="font-mono text-sm">{try_(o.price_try)}</div>
+                <span
+                  className={`mt-1 inline-block rounded-md border px-2 py-0.5 font-mono text-[10px] uppercase ${
+                    o.status === "approved"
+                      ? "border-primary/50 text-primary"
+                      : o.status === "pending" || o.status === "reviewing"
+                        ? "border-warn/50 text-warn"
+                        : "border-destructive/50 text-destructive"
+                  }`}
+                >
+                  {o.status}
+                </span>
+              </div>
+            </div>
+
+            {keys.length > 0 && (
+              <div className="mt-3 space-y-2 rounded-lg border border-border/50 bg-background/60 p-3">
+                <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                  <span>teslim edilen anahtarlar ({keys.length})</span>
+                  <button
+                    className="text-primary hover:underline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(keys.join("\n"));
+                      toast.success("Tüm anahtarlar kopyalandı");
+                    }}
+                  >
+                    tümünü kopyala
+                  </button>
+                </div>
+                {keys.map((k) => (
+                  <div key={k} className="flex items-center gap-2">
+                    <code className="min-w-0 flex-1 truncate font-mono text-xs">{k}</code>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-7 font-mono text-[11px]"
+                      onClick={() => {
+                        navigator.clipboard.writeText(k);
+                        toast.success("Kopyalandı");
+                      }}
+                    >
+                      <Copy className="mr-1 h-3 w-3" /> kopyala
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 
 function Customers() {
   const { data, isLoading } = useQuery({
