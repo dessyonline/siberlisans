@@ -1,0 +1,12 @@
+REVOKE EXECUTE ON FUNCTION public.apply_for_dealership(text,text,text,numeric,text) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.admin_review_dealer_application(uuid,boolean,text) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.attach_dealer_code(text) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.dealer_stats() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.dealer_customers() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.dealer_price_list() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.dealer_create_order(uuid,int) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.admin_pay_dealer_commissions(uuid) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.admin_list_dealers() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.admin_list_dealer_applications() FROM anon;
+REVOKE EXECUTE ON FUNCTION public.admin_update_dealer(uuid,boolean,text,numeric,numeric) FROM anon;
+REVOKE EXECUTE ON FUNCTION public.grant_dealer_commission() FROM anon, authenticated;
