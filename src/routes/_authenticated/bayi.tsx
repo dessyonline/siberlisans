@@ -597,6 +597,151 @@ curl -H "Authorization: Bearer sbr_live_..." \\
   ${base}/api/public/dealer/products`}
         </pre>
       </div>
+
+      <div className="glass-card rounded-xl border border-border/60 p-4">
+        <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+          katalog akışı (anahtarsız)
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Ürünleri kendi sitende listelemek için anahtara gerek yok. <code className="font-mono text-primary">code</code>{" "}
+          parametresine bayi kodunu ver; tıklamalar sana bağlanır.
+        </p>
+        <pre className="mt-3 overflow-x-auto rounded-lg border border-border/50 bg-background/70 p-3 font-mono text-[11px] leading-relaxed">
+{`# JSON akışı
+GET ${base}/api/public/catalog.json?limit=50&code=BAYIKODU
+# kategori filtresi: &category=Dijital%20Ürünler
+
+# XML / RSS akışı (Google Merchant uyumlu)
+GET ${base}/api/public/catalog.xml?code=BAYIKODU`}
+        </pre>
+      </div>
+
+      <div className="glass-card rounded-xl border border-border/60 p-4">
+        <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">hazır vitrin (embed)</div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Tek satır kodu sitene yapıştır, ürün vitrini otomatik gelsin. Tıklayan müşteri senin referansınla siteye gelir.
+        </p>
+        <pre className="mt-3 overflow-x-auto rounded-lg border border-border/50 bg-background/70 p-3 font-mono text-[11px] leading-relaxed">
+{`<script src="${base}/api/public/embed.js"
+  data-code="BAYIKODU"
+  data-limit="8"
+  data-theme="dark"
+  data-title="Popüler Lisanslar"></script>`}
+        </pre>
+      </div>
+
+      <Webhooks />
     </div>
   );
 }
+
+function Webhooks() {
+  const qc = useQueryClient();
+  const [url, setUrl] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const { data: hooks } = useQuery({
+    queryKey: ["dealer-webhooks"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("dealer_webhooks")
+        .select("id, url, secret, active, last_status, last_sent_at, fail_count, created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+
+  const add = async () => {
+    if (!/^https:\/\/.+/i.test(url)) return toast.error("https:// ile başlayan bir adres gir");
+    if ((hooks ?? []).length >= 3) return toast.error("En fazla 3 webhook ekleyebilirsin");
+    setBusy(true);
+    const { error } = await supabase.from("dealer_webhooks").insert({
+      url: url.trim(),
+      user_id: (await supabase.auth.getUser()).data.user?.id as string,
+      events: ["product.created", "product.price_changed", "product.stock_changed"],
+    });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    setUrl("");
+    qc.invalidateQueries({ queryKey: ["dealer-webhooks"] });
+    toast.success("Webhook eklendi");
+  };
+
+  const remove = async (id: string) => {
+    const { error } = await supabase.from("dealer_webhooks").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["dealer-webhooks"] });
+    toast.success("Silindi");
+  };
+
+  return (
+    <div className="glass-card rounded-xl border border-border/60 p-4">
+      <div className="font-mono text-xs uppercase tracking-wider text-muted-foreground">
+        webhook · fiyat &amp; stok senkronu
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Ürün fiyatı, durumu veya stoğu değişince sitene otomatik bildirim göndeririz. Gövde imzası{" "}
+        <code className="font-mono text-primary">X-SiberLisans-Signature</code> başlığında HMAC-SHA256 olarak gelir.
+      </p>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Input
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          placeholder="https://siten.com/webhook/siberlisans"
+          maxLength={300}
+          className="max-w-sm font-mono text-sm"
+        />
+        <Button onClick={add} disabled={busy} className="font-mono">
+          {busy ? "ekleniyor…" : "$ webhook ekle"}
+        </Button>
+      </div>
+
+      <div className="mt-4 space-y-2">
+        {(hooks ?? []).map((h) => (
+          <div key={h.id} className="rounded-lg border border-border/50 bg-background/50 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <code className="min-w-0 flex-1 truncate font-mono text-xs">{h.url}</code>
+              <span className="font-mono text-[11px] text-muted-foreground">
+                {h.active ? `durum: ${h.last_status ?? "—"}` : "pasif"}
+                {h.fail_count > 0 ? ` · hata: ${h.fail_count}` : ""}
+              </span>
+              <Button size="sm" variant="ghost" className="font-mono text-xs text-destructive" onClick={() => remove(h.id)}>
+                sil
+              </Button>
+            </div>
+            <div className="mt-2 flex items-center gap-2">
+              <code className="min-w-0 flex-1 truncate rounded bg-background/70 px-2 py-1 font-mono text-[11px] text-muted-foreground">
+                secret: {h.secret}
+              </code>
+              <Button
+                size="sm"
+                variant="outline"
+                className="font-mono text-xs"
+                onClick={() => {
+                  navigator.clipboard.writeText(h.secret);
+                  toast.success("Kopyalandı");
+                }}
+              >
+                <Copy className="mr-1 h-3 w-3" /> kopyala
+              </Button>
+            </div>
+          </div>
+        ))}
+        {(hooks ?? []).length === 0 && (
+          <div className="p-4 text-center font-mono text-xs text-muted-foreground">henüz webhook yok</div>
+        )}
+      </div>
+
+      <pre className="mt-4 overflow-x-auto rounded-lg border border-border/50 bg-background/70 p-3 font-mono text-[11px] leading-relaxed">
+{`// gelen istek gövdesi
+{ "sent_at": "...", "events": [
+  { "id": 12, "type": "product.price_changed",
+    "data": { "id": "uuid", "slug": "...", "price_try": 1290, "in_stock": true } }
+]}`}
+      </pre>
+    </div>
+  );
+}
+

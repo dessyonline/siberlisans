@@ -65,6 +65,9 @@ import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAraclarIndexRouteImport } from './routes/_authenticated/araclar/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
+import { Route as ApiPublicEmbedDotjsRouteImport } from './routes/api/public/embed[.]js'
+import { Route as ApiPublicCatalogDotxmlRouteImport } from './routes/api/public/catalog[.]xml'
+import { Route as ApiPublicCatalogDotjsonRouteImport } from './routes/api/public/catalog[.]json'
 import { Route as ApiAdminRevokeRouteImport } from './routes/api/admin/revoke'
 import { Route as ApiAdminCreateRouteImport } from './routes/api/admin/create'
 import { Route as AuthenticatedHesabimLisanslarRouteImport } from './routes/_authenticated/hesabim.lisanslar'
@@ -137,6 +140,7 @@ import { Route as ApiPublicHooksSubscriptionsRenewRouteImport } from './routes/a
 import { Route as ApiPublicHooksShopierRouteImport } from './routes/api/public/hooks/shopier'
 import { Route as ApiPublicHooksPushTickRouteImport } from './routes/api/public/hooks/push-tick'
 import { Route as ApiPublicHooksProcessAiVideosRouteImport } from './routes/api/public/hooks/process-ai-videos'
+import { Route as ApiPublicHooksCatalogWebhooksRouteImport } from './routes/api/public/hooks/catalog-webhooks'
 import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
 import { Route as ApiPublicHooksAbandonmentReminderRouteImport } from './routes/api/public/hooks/abandonment-reminder'
 import { Route as ApiPublicDealerSplatRouteImport } from './routes/api/public/dealer/$'
@@ -423,6 +427,21 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
 const ApiPublicSitemapDotxmlRoute = ApiPublicSitemapDotxmlRouteImport.update({
   id: '/api/public/sitemap.xml',
   path: '/api/public/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicEmbedDotjsRoute = ApiPublicEmbedDotjsRouteImport.update({
+  id: '/api/public/embed.js',
+  path: '/api/public/embed.js',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCatalogDotxmlRoute = ApiPublicCatalogDotxmlRouteImport.update({
+  id: '/api/public/catalog.xml',
+  path: '/api/public/catalog.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCatalogDotjsonRoute = ApiPublicCatalogDotjsonRouteImport.update({
+  id: '/api/public/catalog.json',
+  path: '/api/public/catalog.json',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminRevokeRoute = ApiAdminRevokeRouteImport.update({
@@ -846,6 +865,12 @@ const ApiPublicHooksProcessAiVideosRoute =
     path: '/api/public/hooks/process-ai-videos',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksCatalogWebhooksRoute =
+  ApiPublicHooksCatalogWebhooksRouteImport.update({
+    id: '/api/public/hooks/catalog-webhooks',
+    path: '/api/public/hooks/catalog-webhooks',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksCampaignTickRoute =
   ApiPublicHooksCampaignTickRouteImport.update({
     id: '/api/public/hooks/campaign-tick',
@@ -982,12 +1007,16 @@ export interface FileRoutesByFullPath {
   '/hesabim/lisanslar': typeof AuthenticatedHesabimLisanslarRoute
   '/api/admin/create': typeof ApiAdminCreateRoute
   '/api/admin/revoke': typeof ApiAdminRevokeRoute
+  '/api/public/catalog.json': typeof ApiPublicCatalogDotjsonRoute
+  '/api/public/catalog.xml': typeof ApiPublicCatalogDotxmlRoute
+  '/api/public/embed.js': typeof ApiPublicEmbedDotjsRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/araclar/': typeof AuthenticatedAraclarIndexRoute
   '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/catalog-webhooks': typeof ApiPublicHooksCatalogWebhooksRoute
   '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
@@ -1112,12 +1141,16 @@ export interface FileRoutesByTo {
   '/hesabim/lisanslar': typeof AuthenticatedHesabimLisanslarRoute
   '/api/admin/create': typeof ApiAdminCreateRoute
   '/api/admin/revoke': typeof ApiAdminRevokeRoute
+  '/api/public/catalog.json': typeof ApiPublicCatalogDotjsonRoute
+  '/api/public/catalog.xml': typeof ApiPublicCatalogDotxmlRoute
+  '/api/public/embed.js': typeof ApiPublicEmbedDotjsRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/araclar': typeof AuthenticatedAraclarIndexRoute
   '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/catalog-webhooks': typeof ApiPublicHooksCatalogWebhooksRoute
   '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
@@ -1246,12 +1279,16 @@ export interface FileRoutesById {
   '/_authenticated/hesabim/lisanslar': typeof AuthenticatedHesabimLisanslarRoute
   '/api/admin/create': typeof ApiAdminCreateRoute
   '/api/admin/revoke': typeof ApiAdminRevokeRoute
+  '/api/public/catalog.json': typeof ApiPublicCatalogDotjsonRoute
+  '/api/public/catalog.xml': typeof ApiPublicCatalogDotxmlRoute
+  '/api/public/embed.js': typeof ApiPublicEmbedDotjsRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/araclar/': typeof AuthenticatedAraclarIndexRoute
   '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
+  '/api/public/hooks/catalog-webhooks': typeof ApiPublicHooksCatalogWebhooksRoute
   '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
@@ -1380,12 +1417,16 @@ export interface FileRouteTypes {
     | '/hesabim/lisanslar'
     | '/api/admin/create'
     | '/api/admin/revoke'
+    | '/api/public/catalog.json'
+    | '/api/public/catalog.xml'
+    | '/api/public/embed.js'
     | '/api/public/sitemap.xml'
     | '/admin/'
     | '/araclar/'
     | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/catalog-webhooks'
     | '/api/public/hooks/process-ai-videos'
     | '/api/public/hooks/push-tick'
     | '/api/public/hooks/shopier'
@@ -1510,12 +1551,16 @@ export interface FileRouteTypes {
     | '/hesabim/lisanslar'
     | '/api/admin/create'
     | '/api/admin/revoke'
+    | '/api/public/catalog.json'
+    | '/api/public/catalog.xml'
+    | '/api/public/embed.js'
     | '/api/public/sitemap.xml'
     | '/admin'
     | '/araclar'
     | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/catalog-webhooks'
     | '/api/public/hooks/process-ai-videos'
     | '/api/public/hooks/push-tick'
     | '/api/public/hooks/shopier'
@@ -1643,12 +1688,16 @@ export interface FileRouteTypes {
     | '/_authenticated/hesabim/lisanslar'
     | '/api/admin/create'
     | '/api/admin/revoke'
+    | '/api/public/catalog.json'
+    | '/api/public/catalog.xml'
+    | '/api/public/embed.js'
     | '/api/public/sitemap.xml'
     | '/_authenticated/admin/'
     | '/_authenticated/araclar/'
     | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
+    | '/api/public/hooks/catalog-webhooks'
     | '/api/public/hooks/process-ai-videos'
     | '/api/public/hooks/push-tick'
     | '/api/public/hooks/shopier'
@@ -1701,10 +1750,14 @@ export interface RootRouteChildren {
   PaketlerIndexRoute: typeof PaketlerIndexRoute
   ApiAdminCreateRoute: typeof ApiAdminCreateRoute
   ApiAdminRevokeRoute: typeof ApiAdminRevokeRoute
+  ApiPublicCatalogDotjsonRoute: typeof ApiPublicCatalogDotjsonRoute
+  ApiPublicCatalogDotxmlRoute: typeof ApiPublicCatalogDotxmlRoute
+  ApiPublicEmbedDotjsRoute: typeof ApiPublicEmbedDotjsRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicDealerSplatRoute: typeof ApiPublicDealerSplatRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
+  ApiPublicHooksCatalogWebhooksRoute: typeof ApiPublicHooksCatalogWebhooksRoute
   ApiPublicHooksProcessAiVideosRoute: typeof ApiPublicHooksProcessAiVideosRoute
   ApiPublicHooksPushTickRoute: typeof ApiPublicHooksPushTickRoute
   ApiPublicHooksShopierRoute: typeof ApiPublicHooksShopierRoute
@@ -2106,6 +2159,27 @@ declare module '@tanstack/react-router' {
       path: '/api/public/sitemap.xml'
       fullPath: '/api/public/sitemap.xml'
       preLoaderRoute: typeof ApiPublicSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/embed.js': {
+      id: '/api/public/embed.js'
+      path: '/api/public/embed.js'
+      fullPath: '/api/public/embed.js'
+      preLoaderRoute: typeof ApiPublicEmbedDotjsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/catalog.xml': {
+      id: '/api/public/catalog.xml'
+      path: '/api/public/catalog.xml'
+      fullPath: '/api/public/catalog.xml'
+      preLoaderRoute: typeof ApiPublicCatalogDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/catalog.json': {
+      id: '/api/public/catalog.json'
+      path: '/api/public/catalog.json'
+      fullPath: '/api/public/catalog.json'
+      preLoaderRoute: typeof ApiPublicCatalogDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/revoke': {
@@ -2612,6 +2686,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessAiVideosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/catalog-webhooks': {
+      id: '/api/public/hooks/catalog-webhooks'
+      path: '/api/public/hooks/catalog-webhooks'
+      fullPath: '/api/public/hooks/catalog-webhooks'
+      preLoaderRoute: typeof ApiPublicHooksCatalogWebhooksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/campaign-tick': {
       id: '/api/public/hooks/campaign-tick'
       path: '/api/public/hooks/campaign-tick'
@@ -2881,11 +2962,15 @@ const rootRouteChildren: RootRouteChildren = {
   PaketlerIndexRoute: PaketlerIndexRoute,
   ApiAdminCreateRoute: ApiAdminCreateRoute,
   ApiAdminRevokeRoute: ApiAdminRevokeRoute,
+  ApiPublicCatalogDotjsonRoute: ApiPublicCatalogDotjsonRoute,
+  ApiPublicCatalogDotxmlRoute: ApiPublicCatalogDotxmlRoute,
+  ApiPublicEmbedDotjsRoute: ApiPublicEmbedDotjsRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
   ApiPublicDealerSplatRoute: ApiPublicDealerSplatRoute,
   ApiPublicHooksAbandonmentReminderRoute:
     ApiPublicHooksAbandonmentReminderRoute,
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,
+  ApiPublicHooksCatalogWebhooksRoute: ApiPublicHooksCatalogWebhooksRoute,
   ApiPublicHooksProcessAiVideosRoute: ApiPublicHooksProcessAiVideosRoute,
   ApiPublicHooksPushTickRoute: ApiPublicHooksPushTickRoute,
   ApiPublicHooksShopierRoute: ApiPublicHooksShopierRoute,

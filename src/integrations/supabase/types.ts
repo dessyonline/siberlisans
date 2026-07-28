@@ -445,6 +445,33 @@ export type Database = {
           },
         ]
       }
+      catalog_events: {
+        Row: {
+          created_at: string
+          delivered: boolean
+          event: string
+          id: number
+          payload: Json
+          product_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          delivered?: boolean
+          event: string
+          id?: number
+          payload?: Json
+          product_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          delivered?: boolean
+          event?: string
+          id?: number
+          payload?: Json
+          product_id?: string | null
+        }
+        Relationships: []
+      }
       coupon_redemptions: {
         Row: {
           coupon_id: string
@@ -799,6 +826,48 @@ export type Database = {
           name?: string
           slug?: string
           sort_order?: number
+        }
+        Relationships: []
+      }
+      dealer_webhooks: {
+        Row: {
+          active: boolean
+          created_at: string
+          events: string[]
+          fail_count: number
+          id: string
+          last_sent_at: string | null
+          last_status: number | null
+          secret: string
+          updated_at: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          events?: string[]
+          fail_count?: number
+          id?: string
+          last_sent_at?: string | null
+          last_status?: number | null
+          secret?: string
+          updated_at?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          events?: string[]
+          fail_count?: number
+          id?: string
+          last_sent_at?: string | null
+          last_status?: number | null
+          secret?: string
+          updated_at?: string
+          url?: string
+          user_id?: string
         }
         Relationships: []
       }
