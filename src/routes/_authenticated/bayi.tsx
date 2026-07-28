@@ -5,7 +5,31 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Handshake, Copy, Wallet, Users, TrendingUp, Package, ShoppingCart, KeyRound } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Handshake,
+  Copy,
+  Wallet,
+  Users,
+  TrendingUp,
+  Package,
+  ShoppingCart,
+  KeyRound,
+  Download,
+  Receipt,
+} from "lucide-react";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip as RTooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 export const Route = createFileRoute("/_authenticated/bayi")({
   head: () => ({
