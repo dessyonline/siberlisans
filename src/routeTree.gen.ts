@@ -139,6 +139,7 @@ import { Route as ApiPublicHooksPushTickRouteImport } from './routes/api/public/
 import { Route as ApiPublicHooksProcessAiVideosRouteImport } from './routes/api/public/hooks/process-ai-videos'
 import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
 import { Route as ApiPublicHooksAbandonmentReminderRouteImport } from './routes/api/public/hooks/abandonment-reminder'
+import { Route as ApiPublicDealerSplatRouteImport } from './routes/api/public/dealer/$'
 
 const UrunlerRoute = UrunlerRouteImport.update({
   id: '/urunler',
@@ -857,6 +858,11 @@ const ApiPublicHooksAbandonmentReminderRoute =
     path: '/api/public/hooks/abandonment-reminder',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicDealerSplatRoute = ApiPublicDealerSplatRouteImport.update({
+  id: '/api/public/dealer/$',
+  path: '/api/public/dealer/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -979,6 +985,7 @@ export interface FileRoutesByFullPath {
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/araclar/': typeof AuthenticatedAraclarIndexRoute
+  '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
@@ -1108,6 +1115,7 @@ export interface FileRoutesByTo {
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/araclar': typeof AuthenticatedAraclarIndexRoute
+  '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
@@ -1241,6 +1249,7 @@ export interface FileRoutesById {
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/araclar/': typeof AuthenticatedAraclarIndexRoute
+  '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
@@ -1374,6 +1383,7 @@ export interface FileRouteTypes {
     | '/api/public/sitemap.xml'
     | '/admin/'
     | '/araclar/'
+    | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/process-ai-videos'
@@ -1503,6 +1513,7 @@ export interface FileRouteTypes {
     | '/api/public/sitemap.xml'
     | '/admin'
     | '/araclar'
+    | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/process-ai-videos'
@@ -1635,6 +1646,7 @@ export interface FileRouteTypes {
     | '/api/public/sitemap.xml'
     | '/_authenticated/admin/'
     | '/_authenticated/araclar/'
+    | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/process-ai-videos'
@@ -1690,6 +1702,7 @@ export interface RootRouteChildren {
   ApiAdminCreateRoute: typeof ApiAdminCreateRoute
   ApiAdminRevokeRoute: typeof ApiAdminRevokeRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
+  ApiPublicDealerSplatRoute: typeof ApiPublicDealerSplatRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
   ApiPublicHooksProcessAiVideosRoute: typeof ApiPublicHooksProcessAiVideosRoute
@@ -2613,6 +2626,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksAbandonmentReminderRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/dealer/$': {
+      id: '/api/public/dealer/$'
+      path: '/api/public/dealer/$'
+      fullPath: '/api/public/dealer/$'
+      preLoaderRoute: typeof ApiPublicDealerSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -2862,6 +2882,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminCreateRoute: ApiAdminCreateRoute,
   ApiAdminRevokeRoute: ApiAdminRevokeRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
+  ApiPublicDealerSplatRoute: ApiPublicDealerSplatRoute,
   ApiPublicHooksAbandonmentReminderRoute:
     ApiPublicHooksAbandonmentReminderRoute,
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,
