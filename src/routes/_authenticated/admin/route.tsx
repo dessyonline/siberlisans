@@ -96,6 +96,7 @@ const NAV_GROUPS: NavGroup[] = [
       { to: "/admin/cekilis", label: "çekiliş", icon: Ticket },
       { to: "/admin/capraz-satis", label: "çapraz satış", icon: Sparkles },
       { to: "/admin/blog", label: "blog", icon: BookOpen },
+      { to: "/admin/sorular", label: "sorular", icon: MessageCircleQuestion },
     ],
   },
   {
