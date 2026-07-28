@@ -232,6 +232,7 @@ function SiteHeader() {
           <Link to="/cekilis" className="text-primary hover:text-primary/80">./çekiliş</Link>
           <Link to="/araclar" className="text-primary hover:text-primary/80">./araçlar</Link>
           <Link to="/bayilik" className="text-muted-foreground hover:text-primary">./bayilik</Link>
+          <DealerNavLink userId={user?.id} className="text-primary hover:text-primary/80" />
           <Link to="/blog" className="text-muted-foreground hover:text-primary">./blog</Link>
           <Link to="/nasil-calisir" className="text-muted-foreground hover:text-primary">./nasıl-çalışır</Link>
           <Link to="/sss" className="text-muted-foreground hover:text-primary">./SSS</Link>
