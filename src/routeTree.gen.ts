@@ -22,6 +22,7 @@ import { Route as IletisimRouteImport } from './routes/iletisim'
 import { Route as IadeRouteImport } from './routes/iade'
 import { Route as GizlilikRouteImport } from './routes/gizlilik'
 import { Route as CekilisRouteImport } from './routes/cekilis'
+import { Route as BayilikRouteImport } from './routes/bayilik'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -35,6 +36,7 @@ import { Route as PCodeRouteImport } from './routes/p.$code'
 import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as BakiyeYukleTopupIdRouteImport } from './routes/bakiye-yukle.$topupId'
+import { Route as BCodeRouteImport } from './routes/b.$code'
 import { Route as ApiValidateRouteImport } from './routes/api/validate'
 import { Route as ApiUnlockRouteImport } from './routes/api/unlock'
 import { Route as ApiTamperingReportRouteImport } from './routes/api/tampering-report'
@@ -57,6 +59,7 @@ import { Route as AuthenticatedDestekRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedDavetRouteImport } from './routes/_authenticated/davet'
 import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated/cuzdan'
 import { Route as AuthenticatedBildirimlerRouteImport } from './routes/_authenticated/bildirimler'
+import { Route as AuthenticatedBayiRouteImport } from './routes/_authenticated/bayi'
 import { Route as AuthenticatedAraclarRouteRouteImport } from './routes/_authenticated/araclar/route'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAraclarIndexRouteImport } from './routes/_authenticated/araclar/index'
@@ -123,6 +126,7 @@ import { Route as AuthenticatedAdminCekilisRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminCaprazSatisRouteImport } from './routes/_authenticated/admin/capraz-satis'
 import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin/blog'
 import { Route as AuthenticatedAdminBildirimlerRouteImport } from './routes/_authenticated/admin/bildirimler'
+import { Route as AuthenticatedAdminBayilerRouteImport } from './routes/_authenticated/admin/bayiler'
 import { Route as AuthenticatedAdminAyarlarRouteImport } from './routes/_authenticated/admin/ayarlar'
 import { Route as AuthenticatedAdminAraclarRouteImport } from './routes/_authenticated/admin/araclar'
 import { Route as AuthenticatedAdminAboneliklerRouteImport } from './routes/_authenticated/admin/abonelikler'
@@ -201,6 +205,11 @@ const CekilisRoute = CekilisRouteImport.update({
   path: '/cekilis',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BayilikRoute = BayilikRouteImport.update({
+  id: '/bayilik',
+  path: '/bayilik',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
@@ -263,6 +272,11 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
 const BakiyeYukleTopupIdRoute = BakiyeYukleTopupIdRouteImport.update({
   id: '/bakiye-yukle/$topupId',
   path: '/bakiye-yukle/$topupId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BCodeRoute = BCodeRouteImport.update({
+  id: '/b/$code',
+  path: '/b/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiValidateRoute = ApiValidateRouteImport.update({
@@ -378,6 +392,11 @@ const AuthenticatedBildirimlerRoute =
     path: '/bildirimler',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedBayiRoute = AuthenticatedBayiRouteImport.update({
+  id: '/bayi',
+  path: '/bayi',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedAraclarRouteRoute =
   AuthenticatedAraclarRouteRouteImport.update({
     id: '/araclar',
@@ -762,6 +781,12 @@ const AuthenticatedAdminBildirimlerRoute =
     path: '/bildirimler',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminBayilerRoute =
+  AuthenticatedAdminBayilerRouteImport.update({
+    id: '/bayiler',
+    path: '/bayiler',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminAyarlarRoute =
   AuthenticatedAdminAyarlarRouteImport.update({
     id: '/ayarlar',
@@ -836,6 +861,7 @@ const ApiPublicHooksAbandonmentReminderRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/bayilik': typeof BayilikRoute
   '/cekilis': typeof CekilisRoute
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
@@ -851,6 +877,7 @@ export interface FileRoutesByFullPath {
   '/urunler': typeof UrunlerRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/araclar': typeof AuthenticatedAraclarRouteRouteWithChildren
+  '/bayi': typeof AuthenticatedBayiRoute
   '/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/davet': typeof AuthenticatedDavetRoute
@@ -873,6 +900,7 @@ export interface FileRoutesByFullPath {
   '/api/tampering-report': typeof ApiTamperingReportRoute
   '/api/unlock': typeof ApiUnlockRoute
   '/api/validate': typeof ApiValidateRoute
+  '/b/$code': typeof BCodeRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
@@ -886,6 +914,7 @@ export interface FileRoutesByFullPath {
   '/admin/abonelikler': typeof AuthenticatedAdminAboneliklerRoute
   '/admin/araclar': typeof AuthenticatedAdminAraclarRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
+  '/admin/bayiler': typeof AuthenticatedAdminBayilerRoute
   '/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/capraz-satis': typeof AuthenticatedAdminCaprazSatisRoute
@@ -963,6 +992,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/bayilik': typeof BayilikRoute
   '/cekilis': typeof CekilisRoute
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
@@ -976,6 +1006,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
+  '/bayi': typeof AuthenticatedBayiRoute
   '/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
   '/davet': typeof AuthenticatedDavetRoute
@@ -998,6 +1029,7 @@ export interface FileRoutesByTo {
   '/api/tampering-report': typeof ApiTamperingReportRoute
   '/api/unlock': typeof ApiUnlockRoute
   '/api/validate': typeof ApiValidateRoute
+  '/b/$code': typeof BCodeRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
@@ -1011,6 +1043,7 @@ export interface FileRoutesByTo {
   '/admin/abonelikler': typeof AuthenticatedAdminAboneliklerRoute
   '/admin/araclar': typeof AuthenticatedAdminAraclarRoute
   '/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
+  '/admin/bayiler': typeof AuthenticatedAdminBayilerRoute
   '/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
   '/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/admin/capraz-satis': typeof AuthenticatedAdminCaprazSatisRoute
@@ -1090,6 +1123,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/bayilik': typeof BayilikRoute
   '/cekilis': typeof CekilisRoute
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
@@ -1105,6 +1139,7 @@ export interface FileRoutesById {
   '/urunler': typeof UrunlerRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/araclar': typeof AuthenticatedAraclarRouteRouteWithChildren
+  '/_authenticated/bayi': typeof AuthenticatedBayiRoute
   '/_authenticated/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/_authenticated/cuzdan': typeof AuthenticatedCuzdanRoute
   '/_authenticated/davet': typeof AuthenticatedDavetRoute
@@ -1127,6 +1162,7 @@ export interface FileRoutesById {
   '/api/tampering-report': typeof ApiTamperingReportRoute
   '/api/unlock': typeof ApiUnlockRoute
   '/api/validate': typeof ApiValidateRoute
+  '/b/$code': typeof BCodeRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
@@ -1140,6 +1176,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/abonelikler': typeof AuthenticatedAdminAboneliklerRoute
   '/_authenticated/admin/araclar': typeof AuthenticatedAdminAraclarRoute
   '/_authenticated/admin/ayarlar': typeof AuthenticatedAdminAyarlarRoute
+  '/_authenticated/admin/bayiler': typeof AuthenticatedAdminBayilerRoute
   '/_authenticated/admin/bildirimler': typeof AuthenticatedAdminBildirimlerRoute
   '/_authenticated/admin/blog': typeof AuthenticatedAdminBlogRoute
   '/_authenticated/admin/capraz-satis': typeof AuthenticatedAdminCaprazSatisRoute
@@ -1219,6 +1256,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/bayilik'
     | '/cekilis'
     | '/gizlilik'
     | '/iade'
@@ -1234,6 +1272,7 @@ export interface FileRouteTypes {
     | '/urunler'
     | '/admin'
     | '/araclar'
+    | '/bayi'
     | '/bildirimler'
     | '/cuzdan'
     | '/davet'
@@ -1256,6 +1295,7 @@ export interface FileRouteTypes {
     | '/api/tampering-report'
     | '/api/unlock'
     | '/api/validate'
+    | '/b/$code'
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
     | '/odeme/$orderId'
@@ -1269,6 +1309,7 @@ export interface FileRouteTypes {
     | '/admin/abonelikler'
     | '/admin/araclar'
     | '/admin/ayarlar'
+    | '/admin/bayiler'
     | '/admin/bildirimler'
     | '/admin/blog'
     | '/admin/capraz-satis'
@@ -1346,6 +1387,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/bayilik'
     | '/cekilis'
     | '/gizlilik'
     | '/iade'
@@ -1359,6 +1401,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sss'
     | '/urunler'
+    | '/bayi'
     | '/bildirimler'
     | '/cuzdan'
     | '/davet'
@@ -1381,6 +1424,7 @@ export interface FileRouteTypes {
     | '/api/tampering-report'
     | '/api/unlock'
     | '/api/validate'
+    | '/b/$code'
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
     | '/odeme/$orderId'
@@ -1394,6 +1438,7 @@ export interface FileRouteTypes {
     | '/admin/abonelikler'
     | '/admin/araclar'
     | '/admin/ayarlar'
+    | '/admin/bayiler'
     | '/admin/bildirimler'
     | '/admin/blog'
     | '/admin/capraz-satis'
@@ -1472,6 +1517,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/bayilik'
     | '/cekilis'
     | '/gizlilik'
     | '/iade'
@@ -1487,6 +1533,7 @@ export interface FileRouteTypes {
     | '/urunler'
     | '/_authenticated/admin'
     | '/_authenticated/araclar'
+    | '/_authenticated/bayi'
     | '/_authenticated/bildirimler'
     | '/_authenticated/cuzdan'
     | '/_authenticated/davet'
@@ -1509,6 +1556,7 @@ export interface FileRouteTypes {
     | '/api/tampering-report'
     | '/api/unlock'
     | '/api/validate'
+    | '/b/$code'
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
     | '/odeme/$orderId'
@@ -1522,6 +1570,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/abonelikler'
     | '/_authenticated/admin/araclar'
     | '/_authenticated/admin/ayarlar'
+    | '/_authenticated/admin/bayiler'
     | '/_authenticated/admin/bildirimler'
     | '/_authenticated/admin/blog'
     | '/_authenticated/admin/capraz-satis'
@@ -1601,6 +1650,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  BayilikRoute: typeof BayilikRoute
   CekilisRoute: typeof CekilisRoute
   GizlilikRoute: typeof GizlilikRoute
   IadeRoute: typeof IadeRoute
@@ -1626,6 +1676,7 @@ export interface RootRouteChildren {
   ApiTamperingReportRoute: typeof ApiTamperingReportRoute
   ApiUnlockRoute: typeof ApiUnlockRoute
   ApiValidateRoute: typeof ApiValidateRoute
+  BCodeRoute: typeof BCodeRoute
   BakiyeYukleTopupIdRoute: typeof BakiyeYukleTopupIdRoute
   BlogSlugRoute: typeof BlogSlugRoute
   OdemeOrderIdRoute: typeof OdemeOrderIdRoute
@@ -1743,6 +1794,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CekilisRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bayilik': {
+      id: '/bayilik'
+      path: '/bayilik'
+      fullPath: '/bayilik'
+      preLoaderRoute: typeof BayilikRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
@@ -1832,6 +1890,13 @@ declare module '@tanstack/react-router' {
       path: '/bakiye-yukle/$topupId'
       fullPath: '/bakiye-yukle/$topupId'
       preLoaderRoute: typeof BakiyeYukleTopupIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/b/$code': {
+      id: '/b/$code'
+      path: '/b/$code'
+      fullPath: '/b/$code'
+      preLoaderRoute: typeof BCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/validate': {
@@ -1986,6 +2051,13 @@ declare module '@tanstack/react-router' {
       path: '/bildirimler'
       fullPath: '/bildirimler'
       preLoaderRoute: typeof AuthenticatedBildirimlerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/bayi': {
+      id: '/_authenticated/bayi'
+      path: '/bayi'
+      fullPath: '/bayi'
+      preLoaderRoute: typeof AuthenticatedBayiRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/araclar': {
@@ -2450,6 +2522,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminBildirimlerRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/bayiler': {
+      id: '/_authenticated/admin/bayiler'
+      path: '/bayiler'
+      fullPath: '/admin/bayiler'
+      preLoaderRoute: typeof AuthenticatedAdminBayilerRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/ayarlar': {
       id: '/_authenticated/admin/ayarlar'
       path: '/ayarlar'
@@ -2541,6 +2620,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminAboneliklerRoute: typeof AuthenticatedAdminAboneliklerRoute
   AuthenticatedAdminAraclarRoute: typeof AuthenticatedAdminAraclarRoute
   AuthenticatedAdminAyarlarRoute: typeof AuthenticatedAdminAyarlarRoute
+  AuthenticatedAdminBayilerRoute: typeof AuthenticatedAdminBayilerRoute
   AuthenticatedAdminBildirimlerRoute: typeof AuthenticatedAdminBildirimlerRoute
   AuthenticatedAdminBlogRoute: typeof AuthenticatedAdminBlogRoute
   AuthenticatedAdminCaprazSatisRoute: typeof AuthenticatedAdminCaprazSatisRoute
@@ -2576,6 +2656,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminAboneliklerRoute: AuthenticatedAdminAboneliklerRoute,
     AuthenticatedAdminAraclarRoute: AuthenticatedAdminAraclarRoute,
     AuthenticatedAdminAyarlarRoute: AuthenticatedAdminAyarlarRoute,
+    AuthenticatedAdminBayilerRoute: AuthenticatedAdminBayilerRoute,
     AuthenticatedAdminBildirimlerRoute: AuthenticatedAdminBildirimlerRoute,
     AuthenticatedAdminBlogRoute: AuthenticatedAdminBlogRoute,
     AuthenticatedAdminCaprazSatisRoute: AuthenticatedAdminCaprazSatisRoute,
@@ -2703,6 +2784,7 @@ const AuthenticatedHesabimRouteWithChildren =
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRouteRoute: typeof AuthenticatedAdminRouteRouteWithChildren
   AuthenticatedAraclarRouteRoute: typeof AuthenticatedAraclarRouteRouteWithChildren
+  AuthenticatedBayiRoute: typeof AuthenticatedBayiRoute
   AuthenticatedBildirimlerRoute: typeof AuthenticatedBildirimlerRoute
   AuthenticatedCuzdanRoute: typeof AuthenticatedCuzdanRoute
   AuthenticatedDavetRoute: typeof AuthenticatedDavetRoute
@@ -2719,6 +2801,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRouteRoute: AuthenticatedAdminRouteRouteWithChildren,
   AuthenticatedAraclarRouteRoute: AuthenticatedAraclarRouteRouteWithChildren,
+  AuthenticatedBayiRoute: AuthenticatedBayiRoute,
   AuthenticatedBildirimlerRoute: AuthenticatedBildirimlerRoute,
   AuthenticatedCuzdanRoute: AuthenticatedCuzdanRoute,
   AuthenticatedDavetRoute: AuthenticatedDavetRoute,
@@ -2739,6 +2822,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  BayilikRoute: BayilikRoute,
   CekilisRoute: CekilisRoute,
   GizlilikRoute: GizlilikRoute,
   IadeRoute: IadeRoute,
@@ -2764,6 +2848,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTamperingReportRoute: ApiTamperingReportRoute,
   ApiUnlockRoute: ApiUnlockRoute,
   ApiValidateRoute: ApiValidateRoute,
+  BCodeRoute: BCodeRoute,
   BakiyeYukleTopupIdRoute: BakiyeYukleTopupIdRoute,
   BlogSlugRoute: BlogSlugRoute,
   OdemeOrderIdRoute: OdemeOrderIdRoute,
@@ -2792,13 +2877,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
