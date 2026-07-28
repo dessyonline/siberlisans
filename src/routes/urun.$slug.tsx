@@ -169,13 +169,14 @@ function ProductDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, active, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, tier, retail_price_try, retail_price_source_url, duration_label, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, active, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, tier, retail_price_try, retail_price_source_url, duration_label, demo_video_url, created_at, orders_count, avg_rating, review_count, license_keys(status)")
         .eq("slug", slug)
         .single();
       if (error) throw error;
       return data;
     },
   });
+
 
   const { data: relatedProducts } = useQuery({
     queryKey: ["related-products", product?.category, product?.id],
