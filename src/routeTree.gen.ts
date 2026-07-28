@@ -35,6 +35,7 @@ import { Route as PCodeRouteImport } from './routes/p.$code'
 import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as BakiyeYukleTopupIdRouteImport } from './routes/bakiye-yukle.$topupId'
+import { Route as BCodeRouteImport } from './routes/b.$code'
 import { Route as ApiValidateRouteImport } from './routes/api/validate'
 import { Route as ApiUnlockRouteImport } from './routes/api/unlock'
 import { Route as ApiTamperingReportRouteImport } from './routes/api/tampering-report'
@@ -263,6 +264,11 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
 const BakiyeYukleTopupIdRoute = BakiyeYukleTopupIdRouteImport.update({
   id: '/bakiye-yukle/$topupId',
   path: '/bakiye-yukle/$topupId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BCodeRoute = BCodeRouteImport.update({
+  id: '/b/$code',
+  path: '/b/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiValidateRoute = ApiValidateRouteImport.update({
@@ -873,6 +879,7 @@ export interface FileRoutesByFullPath {
   '/api/tampering-report': typeof ApiTamperingReportRoute
   '/api/unlock': typeof ApiUnlockRoute
   '/api/validate': typeof ApiValidateRoute
+  '/b/$code': typeof BCodeRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
@@ -998,6 +1005,7 @@ export interface FileRoutesByTo {
   '/api/tampering-report': typeof ApiTamperingReportRoute
   '/api/unlock': typeof ApiUnlockRoute
   '/api/validate': typeof ApiValidateRoute
+  '/b/$code': typeof BCodeRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
@@ -1127,6 +1135,7 @@ export interface FileRoutesById {
   '/api/tampering-report': typeof ApiTamperingReportRoute
   '/api/unlock': typeof ApiUnlockRoute
   '/api/validate': typeof ApiValidateRoute
+  '/b/$code': typeof BCodeRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
@@ -1256,6 +1265,7 @@ export interface FileRouteTypes {
     | '/api/tampering-report'
     | '/api/unlock'
     | '/api/validate'
+    | '/b/$code'
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
     | '/odeme/$orderId'
@@ -1381,6 +1391,7 @@ export interface FileRouteTypes {
     | '/api/tampering-report'
     | '/api/unlock'
     | '/api/validate'
+    | '/b/$code'
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
     | '/odeme/$orderId'
@@ -1509,6 +1520,7 @@ export interface FileRouteTypes {
     | '/api/tampering-report'
     | '/api/unlock'
     | '/api/validate'
+    | '/b/$code'
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
     | '/odeme/$orderId'
@@ -1626,6 +1638,7 @@ export interface RootRouteChildren {
   ApiTamperingReportRoute: typeof ApiTamperingReportRoute
   ApiUnlockRoute: typeof ApiUnlockRoute
   ApiValidateRoute: typeof ApiValidateRoute
+  BCodeRoute: typeof BCodeRoute
   BakiyeYukleTopupIdRoute: typeof BakiyeYukleTopupIdRoute
   BlogSlugRoute: typeof BlogSlugRoute
   OdemeOrderIdRoute: typeof OdemeOrderIdRoute
@@ -1832,6 +1845,13 @@ declare module '@tanstack/react-router' {
       path: '/bakiye-yukle/$topupId'
       fullPath: '/bakiye-yukle/$topupId'
       preLoaderRoute: typeof BakiyeYukleTopupIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/b/$code': {
+      id: '/b/$code'
+      path: '/b/$code'
+      fullPath: '/b/$code'
+      preLoaderRoute: typeof BCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/validate': {
@@ -2764,6 +2784,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiTamperingReportRoute: ApiTamperingReportRoute,
   ApiUnlockRoute: ApiUnlockRoute,
   ApiValidateRoute: ApiValidateRoute,
+  BCodeRoute: BCodeRoute,
   BakiyeYukleTopupIdRoute: BakiyeYukleTopupIdRoute,
   BlogSlugRoute: BlogSlugRoute,
   OdemeOrderIdRoute: OdemeOrderIdRoute,
