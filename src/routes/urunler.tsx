@@ -203,7 +203,12 @@ type Row = {
   retail_price_try?: number | null;
   retail_price_source_url?: string | null;
   duration_label?: string | null;
+  orders_count?: number | null;
+  avg_rating?: number | null;
+  review_count?: number | null;
   license_keys: { status: string }[] | null;
+
+
 
 };
 
