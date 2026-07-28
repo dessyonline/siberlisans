@@ -352,12 +352,23 @@ function AdminRafflesPage() {
                   >
                     <Repeat className="h-3 w-3" /> yeniden çek
                   </button>
+                  <button
+                    onClick={() => setPickFor({ id: r.id, title: r.title, redraw: true })}
+                    className="flex items-center gap-1 rounded border border-yellow-500/50 bg-yellow-500/10 px-2 py-1 font-mono text-xs text-yellow-400 hover:bg-yellow-500/20"
+                  >
+                    <UserCheck className="h-3 w-3" /> kazanan seç
+                  </button>
                 </>
               )}
               {r.status === "active" && (
-                <button onClick={() => { if (confirm(`${r.num_winners} kazanan seçilecek. Devam?`)) drawMut.mutate({ id: r.id, title: r.title }); }} className="flex items-center gap-1 rounded border border-primary/50 bg-primary/10 px-2 py-1 font-mono text-xs text-primary hover:bg-primary/20">
-                  <Play className="h-3 w-3" /> çek
-                </button>
+                <>
+                  <button onClick={() => { if (confirm(`${r.num_winners} kazanan seçilecek. Devam?`)) drawMut.mutate({ id: r.id, title: r.title }); }} className="flex items-center gap-1 rounded border border-primary/50 bg-primary/10 px-2 py-1 font-mono text-xs text-primary hover:bg-primary/20">
+                    <Play className="h-3 w-3" /> çek
+                  </button>
+                  <button onClick={() => setPickFor({ id: r.id, title: r.title })} className="flex items-center gap-1 rounded border border-primary/50 bg-primary/10 px-2 py-1 font-mono text-xs text-primary hover:bg-primary/20">
+                    <UserCheck className="h-3 w-3" /> kazanan seç
+                  </button>
+                </>
               )}
 
               <button
