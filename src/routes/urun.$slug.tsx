@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
@@ -18,6 +18,13 @@ import { AlsoBoughtSection } from "@/components/AlsoBoughtSection";
 import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
 import { RetailPriceBadge } from "@/components/RetailPriceBadge";
 import { ProductLogo } from "@/components/ProductLogo";
+import { ProductQnA } from "@/components/ProductQnA";
+import { ProductTags } from "@/components/ProductTags";
+import { ProductVideo } from "@/components/ProductVideo";
+import { RecentlyViewed } from "@/components/RecentlyViewed";
+import { CompareToggle } from "@/components/CompareBar";
+import { pushRecent } from "@/lib/recently-viewed";
+
 
 const productMetaQuery = (slug: string) => ({
   queryKey: ["product-meta", slug],
@@ -169,13 +176,14 @@ function ProductDetail() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, active, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, tier, retail_price_try, retail_price_source_url, duration_label, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, active, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, tier, retail_price_try, retail_price_source_url, duration_label, demo_video_url, created_at, orders_count, avg_rating, review_count, license_keys(status)")
         .eq("slug", slug)
         .single();
       if (error) throw error;
       return data;
     },
   });
+
 
   const { data: relatedProducts } = useQuery({
     queryKey: ["related-products", product?.category, product?.id],
@@ -191,6 +199,19 @@ function ProductDetail() {
       return data ?? [];
     },
   });
+
+  useEffect(() => {
+    if (!product) return;
+    pushRecent({
+      id: product.id,
+      slug: product.slug,
+      name: product.name,
+      priceTry: Number(product.price_try),
+      imageUrl: product.image_url ?? null,
+    });
+  }, [product]);
+
+
 
   const flashSale = useActiveFlashSale(product?.id);
   const flash = (() => {
@@ -683,11 +704,44 @@ function ProductDetail() {
           </Accordion>
         </div>
 
+        {/* Demo video */}
+        <ProductVideo url={product.demo_video_url} title={product.name} />
+
+        {/* Auto tags + compare */}
+        <div className="mt-6 flex flex-wrap items-center gap-2">
+          <ProductTags
+            product={{
+              createdAt: product.created_at,
+              ordersCount: product.orders_count,
+              avgRating: Number(product.avg_rating ?? 0),
+              reviewCount: product.review_count,
+              stock: product.stock_hint,
+              unlimited: product.unlimited_stock,
+              manual: product.manual_fulfillment,
+              hasSale: flash.hasSale,
+            }}
+            max={4}
+          />
+          <CompareToggle productId={product.id} />
+        </div>
+
+        {/* Q&A */}
+        <div className="mt-8">
+          <ProductQnA productId={product.id} />
+        </div>
+
         {/* Reviews */}
         <ReviewsSection productId={product.id} />
 
         {/* Others also bought */}
         <AlsoBoughtSection productId={product.id} />
+
+        {/* Recently viewed */}
+        <div className="mt-10">
+          <RecentlyViewed excludeId={product.id} />
+        </div>
+
+
 
 
 

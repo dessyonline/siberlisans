@@ -1500,6 +1500,53 @@ export type Database = {
         }
         Relationships: []
       }
+      product_questions: {
+        Row: {
+          answer: string | null
+          answered_at: string | null
+          answered_by: string | null
+          created_at: string
+          id: string
+          is_public: boolean
+          product_id: string
+          question: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answer?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          product_id: string
+          question: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answer?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          product_id?: string
+          question?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_questions_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_reviews: {
         Row: {
           comment: string | null
@@ -1547,6 +1594,7 @@ export type Database = {
           created_at: string
           default_license_days: number | null
           delivery_type: Database["public"]["Enums"]["delivery_type"]
+          demo_video_url: string | null
           description: string | null
           duration: Database["public"]["Enums"]["duration_type"]
           duration_label: string | null
@@ -1585,6 +1633,7 @@ export type Database = {
           created_at?: string
           default_license_days?: number | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
+          demo_video_url?: string | null
           description?: string | null
           duration?: Database["public"]["Enums"]["duration_type"]
           duration_label?: string | null
@@ -1623,6 +1672,7 @@ export type Database = {
           created_at?: string
           default_license_days?: number | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
+          demo_video_url?: string | null
           description?: string | null
           duration?: Database["public"]["Enums"]["duration_type"]
           duration_label?: string | null

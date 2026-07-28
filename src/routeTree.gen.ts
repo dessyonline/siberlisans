@@ -17,6 +17,7 @@ import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
 import { Route as LiderlikRouteImport } from './routes/liderlik'
 import { Route as KvkkRouteImport } from './routes/kvkk'
 import { Route as KosullarRouteImport } from './routes/kosullar'
+import { Route as KarsilastirRouteImport } from './routes/karsilastir'
 import { Route as IletisimRouteImport } from './routes/iletisim'
 import { Route as IadeRouteImport } from './routes/iade'
 import { Route as GizlilikRouteImport } from './routes/gizlilik'
@@ -98,6 +99,7 @@ import { Route as AuthenticatedAraclarArkaplanRouteImport } from './routes/_auth
 import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
 import { Route as AuthenticatedAdminUniquelisansRouteImport } from './routes/_authenticated/admin/uniquelisans'
 import { Route as AuthenticatedAdminTedarikciLogRouteImport } from './routes/_authenticated/admin/tedarikci-log'
+import { Route as AuthenticatedAdminSorularRouteImport } from './routes/_authenticated/admin/sorular'
 import { Route as AuthenticatedAdminSiparislerRouteImport } from './routes/_authenticated/admin/siparisler'
 import { Route as AuthenticatedAdminShopierRouteImport } from './routes/_authenticated/admin/shopier'
 import { Route as AuthenticatedAdminRaporRouteImport } from './routes/_authenticated/admin/rapor'
@@ -172,6 +174,11 @@ const KvkkRoute = KvkkRouteImport.update({
 const KosullarRoute = KosullarRouteImport.update({
   id: '/kosullar',
   path: '/kosullar',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KarsilastirRoute = KarsilastirRouteImport.update({
+  id: '/karsilastir',
+  path: '/karsilastir',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IletisimRoute = IletisimRouteImport.update({
@@ -614,6 +621,12 @@ const AuthenticatedAdminTedarikciLogRoute =
     path: '/tedarikci-log',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminSorularRoute =
+  AuthenticatedAdminSorularRouteImport.update({
+    id: '/sorular',
+    path: '/sorular',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminSiparislerRoute =
   AuthenticatedAdminSiparislerRouteImport.update({
     id: '/siparisler',
@@ -827,6 +840,7 @@ export interface FileRoutesByFullPath {
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
   '/iletisim': typeof IletisimRoute
+  '/karsilastir': typeof KarsilastirRoute
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/liderlik': typeof LiderlikRoute
@@ -895,6 +909,7 @@ export interface FileRoutesByFullPath {
   '/admin/rapor': typeof AuthenticatedAdminRaporRoute
   '/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
+  '/admin/sorular': typeof AuthenticatedAdminSorularRoute
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
@@ -952,6 +967,7 @@ export interface FileRoutesByTo {
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
   '/iletisim': typeof IletisimRoute
+  '/karsilastir': typeof KarsilastirRoute
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/liderlik': typeof LiderlikRoute
@@ -1018,6 +1034,7 @@ export interface FileRoutesByTo {
   '/admin/rapor': typeof AuthenticatedAdminRaporRoute
   '/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
+  '/admin/sorular': typeof AuthenticatedAdminSorularRoute
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
@@ -1077,6 +1094,7 @@ export interface FileRoutesById {
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
   '/iletisim': typeof IletisimRoute
+  '/karsilastir': typeof KarsilastirRoute
   '/kosullar': typeof KosullarRoute
   '/kvkk': typeof KvkkRoute
   '/liderlik': typeof LiderlikRoute
@@ -1145,6 +1163,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/rapor': typeof AuthenticatedAdminRaporRoute
   '/_authenticated/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/_authenticated/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
+  '/_authenticated/admin/sorular': typeof AuthenticatedAdminSorularRoute
   '/_authenticated/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
   '/_authenticated/admin/uniquelisans': typeof AuthenticatedAdminUniquelisansRoute
   '/_authenticated/admin/urunler': typeof AuthenticatedAdminUrunlerRoute
@@ -1204,6 +1223,7 @@ export interface FileRouteTypes {
     | '/gizlilik'
     | '/iade'
     | '/iletisim'
+    | '/karsilastir'
     | '/kosullar'
     | '/kvkk'
     | '/liderlik'
@@ -1272,6 +1292,7 @@ export interface FileRouteTypes {
     | '/admin/rapor'
     | '/admin/shopier'
     | '/admin/siparisler'
+    | '/admin/sorular'
     | '/admin/tedarikci-log'
     | '/admin/uniquelisans'
     | '/admin/urunler'
@@ -1329,6 +1350,7 @@ export interface FileRouteTypes {
     | '/gizlilik'
     | '/iade'
     | '/iletisim'
+    | '/karsilastir'
     | '/kosullar'
     | '/kvkk'
     | '/liderlik'
@@ -1395,6 +1417,7 @@ export interface FileRouteTypes {
     | '/admin/rapor'
     | '/admin/shopier'
     | '/admin/siparisler'
+    | '/admin/sorular'
     | '/admin/tedarikci-log'
     | '/admin/uniquelisans'
     | '/admin/urunler'
@@ -1453,6 +1476,7 @@ export interface FileRouteTypes {
     | '/gizlilik'
     | '/iade'
     | '/iletisim'
+    | '/karsilastir'
     | '/kosullar'
     | '/kvkk'
     | '/liderlik'
@@ -1521,6 +1545,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/rapor'
     | '/_authenticated/admin/shopier'
     | '/_authenticated/admin/siparisler'
+    | '/_authenticated/admin/sorular'
     | '/_authenticated/admin/tedarikci-log'
     | '/_authenticated/admin/uniquelisans'
     | '/_authenticated/admin/urunler'
@@ -1580,6 +1605,7 @@ export interface RootRouteChildren {
   GizlilikRoute: typeof GizlilikRoute
   IadeRoute: typeof IadeRoute
   IletisimRoute: typeof IletisimRoute
+  KarsilastirRoute: typeof KarsilastirRoute
   KosullarRoute: typeof KosullarRoute
   KvkkRoute: typeof KvkkRoute
   LiderlikRoute: typeof LiderlikRoute
@@ -1680,6 +1706,13 @@ declare module '@tanstack/react-router' {
       path: '/kosullar'
       fullPath: '/kosullar'
       preLoaderRoute: typeof KosullarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/karsilastir': {
+      id: '/karsilastir'
+      path: '/karsilastir'
+      fullPath: '/karsilastir'
+      preLoaderRoute: typeof KarsilastirRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/iletisim': {
@@ -2249,6 +2282,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminTedarikciLogRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/sorular': {
+      id: '/_authenticated/admin/sorular'
+      path: '/sorular'
+      fullPath: '/admin/sorular'
+      preLoaderRoute: typeof AuthenticatedAdminSorularRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/siparisler': {
       id: '/_authenticated/admin/siparisler'
       path: '/siparisler'
@@ -2524,6 +2564,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminRaporRoute: typeof AuthenticatedAdminRaporRoute
   AuthenticatedAdminShopierRoute: typeof AuthenticatedAdminShopierRoute
   AuthenticatedAdminSiparislerRoute: typeof AuthenticatedAdminSiparislerRoute
+  AuthenticatedAdminSorularRoute: typeof AuthenticatedAdminSorularRoute
   AuthenticatedAdminTedarikciLogRoute: typeof AuthenticatedAdminTedarikciLogRoute
   AuthenticatedAdminUniquelisansRoute: typeof AuthenticatedAdminUniquelisansRoute
   AuthenticatedAdminUrunlerRoute: typeof AuthenticatedAdminUrunlerRoute
@@ -2558,6 +2599,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminRaporRoute: AuthenticatedAdminRaporRoute,
     AuthenticatedAdminShopierRoute: AuthenticatedAdminShopierRoute,
     AuthenticatedAdminSiparislerRoute: AuthenticatedAdminSiparislerRoute,
+    AuthenticatedAdminSorularRoute: AuthenticatedAdminSorularRoute,
     AuthenticatedAdminTedarikciLogRoute: AuthenticatedAdminTedarikciLogRoute,
     AuthenticatedAdminUniquelisansRoute: AuthenticatedAdminUniquelisansRoute,
     AuthenticatedAdminUrunlerRoute: AuthenticatedAdminUrunlerRoute,
@@ -2701,6 +2743,7 @@ const rootRouteChildren: RootRouteChildren = {
   GizlilikRoute: GizlilikRoute,
   IadeRoute: IadeRoute,
   IletisimRoute: IletisimRoute,
+  KarsilastirRoute: KarsilastirRoute,
   KosullarRoute: KosullarRoute,
   KvkkRoute: KvkkRoute,
   LiderlikRoute: LiderlikRoute,
@@ -2749,13 +2792,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

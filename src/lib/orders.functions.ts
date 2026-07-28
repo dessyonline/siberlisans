@@ -864,6 +864,7 @@ const productInput = z.object({
   image_url: z.union([z.string().url().max(500), z.string().max(0), z.string().regex(/^\/[\w\-\/.]+$/)]).optional().nullable(),
   shopier_url: z.union([z.string().url().max(500), z.string().max(0)]).optional().nullable(),
   requires_email: z.boolean().optional(),
+  demo_video_url: z.union([z.string().url().max(500), z.string().max(0)]).optional().nullable(),
 });
 
 export const upsertProduct = createServerFn({ method: "POST" })

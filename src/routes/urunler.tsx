@@ -5,6 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ProductLogo } from "@/components/ProductLogo";
+import { ProductTags } from "@/components/ProductTags";
+import { CompareToggle } from "@/components/CompareBar";
+import { RecentlyViewed } from "@/components/RecentlyViewed";
 import { AdminEditBadge } from "@/components/AdminEditBadge";
 import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
 import { RetailPriceBadge } from "@/components/RetailPriceBadge";
@@ -203,7 +206,12 @@ type Row = {
   retail_price_try?: number | null;
   retail_price_source_url?: string | null;
   duration_label?: string | null;
+  orders_count?: number | null;
+  avg_rating?: number | null;
+  review_count?: number | null;
   license_keys: { status: string }[] | null;
+
+
 
 };
 
@@ -246,7 +254,7 @@ function ProductsPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, created_at, sort_order, tier, retail_price_try, retail_price_source_url, duration_label, license_keys(status)")
+        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, created_at, sort_order, tier, retail_price_try, retail_price_source_url, duration_label, orders_count, avg_rating, review_count, license_keys(status)")
         .eq("active", true)
         .order("price_try");
       if (error) throw error;
@@ -532,10 +540,15 @@ function ProductsPage() {
             );
           })}
         </div>
+
+        <div className="mt-12">
+          <RecentlyViewed />
+        </div>
       </div>
     </div>
   );
 }
+
 
 function ProductCard({ product: p }: { product: Row }) {
   const manual = !!p.manual_fulfillment;
@@ -608,7 +621,27 @@ function ProductCard({ product: p }: { product: Row }) {
           {hasSale && <FlashSaleBadge sale={flashSale} />}
         </div>
 
+        <ProductTags
+          className="mt-2"
+          product={{
+            createdAt: p.created_at,
+            ordersCount: p.orders_count,
+            avgRating: Number(p.avg_rating ?? 0),
+            reviewCount: p.review_count,
+            stock,
+            unlimited,
+            manual,
+            hasSale,
+          }}
+        />
+
         <CyberStockLoader stock={stock} manual={manual} unlimited={unlimited} soldOut={soldOut} />
+
+        <div className="mt-3">
+          <CompareToggle productId={p.id} />
+        </div>
+
+
 
         {/* Price + CTA */}
         <div className="mt-auto pt-4 flex items-end justify-between gap-3">
