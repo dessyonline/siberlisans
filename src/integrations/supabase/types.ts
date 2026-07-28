@@ -649,6 +649,42 @@ export type Database = {
         }
         Relationships: []
       }
+      dealer_api_keys: {
+        Row: {
+          call_count: number
+          created_at: string
+          id: string
+          key_hash: string
+          key_prefix: string
+          label: string
+          last_used_at: string | null
+          revoked: boolean
+          user_id: string
+        }
+        Insert: {
+          call_count?: number
+          created_at?: string
+          id?: string
+          key_hash: string
+          key_prefix: string
+          label?: string
+          last_used_at?: string | null
+          revoked?: boolean
+          user_id: string
+        }
+        Update: {
+          call_count?: number
+          created_at?: string
+          id?: string
+          key_hash?: string
+          key_prefix?: string
+          label?: string
+          last_used_at?: string | null
+          revoked?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
       dealer_applications: {
         Row: {
           admin_note: string | null
@@ -3197,6 +3233,43 @@ export type Database = {
           slug: string
         }[]
       }
+      api_dealer_auth: { Args: { _api_key: string }; Returns: string }
+      api_dealer_balance: { Args: { _user_id: string }; Returns: Json }
+      api_dealer_create_order: {
+        Args: { _product_id: string; _quantity: number; _user_id: string }
+        Returns: {
+          discount_try: number
+          order_id: string
+          reference_code: string
+          total_try: number
+        }[]
+      }
+      api_dealer_order: {
+        Args: { _reference: string; _user_id: string }
+        Returns: Json
+      }
+      api_dealer_pay_order: {
+        Args: { _order_id: string; _user_id: string }
+        Returns: {
+          balance_after: number
+          license_key: string
+          license_token: string
+        }[]
+      }
+      api_dealer_price_list: {
+        Args: { _user_id: string }
+        Returns: {
+          available: number
+          category: string
+          dealer_price_try: number
+          id: string
+          manual: boolean
+          name: string
+          price_try: number
+          slug: string
+          unlimited_stock: boolean
+        }[]
+      }
       apply_for_dealership: {
         Args: {
           _channel: string
@@ -3376,6 +3449,14 @@ export type Database = {
           user_id: string
         }[]
       }
+      dealer_issue_api_key: {
+        Args: { _label?: string }
+        Returns: {
+          api_key: string
+          id: string
+          key_prefix: string
+        }[]
+      }
       dealer_price_list: {
         Args: never
         Returns: {
@@ -3390,6 +3471,7 @@ export type Database = {
           unlimited_stock: boolean
         }[]
       }
+      dealer_revoke_api_key: { Args: { _id: string }; Returns: undefined }
       dealer_stats: { Args: never; Returns: Json }
       digest:
         | { Args: { data: string; type: string }; Returns: string }
