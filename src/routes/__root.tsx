@@ -443,9 +443,9 @@ const MOBILE_MENU_SCRIPT = `(function(){
 function SiteFooter() {
   return (
     <footer className="border-t border-border/60 bg-background/60 backdrop-blur-xl mt-16">
-      <div className="mx-auto max-w-7xl px-4 py-8 font-mono text-xs">
-        <div className="grid gap-6 md:grid-cols-4">
-          <div>
+      <div className="mx-auto max-w-7xl px-4 py-10 md:px-8 md:py-14 font-mono text-xs">
+        <div className="grid gap-8 sm:grid-cols-2 md:gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-14">
+          <div className="min-w-0 max-w-sm">
             <div className="flex items-center gap-2 text-foreground mb-2">
               <ShieldCheck className="h-4 w-4 text-primary" />
               <span className="neon-text">SiberPHP</span>
@@ -454,9 +454,9 @@ function SiteFooter() {
               Güvenli lisans dağıtım sistemi. Şifreli teslimat, kesintisiz destek.
             </p>
           </div>
-          <div>
-            <div className="text-primary/80 mb-2">./keşfet</div>
-            <ul className="space-y-1 text-muted-foreground">
+          <div className="min-w-0">
+            <div className="text-primary/80 mb-3">./keşfet</div>
+            <ul className="space-y-2 text-muted-foreground">
               <li><Link to="/urunler" className="hover:text-primary">Ürünler</Link></li>
               <li><Link to="/paketler" className="hover:text-primary">Paketler</Link></li>
               <li><Link to="/blog" className="hover:text-primary">Blog</Link></li>
@@ -465,18 +465,18 @@ function SiteFooter() {
               <li><Link to="/iletisim" className="hover:text-primary">İletişim</Link></li>
             </ul>
           </div>
-          <div>
-            <div className="text-primary/80 mb-2">./yasal</div>
-            <ul className="space-y-1 text-muted-foreground">
+          <div className="min-w-0">
+            <div className="text-primary/80 mb-3">./yasal</div>
+            <ul className="space-y-2 text-muted-foreground">
               <li><Link to="/kvkk" className="hover:text-primary">KVKK Aydınlatma</Link></li>
               <li><Link to="/gizlilik" className="hover:text-primary">Gizlilik Politikası</Link></li>
               <li><Link to="/iade" className="hover:text-primary">İade & Cayma</Link></li>
               <li><Link to="/kosullar" className="hover:text-primary">Kullanım Koşulları</Link></li>
             </ul>
           </div>
-          <div>
-            <div className="text-primary/80 mb-2">./güven</div>
-            <ul className="space-y-1 text-muted-foreground">
+          <div className="min-w-0">
+            <div className="text-primary/80 mb-3">./güven</div>
+            <ul className="space-y-2 text-muted-foreground">
               <li>🔒 SSL/TLS 1.3</li>
               <li>🛡️ AES-256 şifreleme</li>
               <li>✅ KVKK uyumlu</li>
@@ -484,9 +484,9 @@ function SiteFooter() {
             </ul>
           </div>
         </div>
-        <div className="mt-6 pt-4 border-t border-border/40 flex flex-col gap-3 sm:flex-row items-center justify-between text-muted-foreground text-[11px]">
-          <div>© {new Date().getFullYear()} SiberPHP — Tüm hakları saklıdır.</div>
-          <div className="flex items-center gap-2">
+        <div className="mt-10 pt-6 border-t border-border/40 flex flex-col items-center gap-4 text-center text-muted-foreground text-[11px] md:flex-row md:items-center md:justify-between md:gap-8 md:text-left">
+          <div className="order-2 md:order-1">© {new Date().getFullYear()} SiberPHP — Tüm hakları saklıdır.</div>
+          <div className="order-1 flex items-center gap-3 md:order-2">
             <a
               href="https://youtube.com/@siberphp"
               target="_blank"
@@ -515,7 +515,7 @@ function SiteFooter() {
               <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43V8.36a8.16 8.16 0 0 0 4.77 1.52V6.43a4.85 4.85 0 0 1-1.84-.35z"/></svg>
             </a>
           </div>
-          <div className="text-primary/60">$ powered_by_secure_infra --v2</div>
+          <div className="order-3 text-primary/60">$ powered_by_secure_infra --v2</div>
         </div>
       </div>
     </footer>
