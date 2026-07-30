@@ -242,25 +242,27 @@ function SiteHeader() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden lg:flex min-w-0 flex-1 items-center justify-center gap-3 xl:gap-4 font-mono text-xs">
+          <nav className="hidden lg:flex min-w-0 flex-1 items-center justify-center gap-3 xl:gap-4 font-mono text-xs overflow-hidden">
             <NavLink to="/">anasayfa</NavLink>
             <NavLink to="/urunler">ürünler</NavLink>
             <NavLink to="/paketler">paketler</NavLink>
             <NavLink to="/araclar">araçlar</NavLink>
             <NavLink to="/cekilis">çekiliş</NavLink>
-            <span className="hidden xl:contents">
+            <span className="hidden 2xl:contents">
               <NavLink to="/bayilik">bayilik</NavLink>
-              <DealerNavLink userId={user?.id} className="group/item flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
+              <DealerNavLink userId={user?.id} className="group/item shrink-0 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
             </span>
 
+
             <DropdownMenu>
-              <DropdownMenuTrigger className="group/item flex items-center gap-1 text-xs whitespace-nowrap outline-none">
+              <DropdownMenuTrigger className="group/item shrink-0 flex items-center gap-1 text-xs whitespace-nowrap outline-none">
+
                 <span className="font-bold text-primary/40 group-hover/item:text-primary transition-colors">./</span>
                 <span className="tracking-wide text-muted-foreground group-hover/item:text-primary transition-colors">daha</span>
                 <ChevronDown className="h-3 w-3 text-primary/40 group-hover/item:text-primary transition-colors" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="font-mono text-xs bg-background/95 backdrop-blur-xl border-primary/20 min-w-44">
-                <span className="xl:hidden">
+                <span className="2xl:hidden">
                   <DropdownMenuItem asChild><Link to="/bayilik" className="cursor-pointer"><span className="text-primary/50">./</span>bayilik</Link></DropdownMenuItem>
                   <DealerNavLink userId={user?.id} className="flex items-center gap-1 px-2 py-1.5 rounded-sm text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" />
                 </span>
@@ -334,7 +336,7 @@ function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
     <Link
       to={to}
-      className="group/item flex items-center gap-1 text-xs transition-colors whitespace-nowrap"
+      className="group/item shrink-0 flex items-center gap-1 text-xs transition-colors whitespace-nowrap"
     >
       {({ isActive }) => (
         <>
@@ -367,12 +369,13 @@ function HeaderUserBadge({ userId }: { userId: string }) {
     refetchInterval: 15000,
   });
   return (
-    <span className="flex items-center gap-1.5">
+    <span className="flex shrink-0 items-center gap-1.5">
       <UserAvatar id={data?.avatar_id} size={22} />
-      <span className="hidden md:inline font-mono text-[11px] text-primary">
+      <span className="hidden xl:inline font-mono text-[11px] text-primary whitespace-nowrap">
         ₺{(data?.balance_try ?? 0).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
       </span>
     </span>
+
   );
 }
 
