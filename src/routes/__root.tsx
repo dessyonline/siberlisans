@@ -255,7 +255,8 @@ function SiteHeader() {
 
 
             <DropdownMenu>
-              <DropdownMenuTrigger className="group/item flex items-center gap-1 text-xs whitespace-nowrap outline-none">
+              <DropdownMenuTrigger className="group/item shrink-0 flex items-center gap-1 text-xs whitespace-nowrap outline-none">
+
                 <span className="font-bold text-primary/40 group-hover/item:text-primary transition-colors">./</span>
                 <span className="tracking-wide text-muted-foreground group-hover/item:text-primary transition-colors">daha</span>
                 <ChevronDown className="h-3 w-3 text-primary/40 group-hover/item:text-primary transition-colors" />
