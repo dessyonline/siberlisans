@@ -258,15 +258,17 @@ function SiteHeader() {
             {user ? (
               <>
                 {isAdmin && (
-                  <Button asChild size="sm" variant="outline" className="hidden md:inline-flex font-mono px-2 h-8 border-primary/30 text-primary hover:bg-primary/10">
+                  <Button asChild size="sm" variant="outline" className="font-mono text-xs h-8 px-2 md:px-3 gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
                     <Link to="/admin" aria-label="Admin">
                       <LayoutDashboard className="h-4 w-4" />
+                      <span className="hidden md:inline">admin</span>
                     </Link>
                   </Button>
                 )}
-                <Button asChild size="sm" variant="ghost" className="font-mono px-2 h-8 hover:bg-primary/10">
+                <Button asChild size="sm" variant="ghost" className="font-mono text-xs h-8 px-2 gap-1.5 hover:bg-primary/10">
                   <Link to="/hesabim" aria-label="Hesabım" className="flex items-center gap-1.5">
                     <HeaderUserBadge userId={user.id} />
+                    <span className="hidden lg:inline text-muted-foreground">hesabım</span>
                   </Link>
                 </Button>
                 <Button
@@ -278,6 +280,7 @@ function SiteHeader() {
                   <LogOut className="h-4 w-4" />
                 </Button>
               </>
+
             ) : (
               <Button asChild size="sm" className="font-mono h-8 px-3 bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-[0_0_15px_hsl(var(--primary)/0.4)]">
                 <Link to="/auth" aria-label="Giriş">
