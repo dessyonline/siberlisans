@@ -104,7 +104,7 @@ function ReportPage() {
   async function runRepair() {
     setRepairing(true);
     try {
-      const res = await repairFn({ data: {} });
+      const res = await repairFn();
       const ok = res.filter((r) => r.outcome === "teslim edildi").length;
       toast.success(ok > 0 ? `${ok} sipariş teslimatı tamamlandı` : "Eksik teslimat bulunamadı");
     } catch (e) {
