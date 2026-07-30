@@ -49,7 +49,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
         className="inline-flex h-9 items-center gap-2 rounded-md px-2.5 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
       >
         <Palette className="h-4 w-4" />
-        <span className="hidden sm:inline font-mono text-xs">{current.label}</span>
+        <span className="hidden 2xl:inline font-mono text-xs whitespace-nowrap">{current.label}</span>
         <span className="flex gap-0.5" aria-hidden>
           {current.swatch.map((c) => (
             <span key={c} className="h-2 w-2 rounded-sm border border-border/60" style={{ background: c }} />
