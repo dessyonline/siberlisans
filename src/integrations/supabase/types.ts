@@ -1613,7 +1613,7 @@ export type Database = {
           {
             foreignKeyName: "order_keys_license_key_id_fkey"
             columns: ["license_key_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "license_keys"
             referencedColumns: ["id"]
           },

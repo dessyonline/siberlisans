@@ -271,12 +271,9 @@ function Payment() {
   const isManual = isCartOrder
     ? orderItems.some((i) => i.product?.manual_fulfillment)
     : !!order.product?.manual_fulfillment;
-  const isUnlimited = isCartOrder
-    ? orderItems.some((i) => i.product?.unlimited_stock)
-    : !!(order.product as { unlimited_stock?: boolean } | null)?.unlimited_stock;
   const isEpic = ((order.product as { tier?: string } | null)?.tier ?? "standard") === "epic";
   const needsManualContact =
-    order.status === "approved" && deliveredKeys.length === 0 && (isManual || isUnlimited);
+    order.status === "approved" && deliveredKeys.length === 0 && isManual;
   const orderTitle = order.product?.name ?? `Sepet siparişi · ${orderItems.length} ürün`;
   const stepIndex = STEPS.findIndex((s) => s.key === currentStep);
   const discountRows = (Array.isArray(order.discount) ? order.discount : (order.discount ? [order.discount] : [])) as Array<{
