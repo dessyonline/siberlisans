@@ -1376,6 +1376,42 @@ export type Database = {
           },
         ]
       }
+      manual_revenue_entries: {
+        Row: {
+          amount_try: number
+          cost_try: number
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string
+          note: string | null
+          occurred_at: string
+          updated_at: string
+        }
+        Insert: {
+          amount_try: number
+          cost_try?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label: string
+          note?: string | null
+          occurred_at?: string
+          updated_at?: string
+        }
+        Update: {
+          amount_try?: number
+          cost_try?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string
+          note?: string | null
+          occurred_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       missions: {
         Row: {
           created_at: string
@@ -3025,6 +3061,16 @@ export type Database = {
           out_total_try: number
         }[]
       }
+      admin_add_manual_revenue: {
+        Args: {
+          _amount: number
+          _cost?: number
+          _label: string
+          _note?: string
+          _occurred_at?: string
+        }
+        Returns: string
+      }
       admin_adjust_wallet: {
         Args: { _delta: number; _note: string; _user_id: string }
         Returns: number
@@ -3077,6 +3123,7 @@ export type Database = {
           week_revenue: number
         }[]
       }
+      admin_delete_manual_revenue: { Args: { _id: string }; Returns: boolean }
       admin_fail_ai_job: {
         Args: { _job: string; _reason: string; _refund?: boolean }
         Returns: undefined
@@ -3150,6 +3197,18 @@ export type Database = {
           user_id: string
         }[]
       }
+      admin_list_manual_revenue: {
+        Args: { _from?: string; _to?: string }
+        Returns: {
+          amount_try: number
+          cost_try: number
+          created_at: string
+          id: string
+          label: string
+          note: string
+          occurred_at: string
+        }[]
+      }
       admin_low_stock_products: {
         Args: never
         Returns: {
@@ -3216,6 +3275,14 @@ export type Database = {
       admin_purge_available_keys: {
         Args: { _product_id: string }
         Returns: number
+      }
+      admin_repair_deliveries: {
+        Args: { _limit?: number }
+        Returns: {
+          order_id: string
+          outcome: string
+          reference_code: string
+        }[]
       }
       admin_review_dealer_application: {
         Args: {

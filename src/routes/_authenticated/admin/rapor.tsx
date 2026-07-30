@@ -1,10 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { getProfitReport } from "@/lib/admin-audit.functions";
-import { Loader2, TrendingUp, RefreshCw, Download } from "lucide-react";
+import {
+  listManualRevenue,
+  addManualRevenue,
+  deleteManualRevenue,
+  repairDeliveries,
+} from "@/lib/manual-revenue.functions";
+import { Loader2, TrendingUp, RefreshCw, Download, Plus, Trash2, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/_authenticated/admin/rapor")({
   ssr: false,
@@ -37,8 +45,79 @@ function ReportPage() {
     queryFn: () => reportFn({ data: { from: fromISO, to: toISO, granularity } }),
   });
 
+  // ——— manuel gelir ———
+  const qc = useQueryClient();
+  const listManual = useServerFn(listManualRevenue);
+  const addManual = useServerFn(addManualRevenue);
+  const delManual = useServerFn(deleteManualRevenue);
+  const repairFn = useServerFn(repairDeliveries);
+
+  const [mAmount, setMAmount] = useState("");
+  const [mCost, setMCost] = useState("");
+  const [mLabel, setMLabel] = useState("");
+  const [mDate, setMDate] = useState(toLocalDateInput(new Date()));
+  const [saving, setSaving] = useState(false);
+  const [repairing, setRepairing] = useState(false);
+
+  const { data: manualRows = [] } = useQuery({
+    queryKey: ["manual-revenue", fromISO, toISO],
+    queryFn: () => listManual({ data: { from: fromISO, to: toISO } }),
+  });
+
+  const manualTotal = manualRows.reduce((a, r) => a + Number(r.amount_try), 0);
+
+  async function saveManual() {
+    const amount = Number(mAmount.replace(",", "."));
+    if (!Number.isFinite(amount) || amount === 0) return toast.error("Geçerli bir tutar gir.");
+    if (!mLabel.trim()) return toast.error("Açıklama zorunlu.");
+    setSaving(true);
+    try {
+      await addManual({
+        data: {
+          amount,
+          cost: Number((mCost || "0").replace(",", ".")) || 0,
+          label: mLabel.trim(),
+          occurred_at: new Date(mDate + "T12:00:00").toISOString(),
+        },
+      });
+      toast.success("Ciroya eklendi");
+      setMAmount(""); setMCost(""); setMLabel("");
+      qc.invalidateQueries({ queryKey: ["manual-revenue"] });
+      refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Eklenemedi");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removeManual(id: string) {
+    try {
+      await delManual({ data: { id } });
+      qc.invalidateQueries({ queryKey: ["manual-revenue"] });
+      refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Silinemedi");
+    }
+  }
+
+  async function runRepair() {
+    setRepairing(true);
+    try {
+      const res = await repairFn();
+      const ok = res.filter((r) => r.outcome === "teslim edildi").length;
+      toast.success(ok > 0 ? `${ok} sipariş teslimatı tamamlandı` : "Eksik teslimat bulunamadı");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Onarım başarısız");
+    } finally {
+      setRepairing(false);
+    }
+  }
+
   const series = data?.series ?? [];
   const byProduct = data?.byProduct ?? [];
+
+
 
   const totals = series.reduce(
     (acc, r) => ({
@@ -119,7 +198,69 @@ function ReportPage() {
         <Button size="sm" variant="outline" onClick={exportCsv} disabled={series.length === 0}>
           <Download className="h-3.5 w-3.5 mr-1" /> CSV
         </Button>
+        <Button size="sm" variant="outline" onClick={runRepair} disabled={repairing}>
+          {repairing ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Wrench className="h-3.5 w-3.5 mr-1" />}
+          teslimat onar
+        </Button>
       </div>
+
+      {/* Manuel ciro ekleme */}
+      <div className="glass-card rounded-lg p-3 space-y-3">
+        <div className="font-mono text-xs text-muted-foreground">
+          manuel ciro ekle <span className="text-muted-foreground/60">(dış satış, elden ödeme vb.)</span>
+        </div>
+        <div className="flex flex-wrap items-end gap-2">
+          <div>
+            <label className="block font-mono text-[10px] text-muted-foreground mb-1">tarih</label>
+            <input type="date" value={mDate} onChange={(e) => setMDate(e.target.value)}
+              className="rounded border border-primary/30 bg-background/40 px-2 py-1.5 font-mono text-xs" />
+          </div>
+          <div>
+            <label className="block font-mono text-[10px] text-muted-foreground mb-1">tutar ₺</label>
+            <input inputMode="decimal" value={mAmount} onChange={(e) => setMAmount(e.target.value)} placeholder="500"
+              className="w-24 rounded border border-primary/30 bg-background/40 px-2 py-1.5 font-mono text-xs" />
+          </div>
+          <div>
+            <label className="block font-mono text-[10px] text-muted-foreground mb-1">maliyet ₺</label>
+            <input inputMode="decimal" value={mCost} onChange={(e) => setMCost(e.target.value)} placeholder="0"
+              className="w-24 rounded border border-primary/30 bg-background/40 px-2 py-1.5 font-mono text-xs" />
+          </div>
+          <div className="flex-1 min-w-[180px]">
+            <label className="block font-mono text-[10px] text-muted-foreground mb-1">açıklama</label>
+            <input value={mLabel} onChange={(e) => setMLabel(e.target.value)} placeholder="Telegram üzerinden satış"
+              className="w-full rounded border border-primary/30 bg-background/40 px-2 py-1.5 font-mono text-xs" />
+          </div>
+          <Button size="sm" onClick={saveManual} disabled={saving}>
+            {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <Plus className="h-3.5 w-3.5 mr-1" />}
+            ekle
+          </Button>
+        </div>
+
+        {manualRows.length > 0 && (
+          <div className="space-y-1 border-t border-border/40 pt-2">
+            <div className="font-mono text-[10px] text-muted-foreground">
+              seçili aralık toplamı: <span className="text-primary">₺{fmt(manualTotal)}</span>
+            </div>
+            {manualRows.map((r) => (
+              <div key={r.id} className="flex items-center gap-2 font-mono text-xs">
+                <span className="w-24 shrink-0 text-muted-foreground">
+                  {new Date(r.occurred_at).toLocaleDateString("tr-TR")}
+                </span>
+                <span className="flex-1 truncate">{r.label}</span>
+                <span className="text-primary">₺{fmt(Number(r.amount_try))}</span>
+                {Number(r.cost_try) > 0 && (
+                  <span className="text-muted-foreground">-₺{fmt(Number(r.cost_try))}</span>
+                )}
+                <button onClick={() => removeManual(r.id)} className="text-destructive/70 hover:text-destructive">
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+
 
       {/* KPI cards */}
       <div className="grid gap-3 grid-cols-2 md:grid-cols-4">
