@@ -374,7 +374,7 @@ function MobileMenu({
         aria-label="Menü"
         aria-expanded="false"
         aria-controls="mobile-menu-panel"
-        className="md:hidden relative z-[110] inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none"
+        className="lg:hidden relative z-[110] inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none"
       >
         <Menu className="h-5 w-5 pointer-events-none" />
       </button>
@@ -383,7 +383,7 @@ function MobileMenu({
       <div
         data-mobile-menu-backdrop
         aria-hidden="true"
-        className="md:hidden fixed inset-0 z-[90] bg-black/70"
+        className="lg:hidden fixed inset-0 z-[90] bg-black/70"
       />
 
       {/* Panel */}
@@ -393,7 +393,7 @@ function MobileMenu({
         role="dialog"
         aria-modal="true"
         aria-label="Ana menü"
-        className="md:hidden fixed right-0 top-0 z-[100] h-screen w-[280px] sm:w-[320px] bg-background border-l border-primary/30 shadow-2xl flex-col"
+        className="lg:hidden fixed right-0 top-0 z-[100] h-screen w-[280px] sm:w-[320px] bg-background border-l border-primary/30 shadow-2xl flex-col"
       >
         <div className="flex items-center justify-between border-b border-primary/20 px-4 py-3">
           <div className="font-mono text-sm">
