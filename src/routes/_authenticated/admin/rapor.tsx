@@ -1,10 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { getProfitReport } from "@/lib/admin-audit.functions";
-import { Loader2, TrendingUp, RefreshCw, Download } from "lucide-react";
+import {
+  listManualRevenue,
+  addManualRevenue,
+  deleteManualRevenue,
+  repairDeliveries,
+} from "@/lib/manual-revenue.functions";
+import { Loader2, TrendingUp, RefreshCw, Download, Plus, Trash2, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/_authenticated/admin/rapor")({
   ssr: false,
