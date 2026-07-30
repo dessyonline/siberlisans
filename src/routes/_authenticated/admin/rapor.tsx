@@ -45,8 +45,79 @@ function ReportPage() {
     queryFn: () => reportFn({ data: { from: fromISO, to: toISO, granularity } }),
   });
 
+  // ——— manuel gelir ———
+  const qc = useQueryClient();
+  const listManual = useServerFn(listManualRevenue);
+  const addManual = useServerFn(addManualRevenue);
+  const delManual = useServerFn(deleteManualRevenue);
+  const repairFn = useServerFn(repairDeliveries);
+
+  const [mAmount, setMAmount] = useState("");
+  const [mCost, setMCost] = useState("");
+  const [mLabel, setMLabel] = useState("");
+  const [mDate, setMDate] = useState(toLocalDateInput(new Date()));
+  const [saving, setSaving] = useState(false);
+  const [repairing, setRepairing] = useState(false);
+
+  const { data: manualRows = [] } = useQuery({
+    queryKey: ["manual-revenue", fromISO, toISO],
+    queryFn: () => listManual({ data: { from: fromISO, to: toISO } }),
+  });
+
+  const manualTotal = manualRows.reduce((a, r) => a + Number(r.amount_try), 0);
+
+  async function saveManual() {
+    const amount = Number(mAmount.replace(",", "."));
+    if (!Number.isFinite(amount) || amount === 0) return toast.error("Geçerli bir tutar gir.");
+    if (!mLabel.trim()) return toast.error("Açıklama zorunlu.");
+    setSaving(true);
+    try {
+      await addManual({
+        data: {
+          amount,
+          cost: Number((mCost || "0").replace(",", ".")) || 0,
+          label: mLabel.trim(),
+          occurred_at: new Date(mDate + "T12:00:00").toISOString(),
+        },
+      });
+      toast.success("Ciroya eklendi");
+      setMAmount(""); setMCost(""); setMLabel("");
+      qc.invalidateQueries({ queryKey: ["manual-revenue"] });
+      refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Eklenemedi");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removeManual(id: string) {
+    try {
+      await delManual({ data: { id } });
+      qc.invalidateQueries({ queryKey: ["manual-revenue"] });
+      refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Silinemedi");
+    }
+  }
+
+  async function runRepair() {
+    setRepairing(true);
+    try {
+      const res = await repairFn({ data: {} });
+      const ok = res.filter((r) => r.outcome === "teslim edildi").length;
+      toast.success(ok > 0 ? `${ok} sipariş teslimatı tamamlandı` : "Eksik teslimat bulunamadı");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Onarım başarısız");
+    } finally {
+      setRepairing(false);
+    }
+  }
+
   const series = data?.series ?? [];
   const byProduct = data?.byProduct ?? [];
+
+
 
   const totals = series.reduce(
     (acc, r) => ({
