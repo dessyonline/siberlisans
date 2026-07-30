@@ -214,11 +214,11 @@ function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 w-full pt-3 md:pt-4 px-3 md:px-4">
-      <div className="relative group mx-auto max-w-5xl">
+      <div className="relative group mx-auto max-w-6xl">
         {/* outer glow */}
         <div className="absolute -inset-1 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none" />
 
-        <div className="relative flex items-center justify-between gap-3 md:gap-4 px-4 md:px-5 py-2.5 bg-background/90 backdrop-blur-xl border border-primary/20 rounded-2xl shadow-2xl shadow-primary/5">
+        <div className="relative flex items-center justify-between gap-3 md:gap-4 px-4 md:px-5 py-2.5 bg-background/90 backdrop-blur-xl border border-primary/20 rounded-2xl shadow-2xl">
           {/* bottom status line */}
           <div className="absolute -bottom-px left-8 right-8 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
@@ -234,14 +234,14 @@ function SiteHeader() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-4 xl:gap-5 font-mono text-xs">
+          <nav className="hidden lg:flex items-center gap-3 xl:gap-4 font-mono text-xs">
             <NavLink to="/">anasayfa</NavLink>
             <NavLink to="/urunler">ürünler</NavLink>
             <NavLink to="/paketler">paketler</NavLink>
             <NavLink to="/cekilis">çekiliş</NavLink>
             <NavLink to="/araclar">araçlar</NavLink>
             <NavLink to="/bayilik">bayilik</NavLink>
-            <DealerNavLink userId={user?.id} className="group/item flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors" />
+            <DealerNavLink userId={user?.id} className="group/item flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
             <NavLink to="/blog">blog</NavLink>
             <NavLink to="/nasil-calisir">nasıl-çalışır</NavLink>
             <NavLink to="/sss">SSS</NavLink>
