@@ -13,7 +13,7 @@ import {
 } from '@react-email/components'
 
 export const BRAND = {
-  name: 'SiberLisans',
+  name: 'SİBER LİSANS',
   url: 'https://siberlisans.com',
   accent: '#00b978',
   ink: '#0f1512',
