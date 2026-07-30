@@ -219,7 +219,7 @@ function AdminLayout() {
       </div>
 
       {/* DESKTOP: always-visible fixed left sidebar */}
-      <aside className="hidden md:fixed md:left-0 md:top-14 md:bottom-0 md:z-30 md:flex md:w-72 md:flex-col border-r border-primary/20 bg-background/95 backdrop-blur overflow-hidden">
+      <aside className="hidden md:fixed md:left-0 md:top-[88px] md:bottom-0 md:z-20 md:flex md:w-72 md:flex-col border-r border-t border-primary/20 bg-background/95 backdrop-blur overflow-hidden">
         <div className="border-b border-border/40 px-4 py-3 shrink-0">
           <div className="font-mono text-xs text-muted-foreground">
             $ /admin<span className="terminal-caret" />
