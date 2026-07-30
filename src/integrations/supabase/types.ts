@@ -3108,6 +3108,18 @@ export type Database = {
           revenue: number
         }[]
       }
+      admin_dashboard_financials: {
+        Args: { _days?: number }
+        Returns: {
+          approved_orders: number
+          chart: Json
+          discount_total: number
+          today_revenue: number
+          total_cost: number
+          total_profit: number
+          total_revenue: number
+        }[]
+      }
       admin_dashboard_summary: {
         Args: never
         Returns: {
