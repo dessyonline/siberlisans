@@ -262,7 +262,7 @@ function SiteHeader() {
                 <ChevronDown className="h-3 w-3 text-primary/40 group-hover/item:text-primary transition-colors" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="font-mono text-xs bg-background/95 backdrop-blur-xl border-primary/20 min-w-44">
-                <span className="xl:hidden">
+                <span className="2xl:hidden">
                   <DropdownMenuItem asChild><Link to="/bayilik" className="cursor-pointer"><span className="text-primary/50">./</span>bayilik</Link></DropdownMenuItem>
                   <DealerNavLink userId={user?.id} className="flex items-center gap-1 px-2 py-1.5 rounded-sm text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" />
                 </span>
