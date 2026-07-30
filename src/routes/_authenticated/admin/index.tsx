@@ -15,6 +15,8 @@ import {
   Package,
   UserPlus,
   LogIn,
+  BadgePercent,
+  CircleDollarSign,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
@@ -65,7 +67,7 @@ function Dashboard() {
         return q;
       };
 
-      const [ordersRes, pendingRes, keysRes, lowStockRes, messagesRes, recentRes, topProductsRes] =
+      const [ordersRes, pendingRes, keysRes, lowStockRes, messagesRes, recentRes, topProductsRes, financialRes] =
         await Promise.all([
           buildOrders(),
           buildPending(),
@@ -86,32 +88,21 @@ function Dashboard() {
             .limit(5),
           buildRecent(),
           buildTop(),
+          supabase.rpc("admin_dashboard_financials" as never, { _days: 14 } as never),
         ]);
 
       const all = ordersRes.data ?? [];
       const approved = all.filter((o) => o.status === "approved");
-      const totalRev = approved.reduce((s, o) => s + Number(o.price_try), 0);
-
-      const now = new Date();
-      const today = now.toISOString().slice(0, 10);
-      const todayRev = approved
-        .filter((o) => new Date(o.created_at).toISOString().slice(0, 10) === today)
-        .reduce((s, o) => s + Number(o.price_try), 0);
-
-      const days: Record<string, number> = {};
-      for (let i = 13; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        days[d.toISOString().slice(0, 10)] = 0;
-      }
-      approved.forEach((o) => {
-        const k = new Date(o.created_at).toISOString().slice(0, 10);
-        if (k in days) days[k] += Number(o.price_try);
-      });
-      const chart = Object.entries(days).map(([date, revenue]) => ({
-        date: date.slice(5),
-        revenue,
-      }));
+      if (financialRes.error) throw financialRes.error;
+      const financial = (financialRes.data as unknown as Array<{
+        total_revenue: number;
+        today_revenue: number;
+        total_cost: number;
+        total_profit: number;
+        discount_total: number;
+        approved_orders: number;
+        chart: Array<{ date: string; revenue: number; cost: number; profit: number }>;
+      }> | null)?.[0];
 
       const lowStock = (lowStockRes.data ?? [])
         .map((p) => {
@@ -146,12 +137,15 @@ function Dashboard() {
         .map((p) => ({ ...p, name: p.name.length > 18 ? p.name.slice(0, 17) + "…" : p.name }));
 
       return {
-        totalRev,
-        todayRev,
-        totalOrders: approved.length,
+        totalRev: Number(financial?.total_revenue ?? 0),
+        todayRev: Number(financial?.today_revenue ?? 0),
+        totalCost: Number(financial?.total_cost ?? 0),
+        totalProfit: Number(financial?.total_profit ?? 0),
+        discountTotal: Number(financial?.discount_total ?? 0),
+        totalOrders: Number(financial?.approved_orders ?? approved.length),
         pendingCount: pendingRes.count ?? 0,
         availableKeys: keysRes.count ?? 0,
-        chart,
+        chart: financial?.chart ?? [],
         lowStock,
         messages: messagesRes.data ?? [],
         recent: recentRes.data ?? [],
@@ -168,7 +162,7 @@ function Dashboard() {
         <h1 className="mt-1 text-2xl sm:text-3xl font-semibold tracking-tight">Kontrol Merkezi</h1>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
         <Stat
           icon={TrendingUp}
           label="Toplam Ciro"
@@ -180,6 +174,19 @@ function Dashboard() {
           icon={ShoppingBag}
           label="Toplam Sipariş"
           value={String(stats?.totalOrders ?? 0)}
+        />
+        <Stat
+          icon={CircleDollarSign}
+          label="Net Kâr"
+          value={`₺${(stats?.totalProfit ?? 0).toLocaleString("tr-TR")}`}
+          sub={`Maliyet ₺${(stats?.totalCost ?? 0).toLocaleString("tr-TR")}`}
+          accent="primary"
+        />
+        <Stat
+          icon={BadgePercent}
+          label="Kupon İndirimi"
+          value={`₺${(stats?.discountTotal ?? 0).toLocaleString("tr-TR")}`}
+          sub="Cirodan düşüldü"
         />
         <Stat
           icon={Clock}
