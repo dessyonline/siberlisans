@@ -242,16 +242,17 @@ function SiteHeader() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden lg:flex min-w-0 flex-1 items-center justify-center gap-3 xl:gap-4 font-mono text-xs">
+          <nav className="hidden lg:flex min-w-0 flex-1 items-center justify-center gap-3 xl:gap-4 font-mono text-xs overflow-hidden">
             <NavLink to="/">anasayfa</NavLink>
             <NavLink to="/urunler">ürünler</NavLink>
             <NavLink to="/paketler">paketler</NavLink>
             <NavLink to="/araclar">araçlar</NavLink>
             <NavLink to="/cekilis">çekiliş</NavLink>
-            <span className="hidden xl:contents">
+            <span className="hidden 2xl:contents">
               <NavLink to="/bayilik">bayilik</NavLink>
-              <DealerNavLink userId={user?.id} className="group/item flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
+              <DealerNavLink userId={user?.id} className="group/item shrink-0 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
             </span>
+
 
             <DropdownMenu>
               <DropdownMenuTrigger className="group/item flex items-center gap-1 text-xs whitespace-nowrap outline-none">
