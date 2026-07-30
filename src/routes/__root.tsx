@@ -9,7 +9,6 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import {
-  Terminal,
   ShieldCheck,
   LogIn,
   LayoutDashboard,
