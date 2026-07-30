@@ -336,7 +336,7 @@ function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
     <Link
       to={to}
-      className="group/item flex items-center gap-1 text-xs transition-colors whitespace-nowrap"
+      className="group/item shrink-0 flex items-center gap-1 text-xs transition-colors whitespace-nowrap"
     >
       {({ isActive }) => (
         <>
