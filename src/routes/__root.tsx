@@ -35,6 +35,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 import { AuthProvider, useAuth } from "../lib/auth-context";
+import { cn } from "../lib/utils";
 import { Button } from "../components/ui/button";
 import { Toaster } from "../components/ui/sonner";
 import { supabase } from "../integrations/supabase/client";
