@@ -133,6 +133,7 @@ import { Route as AuthenticatedAdminBayilerRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminAyarlarRouteImport } from './routes/_authenticated/admin/ayarlar'
 import { Route as AuthenticatedAdminAraclarRouteImport } from './routes/_authenticated/admin/araclar'
 import { Route as AuthenticatedAdminAboneliklerRouteImport } from './routes/_authenticated/admin/abonelikler'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicHooksWeeklyDigestRouteImport } from './routes/api/public/hooks/weekly-digest'
 import { Route as ApiPublicHooksUniquelisansCatalogRouteImport } from './routes/api/public/hooks/uniquelisans-catalog'
 import { Route as ApiPublicHooksSyncUniquelisansRouteImport } from './routes/api/public/hooks/sync-uniquelisans'
@@ -825,6 +826,12 @@ const AuthenticatedAdminAboneliklerRoute =
     path: '/abonelikler',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksWeeklyDigestRoute =
   ApiPublicHooksWeeklyDigestRouteImport.update({
     id: '/api/public/hooks/weekly-digest',
@@ -1024,6 +1031,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
   '/api/public/hooks/uniquelisans-catalog': typeof ApiPublicHooksUniquelisansCatalogRoute
   '/api/public/hooks/weekly-digest': typeof ApiPublicHooksWeeklyDigestRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -1158,6 +1166,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
   '/api/public/hooks/uniquelisans-catalog': typeof ApiPublicHooksUniquelisansCatalogRoute
   '/api/public/hooks/weekly-digest': typeof ApiPublicHooksWeeklyDigestRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1296,6 +1305,7 @@ export interface FileRoutesById {
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
   '/api/public/hooks/uniquelisans-catalog': typeof ApiPublicHooksUniquelisansCatalogRoute
   '/api/public/hooks/weekly-digest': typeof ApiPublicHooksWeeklyDigestRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1434,6 +1444,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/sync-uniquelisans'
     | '/api/public/hooks/uniquelisans-catalog'
     | '/api/public/hooks/weekly-digest'
+    | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1568,6 +1579,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/sync-uniquelisans'
     | '/api/public/hooks/uniquelisans-catalog'
     | '/api/public/hooks/weekly-digest'
+    | '/lovable/email/queue/process'
   id:
     | '__root__'
     | '/'
@@ -1705,6 +1717,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/sync-uniquelisans'
     | '/api/public/hooks/uniquelisans-catalog'
     | '/api/public/hooks/weekly-digest'
+    | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1765,6 +1778,7 @@ export interface RootRouteChildren {
   ApiPublicHooksSyncUniquelisansRoute: typeof ApiPublicHooksSyncUniquelisansRoute
   ApiPublicHooksUniquelisansCatalogRoute: typeof ApiPublicHooksUniquelisansCatalogRoute
   ApiPublicHooksWeeklyDigestRoute: typeof ApiPublicHooksWeeklyDigestRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -2637,6 +2651,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAboneliklerRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/weekly-digest': {
       id: '/api/public/hooks/weekly-digest'
       path: '/api/public/hooks/weekly-digest'
@@ -2979,6 +3000,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksUniquelisansCatalogRoute:
     ApiPublicHooksUniquelisansCatalogRoute,
   ApiPublicHooksWeeklyDigestRoute: ApiPublicHooksWeeklyDigestRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
