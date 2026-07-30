@@ -25,7 +25,15 @@ import {
   LogOut,
   X,
   Sparkles,
+  ChevronDown,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "../components/ui/dropdown-menu";
+
 
 
 
@@ -234,21 +242,38 @@ function SiteHeader() {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden lg:flex items-center gap-3 xl:gap-4 font-mono text-xs">
+          <nav className="hidden lg:flex min-w-0 flex-1 items-center justify-center gap-3 xl:gap-4 font-mono text-xs">
             <NavLink to="/">anasayfa</NavLink>
             <NavLink to="/urunler">ürünler</NavLink>
             <NavLink to="/paketler">paketler</NavLink>
-            <NavLink to="/cekilis">çekiliş</NavLink>
             <NavLink to="/araclar">araçlar</NavLink>
-            <NavLink to="/bayilik">bayilik</NavLink>
-            <DealerNavLink userId={user?.id} className="group/item flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
-            <NavLink to="/blog">blog</NavLink>
-            <NavLink to="/nasil-calisir">nasıl-çalışır</NavLink>
-            <NavLink to="/sss">SSS</NavLink>
+            <NavLink to="/cekilis">çekiliş</NavLink>
+            <span className="hidden xl:contents">
+              <NavLink to="/bayilik">bayilik</NavLink>
+              <DealerNavLink userId={user?.id} className="group/item flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
+            </span>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger className="group/item flex items-center gap-1 text-xs whitespace-nowrap outline-none">
+                <span className="font-bold text-primary/40 group-hover/item:text-primary transition-colors">./</span>
+                <span className="tracking-wide text-muted-foreground group-hover/item:text-primary transition-colors">daha</span>
+                <ChevronDown className="h-3 w-3 text-primary/40 group-hover/item:text-primary transition-colors" />
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="font-mono text-xs bg-background/95 backdrop-blur-xl border-primary/20 min-w-44">
+                <span className="xl:hidden">
+                  <DropdownMenuItem asChild><Link to="/bayilik" className="cursor-pointer"><span className="text-primary/50">./</span>bayilik</Link></DropdownMenuItem>
+                  <DealerNavLink userId={user?.id} className="flex items-center gap-1 px-2 py-1.5 rounded-sm text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" />
+                </span>
+                <DropdownMenuItem asChild><Link to="/blog" className="cursor-pointer"><span className="text-primary/50">./</span>blog</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link to="/nasil-calisir" className="cursor-pointer"><span className="text-primary/50">./</span>nasıl-çalışır</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link to="/sss" className="cursor-pointer"><span className="text-primary/50">./</span>SSS</Link></DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
 
           {/* Actions */}
           <div className="flex items-center gap-1 md:gap-2 pl-3 md:pl-4 border-l border-primary/10 shrink-0">
+
             <CartButton compact />
             <div className="hidden sm:block">
               <NotificationBell />
