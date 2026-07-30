@@ -369,12 +369,13 @@ function HeaderUserBadge({ userId }: { userId: string }) {
     refetchInterval: 15000,
   });
   return (
-    <span className="flex items-center gap-1.5">
+    <span className="flex shrink-0 items-center gap-1.5">
       <UserAvatar id={data?.avatar_id} size={22} />
-      <span className="hidden md:inline font-mono text-[11px] text-primary">
+      <span className="hidden xl:inline font-mono text-[11px] text-primary whitespace-nowrap">
         ₺{(data?.balance_try ?? 0).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
       </span>
     </span>
+
   );
 }
 
