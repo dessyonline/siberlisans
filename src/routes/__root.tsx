@@ -9,7 +9,6 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import {
-  Terminal,
   ShieldCheck,
   LogIn,
   LayoutDashboard,
@@ -35,6 +34,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 
 import { AuthProvider, useAuth } from "../lib/auth-context";
+import { cn } from "../lib/utils";
 import { Button } from "../components/ui/button";
 import { Toaster } from "../components/ui/sonner";
 import { supabase } from "../integrations/supabase/client";
@@ -213,81 +213,112 @@ function SiteHeader() {
   const { user, isAdmin, signOut } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-primary/20 bg-background/95">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-1 px-2 sm:gap-2 sm:px-4">
-        <Link to="/" className="flex items-center gap-1.5 font-mono shrink-0 min-w-0">
-          <Terminal className="h-5 w-5 text-primary shrink-0" />
-          <span className="text-base sm:text-lg tracking-tight truncate">
-            <span className="neon-text">Siber</span>
-            <span className="text-foreground">PHP</span>
-            <span className="text-primary animate-pulse">_</span>
-          </span>
-        </Link>
+    <header className="sticky top-0 z-40 w-full pt-3 md:pt-4 px-3 md:px-4">
+      <div className="relative group mx-auto max-w-6xl">
+        {/* outer glow */}
+        <div className="absolute -inset-1 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none" />
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-6 font-mono text-sm">
-          <Link to="/" className="text-muted-foreground hover:text-primary">./anasayfa</Link>
-          <Link to="/urunler" className="text-muted-foreground hover:text-primary">./ürünler</Link>
-          <Link to="/paketler" className="text-muted-foreground hover:text-primary">./paketler</Link>
-          <Link to="/cekilis" className="text-primary hover:text-primary/80">./çekiliş</Link>
-          <Link to="/araclar" className="text-primary hover:text-primary/80">./araçlar</Link>
-          <Link to="/bayilik" className="text-muted-foreground hover:text-primary">./bayilik</Link>
-          <DealerNavLink userId={user?.id} className="text-primary hover:text-primary/80" />
-          <Link to="/blog" className="text-muted-foreground hover:text-primary">./blog</Link>
-          <Link to="/nasil-calisir" className="text-muted-foreground hover:text-primary">./nasıl-çalışır</Link>
-          <Link to="/sss" className="text-muted-foreground hover:text-primary">./SSS</Link>
-        </nav>
+        <div className="relative flex items-center justify-between gap-3 md:gap-4 px-4 md:px-5 py-2.5 bg-background/90 backdrop-blur-xl border border-primary/20 rounded-2xl shadow-2xl">
+          {/* bottom status line */}
+          <div className="absolute -bottom-px left-8 right-8 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
 
-        {/* Right side actions */}
-        <div className="flex items-center gap-0.5 sm:gap-2 shrink-0">
-          {/* Mobile hamburger menu */}
-          <MobileMenu user={user} isAdmin={isAdmin} signOut={signOut} />
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 pr-3 md:pr-4 border-r border-primary/10 shrink-0 min-w-0">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+            </span>
+            <span className="font-mono text-sm font-bold tracking-tight text-primary truncate">
+              ~/siberphp
+            </span>
+          </Link>
 
+          {/* Desktop nav */}
+          <nav className="hidden lg:flex items-center gap-3 xl:gap-4 font-mono text-xs">
+            <NavLink to="/">anasayfa</NavLink>
+            <NavLink to="/urunler">ürünler</NavLink>
+            <NavLink to="/paketler">paketler</NavLink>
+            <NavLink to="/cekilis">çekiliş</NavLink>
+            <NavLink to="/araclar">araçlar</NavLink>
+            <NavLink to="/bayilik">bayilik</NavLink>
+            <DealerNavLink userId={user?.id} className="group/item flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
+            <NavLink to="/blog">blog</NavLink>
+            <NavLink to="/nasil-calisir">nasıl-çalışır</NavLink>
+            <NavLink to="/sss">SSS</NavLink>
+          </nav>
 
-          <CartButton compact />
-          <div className="hidden sm:block"><NotificationBell /></div>
-          <ThemeToggle className="hidden sm:inline-flex" />
+          {/* Actions */}
+          <div className="flex items-center gap-1 md:gap-2 pl-3 md:pl-4 border-l border-primary/10 shrink-0">
+            <CartButton compact />
+            <div className="hidden sm:block">
+              <NotificationBell />
+            </div>
+            <ThemeToggle className="hidden sm:inline-flex" />
 
-
-
-
-
-          {user ? (
-            <>
-              {isAdmin && (
-                <Button asChild size="sm" variant="outline" className="hidden sm:inline-flex font-mono px-2 sm:px-3">
-                  <Link to="/admin" aria-label="Admin">
-                    <LayoutDashboard className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">admin</span>
+            {user ? (
+              <>
+                {isAdmin && (
+                  <Button asChild size="sm" variant="outline" className="hidden md:inline-flex font-mono px-2 h-8 border-primary/30 text-primary hover:bg-primary/10">
+                    <Link to="/admin" aria-label="Admin">
+                      <LayoutDashboard className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                )}
+                <Button asChild size="sm" variant="ghost" className="font-mono px-2 h-8 hover:bg-primary/10">
+                  <Link to="/hesabim" aria-label="Hesabım" className="flex items-center gap-1.5">
+                    <HeaderUserBadge userId={user.id} />
                   </Link>
                 </Button>
-              )}
-              <Button asChild size="sm" variant="ghost" className="font-mono px-2 sm:px-3">
-                <Link to="/hesabim" aria-label="Hesabım" className="flex items-center gap-1.5">
-                  <HeaderUserBadge userId={user.id} />
-                  <span className="hidden sm:inline">hesabım</span>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={signOut}
+                  className="hidden md:inline-flex font-mono text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </>
+            ) : (
+              <Button asChild size="sm" className="font-mono h-8 px-3 bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-[0_0_15px_hsl(var(--primary)/0.4)]">
+                <Link to="/auth" aria-label="Giriş">
+                  <LogIn className="h-4 w-4 mr-1" />
+                  <span className="hidden sm:inline">giriş</span>
                 </Link>
               </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={signOut}
-                className="hidden sm:inline-flex font-mono text-muted-foreground"
-              >
-                çıkış
-              </Button>
-            </>
-          ) : (
-            <Button asChild size="sm" className="font-mono px-2 sm:px-3">
-              <Link to="/auth" aria-label="Giriş">
-                <LogIn className="h-4 w-4 sm:mr-1" />
-                <span className="hidden sm:inline">giriş</span>
-              </Link>
-            </Button>
-          )}
+            )}
+
+            <MobileMenu user={user} isAdmin={isAdmin} signOut={signOut} />
+          </div>
+        </div>
+
+        {/* Environment label */}
+        <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-background/80 border border-primary/20 rounded-sm">
+          <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-primary/60 leading-none">
+            SiberPHP · LIVE
+          </p>
         </div>
       </div>
     </header>
+  );
+}
+
+function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
+  return (
+    <Link
+      to={to}
+      className="group/item flex items-center gap-1 text-xs transition-colors whitespace-nowrap"
+    >
+      {({ isActive }) => (
+        <>
+          <span className={cn("font-bold transition-colors", isActive ? "text-primary" : "text-primary/40 group-hover/item:text-primary")}>
+            ./
+          </span>
+          <span className={cn("tracking-wide", isActive ? "text-primary" : "text-muted-foreground group-hover/item:text-primary")}>
+            {children}
+          </span>
+        </>
+      )}
+    </Link>
   );
 }
 
@@ -342,7 +373,7 @@ function MobileMenu({
         aria-label="Menü"
         aria-expanded="false"
         aria-controls="mobile-menu-panel"
-        className="md:hidden relative z-[110] inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none"
+        className="lg:hidden relative z-[110] inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none"
       >
         <Menu className="h-5 w-5 pointer-events-none" />
       </button>
@@ -351,7 +382,7 @@ function MobileMenu({
       <div
         data-mobile-menu-backdrop
         aria-hidden="true"
-        className="md:hidden fixed inset-0 z-[90] bg-black/70"
+        className="lg:hidden fixed inset-0 z-[90] bg-black/70"
       />
 
       {/* Panel */}
@@ -361,7 +392,7 @@ function MobileMenu({
         role="dialog"
         aria-modal="true"
         aria-label="Ana menü"
-        className="md:hidden fixed right-0 top-0 z-[100] h-screen w-[280px] sm:w-[320px] bg-background border-l border-primary/30 shadow-2xl flex-col"
+        className="lg:hidden fixed right-0 top-0 z-[100] h-screen w-[280px] sm:w-[320px] bg-background border-l border-primary/30 shadow-2xl flex-col"
       >
         <div className="flex items-center justify-between border-b border-primary/20 px-4 py-3">
           <div className="font-mono text-sm">
