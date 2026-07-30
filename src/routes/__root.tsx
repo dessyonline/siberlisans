@@ -443,9 +443,9 @@ const MOBILE_MENU_SCRIPT = `(function(){
 function SiteFooter() {
   return (
     <footer className="border-t border-border/60 bg-background/60 backdrop-blur-xl mt-16">
-      <div className="mx-auto max-w-7xl px-4 py-8 font-mono text-xs">
-        <div className="grid gap-6 md:grid-cols-4">
-          <div>
+      <div className="mx-auto max-w-7xl px-4 py-10 md:px-8 md:py-14 font-mono text-xs">
+        <div className="grid gap-8 sm:grid-cols-2 md:gap-10 lg:grid-cols-[1.4fr_1fr_1fr_1fr] lg:gap-14">
+          <div className="min-w-0 max-w-sm">
             <div className="flex items-center gap-2 text-foreground mb-2">
               <ShieldCheck className="h-4 w-4 text-primary" />
               <span className="neon-text">SiberPHP</span>
