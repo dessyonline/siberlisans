@@ -83,6 +83,7 @@ function ReportPage() {
       toast.success("Ciroya eklendi");
       setMAmount(""); setMCost(""); setMLabel("");
       qc.invalidateQueries({ queryKey: ["manual-revenue"] });
+      qc.invalidateQueries({ queryKey: ["admin-stats"] });
       refetch();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Eklenemedi");
@@ -95,6 +96,7 @@ function ReportPage() {
     try {
       await delManual({ data: { id } });
       qc.invalidateQueries({ queryKey: ["manual-revenue"] });
+      qc.invalidateQueries({ queryKey: ["admin-stats"] });
       refetch();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Silinemedi");
