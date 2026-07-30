@@ -25,7 +25,15 @@ import {
   LogOut,
   X,
   Sparkles,
+  ChevronDown,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "../components/ui/dropdown-menu";
+
 
 
 
