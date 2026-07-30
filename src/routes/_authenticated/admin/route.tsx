@@ -171,7 +171,7 @@ function AdminLayout() {
   return (
     <div className="min-h-[calc(100vh-3.5rem)] px-3 py-3 sm:px-3 sm:py-4 md:px-0 md:py-0">
       {/* MOBILE header + Sheet */}
-      <div className="md:hidden sticky top-16 z-30 mb-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-background/80 backdrop-blur px-2 py-2">
+      <div className="md:hidden sticky top-[88px] z-20 mb-4 flex items-center gap-2 rounded-lg border border-primary/20 bg-background/80 backdrop-blur px-2 py-2">
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
             <Button
@@ -219,7 +219,7 @@ function AdminLayout() {
       </div>
 
       {/* DESKTOP: always-visible fixed left sidebar */}
-      <aside className="hidden md:fixed md:left-0 md:top-14 md:bottom-0 md:z-30 md:flex md:w-72 md:flex-col border-r border-primary/20 bg-background/95 backdrop-blur overflow-hidden">
+      <aside className="hidden md:fixed md:left-0 md:top-[88px] md:bottom-0 md:z-20 md:flex md:w-72 md:flex-col border-r border-t border-primary/20 bg-background/95 backdrop-blur overflow-hidden">
         <div className="border-b border-border/40 px-4 py-3 shrink-0">
           <div className="font-mono text-xs text-muted-foreground">
             $ /admin<span className="terminal-caret" />
