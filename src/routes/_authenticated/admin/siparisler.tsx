@@ -12,7 +12,17 @@ import { OrderDetailDrawer } from "@/components/admin/orders/OrderDetailDrawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { RefreshCw, Search, X, ChevronLeft, ChevronRight, Zap, Ban } from "lucide-react";
+import { RefreshCw, Search, X, ChevronLeft, ChevronRight, Zap, Ban, Download } from "lucide-react";
+
+const STATUS_TABS: { value: string; label: string }[] = [
+  { value: "all", label: "tümü" },
+  { value: "reviewing", label: "inceleniyor" },
+  { value: "pending", label: "bekliyor" },
+  { value: "approved", label: "onaylı" },
+  { value: "rejected", label: "reddedildi" },
+  { value: "failed", label: "başarısız" },
+  { value: "cancelled", label: "iptal" },
+];
 
 export const Route = createFileRoute("/_authenticated/admin/siparisler")({
   component: AdminOrdersPage,
@@ -31,7 +41,7 @@ function AdminOrdersPage() {
   const syncOneFn = useServerFn(syncUniquelisansOrder);
   const syncAllFn = useServerFn(syncAllPendingUniquelisans);
 
-  const [status, setStatus] = useState("reviewing");
+  const [status, setStatus] = useState("all");
   const [range, setRange] = useState<"today" | "7d" | "30d" | "all">("all");
   const [q, setQ] = useState("");
   const [term, setTerm] = useState("");
@@ -196,8 +206,39 @@ function AdminOrdersPage() {
       else toast.error(`${res.ref}: ${"message" in res ? res.message : res.reason}`);
     });
 
+  const exportCsv = () => {
+    const head = ["referans", "musteri", "eposta", "urun", "tutar", "indirim", "net", "odeme", "durum", "tarih"];
+    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const body = rows.map((o) =>
+      [
+        o.reference_code,
+        o.buyer_name ?? "",
+        o.buyer_email ?? "",
+        o.product_name ?? "",
+        o.price_try,
+        o.discount_try,
+        o.net_try,
+        o.paid_with ?? "",
+        o.status,
+        new Date(o.created_at).toLocaleString("tr-TR"),
+      ]
+        .map(esc)
+        .join(","),
+    );
+    const blob = new Blob(["\uFEFF" + [head.join(","), ...body].join("\n")], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `siparisler-${status}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${rows.length} kayıt dışa aktarıldı`);
+  };
+
   const resetFilters = () => {
-    setStatus("reviewing");
+    setStatus("all");
     setRange("all");
     setQ("");
     setProductId("");
@@ -218,9 +259,13 @@ function AdminOrdersPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="font-mono" disabled={rows.length === 0} onClick={exportCsv}>
+            <Download className="h-3.5 w-3.5 mr-1" /> csv
+          </Button>
           <Button variant="outline" size="sm" className="font-mono" disabled={busy} onClick={syncAll}>
             <Zap className="h-3.5 w-3.5 mr-1" /> tümünü senkronla
           </Button>
+
           <Button variant="outline" size="sm" className="font-mono" onClick={() => refetch()}>
             <RefreshCw className={`h-3.5 w-3.5 mr-1 ${isFetching ? "animate-spin" : ""}`} /> yenile
           </Button>
@@ -229,7 +274,28 @@ function AdminOrdersPage() {
 
       <OrdersKpiBar kpis={kpis} live={live} />
 
+      <div className="flex flex-wrap gap-1.5">
+        {STATUS_TABS.map((t) => (
+          <button
+            key={t.value}
+            onClick={() => {
+              setStatus(t.value);
+              setSelected(new Set());
+              setPage(1);
+            }}
+            className={`rounded-md border px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider transition ${
+              status === t.value
+                ? "border-primary/60 bg-primary/10 text-primary neon-glow"
+                : "border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       <div className="glass-card rounded-xl p-4 space-y-3">
+
         <div className="flex flex-wrap gap-2">
           <div className="relative flex-1 min-w-[220px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -240,22 +306,8 @@ function AdminOrdersPage() {
               className="pl-9 font-mono text-xs"
             />
           </div>
-          <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              setPage(1);
-            }}
-            className="rounded-md border border-border bg-input px-3 py-2 font-mono text-xs"
-          >
-            <option value="reviewing">inceleniyor</option>
-            <option value="pending">bekliyor</option>
-            <option value="approved">onaylı</option>
-            <option value="rejected">reddedildi</option>
-            <option value="failed">başarısız</option>
-            <option value="cancelled">iptal</option>
-            <option value="all">tümü</option>
-          </select>
+          
+
           <select
             value={range}
             onChange={(e) => {
