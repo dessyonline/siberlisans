@@ -206,6 +206,37 @@ function AdminOrdersPage() {
       else toast.error(`${res.ref}: ${"message" in res ? res.message : res.reason}`);
     });
 
+  const exportCsv = () => {
+    const head = ["referans", "musteri", "eposta", "urun", "tutar", "indirim", "net", "odeme", "durum", "tarih"];
+    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const body = rows.map((o) =>
+      [
+        o.reference_code,
+        o.buyer_name ?? "",
+        o.buyer_email ?? "",
+        o.product_name ?? "",
+        o.price_try,
+        o.discount_try,
+        o.net_try,
+        o.paid_with ?? "",
+        o.status,
+        new Date(o.created_at).toLocaleString("tr-TR"),
+      ]
+        .map(esc)
+        .join(","),
+    );
+    const blob = new Blob(["\uFEFF" + [head.join(","), ...body].join("\n")], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `siparisler-${status}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`${rows.length} kayıt dışa aktarıldı`);
+  };
+
   const resetFilters = () => {
     setStatus("all");
     setRange("all");
@@ -228,9 +259,13 @@ function AdminOrdersPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" className="font-mono" disabled={rows.length === 0} onClick={exportCsv}>
+            <Download className="h-3.5 w-3.5 mr-1" /> csv
+          </Button>
           <Button variant="outline" size="sm" className="font-mono" disabled={busy} onClick={syncAll}>
             <Zap className="h-3.5 w-3.5 mr-1" /> tümünü senkronla
           </Button>
+
           <Button variant="outline" size="sm" className="font-mono" onClick={() => refetch()}>
             <RefreshCw className={`h-3.5 w-3.5 mr-1 ${isFetching ? "animate-spin" : ""}`} /> yenile
           </Button>
