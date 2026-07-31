@@ -250,22 +250,8 @@ function AdminOrdersPage() {
               className="pl-9 font-mono text-xs"
             />
           </div>
-          <select
-            value={status}
-            onChange={(e) => {
-              setStatus(e.target.value);
-              setPage(1);
-            }}
-            className="rounded-md border border-border bg-input px-3 py-2 font-mono text-xs"
-          >
-            <option value="reviewing">inceleniyor</option>
-            <option value="pending">bekliyor</option>
-            <option value="approved">onaylı</option>
-            <option value="rejected">reddedildi</option>
-            <option value="failed">başarısız</option>
-            <option value="cancelled">iptal</option>
-            <option value="all">tümü</option>
-          </select>
+          <div className="hidden" />
+
           <select
             value={range}
             onChange={(e) => {
