@@ -12,7 +12,17 @@ import { OrderDetailDrawer } from "@/components/admin/orders/OrderDetailDrawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { RefreshCw, Search, X, ChevronLeft, ChevronRight, Zap, Ban } from "lucide-react";
+import { RefreshCw, Search, X, ChevronLeft, ChevronRight, Zap, Ban, Download } from "lucide-react";
+
+const STATUS_TABS: { value: string; label: string }[] = [
+  { value: "all", label: "tümü" },
+  { value: "reviewing", label: "inceleniyor" },
+  { value: "pending", label: "bekliyor" },
+  { value: "approved", label: "onaylı" },
+  { value: "rejected", label: "reddedildi" },
+  { value: "failed", label: "başarısız" },
+  { value: "cancelled", label: "iptal" },
+];
 
 export const Route = createFileRoute("/_authenticated/admin/siparisler")({
   component: AdminOrdersPage,
@@ -31,7 +41,7 @@ function AdminOrdersPage() {
   const syncOneFn = useServerFn(syncUniquelisansOrder);
   const syncAllFn = useServerFn(syncAllPendingUniquelisans);
 
-  const [status, setStatus] = useState("reviewing");
+  const [status, setStatus] = useState("all");
   const [range, setRange] = useState<"today" | "7d" | "30d" | "all">("all");
   const [q, setQ] = useState("");
   const [term, setTerm] = useState("");
@@ -197,7 +207,7 @@ function AdminOrdersPage() {
     });
 
   const resetFilters = () => {
-    setStatus("reviewing");
+    setStatus("all");
     setRange("all");
     setQ("");
     setProductId("");
