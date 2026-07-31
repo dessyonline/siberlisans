@@ -287,11 +287,19 @@ function Payment() {
     return acc;
   }, {});
 
-  // Uniquelisans kaynaklı ürünler: müşteri gerekli bilgileri girmezse admin API'den satın alamaz
-  const productSource = (order.product as { source?: string | null } | null)?.source ?? null;
-  const baseRequiredFields = ((order.product as { required_fields?: unknown } | null)?.required_fields ?? []) as Array<{
-    name: string; el_type?: string; input_type?: string; required?: boolean;
-  }>;
+  // Ürün "müşteriden bilgi iste" alanları tanımlıysa (link / mail / şifre vb.) checkout'ta sor
+  const baseRequiredFields = (
+    isCartOrder
+      ? orderItems.flatMap(
+          (i) =>
+            (((i.product as { required_fields?: unknown } | null)?.required_fields ?? []) as Array<{
+              name: string; el_type?: string; input_type?: string; required?: boolean;
+            }>),
+        )
+      : (((order.product as { required_fields?: unknown } | null)?.required_fields ?? []) as Array<{
+          name: string; el_type?: string; input_type?: string; required?: boolean;
+        }>)
+  ).filter((f, idx, arr) => f?.name && arr.findIndex((x) => x.name === f.name) === idx);
   // Ürünlerden herhangi biri "mail tanımlı" ise checkout'ta e-posta iste
   const requiresEmail = isCartOrder
     ? orderItems.some((i) => (i.product as { requires_email?: boolean } | null)?.requires_email)
@@ -301,9 +309,8 @@ function Payment() {
       ? [{ name: "license_email", input_type: "email", required: true }, ...baseRequiredFields]
       : baseRequiredFields;
   const requiredFields = emailFieldMerged;
-  const needsCheckoutFields =
-    (productSource === "uniquelisans" || requiresEmail) &&
-    Array.isArray(requiredFields) && requiredFields.length > 0;
+  const needsCheckoutFields = requiredFields.length > 0;
+
 
 
 
