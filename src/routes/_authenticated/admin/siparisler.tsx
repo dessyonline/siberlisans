@@ -306,7 +306,7 @@ function AdminOrdersPage() {
               className="pl-9 font-mono text-xs"
             />
           </div>
-          <div className="hidden" />
+          
 
           <select
             value={range}
