@@ -239,7 +239,28 @@ function AdminOrdersPage() {
 
       <OrdersKpiBar kpis={kpis} live={live} />
 
+      <div className="flex flex-wrap gap-1.5">
+        {STATUS_TABS.map((t) => (
+          <button
+            key={t.value}
+            onClick={() => {
+              setStatus(t.value);
+              setSelected(new Set());
+              setPage(1);
+            }}
+            className={`rounded-md border px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider transition ${
+              status === t.value
+                ? "border-primary/60 bg-primary/10 text-primary neon-glow"
+                : "border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
       <div className="glass-card rounded-xl p-4 space-y-3">
+
         <div className="flex flex-wrap gap-2">
           <div className="relative flex-1 min-w-[220px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
