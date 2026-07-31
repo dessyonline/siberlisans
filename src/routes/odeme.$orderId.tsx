@@ -157,7 +157,7 @@ function Payment() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, product_id, status, price_try, reference_code, receipt_path, user_note, checkout_fields, created_at, updated_at, approved_at, product:products(name, slug, duration, image_url, delivery_type, manual_fulfillment, unlimited_stock, tier, source, required_fields, shopier_url, requires_email, category), items:order_items(id, product_id, quantity, unit_price_try, product_name_snapshot, product:products(name, slug, image_url, duration, delivery_type, manual_fulfillment, unlimited_stock, shopier_url, requires_email, category)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, delivery_type))), discount:order_discounts(product_id, discount_try, code_snapshot)"
+          "id, product_id, status, price_try, reference_code, receipt_path, user_note, checkout_fields, created_at, updated_at, approved_at, product:products(name, slug, duration, image_url, delivery_type, manual_fulfillment, unlimited_stock, tier, source, required_fields, shopier_url, requires_email, category), items:order_items(id, product_id, quantity, unit_price_try, product_name_snapshot, product:products(name, slug, image_url, duration, delivery_type, manual_fulfillment, unlimited_stock, shopier_url, requires_email, required_fields, category)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, delivery_type))), discount:order_discounts(product_id, discount_try, code_snapshot)"
         )
         .eq("id", orderId)
         .single();
