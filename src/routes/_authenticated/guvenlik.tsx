@@ -55,6 +55,8 @@ function SecurityPage() {
     setIsAdmin(Boolean(roleRes.data));
     setUserId(u.user?.id ?? null);
     setTrustedUntil(trustedDeviceExpiry(u.user?.id ?? null));
+    setCurrentDeviceId(getDeviceId());
+    setDevices(u.user ? await listTrustedDevices() : []);
     setLoading(false);
   };
 
