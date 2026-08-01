@@ -14,7 +14,6 @@ import {
   Play,
   ArrowRight,
   CheckCircle2,
-  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -276,34 +275,19 @@ function LaunchPanel({
         </div>
       )}
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-        {access.launchUrl ? (
-          <Button asChild size="lg" className="w-full sm:w-auto font-mono neon-glow">
-            <a href={access.launchUrl} target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="mr-2 h-4 w-4" />
-              CyberLab'i aç
-            </a>
-          </Button>
-        ) : null}
-
-        <Button
-          asChild
-          size="lg"
-          variant="outline"
-          className="w-full sm:w-auto font-mono border-primary/40"
-        >
-          <a href="/siberlisans-extension.zip" download>
-            <Download className="mr-2 h-4 w-4" />
-            Eklentiyi indir (.zip)
+      {access.launchUrl ? (
+        <Button asChild size="lg" className="w-full sm:w-auto font-mono neon-glow">
+          <a href={access.launchUrl} target="_blank" rel="noopener noreferrer">
+            <ExternalLink className="mr-2 h-4 w-4" />
+            CyberLab'i aç
           </a>
         </Button>
-      </div>
-
-      <p className="font-mono text-[11px] leading-relaxed text-muted-foreground">
-        Kurulum: zip'i çıkart → Chrome'da <span className="text-primary">chrome://extensions</span> →
-        "Geliştirici modu"nu aç → "Paketlenmemiş öğe yükle" → çıkarttığın klasörü seç. Ardından
-        eklentiye siberlisans hesabınla giriş yap.
-      </p>
+      ) : (
+        <p className="font-mono text-xs text-warn">
+          CyberLab sunucu adresi henüz tanımlı değil. Yönetici adresi ekledikten sonra giriş butonu
+          burada görünecek.
+        </p>
+      )}
     </div>
   );
 }
