@@ -6,7 +6,16 @@ import { toast } from "sonner";
 import { ShieldCheck, ShieldAlert, Trash2, ArrowLeft, Terminal, MonitorSmartphone, LogOut } from "lucide-react";
 import { MfaEnroll } from "@/components/security/MfaEnroll";
 import { MfaChallenge } from "@/components/security/MfaChallenge";
-import { trustedDeviceExpiry, untrustDevice, TRUSTED_DEVICE_TTL_DAYS } from "@/lib/trusted-device";
+import {
+  trustedDeviceExpiry,
+  untrustDevice,
+  TRUSTED_DEVICE_TTL_DAYS,
+  MAX_TRUSTED_DEVICES,
+  getDeviceId,
+  listTrustedDevices,
+  removeTrustedDevice,
+  type TrustedDeviceRow,
+} from "@/lib/trusted-device";
 
 export const Route = createFileRoute("/_authenticated/guvenlik")({
   component: SecurityPage,
@@ -30,6 +39,8 @@ function SecurityPage() {
   const [removeTarget, setRemoveTarget] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [trustedUntil, setTrustedUntil] = useState<Date | null>(null);
+  const [devices, setDevices] = useState<TrustedDeviceRow[]>([]);
+  const [currentDeviceId, setCurrentDeviceId] = useState<string | null>(null);
 
   const refresh = async () => {
     setLoading(true);
@@ -44,6 +55,8 @@ function SecurityPage() {
     setIsAdmin(Boolean(roleRes.data));
     setUserId(u.user?.id ?? null);
     setTrustedUntil(trustedDeviceExpiry(u.user?.id ?? null));
+    setCurrentDeviceId(getDeviceId());
+    setDevices(u.user ? await listTrustedDevices() : []);
     setLoading(false);
   };
 
@@ -251,20 +264,61 @@ function SecurityPage() {
                   <span className="text-muted-foreground">[·] hatırlanmıyor</span>
                 )}
               </div>
-              {trustedUntil && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="mt-3 font-mono"
-                  onClick={() => {
-                    untrustDevice(userId);
-                    setTrustedUntil(null);
-                    toast.success("[✓] bu cihaz artık hatırlanmıyor");
-                  }}
-                >
-                  <Trash2 className="mr-1.5 h-3 w-3" /> bu cihazı unut
-                </Button>
-              )}
+
+              <div className="mt-3 space-y-1.5">
+                <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                  kayıtlı cihazlar ({devices.length}/{MAX_TRUSTED_DEVICES})
+                </div>
+                {devices.length === 0 ? (
+                  <div className="font-mono text-[11px] text-muted-foreground">
+                    [·] henüz kayıtlı güvenilir cihaz yok
+                  </div>
+                ) : (
+                  devices.map((d) => {
+                    const isCurrent = d.device_id === currentDeviceId;
+                    return (
+                      <div
+                        key={d.id}
+                        className="flex items-center justify-between gap-3 rounded-md border border-border/50 bg-background/40 px-3 py-2 font-mono text-[11px]"
+                      >
+                        <div className="min-w-0">
+                          <div className="truncate">
+                            {d.label ?? "Bilinmeyen cihaz"}{" "}
+                            {isCurrent && <span className="text-primary">· bu cihaz</span>}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground">
+                            son görülme {new Date(d.last_seen_at).toLocaleString("tr-TR")}
+                            {d.trusted_until
+                              ? ` · bitiş ${new Date(d.trusted_until).toLocaleDateString("tr-TR")}`
+                              : ""}
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="font-mono text-[11px] text-muted-foreground hover:text-destructive"
+                          onClick={async () => {
+                            await removeTrustedDevice(d.id);
+                            if (isCurrent) {
+                              untrustDevice(userId);
+                              setTrustedUntil(null);
+                            }
+                            setDevices(await listTrustedDevices());
+                            toast.success("[✓] cihaz kaldırıldı");
+                          }}
+                        >
+                          <Trash2 className="mr-1 h-3 w-3" /> kaldır
+                        </Button>
+                      </div>
+                    );
+                  })
+                )}
+                <div className="font-mono text-[10px] text-muted-foreground/70">
+                  en fazla {MAX_TRUSTED_DEVICES} cihaz hatırlanır; yeni cihaz eklenince en eskisi
+                  otomatik düşer. Kayıtlı cihazlardan giriş yapmak diğerini oturumdan düşürmez.
+                </div>
+              </div>
+
             </div>
           </div>
         </div>

@@ -69,8 +69,9 @@ export function MfaChallenge({
       effectiveUserId = u.user?.id ?? null;
     }
     if (remember && effectiveUserId) {
-      trustDevice(effectiveUserId);
-      toast.success(`[✓] bu cihaz ${TRUSTED_DEVICE_TTL_DAYS} gün hatırlanacak`);
+      const { trustDeviceRemote } = await import("@/lib/trusted-device");
+      await trustDeviceRemote(effectiveUserId);
+      toast.success(`[✓] bu cihaz ${TRUSTED_DEVICE_TTL_DAYS} gün hatırlanacak (en fazla 2 cihaz)`);
     }
     onSuccess();
   };

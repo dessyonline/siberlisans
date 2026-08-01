@@ -6,7 +6,48 @@
 // server-side aal2 zorunlu olan yerlerde (admin paneli) bir etkisi yoktur.
 
 const KEY_PREFIX = "mfa-trust:";
+const DEVICE_ID_KEY = "mfa-device-id";
 export const TRUSTED_DEVICE_TTL_DAYS = 30;
+export const MAX_TRUSTED_DEVICES = 2;
+
+/** Bu tarayıcıya özel kalıcı cihaz kimliği (sunucudaki güvenilir cihaz kaydı için). */
+export function getDeviceId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    let id = window.localStorage.getItem(DEVICE_ID_KEY);
+    if (!id || id.length < 8) {
+      id =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2) + Date.now().toString(36);
+      window.localStorage.setItem(DEVICE_ID_KEY, id);
+    }
+    return id;
+  } catch {
+    return null;
+  }
+}
+
+/** İnsan tarafından okunabilir cihaz etiketi (ör. "Chrome · Windows"). */
+export function getDeviceLabel(): string {
+  if (typeof navigator === "undefined") return "Bilinmeyen cihaz";
+  const ua = navigator.userAgent;
+  const browser =
+    /Edg\//.test(ua) ? "Edge"
+    : /OPR\//.test(ua) ? "Opera"
+    : /Chrome\//.test(ua) ? "Chrome"
+    : /Safari\//.test(ua) ? "Safari"
+    : /Firefox\//.test(ua) ? "Firefox"
+    : "Tarayıcı";
+  const os =
+    /Android/.test(ua) ? "Android"
+    : /iPhone|iPad|iPod/.test(ua) ? "iOS"
+    : /Windows/.test(ua) ? "Windows"
+    : /Mac OS X/.test(ua) ? "macOS"
+    : /Linux/.test(ua) ? "Linux"
+    : "";
+  return os ? `${browser} · ${os}` : browser;
+}
 
 function key(userId: string) {
   return `${KEY_PREFIX}${userId}`;
@@ -40,6 +81,56 @@ export function trustDevice(
   } catch {
     /* noop */
   }
+}
+
+/**
+ * Cihazı hem yerelde hem sunucuda güvenilir olarak kaydeder.
+ * Sunucuda kullanıcı başına en fazla 2 cihaz tutulur (en eskisi düşer).
+ */
+export async function trustDeviceRemote(
+  userId: string | null | undefined,
+  days = TRUSTED_DEVICE_TTL_DAYS,
+): Promise<void> {
+  trustDevice(userId, days);
+  const deviceId = getDeviceId();
+  if (!deviceId) return;
+  try {
+    const { supabase } = await import("@/integrations/supabase/client");
+    await supabase.rpc("trust_current_device" as never, {
+      _device_id: deviceId,
+      _label: getDeviceLabel(),
+      _days: days,
+    } as never);
+  } catch {
+    /* noop */
+  }
+}
+
+export type TrustedDeviceRow = {
+  id: string;
+  device_id: string;
+  label: string | null;
+  last_ip: string | null;
+  trusted_until: string | null;
+  last_seen_at: string;
+};
+
+export async function listTrustedDevices(): Promise<TrustedDeviceRow[]> {
+  try {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data } = await supabase
+      .from("user_trusted_devices" as never)
+      .select("id, device_id, label, last_ip, trusted_until, last_seen_at")
+      .order("last_seen_at", { ascending: false });
+    return (data ?? []) as unknown as TrustedDeviceRow[];
+  } catch {
+    return [];
+  }
+}
+
+export async function removeTrustedDevice(id: string): Promise<void> {
+  const { supabase } = await import("@/integrations/supabase/client");
+  await supabase.from("user_trusted_devices" as never).delete().eq("id", id);
 }
 
 export function untrustDevice(userId: string | null | undefined): void {

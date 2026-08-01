@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ShieldAlert, Globe2, ArrowRight, X } from "lucide-react";
 import { toast } from "sonner";
-import { isDeviceTrusted } from "@/lib/trusted-device";
+import { isDeviceTrusted, getDeviceId } from "@/lib/trusted-device";
 
 /**
  * Girişten sonra kullanıcının IP'sini kontrol eder.
@@ -36,11 +36,15 @@ export function IpChangeGuard() {
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) return;
       setUserId(userData.user.id);
-      const res = await touchFn({});
+      const res = await touchFn({ data: { deviceId: getDeviceId() } });
+      // Sunucuda kayıtlı güvenilir cihazlardan biriyse (en fazla 2) hiç sorma —
+      // ikinci cihazdan giriş yapmak birincisini düşürmesin.
+      if (res.deviceKnown) return;
       if (!res.ipChanged) return;
 
       setPrevIp(res.previousIp ?? null);
       setCurrIp(res.currentIp ?? null);
+
 
       // MFA kurulu mu?
       const { data: factors } = await supabase.auth.mfa.listFactors();
