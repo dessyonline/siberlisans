@@ -6,7 +6,48 @@
 // server-side aal2 zorunlu olan yerlerde (admin paneli) bir etkisi yoktur.
 
 const KEY_PREFIX = "mfa-trust:";
+const DEVICE_ID_KEY = "mfa-device-id";
 export const TRUSTED_DEVICE_TTL_DAYS = 30;
+export const MAX_TRUSTED_DEVICES = 2;
+
+/** Bu tarayıcıya özel kalıcı cihaz kimliği (sunucudaki güvenilir cihaz kaydı için). */
+export function getDeviceId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    let id = window.localStorage.getItem(DEVICE_ID_KEY);
+    if (!id || id.length < 8) {
+      id =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : Math.random().toString(36).slice(2) + Date.now().toString(36);
+      window.localStorage.setItem(DEVICE_ID_KEY, id);
+    }
+    return id;
+  } catch {
+    return null;
+  }
+}
+
+/** İnsan tarafından okunabilir cihaz etiketi (ör. "Chrome · Windows"). */
+export function getDeviceLabel(): string {
+  if (typeof navigator === "undefined") return "Bilinmeyen cihaz";
+  const ua = navigator.userAgent;
+  const browser =
+    /Edg\//.test(ua) ? "Edge"
+    : /OPR\//.test(ua) ? "Opera"
+    : /Chrome\//.test(ua) ? "Chrome"
+    : /Safari\//.test(ua) ? "Safari"
+    : /Firefox\//.test(ua) ? "Firefox"
+    : "Tarayıcı";
+  const os =
+    /Android/.test(ua) ? "Android"
+    : /iPhone|iPad|iPod/.test(ua) ? "iOS"
+    : /Windows/.test(ua) ? "Windows"
+    : /Mac OS X/.test(ua) ? "macOS"
+    : /Linux/.test(ua) ? "Linux"
+    : "";
+  return os ? `${browser} · ${os}` : browser;
+}
 
 function key(userId: string) {
   return `${KEY_PREFIX}${userId}`;
