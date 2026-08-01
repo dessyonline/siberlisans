@@ -2981,6 +2981,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_trusted_devices: {
+        Row: {
+          created_at: string
+          device_id: string
+          id: string
+          label: string | null
+          last_ip: string | null
+          last_seen_at: string
+          trusted_until: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          device_id: string
+          id?: string
+          label?: string | null
+          last_ip?: string | null
+          last_seen_at?: string
+          trusted_until?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          device_id?: string
+          id?: string
+          label?: string | null
+          last_ip?: string | null
+          last_seen_at?: string
+          trusted_until?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       wallet_topups: {
         Row: {
           admin_note: string | null
@@ -4039,6 +4072,15 @@ export type Database = {
         Args: { _ticket_id: string }
         Returns: undefined
       }
+      touch_session_device: {
+        Args: { _device_id: string; _ip: string }
+        Returns: {
+          device_count: number
+          device_known: boolean
+          ip_changed: boolean
+          previous_ip: string
+        }[]
+      }
       touch_session_ip: {
         Args: { _ip: string }
         Returns: {
@@ -4049,6 +4091,15 @@ export type Database = {
       transfer_order: {
         Args: { _order_id: string; _to_email: string }
         Returns: string
+      }
+      trust_current_device: {
+        Args: {
+          _days?: number
+          _device_id: string
+          _ip?: string
+          _label?: string
+        }
+        Returns: undefined
       }
       validate_coupon: {
         Args: { _code: string; _subtotal: number }
