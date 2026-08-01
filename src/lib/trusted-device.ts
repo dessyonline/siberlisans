@@ -83,6 +83,56 @@ export function trustDevice(
   }
 }
 
+/**
+ * Cihazı hem yerelde hem sunucuda güvenilir olarak kaydeder.
+ * Sunucuda kullanıcı başına en fazla 2 cihaz tutulur (en eskisi düşer).
+ */
+export async function trustDeviceRemote(
+  userId: string | null | undefined,
+  days = TRUSTED_DEVICE_TTL_DAYS,
+): Promise<void> {
+  trustDevice(userId, days);
+  const deviceId = getDeviceId();
+  if (!deviceId) return;
+  try {
+    const { supabase } = await import("@/integrations/supabase/client");
+    await supabase.rpc("trust_current_device" as never, {
+      _device_id: deviceId,
+      _label: getDeviceLabel(),
+      _days: days,
+    } as never);
+  } catch {
+    /* noop */
+  }
+}
+
+export type TrustedDeviceRow = {
+  id: string;
+  device_id: string;
+  label: string | null;
+  last_ip: string | null;
+  trusted_until: string | null;
+  last_seen_at: string;
+};
+
+export async function listTrustedDevices(): Promise<TrustedDeviceRow[]> {
+  try {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data } = await supabase
+      .from("user_trusted_devices" as never)
+      .select("id, device_id, label, last_ip, trusted_until, last_seen_at")
+      .order("last_seen_at", { ascending: false });
+    return (data ?? []) as unknown as TrustedDeviceRow[];
+  } catch {
+    return [];
+  }
+}
+
+export async function removeTrustedDevice(id: string): Promise<void> {
+  const { supabase } = await import("@/integrations/supabase/client");
+  await supabase.from("user_trusted_devices" as never).delete().eq("id", id);
+}
+
 export function untrustDevice(userId: string | null | undefined): void {
   if (!userId || typeof window === "undefined") return;
   try {
