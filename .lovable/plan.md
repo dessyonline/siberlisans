@@ -1,57 +1,35 @@
-## Amaç
+Güvenilir Cihaza Özel Ad Belirleme
 
-Mailler şu an varsayılan bir gönderici adresinden çıkıyor; SPF/DKIM imzası `siberlisans.com`'a ait olmadığı için Gmail/Outlook doğrudan spam'e atıyor. Çözüm iki aşamalı: önce kendi alan adından imzalı gönderim, sonra şablonların spam filtrelerine uygun hale getirilmesi.
+## Hedef
+Kullanıcı "bu cihazı hatırla" dediğinde otomatik tarayıcı/OS etiketi yerine kendi belirlediği anlamlı bir cihaz adı girebilsin. Daha sonra /guvenlik sayfasında bu adı görebilsin ve değiştirebilsin.
 
-## Aşama 1 — Gönderici alan adı (senin yapacağın kısım)
+## Yapılacaklar
 
-TurkTicaret.Net panelinde NS kaydı desteği var, yani transfer/taşıma gerekmiyor.
+1. Cihaz adı girişi (2FA doğrulama ekranı)
+   - `MfaChallenge` içinde "bu cihazı hatırla" işaretlendiğinde altında açılan bir metin kutusu göster.
+   - Kutucuk boş bırakılırsa otomatik tarayıcı/OS etiketi (`getDeviceLabel()`) kullanılmaya devam etsin.
+   - Maksimum 40 karakter, sadece harf, rakam, boşluk, tire, alt tire ve nokta izin verilsin (XSS önlemi).
 
-1. Sohbetteki **"E-posta alan adını kur"** butonuna tıkla.
-2. Açılan ekranda gönderici alt alan adını gir (öneri: `notify.siberlisans.com`).
-3. Ekran sana **2 adet nameserver** değeri gösterecek (`nsX.lovable.cloud` biçiminde — kesin değerleri oradan al, tahmin etme).
-4. TurkTicaret.Net → Domain İşlemleri → DNS Yönetimi → **Kayıt Oluştur**:
-   - **Tür**: NS
-   - **Ad**: `notify` (yalnızca alt alan adı kısmı)
-   - **Veri**: kurulum ekranındaki 1. nameserver
-   - **TTL**: 1 Saat → Kayıt Oluştur
-5. Aynı işlemi 2. nameserver için tekrarla (Ad yine `notify`).
-6. Mevcut `siberlisans.com` A kaydına ve `_lovable` TXT kaydına **dokunma** — site erişimi onlara bağlı.
+2. Sunucu tarafı güncellemesi
+   - `trust_current_device` RPC'sine `_label` parametresi zaten var; istemciden gönderilen özel etiket buraya aktarılacak.
+   - Etiket veritabanına kaydedilirken `trim()` ve yukarıdaki karakter sınırlaması uygulansın, uzunluk 60 karakterle sınırlandırılsın.
 
-DNS yayılması 15 dk ile 72 saat arası sürebilir. Doğrulama otomatik ilerler, durumu Cloud → Emails'ten izleyebilirsin.
+3. İstemci yardımcı fonksiyonları
+   - `trustDeviceRemote(userId, days, label?)` imzasına isteğe bağlı `label` parametresi eklensin.
+   - `MfaChallenge` bu fonksiyonu çağırırken kullanıcının girdiği adı iletsin.
 
-## Aşama 2 — Ben yapacağım (DNS beklemeden başlanabilir)
+4. /guvenlik yönetim ekranı
+   - Kayıtlı cihaz listesinde her cihazın adı görünsün.
+   - Her cihazın yanına "adı düzenle" butonu eklensin; tıklayınca inline input açılsın, kaydet / iptal seçenekleri olsun.
+   - Düzenleme sunucuya `update_trusted_device_label` RPC'si ile kaydedilsin; aynı validasyon kuralları geçerli olsun.
 
-**E-posta altyapısı**
-- Kuyruk, gönderim logu, bounce/şikayet listesi ve otomatik yeniden deneme altyapısını kur.
-- Auth mailleri (kayıt onayı, şifre sıfırlama, magic link, e-posta değişikliği) için özel şablon sistemini devreye al.
+5. Güvenlik ve doğrulama
+   - Cihaz adı hem istemci hem sunucu tarafında validasyonlu olsun.
+   - HTML/special karakter encode edilsin, `dangerouslySetInnerHTML` kullanılmasın.
+   - 2FA doğrulama başarılı olduktan sonra hatırlatma işlemi yapılsın; doğrulama öncesi cihaz adı sadece state'te tutulsun.
 
-**Spam skorunu düşüren şablon revizyonu**
-
-Mevcut/yeni tüm şablonlar şu kurallara göre yeniden yazılacak:
-
-| Sorun | Düzeltme |
-| --- | --- |
-| Spam tetikleyici dil | "BEDAVA", "KAZANDINIZ", çoklu ünlem, tamamı büyük harf başlıklar temizlenir |
-| Görsel ağırlıklı içerik | Metin/görsel dengesi metin lehine, tek logo + inline stil |
-| Çoklu CTA | Her mailde tek net eylem butonu |
-| Kısa/boş içerik | Anlamlı preview text + açıklayıcı gövde |
-| Kimlik belirsizliği | Alt bilgide marka adı, site linki ve iletişim bilgisi |
-| Abonelikten çıkma | Sistem tarafından otomatik eklenen tek tık footer (elle eklenmez) |
-
-**Tasarım yönü**: e-posta istemcileri koyu temayı ve modern CSS'i desteklemediği için gövde beyaz zeminde kalır; marka kimliği neon yeşil (#00ff9d) aksan renkleri, JetBrains Mono etiketler ve ince terminal çerçevesiyle verilir. Mobil uyumlu tek kolon, 600px genişlik.
-
-**Kapsanacak şablonlar**
-- Kayıt onayı / e-posta doğrulama
-- Şifre sıfırlama
-- Magic link ve yeniden kimlik doğrulama
-- E-posta adresi değişikliği
-- Davet
-
-Sipariş/teslimat gibi uygulama mailleri de aynı tasarım diline geçirilir (ayrı adım olarak, istersen).
-
-## Teknik notlar
-
-- Gönderim, alan adı doğrulandıktan sonra otomatik başlar; öncesinde kurulan şablonlar bekler, veri kaybı olmaz.
-- Kuyruk yeniden deneme ve DLQ mantığıyla çalışır; başarısız gönderimler `email_send_log` üzerinden izlenebilir.
-- Publish sonrası canlı ortamın kuyruk işleyicisi otomatik devreye girer.
-- `www.siberlisans.com` CNAME konusu bu plana dahil değil; talebin üzerine şimdilik dokunulmayacak.
+## Dosyalar
+- `src/components/security/MfaChallenge.tsx` — cihaz adı input alanı
+- `src/lib/trusted-device.ts` — `trustDeviceRemote` ve yeni düzenleme fonksiyonu
+- `src/routes/_authenticated/guvenlik.tsx` — listede ad gösterimi ve düzenleme UI
+- Supabase migration — `trust_current_device` validasyonu ve `update_trusted_device_label` RPC
