@@ -190,6 +190,12 @@ function ProductsAdmin() {
           shopier_url: editing.shopier_url && editing.shopier_url.trim() !== "" ? editing.shopier_url : null,
           demo_video_url: editing.demo_video_url && editing.demo_video_url.trim() !== "" ? editing.demo_video_url : null,
           requires_email: editing.requires_email ?? false,
+          grants_app:
+            editing.grants_app && editing.grants_app.trim() !== "" ? editing.grants_app.trim() : null,
+          grants_app_days:
+            editing.grants_app_days == null || Number.isNaN(Number(editing.grants_app_days))
+              ? null
+              : Number(editing.grants_app_days),
         },
       });
       toast.success("Kaydedildi");
