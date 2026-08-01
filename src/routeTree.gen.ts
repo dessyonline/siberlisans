@@ -136,6 +136,7 @@ import { Route as AuthenticatedAdminAboneliklerRouteImport } from './routes/_aut
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as ApiV1AuthVerifyRouteImport } from './routes/api/v1/auth/verify'
 import { Route as ApiPublicHooksWeeklyDigestRouteImport } from './routes/api/public/hooks/weekly-digest'
 import { Route as ApiPublicHooksUniquelisansCatalogRouteImport } from './routes/api/public/hooks/uniquelisans-catalog'
 import { Route as ApiPublicHooksSyncUniquelisansRouteImport } from './routes/api/public/hooks/sync-uniquelisans'
@@ -147,6 +148,7 @@ import { Route as ApiPublicHooksCatalogWebhooksRouteImport } from './routes/api/
 import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
 import { Route as ApiPublicHooksAbandonmentReminderRouteImport } from './routes/api/public/hooks/abandonment-reminder'
 import { Route as ApiPublicDealerSplatRouteImport } from './routes/api/public/dealer/$'
+import { Route as ApiPublicV1AuthVerifyRouteImport } from './routes/api/public/v1/auth/verify'
 
 const UrunlerRoute = UrunlerRouteImport.update({
   id: '/urunler',
@@ -844,6 +846,11 @@ const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
   path: '/lovable/email/auth/preview',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiV1AuthVerifyRoute = ApiV1AuthVerifyRouteImport.update({
+  id: '/api/v1/auth/verify',
+  path: '/api/v1/auth/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksWeeklyDigestRoute =
   ApiPublicHooksWeeklyDigestRouteImport.update({
     id: '/api/public/hooks/weekly-digest',
@@ -905,6 +912,11 @@ const ApiPublicHooksAbandonmentReminderRoute =
 const ApiPublicDealerSplatRoute = ApiPublicDealerSplatRouteImport.update({
   id: '/api/public/dealer/$',
   path: '/api/public/dealer/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicV1AuthVerifyRoute = ApiPublicV1AuthVerifyRouteImport.update({
+  id: '/api/public/v1/auth/verify',
+  path: '/api/public/v1/auth/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -1043,9 +1055,11 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
   '/api/public/hooks/uniquelisans-catalog': typeof ApiPublicHooksUniquelisansCatalogRoute
   '/api/public/hooks/weekly-digest': typeof ApiPublicHooksWeeklyDigestRoute
+  '/api/v1/auth/verify': typeof ApiV1AuthVerifyRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/api/public/v1/auth/verify': typeof ApiPublicV1AuthVerifyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -1180,9 +1194,11 @@ export interface FileRoutesByTo {
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
   '/api/public/hooks/uniquelisans-catalog': typeof ApiPublicHooksUniquelisansCatalogRoute
   '/api/public/hooks/weekly-digest': typeof ApiPublicHooksWeeklyDigestRoute
+  '/api/v1/auth/verify': typeof ApiV1AuthVerifyRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/api/public/v1/auth/verify': typeof ApiPublicV1AuthVerifyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1321,9 +1337,11 @@ export interface FileRoutesById {
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
   '/api/public/hooks/uniquelisans-catalog': typeof ApiPublicHooksUniquelisansCatalogRoute
   '/api/public/hooks/weekly-digest': typeof ApiPublicHooksWeeklyDigestRoute
+  '/api/v1/auth/verify': typeof ApiV1AuthVerifyRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/api/public/v1/auth/verify': typeof ApiPublicV1AuthVerifyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1462,9 +1480,11 @@ export interface FileRouteTypes {
     | '/api/public/hooks/sync-uniquelisans'
     | '/api/public/hooks/uniquelisans-catalog'
     | '/api/public/hooks/weekly-digest'
+    | '/api/v1/auth/verify'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/api/public/v1/auth/verify'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -1599,9 +1619,11 @@ export interface FileRouteTypes {
     | '/api/public/hooks/sync-uniquelisans'
     | '/api/public/hooks/uniquelisans-catalog'
     | '/api/public/hooks/weekly-digest'
+    | '/api/v1/auth/verify'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/api/public/v1/auth/verify'
   id:
     | '__root__'
     | '/'
@@ -1739,9 +1761,11 @@ export interface FileRouteTypes {
     | '/api/public/hooks/sync-uniquelisans'
     | '/api/public/hooks/uniquelisans-catalog'
     | '/api/public/hooks/weekly-digest'
+    | '/api/v1/auth/verify'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/api/public/v1/auth/verify'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1802,9 +1826,11 @@ export interface RootRouteChildren {
   ApiPublicHooksSyncUniquelisansRoute: typeof ApiPublicHooksSyncUniquelisansRoute
   ApiPublicHooksUniquelisansCatalogRoute: typeof ApiPublicHooksUniquelisansCatalogRoute
   ApiPublicHooksWeeklyDigestRoute: typeof ApiPublicHooksWeeklyDigestRoute
+  ApiV1AuthVerifyRoute: typeof ApiV1AuthVerifyRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  ApiPublicV1AuthVerifyRoute: typeof ApiPublicV1AuthVerifyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -2698,6 +2724,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/v1/auth/verify': {
+      id: '/api/v1/auth/verify'
+      path: '/api/v1/auth/verify'
+      fullPath: '/api/v1/auth/verify'
+      preLoaderRoute: typeof ApiV1AuthVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/weekly-digest': {
       id: '/api/public/hooks/weekly-digest'
       path: '/api/public/hooks/weekly-digest'
@@ -2773,6 +2806,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/dealer/$'
       fullPath: '/api/public/dealer/$'
       preLoaderRoute: typeof ApiPublicDealerSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/v1/auth/verify': {
+      id: '/api/public/v1/auth/verify'
+      path: '/api/public/v1/auth/verify'
+      fullPath: '/api/public/v1/auth/verify'
+      preLoaderRoute: typeof ApiPublicV1AuthVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -3040,9 +3080,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksUniquelisansCatalogRoute:
     ApiPublicHooksUniquelisansCatalogRoute,
   ApiPublicHooksWeeklyDigestRoute: ApiPublicHooksWeeklyDigestRoute,
+  ApiV1AuthVerifyRoute: ApiV1AuthVerifyRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  ApiPublicV1AuthVerifyRoute: ApiPublicV1AuthVerifyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
