@@ -39,6 +39,8 @@ function SecurityPage() {
   const [removeTarget, setRemoveTarget] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [trustedUntil, setTrustedUntil] = useState<Date | null>(null);
+  const [devices, setDevices] = useState<TrustedDeviceRow[]>([]);
+  const [currentDeviceId, setCurrentDeviceId] = useState<string | null>(null);
 
   const refresh = async () => {
     setLoading(true);
