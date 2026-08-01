@@ -249,11 +249,9 @@ function SiteHeader() {
             <NavLink to="/paketler">paketler</NavLink>
             <NavLink to="/araclar">araçlar</NavLink>
             <NavLink to="/cekilis">çekiliş</NavLink>
-            <span className="hidden 2xl:contents">
-              <NavLink to="/bayilik">bayilik</NavLink>
-              <DealerNavLink userId={user?.id} className="group/item shrink-0 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
-              <CyberlabNavLink userId={user?.id} className="group/item shrink-0 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
-            </span>
+            <NavLink to="/bayilik">bayilik</NavLink>
+            <DealerNavLink userId={user?.id} className="group/item shrink-0 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
+            <CyberlabNavLink className="group/item shrink-0 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
 
 
             <DropdownMenu>
