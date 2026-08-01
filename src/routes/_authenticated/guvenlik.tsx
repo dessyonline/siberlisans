@@ -6,7 +6,16 @@ import { toast } from "sonner";
 import { ShieldCheck, ShieldAlert, Trash2, ArrowLeft, Terminal, MonitorSmartphone, LogOut } from "lucide-react";
 import { MfaEnroll } from "@/components/security/MfaEnroll";
 import { MfaChallenge } from "@/components/security/MfaChallenge";
-import { trustedDeviceExpiry, untrustDevice, TRUSTED_DEVICE_TTL_DAYS } from "@/lib/trusted-device";
+import {
+  trustedDeviceExpiry,
+  untrustDevice,
+  TRUSTED_DEVICE_TTL_DAYS,
+  MAX_TRUSTED_DEVICES,
+  getDeviceId,
+  listTrustedDevices,
+  removeTrustedDevice,
+  type TrustedDeviceRow,
+} from "@/lib/trusted-device";
 
 export const Route = createFileRoute("/_authenticated/guvenlik")({
   component: SecurityPage,
