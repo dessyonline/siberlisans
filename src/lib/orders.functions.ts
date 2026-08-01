@@ -865,6 +865,8 @@ const productInput = z.object({
   shopier_url: z.union([z.string().url().max(500), z.string().max(0)]).optional().nullable(),
   requires_email: z.boolean().optional(),
   demo_video_url: z.union([z.string().url().max(500), z.string().max(0)]).optional().nullable(),
+  grants_app: z.union([z.string().max(40), z.null()]).optional(),
+  grants_app_days: z.union([z.number().int().min(0).max(36500), z.null()]).optional(),
 });
 
 export const upsertProduct = createServerFn({ method: "POST" })
