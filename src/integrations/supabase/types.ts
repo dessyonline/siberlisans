@@ -271,6 +271,36 @@ export type Database = {
         }
         Relationships: []
       }
+      app_access: {
+        Row: {
+          app_slug: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          source_order_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          app_slug: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          source_order_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          app_slug?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          source_order_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       badges: {
         Row: {
           created_at: string | null
@@ -2005,6 +2035,8 @@ export type Database = {
           external_id: string | null
           external_price: number | null
           featured: boolean
+          grants_app: string | null
+          grants_app_days: number | null
           id: string
           image_url: string | null
           low_stock_threshold: number
@@ -2044,6 +2076,8 @@ export type Database = {
           external_id?: string | null
           external_price?: number | null
           featured?: boolean
+          grants_app?: string | null
+          grants_app_days?: number | null
           id?: string
           image_url?: string | null
           low_stock_threshold?: number
@@ -2083,6 +2117,8 @@ export type Database = {
           external_id?: string | null
           external_price?: number | null
           featured?: boolean
+          grants_app?: string | null
+          grants_app_days?: number | null
           id?: string
           image_url?: string | null
           low_stock_threshold?: number
@@ -3834,6 +3870,15 @@ export type Database = {
           partner_slug: string
           referral_code: string
         }[]
+      }
+      grant_app_access: {
+        Args: {
+          _app_slug: string
+          _days: number
+          _order_id?: string
+          _user_id: string
+        }
+        Returns: undefined
       }
       guess_product_category: {
         Args: { _description?: string; _name: string }

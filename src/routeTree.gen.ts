@@ -58,6 +58,7 @@ import { Route as AuthenticatedFavorilerimRouteImport } from './routes/_authenti
 import { Route as AuthenticatedFaturalarRouteImport } from './routes/_authenticated/faturalar'
 import { Route as AuthenticatedDestekRouteImport } from './routes/_authenticated/destek'
 import { Route as AuthenticatedDavetRouteImport } from './routes/_authenticated/davet'
+import { Route as AuthenticatedCyberlabRouteImport } from './routes/_authenticated/cyberlab'
 import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated/cuzdan'
 import { Route as AuthenticatedBildirimlerRouteImport } from './routes/_authenticated/bildirimler'
 import { Route as AuthenticatedBayiRouteImport } from './routes/_authenticated/bayi'
@@ -150,6 +151,7 @@ import { Route as ApiPublicHooksCatalogWebhooksRouteImport } from './routes/api/
 import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
 import { Route as ApiPublicHooksAbandonmentReminderRouteImport } from './routes/api/public/hooks/abandonment-reminder'
 import { Route as ApiPublicDealerSplatRouteImport } from './routes/api/public/dealer/$'
+import { Route as ApiPublicCyberlabVerifyRouteImport } from './routes/api/public/cyberlab/verify'
 import { Route as ApiPublicV1AuthVerifyRouteImport } from './routes/api/public/v1/auth/verify'
 
 const UrunlerRoute = UrunlerRouteImport.update({
@@ -396,6 +398,11 @@ const AuthenticatedDestekRoute = AuthenticatedDestekRouteImport.update({
 const AuthenticatedDavetRoute = AuthenticatedDavetRouteImport.update({
   id: '/davet',
   path: '/davet',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCyberlabRoute = AuthenticatedCyberlabRouteImport.update({
+  id: '/cyberlab',
+  path: '/cyberlab',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCuzdanRoute = AuthenticatedCuzdanRouteImport.update({
@@ -926,6 +933,11 @@ const ApiPublicDealerSplatRoute = ApiPublicDealerSplatRouteImport.update({
   path: '/api/public/dealer/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCyberlabVerifyRoute = ApiPublicCyberlabVerifyRouteImport.update({
+  id: '/api/public/cyberlab/verify',
+  path: '/api/public/cyberlab/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1AuthVerifyRoute = ApiPublicV1AuthVerifyRouteImport.update({
   id: '/api/public/v1/auth/verify',
   path: '/api/public/v1/auth/verify',
@@ -954,6 +966,7 @@ export interface FileRoutesByFullPath {
   '/bayi': typeof AuthenticatedBayiRoute
   '/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
+  '/cyberlab': typeof AuthenticatedCyberlabRoute
   '/davet': typeof AuthenticatedDavetRoute
   '/destek': typeof AuthenticatedDestekRoute
   '/faturalar': typeof AuthenticatedFaturalarRoute
@@ -1058,6 +1071,7 @@ export interface FileRoutesByFullPath {
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/araclar/': typeof AuthenticatedAraclarIndexRoute
+  '/api/public/cyberlab/verify': typeof ApiPublicCyberlabVerifyRoute
   '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
@@ -1095,6 +1109,7 @@ export interface FileRoutesByTo {
   '/bayi': typeof AuthenticatedBayiRoute
   '/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
+  '/cyberlab': typeof AuthenticatedCyberlabRoute
   '/davet': typeof AuthenticatedDavetRoute
   '/destek': typeof AuthenticatedDestekRoute
   '/faturalar': typeof AuthenticatedFaturalarRoute
@@ -1199,6 +1214,7 @@ export interface FileRoutesByTo {
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/araclar': typeof AuthenticatedAraclarIndexRoute
+  '/api/public/cyberlab/verify': typeof ApiPublicCyberlabVerifyRoute
   '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
@@ -1240,6 +1256,7 @@ export interface FileRoutesById {
   '/_authenticated/bayi': typeof AuthenticatedBayiRoute
   '/_authenticated/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/_authenticated/cuzdan': typeof AuthenticatedCuzdanRoute
+  '/_authenticated/cyberlab': typeof AuthenticatedCyberlabRoute
   '/_authenticated/davet': typeof AuthenticatedDavetRoute
   '/_authenticated/destek': typeof AuthenticatedDestekRoute
   '/_authenticated/faturalar': typeof AuthenticatedFaturalarRoute
@@ -1344,6 +1361,7 @@ export interface FileRoutesById {
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/araclar/': typeof AuthenticatedAraclarIndexRoute
+  '/api/public/cyberlab/verify': typeof ApiPublicCyberlabVerifyRoute
   '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
@@ -1385,6 +1403,7 @@ export interface FileRouteTypes {
     | '/bayi'
     | '/bildirimler'
     | '/cuzdan'
+    | '/cyberlab'
     | '/davet'
     | '/destek'
     | '/faturalar'
@@ -1489,6 +1508,7 @@ export interface FileRouteTypes {
     | '/api/public/sitemap.xml'
     | '/admin/'
     | '/araclar/'
+    | '/api/public/cyberlab/verify'
     | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
@@ -1526,6 +1546,7 @@ export interface FileRouteTypes {
     | '/bayi'
     | '/bildirimler'
     | '/cuzdan'
+    | '/cyberlab'
     | '/davet'
     | '/destek'
     | '/faturalar'
@@ -1630,6 +1651,7 @@ export interface FileRouteTypes {
     | '/api/public/sitemap.xml'
     | '/admin'
     | '/araclar'
+    | '/api/public/cyberlab/verify'
     | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
@@ -1670,6 +1692,7 @@ export interface FileRouteTypes {
     | '/_authenticated/bayi'
     | '/_authenticated/bildirimler'
     | '/_authenticated/cuzdan'
+    | '/_authenticated/cyberlab'
     | '/_authenticated/davet'
     | '/_authenticated/destek'
     | '/_authenticated/faturalar'
@@ -1774,6 +1797,7 @@ export interface FileRouteTypes {
     | '/api/public/sitemap.xml'
     | '/_authenticated/admin/'
     | '/_authenticated/araclar/'
+    | '/api/public/cyberlab/verify'
     | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
@@ -1841,6 +1865,7 @@ export interface RootRouteChildren {
   ApiPublicEmbedDotjsRoute: typeof ApiPublicEmbedDotjsRoute
   ApiPublicLoginRoute: typeof ApiPublicLoginRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
+  ApiPublicCyberlabVerifyRoute: typeof ApiPublicCyberlabVerifyRoute
   ApiPublicDealerSplatRoute: typeof ApiPublicDealerSplatRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
@@ -2202,6 +2227,13 @@ declare module '@tanstack/react-router' {
       path: '/davet'
       fullPath: '/davet'
       preLoaderRoute: typeof AuthenticatedDavetRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cyberlab': {
+      id: '/_authenticated/cyberlab'
+      path: '/cyberlab'
+      fullPath: '/cyberlab'
+      preLoaderRoute: typeof AuthenticatedCyberlabRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cuzdan': {
@@ -2848,6 +2880,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDealerSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cyberlab/verify': {
+      id: '/api/public/cyberlab/verify'
+      path: '/api/public/cyberlab/verify'
+      fullPath: '/api/public/cyberlab/verify'
+      preLoaderRoute: typeof ApiPublicCyberlabVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/auth/verify': {
       id: '/api/public/v1/auth/verify'
       path: '/api/public/v1/auth/verify'
@@ -3029,6 +3068,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBayiRoute: typeof AuthenticatedBayiRoute
   AuthenticatedBildirimlerRoute: typeof AuthenticatedBildirimlerRoute
   AuthenticatedCuzdanRoute: typeof AuthenticatedCuzdanRoute
+  AuthenticatedCyberlabRoute: typeof AuthenticatedCyberlabRoute
   AuthenticatedDavetRoute: typeof AuthenticatedDavetRoute
   AuthenticatedDestekRoute: typeof AuthenticatedDestekRoute
   AuthenticatedFaturalarRoute: typeof AuthenticatedFaturalarRoute
@@ -3046,6 +3086,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBayiRoute: AuthenticatedBayiRoute,
   AuthenticatedBildirimlerRoute: AuthenticatedBildirimlerRoute,
   AuthenticatedCuzdanRoute: AuthenticatedCuzdanRoute,
+  AuthenticatedCyberlabRoute: AuthenticatedCyberlabRoute,
   AuthenticatedDavetRoute: AuthenticatedDavetRoute,
   AuthenticatedDestekRoute: AuthenticatedDestekRoute,
   AuthenticatedFaturalarRoute: AuthenticatedFaturalarRoute,
@@ -3109,6 +3150,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicEmbedDotjsRoute: ApiPublicEmbedDotjsRoute,
   ApiPublicLoginRoute: ApiPublicLoginRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
+  ApiPublicCyberlabVerifyRoute: ApiPublicCyberlabVerifyRoute,
   ApiPublicDealerSplatRoute: ApiPublicDealerSplatRoute,
   ApiPublicHooksAbandonmentReminderRoute:
     ApiPublicHooksAbandonmentReminderRoute,

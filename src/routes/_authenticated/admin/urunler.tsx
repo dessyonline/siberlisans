@@ -71,6 +71,8 @@ type Product = {
   retail_price_try: number | null;
   retail_price_source_url: string | null;
   duration_label: string | null;
+  grants_app: string | null;
+  grants_app_days: number | null;
 };
 
 type Filter = "all" | "active" | "inactive" | "featured" | "epic" | "low" | "empty";
@@ -188,6 +190,12 @@ function ProductsAdmin() {
           shopier_url: editing.shopier_url && editing.shopier_url.trim() !== "" ? editing.shopier_url : null,
           demo_video_url: editing.demo_video_url && editing.demo_video_url.trim() !== "" ? editing.demo_video_url : null,
           requires_email: editing.requires_email ?? false,
+          grants_app:
+            editing.grants_app && editing.grants_app.trim() !== "" ? editing.grants_app.trim() : null,
+          grants_app_days:
+            editing.grants_app_days == null || Number.isNaN(Number(editing.grants_app_days))
+              ? null
+              : Number(editing.grants_app_days),
         },
       });
       toast.success("Kaydedildi");
@@ -231,6 +239,8 @@ function ProductsAdmin() {
           shopier_url: p.shopier_url && p.shopier_url.trim() !== "" ? p.shopier_url : null,
           demo_video_url: p.demo_video_url && p.demo_video_url.trim() !== "" ? p.demo_video_url : null,
           requires_email: p.requires_email,
+          grants_app: p.grants_app ?? null,
+          grants_app_days: p.grants_app_days ?? null,
         },
       });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
@@ -863,6 +873,35 @@ function ProductsAdmin() {
                     <option value="standard">standart</option>
                     <option value="epic">★ destansı (özel tema)</option>
                   </select>
+                </div>
+                <div className="rounded border border-primary/25 p-3 space-y-2">
+                  <Label className="font-mono text-xs text-primary">panel uygulaması erişimi</Label>
+                  <select
+                    value={editing.grants_app ?? ""}
+                    onChange={(e) =>
+                      setEditing((p) => ({ ...p!, grants_app: e.target.value || null }))
+                    }
+                    className="w-full h-9 rounded border border-border bg-input px-3 font-mono text-sm"
+                  >
+                    <option value="">— yok —</option>
+                    <option value="cyberlab">CyberLab</option>
+                  </select>
+                  {editing.grants_app ? (
+                    <Field
+                      label="erişim süresi (gün · boş = ömür boyu)"
+                      value={editing.grants_app_days == null ? "" : String(editing.grants_app_days)}
+                      onChange={(v) =>
+                        setEditing((p) => ({
+                          ...p!,
+                          grants_app_days: v.trim() === "" ? null : Number(v) || 0,
+                        }))
+                      }
+                      type="number"
+                    />
+                  ) : null}
+                  <p className="font-mono text-[10px] text-muted-foreground">
+                    sipariş onaylanınca kullanıcının paneline erişim otomatik açılır/uzatılır
+                  </p>
                 </div>
                 <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
                   "öne çıkan" → ana sayfada Popüler Lisanslar'da<br />

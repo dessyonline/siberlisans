@@ -62,6 +62,7 @@ import { LiveActivityPopup } from "../components/LiveActivityPopup";
 import { CompareBar } from "../components/CompareBar";
 import { DealerAttach } from "../components/DealerAttach";
 import { DealerNavLink } from "../components/DealerNavLink";
+import { CyberlabNavLink } from "../components/CyberlabNavLink";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { THEME_BOOT_SCRIPT } from "../lib/theme";
 import { useQuery } from "@tanstack/react-query";
@@ -251,6 +252,7 @@ function SiteHeader() {
             <span className="hidden 2xl:contents">
               <NavLink to="/bayilik">bayilik</NavLink>
               <DealerNavLink userId={user?.id} className="group/item shrink-0 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
+              <CyberlabNavLink userId={user?.id} className="group/item shrink-0 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
             </span>
 
 
@@ -448,6 +450,7 @@ function MobileMenu({
           <Link to="/araclar" data-mobile-menu-close className={linkCls}><Sparkles className="h-4 w-4" />araçlar</Link>
           <Link to="/bayilik" data-mobile-menu-close className={linkCls}><Handshake className="h-4 w-4" />bayilik</Link>
           <DealerNavLink userId={user?.id} className={linkCls} mobile />
+          <CyberlabNavLink userId={user?.id} className={linkCls} mobile />
           <Link to="/blog" data-mobile-menu-close className={linkCls}><Newspaper className="h-4 w-4" />blog</Link>
           <Link to="/nasil-calisir" data-mobile-menu-close className={linkCls}><BookOpen className="h-4 w-4" />nasıl çalışır</Link>
           <Link to="/sss" data-mobile-menu-close className={linkCls}><HelpCircle className="h-4 w-4" />SSS</Link>
