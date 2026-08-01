@@ -239,6 +239,8 @@ function ProductsAdmin() {
           shopier_url: p.shopier_url && p.shopier_url.trim() !== "" ? p.shopier_url : null,
           demo_video_url: p.demo_video_url && p.demo_video_url.trim() !== "" ? p.demo_video_url : null,
           requires_email: p.requires_email,
+          grants_app: p.grants_app ?? null,
+          grants_app_days: p.grants_app_days ?? null,
         },
       });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
