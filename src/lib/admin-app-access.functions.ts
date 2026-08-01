@@ -177,11 +177,11 @@ export const revokeAppAccess = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     await supabaseAdmin.from("admin_audit_log").insert({
-      admin_id: context.userId,
+      actor_id: context.userId,
       action: "app_access_revoke",
       entity_type: "app_access",
       entity_id: data.userId,
-      details: { app_slug: APP_SLUG },
+      metadata: { app_slug: APP_SLUG },
     });
     return { ok: true };
   });
