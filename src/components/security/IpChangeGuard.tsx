@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ShieldAlert, Globe2, ArrowRight, X } from "lucide-react";
 import { toast } from "sonner";
-import { isDeviceTrusted } from "@/lib/trusted-device";
+import { isDeviceTrusted, getDeviceId } from "@/lib/trusted-device";
 
 /**
  * Girişten sonra kullanıcının IP'sini kontrol eder.
