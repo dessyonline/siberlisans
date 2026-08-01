@@ -44,6 +44,7 @@ import { Route as ApiSourceCodeRouteImport } from './routes/api/source-code'
 import { Route as ApiSessionRouteImport } from './routes/api/session'
 import { Route as ApiRevokeRouteImport } from './routes/api/revoke'
 import { Route as ApiNotificationsRouteImport } from './routes/api/notifications'
+import { Route as ApiLoginRouteImport } from './routes/api/login'
 import { Route as ApiCreateProjectRouteImport } from './routes/api/create-project'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiApprovePlanRouteImport } from './routes/api/approve-plan'
@@ -65,6 +66,7 @@ import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAraclarIndexRouteImport } from './routes/_authenticated/araclar/index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
+import { Route as ApiPublicLoginRouteImport } from './routes/api/public/login'
 import { Route as ApiPublicEmbedDotjsRouteImport } from './routes/api/public/embed[.]js'
 import { Route as ApiPublicCatalogDotxmlRouteImport } from './routes/api/public/catalog[.]xml'
 import { Route as ApiPublicCatalogDotjsonRouteImport } from './routes/api/public/catalog[.]json'
@@ -324,6 +326,11 @@ const ApiNotificationsRoute = ApiNotificationsRouteImport.update({
   path: '/api/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLoginRoute = ApiLoginRouteImport.update({
+  id: '/api/login',
+  path: '/api/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCreateProjectRoute = ApiCreateProjectRouteImport.update({
   id: '/api/create-project',
   path: '/api/create-project',
@@ -432,6 +439,11 @@ const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
 const ApiPublicSitemapDotxmlRoute = ApiPublicSitemapDotxmlRouteImport.update({
   id: '/api/public/sitemap.xml',
   path: '/api/public/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicLoginRoute = ApiPublicLoginRouteImport.update({
+  id: '/api/public/login',
+  path: '/api/public/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicEmbedDotjsRoute = ApiPublicEmbedDotjsRouteImport.update({
@@ -955,6 +967,7 @@ export interface FileRoutesByFullPath {
   '/api/approve-plan': typeof ApiApprovePlanRoute
   '/api/chat': typeof ApiChatRoute
   '/api/create-project': typeof ApiCreateProjectRoute
+  '/api/login': typeof ApiLoginRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/revoke': typeof ApiRevokeRoute
   '/api/session': typeof ApiSessionRoute
@@ -1041,6 +1054,7 @@ export interface FileRoutesByFullPath {
   '/api/public/catalog.json': typeof ApiPublicCatalogDotjsonRoute
   '/api/public/catalog.xml': typeof ApiPublicCatalogDotxmlRoute
   '/api/public/embed.js': typeof ApiPublicEmbedDotjsRoute
+  '/api/public/login': typeof ApiPublicLoginRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/araclar/': typeof AuthenticatedAraclarIndexRoute
@@ -1094,6 +1108,7 @@ export interface FileRoutesByTo {
   '/api/approve-plan': typeof ApiApprovePlanRoute
   '/api/chat': typeof ApiChatRoute
   '/api/create-project': typeof ApiCreateProjectRoute
+  '/api/login': typeof ApiLoginRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/revoke': typeof ApiRevokeRoute
   '/api/session': typeof ApiSessionRoute
@@ -1180,6 +1195,7 @@ export interface FileRoutesByTo {
   '/api/public/catalog.json': typeof ApiPublicCatalogDotjsonRoute
   '/api/public/catalog.xml': typeof ApiPublicCatalogDotxmlRoute
   '/api/public/embed.js': typeof ApiPublicEmbedDotjsRoute
+  '/api/public/login': typeof ApiPublicLoginRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/araclar': typeof AuthenticatedAraclarIndexRoute
@@ -1237,6 +1253,7 @@ export interface FileRoutesById {
   '/api/approve-plan': typeof ApiApprovePlanRoute
   '/api/chat': typeof ApiChatRoute
   '/api/create-project': typeof ApiCreateProjectRoute
+  '/api/login': typeof ApiLoginRoute
   '/api/notifications': typeof ApiNotificationsRoute
   '/api/revoke': typeof ApiRevokeRoute
   '/api/session': typeof ApiSessionRoute
@@ -1323,6 +1340,7 @@ export interface FileRoutesById {
   '/api/public/catalog.json': typeof ApiPublicCatalogDotjsonRoute
   '/api/public/catalog.xml': typeof ApiPublicCatalogDotxmlRoute
   '/api/public/embed.js': typeof ApiPublicEmbedDotjsRoute
+  '/api/public/login': typeof ApiPublicLoginRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/araclar/': typeof AuthenticatedAraclarIndexRoute
@@ -1380,6 +1398,7 @@ export interface FileRouteTypes {
     | '/api/approve-plan'
     | '/api/chat'
     | '/api/create-project'
+    | '/api/login'
     | '/api/notifications'
     | '/api/revoke'
     | '/api/session'
@@ -1466,6 +1485,7 @@ export interface FileRouteTypes {
     | '/api/public/catalog.json'
     | '/api/public/catalog.xml'
     | '/api/public/embed.js'
+    | '/api/public/login'
     | '/api/public/sitemap.xml'
     | '/admin/'
     | '/araclar/'
@@ -1519,6 +1539,7 @@ export interface FileRouteTypes {
     | '/api/approve-plan'
     | '/api/chat'
     | '/api/create-project'
+    | '/api/login'
     | '/api/notifications'
     | '/api/revoke'
     | '/api/session'
@@ -1605,6 +1626,7 @@ export interface FileRouteTypes {
     | '/api/public/catalog.json'
     | '/api/public/catalog.xml'
     | '/api/public/embed.js'
+    | '/api/public/login'
     | '/api/public/sitemap.xml'
     | '/admin'
     | '/araclar'
@@ -1661,6 +1683,7 @@ export interface FileRouteTypes {
     | '/api/approve-plan'
     | '/api/chat'
     | '/api/create-project'
+    | '/api/login'
     | '/api/notifications'
     | '/api/revoke'
     | '/api/session'
@@ -1747,6 +1770,7 @@ export interface FileRouteTypes {
     | '/api/public/catalog.json'
     | '/api/public/catalog.xml'
     | '/api/public/embed.js'
+    | '/api/public/login'
     | '/api/public/sitemap.xml'
     | '/_authenticated/admin/'
     | '/_authenticated/araclar/'
@@ -1791,6 +1815,7 @@ export interface RootRouteChildren {
   ApiApprovePlanRoute: typeof ApiApprovePlanRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiCreateProjectRoute: typeof ApiCreateProjectRoute
+  ApiLoginRoute: typeof ApiLoginRoute
   ApiNotificationsRoute: typeof ApiNotificationsRoute
   ApiRevokeRoute: typeof ApiRevokeRoute
   ApiSessionRoute: typeof ApiSessionRoute
@@ -1814,6 +1839,7 @@ export interface RootRouteChildren {
   ApiPublicCatalogDotjsonRoute: typeof ApiPublicCatalogDotjsonRoute
   ApiPublicCatalogDotxmlRoute: typeof ApiPublicCatalogDotxmlRoute
   ApiPublicEmbedDotjsRoute: typeof ApiPublicEmbedDotjsRoute
+  ApiPublicLoginRoute: typeof ApiPublicLoginRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
   ApiPublicDealerSplatRoute: typeof ApiPublicDealerSplatRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
@@ -2080,6 +2106,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiNotificationsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/login': {
+      id: '/api/login'
+      path: '/api/login'
+      fullPath: '/api/login'
+      preLoaderRoute: typeof ApiLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/create-project': {
       id: '/api/create-project'
       path: '/api/create-project'
@@ -2225,6 +2258,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/sitemap.xml'
       fullPath: '/api/public/sitemap.xml'
       preLoaderRoute: typeof ApiPublicSitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/login': {
+      id: '/api/public/login'
+      path: '/api/public/login'
+      fullPath: '/api/public/login'
+      preLoaderRoute: typeof ApiPublicLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/embed.js': {
@@ -3043,6 +3083,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiApprovePlanRoute: ApiApprovePlanRoute,
   ApiChatRoute: ApiChatRoute,
   ApiCreateProjectRoute: ApiCreateProjectRoute,
+  ApiLoginRoute: ApiLoginRoute,
   ApiNotificationsRoute: ApiNotificationsRoute,
   ApiRevokeRoute: ApiRevokeRoute,
   ApiSessionRoute: ApiSessionRoute,
@@ -3066,6 +3107,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCatalogDotjsonRoute: ApiPublicCatalogDotjsonRoute,
   ApiPublicCatalogDotxmlRoute: ApiPublicCatalogDotxmlRoute,
   ApiPublicEmbedDotjsRoute: ApiPublicEmbedDotjsRoute,
+  ApiPublicLoginRoute: ApiPublicLoginRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
   ApiPublicDealerSplatRoute: ApiPublicDealerSplatRoute,
   ApiPublicHooksAbandonmentReminderRoute:
@@ -3089,3 +3131,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
