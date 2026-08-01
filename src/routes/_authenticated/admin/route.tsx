@@ -32,6 +32,7 @@ import {
   Menu,
   MessageCircleQuestion,
   Handshake,
+  Terminal,
 } from "lucide-react";
 
 
