@@ -127,6 +127,7 @@ import { Route as AuthenticatedAdminFlashRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminFaturalarRouteImport } from './routes/_authenticated/admin/faturalar'
 import { Route as AuthenticatedAdminDestekRouteImport } from './routes/_authenticated/admin/destek'
 import { Route as AuthenticatedAdminDenetimRouteImport } from './routes/_authenticated/admin/denetim'
+import { Route as AuthenticatedAdminCyberlabRouteImport } from './routes/_authenticated/admin/cyberlab'
 import { Route as AuthenticatedAdminCuzdanRouteImport } from './routes/_authenticated/admin/cuzdan'
 import { Route as AuthenticatedAdminCekilisRouteImport } from './routes/_authenticated/admin/cekilis'
 import { Route as AuthenticatedAdminCaprazSatisRouteImport } from './routes/_authenticated/admin/capraz-satis'
@@ -796,6 +797,12 @@ const AuthenticatedAdminDenetimRoute =
     path: '/denetim',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminCyberlabRoute =
+  AuthenticatedAdminCyberlabRouteImport.update({
+    id: '/cyberlab',
+    path: '/cyberlab',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminCuzdanRoute =
   AuthenticatedAdminCuzdanRouteImport.update({
     id: '/cuzdan',
@@ -1008,6 +1015,7 @@ export interface FileRoutesByFullPath {
   '/admin/capraz-satis': typeof AuthenticatedAdminCaprazSatisRoute
   '/admin/cekilis': typeof AuthenticatedAdminCekilisRoute
   '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
+  '/admin/cyberlab': typeof AuthenticatedAdminCyberlabRoute
   '/admin/denetim': typeof AuthenticatedAdminDenetimRoute
   '/admin/destek': typeof AuthenticatedAdminDestekRoute
   '/admin/faturalar': typeof AuthenticatedAdminFaturalarRoute
@@ -1151,6 +1159,7 @@ export interface FileRoutesByTo {
   '/admin/capraz-satis': typeof AuthenticatedAdminCaprazSatisRoute
   '/admin/cekilis': typeof AuthenticatedAdminCekilisRoute
   '/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
+  '/admin/cyberlab': typeof AuthenticatedAdminCyberlabRoute
   '/admin/denetim': typeof AuthenticatedAdminDenetimRoute
   '/admin/destek': typeof AuthenticatedAdminDestekRoute
   '/admin/faturalar': typeof AuthenticatedAdminFaturalarRoute
@@ -1298,6 +1307,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/capraz-satis': typeof AuthenticatedAdminCaprazSatisRoute
   '/_authenticated/admin/cekilis': typeof AuthenticatedAdminCekilisRoute
   '/_authenticated/admin/cuzdan': typeof AuthenticatedAdminCuzdanRoute
+  '/_authenticated/admin/cyberlab': typeof AuthenticatedAdminCyberlabRoute
   '/_authenticated/admin/denetim': typeof AuthenticatedAdminDenetimRoute
   '/_authenticated/admin/destek': typeof AuthenticatedAdminDestekRoute
   '/_authenticated/admin/faturalar': typeof AuthenticatedAdminFaturalarRoute
@@ -1445,6 +1455,7 @@ export interface FileRouteTypes {
     | '/admin/capraz-satis'
     | '/admin/cekilis'
     | '/admin/cuzdan'
+    | '/admin/cyberlab'
     | '/admin/denetim'
     | '/admin/destek'
     | '/admin/faturalar'
@@ -1588,6 +1599,7 @@ export interface FileRouteTypes {
     | '/admin/capraz-satis'
     | '/admin/cekilis'
     | '/admin/cuzdan'
+    | '/admin/cyberlab'
     | '/admin/denetim'
     | '/admin/destek'
     | '/admin/faturalar'
@@ -1734,6 +1746,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/capraz-satis'
     | '/_authenticated/admin/cekilis'
     | '/_authenticated/admin/cuzdan'
+    | '/_authenticated/admin/cyberlab'
     | '/_authenticated/admin/denetim'
     | '/_authenticated/admin/destek'
     | '/_authenticated/admin/faturalar'
@@ -2713,6 +2726,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminDenetimRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/cyberlab': {
+      id: '/_authenticated/admin/cyberlab'
+      path: '/cyberlab'
+      fullPath: '/admin/cyberlab'
+      preLoaderRoute: typeof AuthenticatedAdminCyberlabRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/cuzdan': {
       id: '/_authenticated/admin/cuzdan'
       path: '/cuzdan'
@@ -2908,6 +2928,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminCaprazSatisRoute: typeof AuthenticatedAdminCaprazSatisRoute
   AuthenticatedAdminCekilisRoute: typeof AuthenticatedAdminCekilisRoute
   AuthenticatedAdminCuzdanRoute: typeof AuthenticatedAdminCuzdanRoute
+  AuthenticatedAdminCyberlabRoute: typeof AuthenticatedAdminCyberlabRoute
   AuthenticatedAdminDenetimRoute: typeof AuthenticatedAdminDenetimRoute
   AuthenticatedAdminDestekRoute: typeof AuthenticatedAdminDestekRoute
   AuthenticatedAdminFaturalarRoute: typeof AuthenticatedAdminFaturalarRoute
@@ -2944,6 +2965,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminCaprazSatisRoute: AuthenticatedAdminCaprazSatisRoute,
     AuthenticatedAdminCekilisRoute: AuthenticatedAdminCekilisRoute,
     AuthenticatedAdminCuzdanRoute: AuthenticatedAdminCuzdanRoute,
+    AuthenticatedAdminCyberlabRoute: AuthenticatedAdminCyberlabRoute,
     AuthenticatedAdminDenetimRoute: AuthenticatedAdminDenetimRoute,
     AuthenticatedAdminDestekRoute: AuthenticatedAdminDestekRoute,
     AuthenticatedAdminFaturalarRoute: AuthenticatedAdminFaturalarRoute,
