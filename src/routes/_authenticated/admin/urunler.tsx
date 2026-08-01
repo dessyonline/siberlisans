@@ -71,6 +71,8 @@ type Product = {
   retail_price_try: number | null;
   retail_price_source_url: string | null;
   duration_label: string | null;
+  grants_app: string | null;
+  grants_app_days: number | null;
 };
 
 type Filter = "all" | "active" | "inactive" | "featured" | "epic" | "low" | "empty";
