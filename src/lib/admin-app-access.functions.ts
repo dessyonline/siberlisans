@@ -138,11 +138,11 @@ export const grantAppAccess = createServerFn({ method: "POST" })
     }
 
     await supabaseAdmin.from("admin_audit_log").insert({
-      admin_id: context.userId,
+      actor_id: context.userId,
       action: existing ? "app_access_update" : "app_access_grant",
       entity_type: "app_access",
       entity_id: data.userId,
-      details: { app_slug: APP_SLUG, expires_at: expiresAt, mode: data.mode },
+      metadata: { app_slug: APP_SLUG, expires_at: expiresAt, mode: data.mode },
     });
 
     try {
