@@ -30,6 +30,7 @@ import {
   Gamepad2,
   Mail,
   ArrowRight,
+  FlaskConical,
 } from "lucide-react";
 import { ProductCardSkeleton } from "@/components/Skeleton";
 import { ProductLogo } from "@/components/ProductLogo";
