@@ -30,6 +30,7 @@ import {
   Gamepad2,
   Mail,
   ArrowRight,
+  FlaskConical,
 } from "lucide-react";
 import { ProductCardSkeleton } from "@/components/Skeleton";
 import { ProductLogo } from "@/components/ProductLogo";
@@ -1084,7 +1085,7 @@ function QuickAccessCards() {
         <span className="hidden sm:inline font-mono text-[10px] text-muted-foreground">// tek tıkla</span>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-3">
         {/* ARAÇ LABORATUVARI */}
         <Link
           to="/araclar"
@@ -1114,13 +1115,42 @@ function QuickAccessCards() {
           </div>
         </Link>
 
+        {/* CYBERLAB */}
+        <Link
+          to="/cyberlab"
+          className="group relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-background via-background to-primary/10 p-5 sm:p-6 hover:border-primary hover:shadow-[0_0_35px_hsl(var(--primary)/0.35)] transition-all"
+        >
+          <div className="absolute inset-0 cyber-grid opacity-25 pointer-events-none" aria-hidden />
+          <div className="absolute -left-10 -bottom-10 h-32 w-32 rounded-full bg-primary/20 blur-3xl group-hover:bg-primary/30 transition" aria-hidden />
+          <div className="relative flex items-start justify-between gap-3">
+            <div className="rounded-lg border border-primary/40 bg-primary/10 p-2.5 text-primary">
+              <FlaskConical className="h-6 w-6" />
+            </div>
+            <div className="flex flex-col items-end gap-1">
+              <span className="font-mono text-[10px] rounded-full border border-primary/40 bg-primary/5 px-2 py-0.5 text-primary">
+                LAB
+              </span>
+              <span className="font-mono text-[10px] text-muted-foreground">OSINT + Terminal</span>
+            </div>
+          </div>
+          <div className="relative mt-4 space-y-1.5">
+            <div className="font-mono text-lg sm:text-xl text-foreground">CyberLab</div>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              Siber güvenlik laboratuvarına göz at: <span className="text-primary">dersler, kurslar ve canlı terminal</span> ile pratik yap.
+            </p>
+          </div>
+          <div className="relative mt-4 inline-flex items-center gap-1.5 font-mono text-xs text-primary opacity-80 group-hover:opacity-100 transition">
+            lab'a göz at <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition" />
+          </div>
+        </Link>
+
         {/* AI PAKETLERİ */}
         <Link
           to="/paketler/ai"
           className="group relative overflow-hidden rounded-xl border border-primary/30 bg-gradient-to-br from-background via-background to-primary/10 p-5 sm:p-6 hover:border-primary hover:shadow-[0_0_35px_hsl(var(--primary)/0.35)] transition-all"
         >
           <div className="absolute inset-0 cyber-grid opacity-25 pointer-events-none" aria-hidden />
-          <div className="absolute -left-10 -bottom-10 h-32 w-32 rounded-full bg-primary/20 blur-3xl group-hover:bg-primary/30 transition" aria-hidden />
+          <div className="absolute -right-10 -bottom-10 h-32 w-32 rounded-full bg-primary/20 blur-3xl group-hover:bg-primary/30 transition" aria-hidden />
           <div className="relative flex items-start justify-between gap-3">
             <div className="rounded-lg border border-primary/40 bg-primary/10 p-2.5 text-primary">
               <Cpu className="h-6 w-6" />

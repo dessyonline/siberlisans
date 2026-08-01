@@ -21,6 +21,7 @@ import { Route as KarsilastirRouteImport } from './routes/karsilastir'
 import { Route as IletisimRouteImport } from './routes/iletisim'
 import { Route as IadeRouteImport } from './routes/iade'
 import { Route as GizlilikRouteImport } from './routes/gizlilik'
+import { Route as CyberlabRouteImport } from './routes/cyberlab'
 import { Route as CekilisRouteImport } from './routes/cekilis'
 import { Route as BayilikRouteImport } from './routes/bayilik'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -58,7 +59,6 @@ import { Route as AuthenticatedFavorilerimRouteImport } from './routes/_authenti
 import { Route as AuthenticatedFaturalarRouteImport } from './routes/_authenticated/faturalar'
 import { Route as AuthenticatedDestekRouteImport } from './routes/_authenticated/destek'
 import { Route as AuthenticatedDavetRouteImport } from './routes/_authenticated/davet'
-import { Route as AuthenticatedCyberlabRouteImport } from './routes/_authenticated/cyberlab'
 import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated/cuzdan'
 import { Route as AuthenticatedBildirimlerRouteImport } from './routes/_authenticated/bildirimler'
 import { Route as AuthenticatedBayiRouteImport } from './routes/_authenticated/bayi'
@@ -212,6 +212,11 @@ const IadeRoute = IadeRouteImport.update({
 const GizlilikRoute = GizlilikRouteImport.update({
   id: '/gizlilik',
   path: '/gizlilik',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CyberlabRoute = CyberlabRouteImport.update({
+  id: '/cyberlab',
+  path: '/cyberlab',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CekilisRoute = CekilisRouteImport.update({
@@ -398,11 +403,6 @@ const AuthenticatedDestekRoute = AuthenticatedDestekRouteImport.update({
 const AuthenticatedDavetRoute = AuthenticatedDavetRouteImport.update({
   id: '/davet',
   path: '/davet',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedCyberlabRoute = AuthenticatedCyberlabRouteImport.update({
-  id: '/cyberlab',
-  path: '/cyberlab',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCuzdanRoute = AuthenticatedCuzdanRouteImport.update({
@@ -949,6 +949,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/bayilik': typeof BayilikRoute
   '/cekilis': typeof CekilisRoute
+  '/cyberlab': typeof CyberlabRoute
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
   '/iletisim': typeof IletisimRoute
@@ -966,7 +967,6 @@ export interface FileRoutesByFullPath {
   '/bayi': typeof AuthenticatedBayiRoute
   '/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
-  '/cyberlab': typeof AuthenticatedCyberlabRoute
   '/davet': typeof AuthenticatedDavetRoute
   '/destek': typeof AuthenticatedDestekRoute
   '/faturalar': typeof AuthenticatedFaturalarRoute
@@ -1094,6 +1094,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/bayilik': typeof BayilikRoute
   '/cekilis': typeof CekilisRoute
+  '/cyberlab': typeof CyberlabRoute
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
   '/iletisim': typeof IletisimRoute
@@ -1109,7 +1110,6 @@ export interface FileRoutesByTo {
   '/bayi': typeof AuthenticatedBayiRoute
   '/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/cuzdan': typeof AuthenticatedCuzdanRoute
-  '/cyberlab': typeof AuthenticatedCyberlabRoute
   '/davet': typeof AuthenticatedDavetRoute
   '/destek': typeof AuthenticatedDestekRoute
   '/faturalar': typeof AuthenticatedFaturalarRoute
@@ -1239,6 +1239,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/bayilik': typeof BayilikRoute
   '/cekilis': typeof CekilisRoute
+  '/cyberlab': typeof CyberlabRoute
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
   '/iletisim': typeof IletisimRoute
@@ -1256,7 +1257,6 @@ export interface FileRoutesById {
   '/_authenticated/bayi': typeof AuthenticatedBayiRoute
   '/_authenticated/bildirimler': typeof AuthenticatedBildirimlerRoute
   '/_authenticated/cuzdan': typeof AuthenticatedCuzdanRoute
-  '/_authenticated/cyberlab': typeof AuthenticatedCyberlabRoute
   '/_authenticated/davet': typeof AuthenticatedDavetRoute
   '/_authenticated/destek': typeof AuthenticatedDestekRoute
   '/_authenticated/faturalar': typeof AuthenticatedFaturalarRoute
@@ -1386,6 +1386,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/bayilik'
     | '/cekilis'
+    | '/cyberlab'
     | '/gizlilik'
     | '/iade'
     | '/iletisim'
@@ -1403,7 +1404,6 @@ export interface FileRouteTypes {
     | '/bayi'
     | '/bildirimler'
     | '/cuzdan'
-    | '/cyberlab'
     | '/davet'
     | '/destek'
     | '/faturalar'
@@ -1531,6 +1531,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/bayilik'
     | '/cekilis'
+    | '/cyberlab'
     | '/gizlilik'
     | '/iade'
     | '/iletisim'
@@ -1546,7 +1547,6 @@ export interface FileRouteTypes {
     | '/bayi'
     | '/bildirimler'
     | '/cuzdan'
-    | '/cyberlab'
     | '/davet'
     | '/destek'
     | '/faturalar'
@@ -1675,6 +1675,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/bayilik'
     | '/cekilis'
+    | '/cyberlab'
     | '/gizlilik'
     | '/iade'
     | '/iletisim'
@@ -1692,7 +1693,6 @@ export interface FileRouteTypes {
     | '/_authenticated/bayi'
     | '/_authenticated/bildirimler'
     | '/_authenticated/cuzdan'
-    | '/_authenticated/cyberlab'
     | '/_authenticated/davet'
     | '/_authenticated/destek'
     | '/_authenticated/faturalar'
@@ -1822,6 +1822,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BayilikRoute: typeof BayilikRoute
   CekilisRoute: typeof CekilisRoute
+  CyberlabRoute: typeof CyberlabRoute
   GizlilikRoute: typeof GizlilikRoute
   IadeRoute: typeof IadeRoute
   IletisimRoute: typeof IletisimRoute
@@ -1968,6 +1969,13 @@ declare module '@tanstack/react-router' {
       path: '/gizlilik'
       fullPath: '/gizlilik'
       preLoaderRoute: typeof GizlilikRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cyberlab': {
+      id: '/cyberlab'
+      path: '/cyberlab'
+      fullPath: '/cyberlab'
+      preLoaderRoute: typeof CyberlabRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cekilis': {
@@ -2227,13 +2235,6 @@ declare module '@tanstack/react-router' {
       path: '/davet'
       fullPath: '/davet'
       preLoaderRoute: typeof AuthenticatedDavetRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/cyberlab': {
-      id: '/_authenticated/cyberlab'
-      path: '/cyberlab'
-      fullPath: '/cyberlab'
-      preLoaderRoute: typeof AuthenticatedCyberlabRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/cuzdan': {
@@ -3068,7 +3069,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBayiRoute: typeof AuthenticatedBayiRoute
   AuthenticatedBildirimlerRoute: typeof AuthenticatedBildirimlerRoute
   AuthenticatedCuzdanRoute: typeof AuthenticatedCuzdanRoute
-  AuthenticatedCyberlabRoute: typeof AuthenticatedCyberlabRoute
   AuthenticatedDavetRoute: typeof AuthenticatedDavetRoute
   AuthenticatedDestekRoute: typeof AuthenticatedDestekRoute
   AuthenticatedFaturalarRoute: typeof AuthenticatedFaturalarRoute
@@ -3086,7 +3086,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBayiRoute: AuthenticatedBayiRoute,
   AuthenticatedBildirimlerRoute: AuthenticatedBildirimlerRoute,
   AuthenticatedCuzdanRoute: AuthenticatedCuzdanRoute,
-  AuthenticatedCyberlabRoute: AuthenticatedCyberlabRoute,
   AuthenticatedDavetRoute: AuthenticatedDavetRoute,
   AuthenticatedDestekRoute: AuthenticatedDestekRoute,
   AuthenticatedFaturalarRoute: AuthenticatedFaturalarRoute,
@@ -3107,6 +3106,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   BayilikRoute: BayilikRoute,
   CekilisRoute: CekilisRoute,
+  CyberlabRoute: CyberlabRoute,
   GizlilikRoute: GizlilikRoute,
   IadeRoute: IadeRoute,
   IletisimRoute: IletisimRoute,
@@ -3173,13 +3173,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
