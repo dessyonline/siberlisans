@@ -874,6 +874,35 @@ function ProductsAdmin() {
                     <option value="epic">★ destansı (özel tema)</option>
                   </select>
                 </div>
+                <div className="rounded border border-primary/25 p-3 space-y-2">
+                  <Label className="font-mono text-xs text-primary">panel uygulaması erişimi</Label>
+                  <select
+                    value={editing.grants_app ?? ""}
+                    onChange={(e) =>
+                      setEditing((p) => ({ ...p!, grants_app: e.target.value || null }))
+                    }
+                    className="w-full h-9 rounded border border-border bg-input px-3 font-mono text-sm"
+                  >
+                    <option value="">— yok —</option>
+                    <option value="cyberlab">CyberLab</option>
+                  </select>
+                  {editing.grants_app ? (
+                    <Field
+                      label="erişim süresi (gün · boş = ömür boyu)"
+                      value={editing.grants_app_days == null ? "" : String(editing.grants_app_days)}
+                      onChange={(v) =>
+                        setEditing((p) => ({
+                          ...p!,
+                          grants_app_days: v.trim() === "" ? null : Number(v) || 0,
+                        }))
+                      }
+                      type="number"
+                    />
+                  ) : null}
+                  <p className="font-mono text-[10px] text-muted-foreground">
+                    sipariş onaylanınca kullanıcının paneline erişim otomatik açılır/uzatılır
+                  </p>
+                </div>
                 <p className="font-mono text-[10px] text-muted-foreground leading-relaxed">
                   "öne çıkan" → ana sayfada Popüler Lisanslar'da<br />
                   "sıra" → büyük değer üstte listelenir<br />
