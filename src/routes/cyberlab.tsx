@@ -104,8 +104,8 @@ function CyberlabPage() {
   return (
     <div className="mx-auto max-w-6xl px-3 py-6 md:px-4 md:py-10">
       {/* Hero */}
-      <section className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-background via-background to-primary/10 p-6 md:p-12">
-        <div className="absolute inset-0 cyber-grid opacity-20 pointer-events-none" aria-hidden />
+      <section className="relative overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-background via-background to-primary/10 p-6 md:p-12 z-0">
+        <div className="absolute inset-0 cyber-grid opacity-20 pointer-events-none z-[-1]" aria-hidden />
         <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl" aria-hidden />
 
         <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
@@ -154,7 +154,7 @@ function CyberlabPage() {
       {/* Active access panel (compact) for logged in users */}
       {user && !isLoading && access?.active && (
         <section className="mt-6">
-          <div className="glass-card corner-cut rounded-xl p-5 md:p-6">
+          <div className="glass-card corner-cut rounded-xl p-5 md:p-6 relative z-10">
             <LaunchPanel access={access} showMeta />
           </div>
         </section>
