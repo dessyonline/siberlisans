@@ -43,6 +43,8 @@ import { Wallet } from "lucide-react";
 import { AdminEditBadge } from "@/components/AdminEditBadge";
 import { RaffleFloatingBadge } from "@/components/RaffleFloatingBadge";
 import { LiveSalesTicker } from "@/components/LiveSalesTicker";
+import { Badge } from "@/components/ui/badge";
+import { TrendingUp, Users, Award, Shield, Timer, Rocket } from "lucide-react";
 
 const SITE_URL = "https://siberlisans.com";
 
@@ -292,10 +294,11 @@ function Index() {
   }, [products, search]);
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <RaffleFloatingBadge />
       <UserBalanceWelcome />
       <AnnouncementBar />
+      <LiveSalesTicker />
       {/* HERO — cinematic */}
 
       <section className="relative overflow-hidden border-b border-border/40">
@@ -327,7 +330,7 @@ function Index() {
                 </span>
                 <span className="block">
                   <span className="text-muted-foreground/80">&gt;</span>{" "}
-                  <span className="text-foreground">lisans</span>
+                  <span className="text-foreground">Siber</span>
                   <span className="text-primary">.</span>
                   <CyberRotator />
                 </span>
