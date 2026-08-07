@@ -153,6 +153,7 @@ import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/pub
 import { Route as ApiPublicHooksAbandonmentReminderRouteImport } from './routes/api/public/hooks/abandonment-reminder'
 import { Route as ApiPublicDealerSplatRouteImport } from './routes/api/public/dealer/$'
 import { Route as ApiPublicCyberlabVerifyRouteImport } from './routes/api/public/cyberlab/verify'
+import { Route as ApiPublicCyberlabProxyRouteImport } from './routes/api/public/cyberlab/proxy'
 import { Route as ApiPublicV1AuthVerifyRouteImport } from './routes/api/public/v1/auth/verify'
 
 const UrunlerRoute = UrunlerRouteImport.update({
@@ -945,6 +946,11 @@ const ApiPublicCyberlabVerifyRoute = ApiPublicCyberlabVerifyRouteImport.update({
   path: '/api/public/cyberlab/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCyberlabProxyRoute = ApiPublicCyberlabProxyRouteImport.update({
+  id: '/api/public/cyberlab/proxy',
+  path: '/api/public/cyberlab/proxy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1AuthVerifyRoute = ApiPublicV1AuthVerifyRouteImport.update({
   id: '/api/public/v1/auth/verify',
   path: '/api/public/v1/auth/verify',
@@ -1079,6 +1085,7 @@ export interface FileRoutesByFullPath {
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/araclar/': typeof AuthenticatedAraclarIndexRoute
+  '/api/public/cyberlab/proxy': typeof ApiPublicCyberlabProxyRoute
   '/api/public/cyberlab/verify': typeof ApiPublicCyberlabVerifyRoute
   '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
@@ -1223,6 +1230,7 @@ export interface FileRoutesByTo {
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/araclar': typeof AuthenticatedAraclarIndexRoute
+  '/api/public/cyberlab/proxy': typeof ApiPublicCyberlabProxyRoute
   '/api/public/cyberlab/verify': typeof ApiPublicCyberlabVerifyRoute
   '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
@@ -1371,6 +1379,7 @@ export interface FileRoutesById {
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/araclar/': typeof AuthenticatedAraclarIndexRoute
+  '/api/public/cyberlab/proxy': typeof ApiPublicCyberlabProxyRoute
   '/api/public/cyberlab/verify': typeof ApiPublicCyberlabVerifyRoute
   '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
@@ -1519,6 +1528,7 @@ export interface FileRouteTypes {
     | '/api/public/sitemap.xml'
     | '/admin/'
     | '/araclar/'
+    | '/api/public/cyberlab/proxy'
     | '/api/public/cyberlab/verify'
     | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
@@ -1663,6 +1673,7 @@ export interface FileRouteTypes {
     | '/api/public/sitemap.xml'
     | '/admin'
     | '/araclar'
+    | '/api/public/cyberlab/proxy'
     | '/api/public/cyberlab/verify'
     | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
@@ -1810,6 +1821,7 @@ export interface FileRouteTypes {
     | '/api/public/sitemap.xml'
     | '/_authenticated/admin/'
     | '/_authenticated/araclar/'
+    | '/api/public/cyberlab/proxy'
     | '/api/public/cyberlab/verify'
     | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
@@ -1879,6 +1891,7 @@ export interface RootRouteChildren {
   ApiPublicEmbedDotjsRoute: typeof ApiPublicEmbedDotjsRoute
   ApiPublicLoginRoute: typeof ApiPublicLoginRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
+  ApiPublicCyberlabProxyRoute: typeof ApiPublicCyberlabProxyRoute
   ApiPublicCyberlabVerifyRoute: typeof ApiPublicCyberlabVerifyRoute
   ApiPublicDealerSplatRoute: typeof ApiPublicDealerSplatRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
@@ -2908,6 +2921,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCyberlabVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cyberlab/proxy': {
+      id: '/api/public/cyberlab/proxy'
+      path: '/api/public/cyberlab/proxy'
+      fullPath: '/api/public/cyberlab/proxy'
+      preLoaderRoute: typeof ApiPublicCyberlabProxyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/auth/verify': {
       id: '/api/public/v1/auth/verify'
       path: '/api/public/v1/auth/verify'
@@ -3172,6 +3192,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicEmbedDotjsRoute: ApiPublicEmbedDotjsRoute,
   ApiPublicLoginRoute: ApiPublicLoginRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
+  ApiPublicCyberlabProxyRoute: ApiPublicCyberlabProxyRoute,
   ApiPublicCyberlabVerifyRoute: ApiPublicCyberlabVerifyRoute,
   ApiPublicDealerSplatRoute: ApiPublicDealerSplatRoute,
   ApiPublicHooksAbandonmentReminderRoute:
@@ -3195,13 +3216,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
