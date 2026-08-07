@@ -346,11 +346,17 @@ function Index() {
                 />
               </p>
               <div className="mt-9 flex flex-wrap gap-3">
-                <Button asChild size="lg" className="font-medium neon-glow-strong">
-                  <Link to="/urunler">Lisansları keşfet →</Link>
+                <Button asChild size="lg" className="font-mono neon-glow-strong group h-14 px-8 text-base">
+                  <Link to="/urunler">
+                    <Rocket className="mr-2 h-5 w-5 group-hover:animate-bounce" />
+                    Lisansları Keşfet
+                  </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="font-medium border-primary/40 hover:bg-primary/10">
-                  <Link to="/nasil-calisir">Nasıl çalışır</Link>
+                <Button asChild size="lg" variant="outline" className="font-mono border-primary/40 hover:bg-primary/10 h-14 px-8 text-base">
+                  <Link to="/cyberlab">
+                    <FlaskConical className="mr-2 h-5 w-5" />
+                    Laboratuvar
+                  </Link>
                 </Button>
               </div>
 
@@ -1250,3 +1256,35 @@ function CategoryStrip({ products }: { products: CatStripProduct[] }) {
     </section>
   );
 }
+
+// ============================================================================
+// HERO STATS BAR — Hero altında ince, güven veren istatistik şeridi
+1252: // ============================================================================
+1253: function HeroStatsBar() {
+1254:   const stats = [
+1255:     { icon: Users, label: "Mutlu Müşteri", value: "12,400+", color: "text-blue-400" },
+1256:     { icon: Shield, label: "Güvenli Ödeme", value: "SSL/256-bit", color: "text-green-400" },
+1257:     { icon: Timer, label: "Anında Teslim", value: "7/24 Aktif", color: "text-yellow-400" },
+1258:     { icon: Award, label: "Garanti", value: "24 Saat İade", color: "text-purple-400" },
+1259:   ];
+1260: 
+1261:   return (
+1262:     <section className="border-b border-border/40 bg-background/40 backdrop-blur-sm relative z-20">
+1263:       <div className="mx-auto max-w-6xl px-4 py-4 sm:py-6">
+1264:         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+1265:           {stats.map((s, idx) => (
+1266:             <div key={idx} className="flex items-center gap-3 group">
+1267:               <div className={`p-2 rounded-lg bg-white/5 border border-white/10 group-hover:border-primary/50 transition-colors ${s.color}`}>
+1268:                 <s.icon className="h-5 w-5" />
+1269:               </div>
+1270:               <div className="font-mono">
+1271:                 <div className="text-[10px] uppercase tracking-widest text-muted-foreground/60">{s.label}</div>
+1272:                 <div className="text-sm font-bold text-foreground/90">{s.value}</div>
+1273:               </div>
+1274:             </div>
+1275:           ))}
+1276:         </div>
+1277:       </div>
+1278:     </section>
+1279:   );
+1280: }
