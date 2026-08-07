@@ -1230,6 +1230,7 @@ export type Database = {
           created_at: string
           id: string
           invoice_number: string
+          is_tax_exempt: boolean | null
           issued_at: string
           items_snapshot: Json
           order_id: string
@@ -1247,6 +1248,7 @@ export type Database = {
           created_at?: string
           id?: string
           invoice_number: string
+          is_tax_exempt?: boolean | null
           issued_at?: string
           items_snapshot?: Json
           order_id: string
@@ -1264,6 +1266,7 @@ export type Database = {
           created_at?: string
           id?: string
           invoice_number?: string
+          is_tax_exempt?: boolean | null
           issued_at?: string
           items_snapshot?: Json
           order_id?: string
