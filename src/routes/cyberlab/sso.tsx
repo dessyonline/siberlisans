@@ -12,8 +12,10 @@ function CyberlabSsoHandler() {
   useEffect(() => {
     if (search.token) {
       localStorage.setItem("cyberlab_sso_token", search.token);
-      // SSO sonrası index.html'e token ile git (siber-sso.js yakalayacak)
-      window.location.href = "/cyberlab/index.html?token=" + encodeURIComponent(search.token);
+      // SPA içinde kalmak için window.location.href yerine index.html'e yönlendiriyoruz
+      // siber-sso.js head'de olduğu için bu sayfada da çalışacak ve token'ı yakalayacak.
+      // Ancak döngüyü kırmak için index.html'e temiz bir yönlendirme yapıyoruz.
+      window.location.replace("/cyberlab/index.html?token=" + encodeURIComponent(search.token));
     } else {
       navigate({ to: "/cyberlab" });
     }
@@ -23,7 +25,7 @@ function CyberlabSsoHandler() {
     <div className="flex h-screen w-full items-center justify-center bg-black font-mono text-primary">
       <div className="flex flex-col items-center gap-4">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        <p className="neon-text-glow">CyberLab Oturumu Açılıyor...</p>
+        <p className="neon-text-glow">CyberLab Oturumu Doğrulanıyor...</p>
       </div>
     </div>
   );
