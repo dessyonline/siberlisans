@@ -1,5 +1,5 @@
 /**
- * SiberLisans SSO Entegrasyonu v2
+ * SiberLisans SSO Entegrasyonu v2.1
  * Bu dosya CyberLab'in siberlisans.com ile oturum paylaşmasını sağlar.
  */
 
@@ -13,7 +13,7 @@
     if (tokenFromUrl) {
         console.log("[SSO] URL'den token alındı");
         localStorage.setItem('cyberlab_sso_token', tokenFromUrl);
-        // URL'den tokenı temizle, ancak aynı sayfada kal (yönlendirme yapma)
+        // URL'den tokenı temizle
         const newUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
         console.log("[SSO] URL temizlendi, doğrulama devam ediyor...");
@@ -21,7 +21,7 @@
 
     const token = localStorage.getItem('cyberlab_sso_token');
 
-    // Eğer sso.tsx üzerinden geldiysek ve hala sso sayfasındaysak yönlendirme yapma
+    // Eğer sso.tsx üzerinden geldiysek ve hala sso sayfasındaysak
     if (window.location.pathname.includes('/cyberlab/sso')) {
         return;
     }
@@ -29,12 +29,12 @@
     if (token) {
         console.log("[SSO] Token bulundu, backend doğrulaması yapılıyor...");
         
-        // CSS ile önceden gizlemeyi garantile (siber-sso scripti head'de olduğu için etkili olur)
+        // CSS ile önceden gizlemeyi garantile
         const style = document.createElement('style');
+        style.id = 'sso-force-style';
         style.innerHTML = `
-            #login-screen { display: none !important; opacity: 0 !important; pointer-events: none !important; }
-            #linux-desktop { display: block !important; opacity: 1 !important; visibility: visible !important; }
-            #boot-screen { display: none !important; }
+            #login-screen, .login-wrapper, #boot-screen { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -1 !important; }
+            #linux-desktop { display: block !important; opacity: 1 !important; visibility: visible !important; z-index: 100 !important; }
         `;
         document.head.appendChild(style);
         
@@ -48,7 +48,6 @@
                     console.log("[SSO] Giriş başarılı:", data.user.name);
                     localStorage.setItem('cyberlab_user', JSON.stringify(data.user));
                     
-                    // DOM'un yüklenmesini bekle (eğer script head'deyse)
                     const applyUI = () => {
                         document.body.classList.add('sso-authenticated');
                         document.body.classList.remove('sso-ready');
@@ -68,53 +67,52 @@
                         }
 
                         // CyberLab'in kendi yükleme mantığını zorla kapat
-                        const desktop = document.getElementById('linux-desktop');
-                        const loginScreen = document.getElementById('login-screen');
-                        
-                        if (desktop) {
-                            desktop.style.setProperty('display', 'block', 'important');
-                            desktop.style.setProperty('opacity', '1', 'important');
-                        }
-                        if (loginScreen) {
-                            loginScreen.style.setProperty('display', 'none', 'important');
-                            loginScreen.classList.remove('active');
-                        }
+                        const forceVisibility = () => {
+                            const desktop = document.getElementById('linux-desktop');
+                            const loginScreen = document.getElementById('login-screen');
+                            const bootScreen = document.getElementById('boot-screen');
+                            
+                            if (desktop) {
+                                desktop.style.setProperty('display', 'block', 'important');
+                                desktop.style.setProperty('opacity', '1', 'important');
+                                desktop.style.setProperty('visibility', 'visible', 'important');
+                            }
+                            if (loginScreen) {
+                                loginScreen.style.setProperty('display', 'none', 'important');
+                                loginScreen.classList.remove('active');
+                            }
+                            if (bootScreen) {
+                                bootScreen.style.setProperty('display', 'none', 'important');
+                            }
+                        };
 
-                        // CyberLab global fonksiyonlarını tetikle
-                        if (typeof window.showBootScreen === 'function') {
-                            // Boot screen'i atla veya hemen bitir
-                            console.log("[SSO] Boot screen tetikleniyor/atlanıyor");
-                        }
-                        
-                        // CyberLab'in statik index.html içindeki "app.js" veya benzeri başlatıcılarını bekle
-                        // Bazı sistemlerde login screen'i app.js tekrar açabilir, onu engellemek için periyodik kontrol
+                        forceVisibility();
+
+                        // Periyodik kontrol
                         let checks = 0;
                         const finalForce = setInterval(() => {
-                            const ls = document.getElementById('login-screen');
-                            if (ls && ls.style.display !== 'none') {
-                                ls.style.setProperty('display', 'none', 'important');
-                                if (document.getElementById('linux-desktop')) {
-                                    document.getElementById('linux-desktop').style.setProperty('display', 'block', 'important');
-                                }
-                            }
-                            if (++checks > 20) clearInterval(finalForce);
-                        }, 500);
+                            forceVisibility();
+                            if (++checks > 50) clearInterval(finalForce);
+                        }, 200);
                     };
 
                     if (document.readyState === 'loading') {
                         document.addEventListener('DOMContentLoaded', applyUI);
                     } else {
                         applyUI();
+                        window.addEventListener('load', applyUI);
                     }
                 } else {
                     console.error("[SSO] Geçersiz token:", data.error);
-                    style.remove(); // Hatalıysa login ekranına izin ver
+                    const forceStyle = document.getElementById('sso-force-style');
+                    if (forceStyle) forceStyle.remove();
                     handleAuthFailure();
                 }
             })
             .catch(err => {
                 console.error("[SSO] Doğrulama hatası:", err);
-                style.remove();
+                const forceStyle = document.getElementById('sso-force-style');
+                if (forceStyle) forceStyle.remove();
                 document.body.classList.add('sso-ready');
             });
     } else {
@@ -140,7 +138,6 @@
     function isProtectedPath() {
         const path = window.location.pathname;
         const protectedFiles = [
-            'index.html', 
             'academy.html', 
             'courses.html', 
             'tools.html', 
@@ -149,9 +146,6 @@
             'admin.html'
         ];
         
-        const isProtectedFile = protectedFiles.some(file => path.includes(file));
-        const isRoot = path === '/cyberlab/' || path === '/cyberlab' || path.endsWith('/cyberlab/index.html');
-        
-        return isProtectedFile || isRoot;
+        return protectedFiles.some(file => path.includes(file));
     }
 })();

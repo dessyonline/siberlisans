@@ -12,11 +12,12 @@ function CyberlabSsoHandler() {
   useEffect(() => {
     if (search.token) {
       localStorage.setItem("cyberlab_sso_token", search.token);
-      // SPA içinde kalmak için window.location.href yerine index.html'e yönlendiriyoruz
-      // siber-sso.js head'de olduğu için bu sayfada da çalışacak ve token'ı yakalayacak.
-      // Ancak döngüyü kırmak için index.html'e temiz bir yönlendirme yapıyoruz.
-      window.location.replace("/cyberlab/index.html?token=" + encodeURIComponent(search.token));
+      // Proxy üzerinden index.html'e token ile git
+      const targetUrl = "/cyberlab/index.html?token=" + encodeURIComponent(search.token);
+      console.log("[SSO] Redirecting to:", targetUrl);
+      window.location.replace(targetUrl);
     } else {
+      console.warn("[SSO] No token found in URL, navigating back to /cyberlab");
       navigate({ to: "/cyberlab" });
     }
   }, [search.token, navigate]);
