@@ -62,6 +62,6 @@ export const getCyberlabAccess = createServerFn({ method: "POST" })
       lifetime,
       expiresAt: (data.expires_at as string | null) ?? null,
       configured: true,
-      launchUrl: `${base}/sso?token=${encodeURIComponent(token)}`,
+      launchUrl: `/cyberlab/sso?token=${encodeURIComponent(token)}`,
     };
   });
