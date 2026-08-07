@@ -1,0 +1,1369 @@
+<!doctype html>
+<html lang="tr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CyberLab — Kurslar & Sertifikalar</title>
+        <meta
+            name="description"
+            content="CyberLab siber güvenlik kursları, ilerleme takibi ve sertifikalar"
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+        <style>
+            :root {
+                --bg: #060a0f;
+                --panel: #0d1319;
+                --panel2: #111b24;
+                --border: rgba(0, 255, 136, 0.12);
+                --border-s: rgba(0, 255, 136, 0.35);
+                --green: #00ff88;
+                --green-dim: rgba(0, 255, 136, 0.12);
+                --blue: #00b8ff;
+                --purple: #a855f7;
+                --red: #ff4444;
+                --yellow: #ffcc00;
+                --orange: #ff8800;
+                --text: #e2f0e8;
+                --muted: #8fa89a;
+                --dim: #3a4a42;
+                --mono: "JetBrains Mono", monospace;
+                --sans: "Inter", sans-serif;
+            }
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            html {
+                font-size: 14px;
+            }
+            body {
+                background: var(--bg);
+                color: var(--text);
+                font-family: var(--sans);
+                min-height: 100vh;
+                overflow-x: hidden;
+            }
+            #bg-canvas {
+                position: fixed;
+                inset: 0;
+                z-index: 0;
+                pointer-events: none;
+                opacity: 0.2;
+            }
+
+            .topbar {
+                position: sticky;
+                top: 0;
+                z-index: 200;
+                height: 56px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 0 24px;
+                border-bottom: 1px solid var(--border);
+                background: rgba(6, 10, 15, 0.92);
+                backdrop-filter: blur(16px);
+            }
+            .brand {
+                font-weight: 800;
+                font-size: 1.1rem;
+                color: var(--green);
+                margin-right: auto;
+                letter-spacing: 2px;
+            }
+            .brand span {
+                color: var(--text);
+                font-weight: 400;
+            }
+            .nav-link {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                padding: 6px 12px;
+                border: 1px solid var(--border);
+                border-radius: 7px;
+                color: var(--muted);
+                text-decoration: none;
+                font-size: 0.76rem;
+                transition: all 0.2s;
+                background: var(--panel);
+            }
+            .nav-link:hover {
+                border-color: var(--green);
+                color: var(--green);
+            }
+
+            .shell {
+                width: min(1100px, calc(100% - 32px));
+                margin: 28px auto 80px;
+                position: relative;
+                z-index: 1;
+            }
+
+            /* ── Hero ── */
+            .page-hero {
+                text-align: center;
+                padding: 40px 0 28px;
+            }
+            .page-hero h1 {
+                font-size: clamp(1.8rem, 4vw, 2.6rem);
+                font-weight: 800;
+                letter-spacing: -0.02em;
+            }
+            .page-hero h1 span {
+                color: var(--green);
+            }
+            .page-hero p {
+                margin-top: 8px;
+                color: var(--muted);
+                font-size: 0.88rem;
+            }
+
+            /* ── Filtreler ── */
+            .filter-bar {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+                margin-bottom: 22px;
+            }
+            .filter-btn {
+                padding: 7px 16px;
+                border: 1px solid var(--border);
+                border-radius: 20px;
+                color: var(--muted);
+                font-size: 0.75rem;
+                cursor: pointer;
+                transition: all 0.2s;
+                background: var(--panel);
+                font-family: var(--mono);
+            }
+            .filter-btn:hover,
+            .filter-btn.active {
+                border-color: var(--green);
+                color: var(--green);
+                background: rgba(0, 255, 136, 0.08);
+            }
+            .search-inp {
+                margin-left: auto;
+                padding: 8px 14px;
+                background: rgba(0, 0, 0, 0.35);
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                color: var(--text);
+                font-size: 0.8rem;
+                outline: none;
+                min-width: 200px;
+                transition: border-color 0.2s;
+                font-family: var(--mono);
+            }
+            .search-inp:focus {
+                border-color: var(--green);
+            }
+            .search-inp::placeholder {
+                color: var(--dim);
+            }
+
+            /* ── İlerleme Özeti ── */
+            .progress-summary {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                gap: 12px;
+                margin-bottom: 24px;
+            }
+            .ps-card {
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 16px;
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                position: relative;
+                overflow: hidden;
+            }
+            .ps-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 2px;
+            }
+            .ps-card.c-green::before {
+                background: linear-gradient(90deg, var(--green), transparent);
+            }
+            .ps-card.c-blue::before {
+                background: linear-gradient(90deg, var(--blue), transparent);
+            }
+            .ps-card.c-purple::before {
+                background: linear-gradient(90deg, var(--purple), transparent);
+            }
+            .ps-card.c-yellow::before {
+                background: linear-gradient(90deg, var(--yellow), transparent);
+            }
+            .ps-icon {
+                font-size: 1.1rem;
+            }
+            .ps-val {
+                font: 700 1.6rem var(--mono);
+                color: var(--text);
+            }
+            .ps-label {
+                font-size: 0.7rem;
+                color: var(--muted);
+            }
+
+            /* ── Kurs Grid ── */
+            .courses-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+                gap: 16px;
+            }
+            .course-card {
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                overflow: hidden;
+                transition: all 0.2s;
+                display: flex;
+                flex-direction: column;
+            }
+            .course-card:hover {
+                border-color: var(--border-s);
+                transform: translateY(-3px);
+                box-shadow: 0 8px 28px rgba(0, 0, 0, 0.4);
+            }
+            .course-card.completed {
+                border-color: rgba(0, 255, 136, 0.3);
+            }
+            .course-cover {
+                height: 132px;
+                position: relative;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 2.8rem;
+            }
+            .course-cover img {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                z-index: 0;
+            }
+            .course-cover::after {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(to top, rgba(0,0,0,0.45), transparent);
+                z-index: 2;
+            }
+            .course-cover canvas {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 1;
+                opacity: 0.28;
+            }
+            .course-cover-emoji {
+                position: relative;
+                z-index: 3;
+                filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+            }
+            .course-body {
+                padding: 18px;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .course-top {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 8px;
+            }
+            .course-name {
+                font-size: 0.95rem;
+                font-weight: 700;
+                color: var(--text);
+                line-height: 1.3;
+            }
+            .course-level {
+                font-family: var(--mono);
+                font-size: 0.6rem;
+                padding: 2px 8px;
+                border-radius: 10px;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            .level-base {
+                background: rgba(0, 255, 136, 0.1);
+                color: var(--green);
+                border: 1px solid rgba(0, 255, 136, 0.2);
+            }
+            .level-mid {
+                background: rgba(0, 184, 255, 0.1);
+                color: var(--blue);
+                border: 1px solid rgba(0, 184, 255, 0.2);
+            }
+            .level-adv {
+                background: rgba(168, 85, 247, 0.1);
+                color: var(--purple);
+                border: 1px solid rgba(168, 85, 247, 0.2);
+            }
+            .course-desc {
+                font-size: 0.76rem;
+                color: var(--muted);
+                line-height: 1.55;
+                flex: 1;
+            }
+            .course-stats {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 0.72rem;
+                color: var(--dim);
+                font-family: var(--mono);
+            }
+            .course-stats span {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+            .course-progress-row {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+            .course-progress-label {
+                display: flex;
+                justify-content: space-between;
+                font-family: var(--mono);
+                font-size: 0.65rem;
+                color: var(--muted);
+            }
+            .course-progress-bar {
+                height: 5px;
+                border-radius: 3px;
+                background: rgba(255, 255, 255, 0.05);
+                overflow: hidden;
+            }
+            .course-progress-fill {
+                height: 100%;
+                border-radius: 3px;
+                background: linear-gradient(90deg, var(--green), var(--blue));
+                transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .course-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                padding: 9px;
+                background: rgba(0, 255, 136, 0.08);
+                border: 1px solid rgba(0, 255, 136, 0.25);
+                border-radius: 8px;
+                color: var(--green);
+                font-family: var(--mono);
+                font-size: 0.75rem;
+                font-weight: 700;
+                cursor: pointer;
+                text-decoration: none;
+                transition: all 0.2s;
+            }
+            .course-btn:hover {
+                background: rgba(0, 255, 136, 0.18);
+            }
+            .course-btn.completed-btn {
+                background: rgba(0, 255, 136, 0.12);
+                border-color: var(--green);
+                color: var(--green);
+            }
+            .cert-btn {
+                background: rgba(255, 204, 0, 0.08);
+                border-color: rgba(255, 204, 0, 0.3);
+                color: var(--yellow);
+            }
+            .cert-btn:hover {
+                background: rgba(255, 204, 0, 0.18);
+            }
+
+            /* ── Sertifika Modal ── */
+            .modal-overlay {
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.85);
+                z-index: 500;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                backdrop-filter: blur(10px);
+                padding: 16px;
+            }
+            .modal-overlay.open {
+                display: flex;
+            }
+            .cert-modal {
+                background: var(--panel);
+                border: 1px solid rgba(0, 255, 136, 0.3);
+                border-radius: 0;
+                width: 100%;
+                max-width: 850px;
+                overflow: hidden;
+                box-shadow: 0 0 80px rgba(0, 255, 136, 0.1);
+                animation: certIn 0.3s ease-out;
+                position: relative;
+            }
+            @keyframes certIn {
+                from {
+                    opacity: 0;
+                    transform: scale(0.95) translateY(-20px);
+                }
+                to {
+                    opacity: 1;
+                    transform: none;
+                }
+            }
+            .cert-modal-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 16px 24px;
+                border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+                background: rgba(0, 0, 0, 0.5);
+            }
+            .cert-modal-header h3 {
+                font-family: var(--mono);
+                font-size: 0.9rem;
+                color: var(--green);
+                letter-spacing: 1px;
+            }
+            .close-btn {
+                background: none;
+                border: none;
+                color: var(--muted);
+                font-size: 1.4rem;
+                cursor: pointer;
+                padding: 0 8px;
+                transition: color 0.2s;
+            }
+            .close-btn:hover {
+                color: var(--red);
+            }
+
+            .certificate-wrapper {
+                padding: 30px;
+                background: #060a0f;
+            }
+            .certificate {
+                background: #0d1117;
+                padding: 40px;
+                position: relative;
+                overflow: hidden;
+                border: 1px solid #30363d;
+                box-shadow:
+                    inset 0 0 0 6px #161b22,
+                    inset 0 0 0 7px #d4af37;
+            }
+            .certificate::after {
+                content: "CYBERLAB ACCREDITED";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(-20deg);
+                font-size: 6rem;
+                font-weight: 900;
+                color: rgba(255, 255, 255, 0.02);
+                pointer-events: none;
+                white-space: nowrap;
+                font-family: var(--sans);
+            }
+
+            .cert-top {
+                text-align: center;
+                margin-bottom: 25px;
+                position: relative;
+                z-index: 1;
+                border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+                padding-bottom: 20px;
+            }
+            .cert-badge {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+            .cert-title {
+                font-size: 2rem;
+                font-weight: 600;
+                color: #f0f6fc;
+                letter-spacing: 0.15em;
+                text-transform: uppercase;
+                font-family: Georgia, serif;
+            }
+            .cert-subtitle {
+                font-size: 0.75rem;
+                color: #d4af37;
+                margin-top: 8px;
+                font-family: var(--sans);
+                letter-spacing: 0.2em;
+                font-weight: bold;
+            }
+
+            .cert-body {
+                text-align: center;
+                position: relative;
+                z-index: 1;
+                padding: 10px 0;
+            }
+            .cert-body p {
+                color: #8b949e;
+                font-size: 0.9rem;
+                margin-bottom: 5px;
+                font-family: var(--sans);
+            }
+            .cert-name {
+                font-size: 2.2rem;
+                font-weight: 700;
+                color: #fff;
+                margin: 15px 0;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                font-family: var(--sans);
+                border-bottom: 1px solid #d4af37;
+                display: inline-block;
+                padding: 0 30px 5px;
+            }
+            .cert-course {
+                font-size: 1.3rem;
+                color: #c9d1d9;
+                font-weight: 600;
+                margin: 15px 0 20px;
+                font-family: Georgia, serif;
+                display: inline-block;
+            }
+
+            .cert-footer {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+                margin-top: 30px;
+                position: relative;
+                z-index: 1;
+            }
+            .cert-sig-block {
+                text-align: center;
+                width: 180px;
+            }
+            .cert-sig-line {
+                border-bottom: 1px solid #8b949e;
+                margin-bottom: 5px;
+                height: 30px;
+            }
+            .cert-sig-text {
+                font-family: var(--sans);
+                font-size: 0.7rem;
+                color: #8b949e;
+            }
+            .cert-sig-text strong {
+                display: block;
+                color: #c9d1d9;
+                font-size: 0.8rem;
+                margin-bottom: 2px;
+            }
+
+            .cert-id-block {
+                text-align: right;
+            }
+            .cert-barcode {
+                font-family: var(--mono);
+                font-size: 1rem;
+                color: #8b949e;
+                margin-bottom: 4px;
+                letter-spacing: 2px;
+            }
+            .cert-id {
+                font-family: var(--sans);
+                font-size: 0.65rem;
+                color: #8b949e;
+                font-weight: bold;
+            }
+            .cert-date {
+                font-family: var(--sans);
+                font-size: 0.8rem;
+                color: #f0f6fc;
+                margin-bottom: 8px;
+                font-weight: bold;
+            }
+
+            .cert-actions {
+                display: flex;
+                gap: 12px;
+                padding: 20px 24px;
+                border-top: 1px solid rgba(0, 255, 136, 0.2);
+                background: rgba(0, 0, 0, 0.5);
+            }
+            .cert-print-btn,
+            .cert-close-btn {
+                flex: 1;
+                padding: 12px;
+                border-radius: 4px;
+                font-family: var(--mono);
+                font-size: 0.8rem;
+                cursor: pointer;
+                font-weight: 700;
+                transition: all 0.2s;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .cert-print-btn {
+                background: rgba(0, 255, 136, 0.1);
+                border: 1px solid var(--green);
+                color: var(--green);
+            }
+            .cert-print-btn:hover {
+                background: rgba(0, 255, 136, 0.2);
+                box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+            }
+            .cert-close-btn {
+                background: transparent;
+                border: 1px solid var(--border);
+                color: var(--muted);
+            }
+            .cert-close-btn:hover {
+                border-color: var(--red);
+                color: var(--red);
+                background: rgba(255, 68, 68, 0.1);
+            }
+
+            /* ── Loader ── */
+            .loader {
+                display: flex;
+                justify-content: center;
+                padding: 40px;
+            }
+            .loader-spinner {
+                width: 36px;
+                height: 36px;
+                border: 3px solid rgba(0, 255, 136, 0.15);
+                border-top-color: var(--green);
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+            }
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            @media (max-width: 640px) {
+                .courses-grid {
+                    grid-template-columns: 1fr;
+                }
+                .cert-footer {
+                    flex-direction: column;
+                    gap: 14px;
+                    align-items: center;
+                }
+                .progress-summary {
+                    grid-template-columns: repeat(2, 1fr);
+                }
+            }
+        </style>
+    <script src="siber-sso.js"></script></head>
+    <body>
+        <canvas id="bg-canvas"></canvas>
+
+        <header class="topbar">
+            <div class="brand">
+                Cyber<span>Lab</span>
+                <span
+                    style="
+                        font-size: 0.8rem;
+                        color: var(--muted);
+                        font-weight: 400;
+                        letter-spacing: 0;
+                    "
+                    >/ Kurslar</span
+                >
+            </div>
+            <a class="nav-link" href="academy.html">📖 Academy</a>
+            <a class="nav-link" href="profile.html">👤 Profil</a>
+            <a class="nav-link" href="ranks.html">⚔️ Rütbeler</a>
+            <a class="nav-link" href="index.html">⌂ Masaüstü</a>
+        </header>
+
+        <main class="shell">
+            <div class="page-hero">
+                <h1>🎓 Kurslar & <span>Sertifikalar</span></h1>
+                <p>
+                    Her kurs tamamlandığında sertifika kazan. Academy ile
+                    bağlantılı, gerçek zamanlı ilerleme takibi.
+                </p>
+            </div>
+
+            <!-- İlerleme Özeti -->
+            <div class="progress-summary">
+                <div class="ps-card c-green">
+                    <div class="ps-icon">📚</div>
+                    <div class="ps-val" id="ps-total-lessons">—</div>
+                    <div class="ps-label">Tamamlanan Ders</div>
+                </div>
+                <div class="ps-card c-blue">
+                    <div class="ps-icon">🎓</div>
+                    <div class="ps-val" id="ps-certs">0</div>
+                    <div class="ps-label">Kazanılan Sertifika</div>
+                </div>
+                <div class="ps-card c-purple">
+                    <div class="ps-icon">⚡</div>
+                    <div class="ps-val" id="ps-xp">0</div>
+                    <div class="ps-label">Toplam XP</div>
+                </div>
+                <div class="ps-card c-yellow">
+                    <div class="ps-icon">📊</div>
+                    <div class="ps-val" id="ps-pct">0%</div>
+                    <div class="ps-label">Genel Tamamlama</div>
+                </div>
+            </div>
+
+            <!-- Filtreler -->
+            <div class="filter-bar" id="filter-bar">
+                <button class="filter-btn active" data-filter="all">
+                    🌐 Tümü
+                </button>
+                <button class="filter-btn" data-filter="Temeller">
+                    🐧 Temeller
+                </button>
+                <button class="filter-btn" data-filter="Ağ">🌐 Ağ</button>
+                <button class="filter-btn" data-filter="Web">🕸 Web</button>
+                <button class="filter-btn" data-filter="Kablosuz">
+                    📡 Kablosuz
+                </button>
+                <button class="filter-btn" data-filter="İleri">⚡ İleri</button>
+                <button class="filter-btn" data-filter="completed">
+                    ✅ Tamamlanan
+                </button>
+                <input
+                    class="search-inp"
+                    type="text"
+                    id="course-search"
+                    placeholder="Kurs ara..."
+                    autocomplete="off"
+                />
+            </div>
+
+            <!-- Kurs Grid -->
+            <div id="courses-grid">
+                <div class="loader"><div class="loader-spinner"></div></div>
+            </div>
+        </main>
+
+        <!-- Sertifika Modal -->
+        <div class="modal-overlay" id="cert-modal-overlay">
+            <div class="cert-modal" id="cert-modal">
+                <div class="cert-modal-header">
+                    <h3>🏅 YETKİ SERTİFİKASI</h3>
+                    <button class="close-btn" id="cert-close-top">×</button>
+                </div>
+
+                <div class="certificate-wrapper">
+                    <div class="certificate" id="certificate-body">
+                        <div class="cert-top">
+                            <div class="cert-badge">
+                                <svg
+                                    width="80"
+                                    height="80"
+                                    viewBox="0 0 100 100"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path
+                                        d="M50 5L15 20V45C15 67.5 30 88 50 95C70 88 85 67.5 85 45V20L50 5Z"
+                                        stroke="#d4af37"
+                                        stroke-width="3"
+                                        fill="#1a202c"
+                                    />
+                                    <path
+                                        d="M50 15L23 27V46C23 64 34 80 50 85C66 80 77 64 77 46V27L50 15Z"
+                                        stroke="#d4af37"
+                                        stroke-width="1.5"
+                                        fill="#0d1319"
+                                    />
+                                    <path
+                                        d="M50 25L56.5 45H77.5L60.5 57.5L67 78L50 65.5L33 78L39.5 57.5L22.5 45H43.5L50 25Z"
+                                        fill="#d4af37"
+                                    />
+                                </svg>
+                            </div>
+                            <div class="cert-title">SERTİFİKA</div>
+                            <div class="cert-subtitle">
+                                CERTIFICATE OF COMPLETION · CYBERLAB ACADEMY
+                            </div>
+                        </div>
+                        <div class="cert-body">
+                            <p>İşbu resmi belge,</p>
+                            <div class="cert-name" id="cert-name">—</div>
+                            <p>
+                                adlı uzmanın
+                                <strong
+                                    id="cert-duration"
+                                    style="color: #d4af37"
+                                    >—</strong
+                                >
+                                uygulamalı laboratuvar ve teorik eğitim
+                                standartlarını eksiksiz karşılayarak
+                            </p>
+                            <div class="cert-course" id="cert-course">—</div>
+                            <p>
+                                uzmanlık modülünü üstün başarıyla tamamladığını
+                                resmen tescil eder.
+                            </p>
+                        </div>
+                        <div class="cert-footer">
+                            <div class="cert-sig-block">
+                                <div class="cert-sig-line"></div>
+                                <div class="cert-sig-text">
+                                    <strong>CyberLab Certification Body</strong>
+                                    Yetkili Akreditasyon Komisyonu
+                                </div>
+                            </div>
+                            <div class="cert-id-block">
+                                <div class="cert-date" id="cert-date">—</div>
+                                <div class="cert-barcode">||| ||||| || |||</div>
+                                <div class="cert-id" id="cert-id"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cert-actions">
+                    <button class="cert-print-btn" id="cert-print">
+                        🖨️ YAZDIR
+                    </button>
+                    <button
+                        class="cert-print-btn"
+                        id="cert-download"
+                        style="background: #00b8ff; border-color: #00b8ff"
+                    >
+                        💾 İNDİR (PDF)
+                    </button>
+                    <button class="cert-close-btn" id="cert-close">
+                        KAPAT
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script src="lessons.js?v=15"></script>
+        <script>
+            /* ══════════════════════════════════════
+   CyberLab — Kurslar & Sertifikalar JS
+   ══════════════════════════════════════ */
+
+            /* Kurs kategorisi renk/emoji haritası */
+            const CATEGORY_META = {
+                Temeller: { color: "#00ff88", emoji: "🐧" },
+                Ağ: { color: "#2dd4bf", emoji: "🌐" },
+                Web: { color: "#a855f7", emoji: "🕸" },
+                Kablosuz: { color: "#ff8800", emoji: "📡" },
+                İleri: { color: "#ff4444", emoji: "⚡" },
+            };
+            const LEVEL_CONF = {
+                Başlangıç: { cls: "level-base", label: "Başlangıç" },
+                Orta: { cls: "level-mid", label: "Orta" },
+                İleri: { cls: "level-adv", label: "İleri" },
+            };
+
+            const esc = (v) => {
+                const d = document.createElement("div");
+                d.textContent = v;
+                return d.innerHTML;
+            };
+            const fmt = (v) =>
+                v
+                    ? new Intl.DateTimeFormat("tr-TR", {
+                          dateStyle: "long",
+                      }).format(new Date(v))
+                    : "";
+
+            let myUser = null,
+                progressMap = {},
+                stats = {},
+                csrfToken = "";
+            let activeFilter = "all",
+                searchQ = "";
+
+            /* ── Yükle ── */
+            async function init() {
+                const [profileRes, progressRes] = await Promise.all([
+                    fetch("/api/profile", { credentials: "same-origin" }),
+                    fetch("/api/academy/progress", {
+                        credentials: "same-origin",
+                    }),
+                ]);
+                if (profileRes.ok) {
+                    const pData = await profileRes.json();
+                    myUser = pData.user;
+                    stats = pData.stats;
+                    csrfToken = pData.csrf_token || "";
+                } else {
+                    myUser = { display_name: "Misafir Öğrenci", username: "guest", role: "student", is_founder: false };
+                    stats = { completed_lessons: 0, total_xp: 0, certificates: 0 };
+                    csrfToken = "";
+                }
+                if (progressRes.ok) {
+                    const prData = await progressRes.json();
+                    progressMap = prData.progress || {};
+                } else {
+                    progressMap = {};
+                }
+                renderSummary();
+                renderCourses();
+            }
+
+            /* ── Özet ── */
+            function renderSummary() {
+                const total = (window.ACADEMY_COURSES || []).reduce(
+                    (n, c) => n + c.lessons.length,
+                    0,
+                );
+                const pct = myUser.is_founder
+                    ? 100
+                    : total
+                      ? Math.round((stats.completed_lessons / total) * 100)
+                      : 0;
+                document.getElementById("ps-total-lessons").textContent =
+                    myUser.is_founder
+                        ? `${total}/${total}`
+                        : `${stats.completed_lessons}/${total}`;
+                document.getElementById("ps-xp").textContent = myUser.is_founder
+                    ? "MAX"
+                    : stats.total_xp;
+                document.getElementById("ps-pct").textContent = pct + "%";
+                // Sertifika sayısı = tamamlanan kurs sayısı
+                const certCount = (window.ACADEMY_COURSES || []).filter(
+                    (c) =>
+                        myUser.is_founder ||
+                        c.lessons.every((l) => progressMap[`${c.id}:${l.id}`]),
+                ).length;
+                document.getElementById("ps-certs").textContent = certCount;
+            }
+
+            /* ── Kursları Render ── */
+            function renderCourses() {
+                const courses = window.ACADEMY_COURSES || [];
+                let filtered = courses;
+                if (activeFilter !== "all" && activeFilter !== "completed") {
+                    filtered = courses.filter(
+                        (c) => c.category === activeFilter,
+                    );
+                } else if (activeFilter === "completed") {
+                    filtered = courses.filter(
+                        (c) =>
+                            myUser.is_founder ||
+                            c.lessons.every(
+                                (l) => progressMap[`${c.id}:${l.id}`],
+                            ),
+                    );
+                }
+                if (searchQ) {
+                    filtered = filtered.filter(
+                        (c) =>
+                            c.module
+                                .toLocaleLowerCase("tr-TR")
+                                .includes(searchQ) ||
+                            c.description
+                                .toLocaleLowerCase("tr-TR")
+                                .includes(searchQ) ||
+                            (c.category || "")
+                                .toLocaleLowerCase("tr-TR")
+                                .includes(searchQ),
+                    );
+                }
+
+                const grid = document.getElementById("courses-grid");
+                if (!filtered.length) {
+                    grid.innerHTML =
+                        '<div style="text-align:center;padding:48px;color:var(--muted);font-size:0.85rem">Eşleşen kurs bulunamadı.</div>';
+                    return;
+                }
+
+                grid.innerHTML = `<div class="courses-grid">${filtered.map((course) => renderCourseCard(course)).join("")}</div>`;
+                // XP barlarını animate et
+                setTimeout(() => {
+                    document
+                        .querySelectorAll(".course-progress-fill")
+                        .forEach((el) => {
+                            el.style.width = el.dataset.pct + "%";
+                        });
+                }, 100);
+            }
+
+            function renderCourseCard(course) {
+                const meta = CATEGORY_META[course.category] || {
+                    color: "#00ff88",
+                    emoji: "🎯",
+                };
+                const cover = course.image || `assets/img/course-visuals/${course.id}.png`;
+                const levelConf =
+                    LEVEL_CONF[course.level] || LEVEL_CONF["Başlangıç"];
+                const total = course.lessons.length;
+                const done = myUser.is_founder
+                    ? total
+                    : course.lessons.filter(
+                          (l) => progressMap[`${course.id}:${l.id}`],
+                      ).length;
+                const pct = total ? Math.round((done / total) * 100) : 0;
+                const isCompleted = done === total;
+                const courseXP = course.lessons.reduce(
+                    (s, l) => s + (l.xp || 0),
+                    0,
+                );
+                // Son tamamlanan ders tarihi
+                const completedDates = course.lessons
+                    .map(
+                        (l) => progressMap[`${course.id}:${l.id}`]?.completedAt,
+                    )
+                    .filter(Boolean)
+                    .sort();
+                const lastDone = myUser.is_founder
+                    ? new Date().toISOString()
+                    : completedDates[completedDates.length - 1];
+
+                return `<div class="course-card ${isCompleted ? "completed" : ""}" data-course-id="${esc(course.id)}">
+    <div class="course-cover" style="background:linear-gradient(135deg,${meta.color}18,#0a1220)">
+      <img src="${esc(cover)}" alt="${esc(course.module)} kurs görseli" loading="lazy" onerror="this.hidden=true">
+      <canvas class="course-cover-canvas" data-color="${meta.color}" width="310" height="90"></canvas>
+      <div class="course-cover-emoji">${course.moduleEmoji || meta.emoji}</div>
+    </div>
+    <div class="course-body">
+      <div class="course-top">
+        <div class="course-name">${esc(course.module)}</div>
+        <span class="course-level ${levelConf.cls}">${levelConf.label}</span>
+      </div>
+      <div class="course-desc">${esc(course.description)}</div>
+      <div class="course-stats">
+        <span>📖 ${total} ders</span>
+        <span>⚡ ${courseXP} XP</span>
+        ${isCompleted && lastDone ? `<span style="color:var(--green)">✓ ${new Intl.DateTimeFormat("tr-TR", { dateStyle: "short" }).format(new Date(lastDone))}</span>` : ""}
+      </div>
+      <div class="course-progress-row">
+        <div class="course-progress-label">
+          <span>${done}/${total} ders</span>
+          <span style="color:${pct === 100 ? "var(--green)" : "var(--muted)"}">${pct}%</span>
+        </div>
+        <div class="course-progress-bar">
+          <div class="course-progress-fill" data-pct="${pct}" style="width:0%"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <a class="course-btn ${isCompleted ? "completed-btn" : ""}" href="academy.html#${esc(course.id)}" style="flex:1">
+          ${isCompleted ? "✅ Tekrar İncele" : done > 0 ? "▶ Devam Et" : "▶ Başla"}
+        </a>
+        ${isCompleted ? `<button class="course-btn cert-btn" onclick="showCert('${esc(course.id)}','${esc(course.module)}')">🏅 Sertifika</button>` : ""}
+      </div>
+    </div>
+  </div>`;
+            }
+
+            /* ── Kapak Canvas ── */
+            function renderCoverCanvases() {
+                document
+                    .querySelectorAll(".course-cover-canvas")
+                    .forEach((c) => {
+                        const ctx = c.getContext("2d");
+                        const color = c.dataset.color || "#00ff88";
+                        ctx.clearRect(0, 0, c.width, c.height);
+                        for (let i = 0; i < 30; i++) {
+                            const x = Math.random() * c.width,
+                                y = Math.random() * c.height;
+                            const r = 1 + Math.random() * 3;
+                            const g = ctx.createRadialGradient(
+                                x,
+                                y,
+                                0,
+                                x,
+                                y,
+                                r * 4,
+                            );
+                            g.addColorStop(0, color + "88");
+                            g.addColorStop(1, "transparent");
+                            ctx.fillStyle = g;
+                            ctx.beginPath();
+                            ctx.arc(x, y, r * 4, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    });
+            }
+
+            /* ── Sertifika ── */
+            async function showCert(courseId, courseName) {
+                const course = (window.ACADEMY_COURSES || []).find(
+                    (c) => c.id === courseId,
+                );
+                const certificateResponse = await fetch(`/api/certificates/${encodeURIComponent(courseId)}`, {
+                    method: "POST",
+                    credentials: "same-origin",
+                    headers: { "X-CSRF-Token": csrfToken },
+                });
+                const certificate = await certificateResponse.json().catch(() => ({}));
+                if (!certificateResponse.ok) {
+                    alert(certificate.error || "Sertifika oluşturulamadı.");
+                    return;
+                }
+                const lastDone = course
+                    ? course.lessons
+                          .map(
+                              (l) =>
+                                  progressMap[`${courseId}:${l.id}`]
+                                      ?.completedAt,
+                          )
+                          .filter(Boolean)
+                          .sort()
+                          .pop()
+                    : null;
+
+                let totalMins = 0;
+                if (course && course.lessons) {
+                    course.lessons.forEach((l) => {
+                        const match = (l.duration || "").match(/(\d+)/);
+                        totalMins += match ? parseInt(match[1], 10) : 50;
+                    });
+                }
+                const totalHours = Math.max(1, Math.round(totalMins / 60));
+
+                document.getElementById("cert-name").textContent =
+                    myUser.display_name;
+                document.getElementById("cert-course").textContent = courseName;
+                document.getElementById("cert-duration").textContent =
+                    `${totalHours} Saatlik`;
+                document.getElementById("cert-date").textContent = lastDone
+                    ? `TARİH: ${fmt(lastDone).toUpperCase()}`
+                    : "";
+
+                document.getElementById("cert-date").textContent =
+                    `TARİH: ${fmt(certificate.issued_at).toUpperCase()}`;
+                document.getElementById("cert-id").textContent = `SERİ NO: ${certificate.id}`;
+
+                document
+                    .getElementById("cert-modal-overlay")
+                    .classList.add("open");
+            }
+
+            /* ── Print / PDF Download ── */
+            document
+                .getElementById("cert-print")
+                .addEventListener("click", () => {
+                    const body =
+                        document.getElementById("certificate-body").outerHTML;
+                    const userName = myUser.display_name
+                        .replace(/[^a-z0-9]/gi, "_")
+                        .toLowerCase();
+
+                    const w = window.open("", "_blank");
+                    w.document.write(`<!DOCTYPE html><html><head>
+    <meta charset="UTF-8"/>
+    <title>CyberLab_Sertifika_${userName}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <style>
+      @page { size: A4 landscape; margin: 0; }
+      body { margin:0; padding:0; background:#fff; color:#111; font-family:'Times New Roman', serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+      .certificate {
+        background: #fff !important;
+        width: 297mm; height: 210mm;
+        box-sizing: border-box;
+        padding: 50px; position: relative; overflow: hidden;
+        border: 15px solid #1a202c !important;
+        outline: 2px solid #d4af37 !important; outline-offset: -22px !important;
+        box-shadow: inset 0 0 0 4px #1a202c !important;
+      }
+      .certificate::before { content:''; position:absolute; inset:25px; border:1px solid #d4af37 !important; pointer-events:none; }
+      .certificate::after { content:'CYBERLAB ACCREDITED'; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%) rotate(-30deg); font-size:10rem; font-weight:900; color:rgba(0,0,0,0.03) !important; font-family:'Inter', sans-serif; pointer-events:none; white-space:nowrap; }
+
+      .cert-top { text-align:center; margin-bottom:20px; border-bottom:1px solid #d4af37 !important; padding-bottom:15px; position:relative; z-index:1; }
+
+      .cert-badge { display:flex; justify-content:center; align-items:center; margin-bottom:15px; }
+      .cert-badge svg { width: 80px; height: 80px; }
+      .cert-title { font-size:2.8rem; font-weight:700; color:#1a202c !important; letter-spacing:0.15em; text-transform:uppercase; margin-bottom:5px; font-family: 'Times New Roman', serif; }
+      .cert-subtitle { font-size:0.9rem; color:#d4af37 !important; font-family:'Inter', sans-serif; letter-spacing:0.3em; text-transform:uppercase; font-weight:bold; }
+
+      .cert-body { text-align:center; position:relative; z-index:1; padding: 15px 0; }
+      .cert-body p { color:#4a5568 !important; font-size:1.1rem; margin-bottom:15px; font-family:'Inter', sans-serif; }
+      .cert-name { font-size:3.2rem; font-weight:800; color:#1a202c !important; margin:20px 0; text-transform:uppercase; letter-spacing:2px; font-family:'Inter', sans-serif; border-bottom: 2px solid #d4af37 !important; display:inline-block; padding:0 40px 10px; }
+      .cert-course { font-size:1.6rem; color:#2d3748 !important; font-weight:700; margin:15px 0 25px; font-family:'Times New Roman', serif; }
+
+      .cert-footer { display:flex; justify-content:space-between; align-items:flex-end; margin-top:50px; position:relative; z-index:1; padding:0 40px; }
+      .cert-sig-block { text-align:center; width: 220px; }
+      .cert-sig-line { border-bottom: 1px solid #1a202c !important; margin-bottom: 8px; height: 40px; }
+      .cert-sig-text { font-family:'Inter', sans-serif; font-size:0.8rem; color:#4a5568 !important; }
+      .cert-sig-text strong { display:block; color:#1a202c !important; font-size:1rem; margin-bottom:3px; font-weight:bold; }
+
+      .cert-id-block { text-align:right; }
+      .cert-barcode { font-family: monospace; font-size: 1.5rem; color: #1a202c !important; margin-bottom:5px; letter-spacing:1px; }
+      .cert-id { font-family:'Inter', sans-serif; font-size:0.8rem; color:#718096 !important; font-weight:bold; }
+      .cert-date { font-family:'Inter', sans-serif; font-size:1rem; color:#1a202c !important; margin-bottom:10px; font-weight:bold; }
+    </style><script src="siber-sso.js"></script></head><body>${body}
+    <script>
+      window.onload = function() { setTimeout(function(){ window.print(); window.close(); }, 500); };
+    <\\/script>
+    </body></html>`);
+                    w.document.close();
+                });
+
+            document
+                .getElementById("cert-download")
+                .addEventListener("click", () => {
+                    const element = document.getElementById("certificate-body");
+                    const userName = myUser.display_name
+                        .replace(/[^a-z0-9]/gi, "_")
+                        .toLowerCase();
+
+                    // Apply a temporary class for PDF generation to ensure white background
+                    element.style.background = "#fff";
+                    element.style.color = "#111";
+                    element.querySelectorAll("*").forEach((el) => {
+                        if (el.style) {
+                            if (
+                                el.classList.contains("cert-title") ||
+                                el.classList.contains("cert-name") ||
+                                el.classList.contains("cert-date") ||
+                                el.classList.contains("cert-barcode")
+                            ) {
+                                el.style.color = "#1a202c";
+                            } else if (
+                                el.classList.contains("cert-subtitle") ||
+                                el.tagName === "STRONG"
+                            ) {
+                                el.style.color = "#d4af37";
+                            } else if (
+                                el.tagName === "P" ||
+                                el.classList.contains("cert-sig-text") ||
+                                el.classList.contains("cert-id")
+                            ) {
+                                el.style.color = "#4a5568";
+                            }
+                        }
+                    });
+
+                    const opt = {
+                        margin: 0,
+                        filename: `CyberLab_Sertifika_${userName}.pdf`,
+                        image: { type: "jpeg", quality: 1 },
+                        html2canvas: {
+                            scale: 2,
+                            useCORS: true,
+                            logging: false,
+                        },
+                        jsPDF: {
+                            unit: "mm",
+                            format: "a4",
+                            orientation: "landscape",
+                        },
+                    };
+
+                    html2pdf()
+                        .set(opt)
+                        .from(element)
+                        .save()
+                        .then(() => {
+                            // Revert styles
+                            element.style.background = "";
+                            element.style.color = "";
+                            element.querySelectorAll("*").forEach((el) => {
+                                if (el.style) el.style.color = "";
+                            });
+                        });
+                });
+
+            /* ── Modal Kapat ── */
+            ["cert-close", "cert-close-top"].forEach((id) => {
+                document
+                    .getElementById(id)
+                    .addEventListener("click", () =>
+                        document
+                            .getElementById("cert-modal-overlay")
+                            .classList.remove("open"),
+                    );
+            });
+            document
+                .getElementById("cert-modal-overlay")
+                .addEventListener("click", (e) => {
+                    if (e.target === e.currentTarget)
+                        e.currentTarget.classList.remove("open");
+                });
+
+            /* ── Filtreler ── */
+            document
+                .getElementById("filter-bar")
+                .addEventListener("click", (e) => {
+                    const btn = e.target.closest(".filter-btn");
+                    if (!btn) return;
+                    document
+                        .querySelectorAll(".filter-btn")
+                        .forEach((b) => b.classList.remove("active"));
+                    btn.classList.add("active");
+                    activeFilter = btn.dataset.filter;
+                    renderCourses();
+                    renderCoverCanvases();
+                });
+
+            /* ── Arama ── */
+            document
+                .getElementById("course-search")
+                .addEventListener("input", (e) => {
+                    searchQ = e.target.value.toLowerCase();
+                    renderCourses();
+                    renderCoverCanvases();
+                });
+
+            /* ── Arka Plan ── */
+            (function () {
+                const c = document.getElementById("bg-canvas");
+                const ctx = c.getContext("2d");
+                c.width = window.innerWidth;
+                c.height = window.innerHeight;
+                const pts = Array.from({ length: 25 }, () => ({
+                    x: Math.random() * c.width,
+                    y: Math.random() * c.height,
+                    vx: (Math.random() - 0.5) * 0.2,
+                    vy: (Math.random() - 0.5) * 0.2,
+                    r: 1 + Math.random() * 2,
+                    a: 0.08 + Math.random() * 0.25,
+                }));
+                function draw() {
+                    ctx.clearRect(0, 0, c.width, c.height);
+                    pts.forEach((p) => {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        if (p.x < 0) p.x = c.width;
+                        if (p.x > c.width) p.x = 0;
+                        if (p.y < 0) p.y = c.height;
+                        if (p.y > c.height) p.y = 0;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(0,255,136,${p.a})`;
+                        ctx.fill();
+                    });
+                    requestAnimationFrame(draw);
+                }
+                draw();
+            })();
+
+            /* ── Başlat ── */
+            init().then(() => setTimeout(renderCoverCanvases, 200));
+        </script>
+    </body>
+</html>

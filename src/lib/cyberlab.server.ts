@@ -73,5 +73,9 @@ export async function verifySsoToken(token: string): Promise<SsoClaims | null> {
 
 /** CyberLab uygulamasının barındığı adres. */
 export function cyberlabBaseUrl() {
-  return (process.env["CYBERLAB_BASE_URL"] ?? "").replace(/\/+$/, "");
+  const envUrl = (process.env["CYBERLAB_BASE_URL"] ?? "").replace(/\/+$/, "");
+  if (envUrl) return envUrl;
+  
+  // Yerel barındırma için SSO yönlendirme adresi
+  return "/cyberlab";
 }

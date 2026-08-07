@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+.cyberlab_secret
+cyberlab.db
+cyberlab.db-shm
+cyberlab.db-wal
+server.log
+hash.txt
+crunch_*.txt
+wordlist_*.txt
+xsnot_notes.txt
+*.egg-info/
+.venv/
+node_modules/
+assets/uploads/course-covers/

@@ -1,0 +1,2477 @@
+<!doctype html>
+<html lang="tr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CyberLab — Siber Güvenlik Laboratuvarı</title>
+        <meta
+            name="description"
+            content="CyberLab — 80+ modüllü siber güvenlik eğitim laboratuvarı paneli."
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="stylesheet" href="style.css?v=18" />
+    <script src="siber-sso.js"></script></head>
+    <body>
+        <!-- BOOT SIMULATION -->
+        <div id="boot-screen" style="position: fixed; inset: 0; background: #000; z-index: 999999; color: #a0aec0; font-family: 'JetBrains Mono', monospace; font-size: 13px; padding: 20px; overflow: hidden; display: none;">
+            <div id="boot-logs" style="display: flex; flex-direction: column; gap: 4px;"></div>
+        </div>
+
+        <!-- KALI LINUX DESKTOP -->
+        <div id="linux-desktop">
+            <!-- XFCE TOP PANEL -->
+            <div id="linux-topbar">
+                <div class="topbar-left">
+                    <button
+                        class="kali-panel-logo"
+                        id="kali-menu-toggle"
+                        aria-label="Uygulamalar"
+                    >
+                        <span>K</span>
+                    </button>
+                    <button class="topbar-btn" id="kali-applications-btn">
+                        Uygulamalar
+                    </button>
+                    <button class="topbar-btn">Yerler</button>
+                    <span class="panel-separator"></span>
+                    <button
+                        class="panel-launcher"
+                        id="panel-terminal"
+                        title="Terminal"
+                        onclick="
+                            toggleWindow('linux-window');
+                            document.getElementById('terminal-input').focus();
+                        "
+                    >
+                        &gt;_
+                    </button>
+                    <button
+                        class="panel-launcher"
+                        id="panel-cyberlab"
+                        title="CyberLab"
+                        onclick="toggleWindow('linux-window')"
+                    >
+                        CL
+                    </button>
+                </div>
+                <div class="topbar-center">
+                    <span id="linux-clock">10 Eki 14:30</span>
+                </div>
+                <div class="topbar-right" style="position:relative;">
+                    <button class="topbar-icon">tr⌄</button>
+                    <button class="topbar-icon" onclick="document.getElementById('network-menu').style.display = document.getElementById('network-menu').style.display === 'none' ? 'block' : 'none';">◉</button>
+                    <!-- Network Menu -->
+                    <div id="network-menu" style="display:none; position:absolute; top:30px; right:40px; background:#1e1e2d; border:1px solid #333; box-shadow:0 4px 12px rgba(0,0,0,0.5); width:200px; z-index:1000; font-family:'Inter',sans-serif;">
+                        <div style="padding:10px; border-bottom:1px solid #333; font-weight:600; color:#fff; font-size:12px;">Wi-Fi Ağları</div>
+                        <div style="padding:8px 10px; color:#a0aec0; font-size:12px; cursor:pointer;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='transparent'">🔓 CyberLab_Guest</div>
+                        <div style="padding:8px 10px; color:#a0aec0; font-size:12px; cursor:pointer;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='transparent'">🔒 FBI_Surveillance_Van</div>
+                        <div style="padding:8px 10px; color:#a0aec0; font-size:12px; cursor:pointer;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='transparent'">🔒 Matrix_Node_9</div>
+                        <div style="padding:8px 10px; color:#00ff66; font-size:12px; cursor:pointer; font-weight:bold; border-top:1px solid #333;" onmouseover="this.style.background='#333'" onmouseout="this.style.background='transparent'">✓ ETH0 (Bağlı)</div>
+                    </div>
+                    <button class="topbar-icon">◖))</button>
+                    <button class="topbar-icon">⏻</button>
+                </div>
+            </div>
+            <div class="desktop-body">
+                <!-- DESKTOP LAUNCHERS -->
+                <div id="linux-dock">
+                    <button
+                        class="dock-icon active"
+                        id="cyberlab-launcher"
+                        title="CyberLab"
+                    >
+                        CL
+                    </button>
+                    <button class="dock-icon" title="Dosyalar">▰</button>
+                    <button
+                        class="dock-icon"
+                        id="terminal-launcher"
+                        title="Terminal"
+                    >
+                        &gt;_
+                    </button>
+                    <button
+                        class="dock-icon"
+                        id="academy-launcher"
+                        title="Academy"
+                        data-local-href="academy.html"
+                        onclick="window.location.href = 'academy.html'"
+                    >
+                        🎓
+                    </button>
+                    <button
+                        class="dock-icon"
+                        id="playground-launcher"
+                        title="Hack Lab"
+                        onclick="restoreCyberLab('playground', 'Hack Oyun Alanı')"
+                    >
+                        HL
+                    </button>
+
+                    <button
+                        class="dock-icon"
+                        title="Kurslar"
+                        data-local-href="courses.html"
+                        onclick="window.location.href = 'courses.html'"
+                    >
+                        🏅
+                    </button>
+                    <button
+                        class="dock-icon"
+                        title="Rütbeler"
+                        data-local-href="ranks.html"
+                        onclick="window.location.href = 'ranks.html'"
+                    >
+                        ⚔️
+                    </button>
+                    <button class="dock-icon" title="Ayarlar" onclick="toggleWindow('settings-window')">⚙</button>
+                </div>
+                <!-- DESKTOP WORKSPACE -->
+                <div id="linux-workspace">
+
+                    <div class="kali-desktop-icons" aria-hidden="true">
+                        <div><span>▰</span><b>Home</b></div>
+                        <div><span>◫</span><b>File System</b></div>
+                        <div><span>♜</span><b>Trash</b></div>
+                        <div
+                            onclick="window.location.href = 'academy.html'"
+                            data-local-href="academy.html"
+                            style="cursor: pointer; pointer-events: auto"
+                        >
+                            <span>🎓</span><b>Academy</b>
+                        </div>
+                        <div
+                            onclick="restoreCyberLab('playground', 'Hack Oyun Alanı')"
+                            style="cursor: pointer; pointer-events: auto"
+                        >
+                            <span>HL</span><b>Hack Lab</b>
+                        </div>
+                        <div
+                            onclick="restoreCyberLab('home', 'Ana Sayfa')"
+                            style="cursor: pointer; pointer-events: auto"
+                        >
+                            <span>🛡️</span><b>Araçlar</b>
+                        </div>
+
+                        <div
+                            onclick="window.location.href = 'courses.html'"
+                            data-local-href="courses.html"
+                            style="cursor: pointer; pointer-events: auto"
+                        >
+                            <span>🏅</span><b>Kurslar</b>
+                        </div>
+                        <div
+                            onclick="window.location.href = 'ranks.html'"
+                            data-local-href="ranks.html"
+                            style="cursor: pointer; pointer-events: auto"
+                        >
+                            <span>⚔️</span><b>Rütbeler</b>
+                        </div>
+                        <div
+                            onclick="
+                                restoreCyberLab('terminal', 'Terminal');
+                                document
+                                    .getElementById('terminal-input')
+                                    .focus();
+                            "
+                            style="cursor: pointer; pointer-events: auto"
+                        >
+                            <span>>_</span><b>Terminal</b>
+                        </div>
+                    </div>
+
+                    <section
+                        id="kali-app-menu"
+                        class="kali-app-menu"
+                        aria-label="Kali Uygulamalar Menüsü"
+                    >
+                        <label class="kali-app-search"
+                            ><span>⌕</span
+                            ><input
+                                id="kali-menu-search"
+                                placeholder="Araç ara..."
+                                autocomplete="off"
+                        /></label>
+                        <div class="kali-menu-content">
+                            <nav
+                                id="kali-menu-categories"
+                                class="kali-menu-categories"
+                                aria-label="Araç kategorileri"
+                            ></nav>
+                            <div
+                                id="kali-menu-tools"
+                                class="kali-menu-tools"
+                            ></div>
+                        </div>
+                        <footer class="kali-menu-user">
+                            <span class="kali-user-avatar" id="kali-user-avatar"
+                                >S</span
+                            >
+                            <span
+                                onclick="window.location.href = 'profile.html'"
+                                style="cursor: pointer"
+                                ><b id="kali-user-name">Öğrenci</b
+                                ><small id="kali-user-role"
+                                    >student@cyberlab</small
+                                ></span
+                            >
+                            <button id="kali-menu-logout" title="Oturumu kapat">
+                                ⏻
+                            </button>
+                        </footer>
+                    </section>
+
+                    <!-- DESKTOP CONTEXT MENU -->
+                    <div id="desktop-context-menu" class="desktop-context-menu">
+                        <div class="context-menu-item" onclick="toggleWindow('linux-window'); document.getElementById('terminal-input').focus();">
+                            <span>>_</span> Yeni Terminal Aç
+                        </div>
+                        <div class="context-menu-item" onclick="changeWallpaper()">
+                            <span>🖼️</span> Duvar Kağıdını Değiştir
+                        </div>
+                        <div class="context-menu-item" onclick="window.location.href = 'admin.html'">
+                            <span>⚙️</span> Yönetim Paneli
+                        </div>
+                        <div class="context-menu-item" onclick="toggleWindow('settings-window')">
+                            <span>🎨</span> Sistem Ayarları
+                        </div>
+                        <div class="context-menu-divider"></div>
+                        <div class="context-menu-item" onclick="window.location.reload()">
+                            <span>🔄</span> Yenile
+                        </div>
+                        <div class="context-menu-item" onclick="document.documentElement.requestFullscreen()">
+                            <span>🔲</span> Tam Ekran
+                        </div>
+                    </div>
+
+                    <!-- SETTINGS WINDOW -->
+                    <div
+                        id="settings-window"
+                        class="linux-window"
+                        style="
+                            display: none;
+                            position: absolute;
+                            width: 500px;
+                            height: 350px;
+                            top: 150px;
+                            left: 150px;
+                            z-index: 100;
+                        "
+                        onmousedown="bringToFront('settings-window')"
+                    >
+                        <div
+                            class="window-titlebar"
+                            onmousedown="dragWindow(event, 'settings-window')"
+                        >
+                            <div class="window-title">
+                                ⚙️ Sistem Ayarları
+                            </div>
+                            <div class="window-controls">
+                                <span class="control-btn maximize">🗖</span>
+                                <span
+                                    class="control-btn close"
+                                    onclick="toggleWindow('settings-window')"
+                                >✖</span>
+                            </div>
+                        </div>
+                        <div class="window-content" style="padding: 20px; background: #1a1a24; color: #fff; display: flex; flex-direction: column; gap: 20px;">
+                            <div>
+                                <h4 style="margin: 0 0 10px 0; font-weight: 500; font-size: 14px; color: var(--cyan);">Masaüstü Arka Planı</h4>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="btn btn-outline" style="flex: 1;" onclick="changeWallpaper('kali')">Kali (Varsayılan)</button>
+                                    <button class="btn btn-outline" style="flex: 1;" onclick="changeWallpaper('hacker')">Matrix</button>
+                                    <button class="btn btn-outline" style="flex: 1;" onclick="changeWallpaper('dark')">Koyu Siyah</button>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="margin: 0 0 10px 0; font-weight: 500; font-size: 14px; color: var(--cyan);">Sistem Vurgu Rengi</h4>
+                                <div style="display: flex; gap: 10px;">
+                                    <button class="btn btn-outline" style="flex: 1; border-color: var(--cyan); color: var(--cyan);" onclick="changeAccentColor('#00f0ff')">Cyan</button>
+                                    <button class="btn btn-outline" style="flex: 1; border-color: var(--green); color: var(--green);" onclick="changeAccentColor('#00ff66')">Green</button>
+                                    <button class="btn btn-outline" style="flex: 1; border-color: var(--purple); color: var(--purple);" onclick="changeAccentColor('#b535f6')">Purple</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TEXT EDITOR WINDOW -->
+                    <div
+                        id="text-editor-window"
+                        class="linux-window"
+                        style="
+                            display: none;
+                            position: absolute;
+                            width: 600px;
+                            height: 400px;
+                            top: 100px;
+                            left: 100px;
+                            z-index: 100;
+                        "
+                    >
+                        <div
+                            class="window-titlebar"
+                            onmousedown="
+                                dragWindow(event, 'text-editor-window')
+                            "
+                        >
+                            <div class="window-title">
+                                Root@Linux - Metin Düzenleyici
+                            </div>
+                            <div class="window-controls">
+                                <button
+                                    class="win-btn minimize"
+                                    onclick="toggleWindow('text-editor-window')"
+                                ></button>
+                                <button
+                                    class="win-btn maximize"
+                                    onclick="
+                                        maximizeWindow('text-editor-window')
+                                    "
+                                ></button>
+                                <button
+                                    class="win-btn close"
+                                    onclick="toggleWindow('text-editor-window')"
+                                ></button>
+                            </div>
+                        </div>
+                        <div
+                            class="window-toolbar"
+                            style="
+                                background: #e1e1e1;
+                                color: #333;
+                                padding: 5px;
+                                font-size: 12px;
+                                border-bottom: 1px solid #ccc;
+                                display: flex;
+                                gap: 15px;
+                            "
+                        >
+                            <span style="cursor: pointer">Dosya</span>
+                            <span style="cursor: pointer">Düzenle</span>
+                            <span style="cursor: pointer">Görünüm</span>
+                            <span style="cursor: pointer">Yardım</span>
+                            <span
+                                style="
+                                    margin-left: auto;
+                                    cursor: pointer;
+                                    color: #dd4814;
+                                "
+                                onclick="saveTextDocument()"
+                                >💾 Kaydet</span
+                            >
+                        </div>
+                        <div class="window-content" style="background: #fff">
+                            <textarea
+                                id="text-editor-content"
+                                style="
+                                    width: 100%;
+                                    height: 100%;
+                                    border: none;
+                                    padding: 10px;
+                                    resize: none;
+                                    font-family:
+                                        &quot;JetBrains Mono&quot;, monospace;
+                                    font-size: 13px;
+                                    color: #333;
+                                    outline: none;
+                                "
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    <!-- ACADEMY (TUTORIAL) WINDOW -->
+                    <div
+                        id="academy-window"
+                        class="linux-window academy-window"
+                        style="
+                            display: none;
+                            position: absolute;
+                            width: min(980px, calc(100vw - 80px));
+                            height: min(720px, calc(100vh - 100px));
+                            top: 62px;
+                            left: max(40px, calc(50vw - 490px));
+                            z-index: 110;
+                            border: 1px solid #257459;
+                            box-shadow:
+                                0 24px 70px rgba(0, 0, 0, 0.58),
+                                0 0 24px rgba(0, 255, 136, 0.12);
+                        "
+                    >
+                        <div
+                            class="window-titlebar"
+                            onmousedown="dragWindow(event, 'academy-window')"
+                            style="
+                                background: linear-gradient(
+                                    to bottom,
+                                    #113a26,
+                                    #091a11
+                                );
+                                border-bottom: 1px solid #00ff88;
+                            "
+                        >
+                            <div class="window-title" style="color: #00ff88">
+                                🎓 CyberLab Academy
+                            </div>
+                            <div class="window-controls">
+                                <button
+                                    class="win-btn close"
+                                    onclick="toggleWindow('academy-window')"
+                                ></button>
+                            </div>
+                        </div>
+                        <div
+                            class="window-content academy-window-content"
+                            style="
+                                padding: 0;
+                                background: #060a0f;
+                                color: #fff;
+                                overflow-y: auto;
+                            "
+                        >
+                            <div
+                                class="academy-placeholder"
+                                style="
+                                    display: flex;
+                                    align-items: center;
+                                    gap: 15px;
+                                    margin: 20px;
+                                    border-bottom: 1px solid #333;
+                                    padding-bottom: 15px;
+                                "
+                            >
+                                <div
+                                    style="
+                                        width: 50px;
+                                        height: 50px;
+                                        border-radius: 50%;
+                                        background: #00ff88;
+                                        color: #000;
+                                        display: flex;
+                                        justify-content: center;
+                                        align-items: center;
+                                        font-size: 24px;
+                                        font-weight: bold;
+                                    "
+                                >
+                                    A
+                                </div>
+                                <div>
+                                    <h3 style="margin: 0; color: #00ff88">
+                                        Academy Asistanı
+                                    </h3>
+                                    <p
+                                        style="
+                                            margin: 5px 0 0 0;
+                                            font-size: 12px;
+                                            color: #aaa;
+                                        "
+                                    >
+                                        Rehber ve Eğitim
+                                    </p>
+                                </div>
+                            </div>
+                            <div
+                                id="academy-content"
+                                style="font-size: 14px; line-height: 1.6"
+                            >
+                                Araç seçin, nasıl kullanacağınızı anlatayım.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- THE APPLICATION WINDOW -->
+                    <div id="linux-window" class="linux-window">
+                        <!-- WINDOW TITLEBAR -->
+                        <div
+                            class="window-titlebar"
+                            onmousedown="dragWindow(event, 'linux-window')"
+                        >
+                            <div class="window-title">CyberLab Academy</div>
+                            <div class="window-controls">
+                                <button
+                                    class="win-btn minimize"
+                                    onclick="toggleWindow('linux-window')"
+                                ></button>
+                                <button
+                                    class="win-btn maximize"
+                                    onclick="
+                                        document
+                                            .getElementById('linux-window')
+                                            .classList.toggle('maximized')
+                                    "
+                                ></button>
+                                <button
+                                    class="win-btn close"
+                                    onclick="toggleWindow('linux-window')"
+                                ></button>
+                            </div>
+                        </div>
+                        <!-- WINDOW CONTENT (The original app) -->
+                        <div class="window-content">
+                            <canvas id="particle-canvas"></canvas>
+                            <div class="scan-line"></div>
+
+                            <!-- ══════════════ LOGIN ══════════════ -->
+                            <div id="login-screen" class="screen active">
+                                <!-- Matrix Rain Canvas -->
+                                <canvas id="matrix-rain-canvas"></canvas>
+
+                                <!-- Cyber Grid Lines -->
+                                <div class="login-cyber-grid"></div>
+
+                                <!-- Floating Threat Indicators -->
+                                <div class="login-threat-feed" id="login-threat-feed" aria-hidden="true"></div>
+
+                                <div class="login-container">
+                                    <!-- Animated Emblem -->
+                                    <div class="logo-area">
+                                        <div class="kali-login-emblem">
+                                            <span>K</span><i></i>
+                                            <div class="emblem-ring"></div>
+                                            <div class="emblem-ring emblem-ring-2"></div>
+                                        </div>
+                                        <div class="logo-text">
+                                            <h1>KALI <span>CYBERLAB</span></h1>
+                                            <p class="logo-sub">
+                                                <span class="logo-sub-secure">🔒</span>
+                                                Kali GNU/Linux · Güvenli laboratuvar oturumu
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Boot Terminal Line -->
+                                    <div class="login-boot-terminal">
+                                        <span class="boot-prompt">root@cyberlab:~$</span>
+                                        <span class="terminal-line" id="boot-text"></span>
+                                        <span class="boot-cursor">▊</span>
+                                    </div>
+
+                                    <!-- Login Card -->
+                                    <div class="login-card">
+                                        <div class="card-header">
+                                            <span class="dot red"></span
+                                            ><span class="dot yellow"></span
+                                            ><span class="dot green"></span>
+                                            <span class="card-title">CyberLab oturumu</span>
+                                            <span class="card-header-status">
+                                                <span class="status-indicator"></span>
+                                                Güvenli bağlantı
+                                            </span>
+                                        </div>
+                                        <div class="card-body">
+                                            <!-- Auth Mode Tabs -->
+                                            <div
+                                                class="auth-mode-tabs"
+                                                role="tablist"
+                                                aria-label="Hesap işlemi"
+                                            >
+                                                <button
+                                                    type="button"
+                                                    class="auth-mode-btn active"
+                                                    data-auth-mode="login"
+                                                >
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                                                    Giriş Yap
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="auth-mode-btn"
+                                                    data-auth-mode="register"
+                                                >
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                                                    Hesap Oluştur
+                                                </button>
+                                            </div>
+
+                                            <!-- Register Extra Fields -->
+                                            <div
+                                                class="auth-register-fields"
+                                                hidden
+                                            >
+                                                <div class="input-group">
+                                                    <label>Görünen Ad</label>
+                                                    <div class="input-wrap">
+                                                        <span class="input-icon">
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                                        </span>
+                                                        <input
+                                                            type="text"
+                                                            id="display-name"
+                                                            placeholder="Adınız"
+                                                            maxlength="60"
+                                                            autocomplete="name"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div class="input-group">
+                                                    <label>E-posta</label>
+                                                    <div class="input-wrap">
+                                                        <span class="input-icon">
+                                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                                                        </span>
+                                                        <input
+                                                            type="email"
+                                                            id="email"
+                                                            placeholder="adiniz@example.com"
+                                                            maxlength="254"
+                                                            autocomplete="email"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Username -->
+                                            <div class="input-group">
+                                                <label id="username-label">Kullanıcı Adı veya E-posta</label>
+                                                <div class="input-wrap">
+                                                    <span class="input-icon">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                                    </span>
+                                                    <input
+                                                        type="text"
+                                                        id="username"
+                                                        placeholder="kullanici_adi"
+                                                        maxlength="254"
+                                                        autocomplete="username"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <!-- Password with Strength Meter -->
+                                            <div class="input-group">
+                                                <label>Şifre</label>
+                                                <div class="input-wrap password-wrap">
+                                                    <span class="input-icon">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                                    </span>
+                                                    <input
+                                                        type="password"
+                                                        id="password"
+                                                        placeholder="En az 10 karakter"
+                                                        maxlength="128"
+                                                        autocomplete="current-password"
+                                                    />
+                                                    <button type="button" class="password-toggle" id="password-toggle" aria-label="Şifreyi göster/gizle">
+                                                        <svg class="eye-open" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                                        <svg class="eye-closed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                                                    </button>
+                                                </div>
+                                                <div class="password-strength" id="password-strength" hidden>
+                                                    <div class="strength-bars">
+                                                        <div class="strength-bar"></div>
+                                                        <div class="strength-bar"></div>
+                                                        <div class="strength-bar"></div>
+                                                        <div class="strength-bar"></div>
+                                                    </div>
+                                                    <span class="strength-text" id="strength-text">Zayıf</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Auth Error -->
+                                            <p
+                                                class="auth-error"
+                                                id="auth-error"
+                                                role="alert"
+                                                hidden
+                                            ></p>
+
+                                            <!-- Login Button -->
+                                            <button
+                                                class="login-btn"
+                                                id="login-btn"
+                                            >
+                                                <span class="btn-text">SİSTEME GİRİŞ</span>
+                                                <span class="btn-arrow">→</span>
+                                                <div class="btn-loading-bar"></div>
+                                            </button>
+
+                                            <!-- Hint -->
+                                            <p
+                                                class="login-hint"
+                                                id="auth-hint"
+                                            >
+                                                CyberLab veya siberlisans.com hesabınızla güvenli oturum açın.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Stats Row -->
+                                    <div class="login-stats-grid">
+                                        <div class="login-stat-card">
+                                            <div class="login-stat-icon">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                                            </div>
+                                            <span class="stat-val" id="s1">0</span>
+                                            <span class="stat-label">Aktif Modül</span>
+                                        </div>
+                                        <div class="login-stat-card">
+                                            <div class="login-stat-icon">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                            </div>
+                                            <span class="stat-val" id="s2">0</span>
+                                            <span class="stat-label">Öğrenci</span>
+                                        </div>
+                                        <div class="login-stat-card">
+                                            <div class="login-stat-icon">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                                            </div>
+                                            <span class="stat-val" id="s3">0</span>
+                                            <span class="stat-label">Lab Oturumu</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ══════════════ DASHBOARD ══════════════ -->
+                            <div id="dashboard-screen" class="screen">
+                                <!-- SIDEBAR -->
+                                <aside class="sidebar" id="sidebar">
+                                    <div class="sidebar-logo">
+                                        <svg viewBox="0 0 40 40" fill="none">
+                                            <polygon
+                                                points="20,2 38,12 38,28 20,38 2,28 2,12"
+                                                stroke="#00ff88"
+                                                stroke-width="1.5"
+                                                fill="none"
+                                                opacity="0.7"
+                                            />
+                                            <text
+                                                x="20"
+                                                y="26"
+                                                font-family="JetBrains Mono"
+                                                font-size="14"
+                                                fill="#00ff88"
+                                                text-anchor="middle"
+                                                font-weight="700"
+                                            >
+                                                S
+                                            </text>
+                                        </svg>
+                                        <span>CyberLab</span>
+                                        <button
+                                            class="sidebar-toggle"
+                                            id="sidebar-toggle"
+                                        >
+                                            ☰
+                                        </button>
+                                    </div>
+                                    <div class="sidebar-search">
+                                        <input
+                                            type="text"
+                                            id="module-search"
+                                            placeholder="🔍 Modül ara..."
+                                        />
+                                    </div>
+                                    <nav class="sidebar-nav" id="sidebar-nav">
+                                        <div class="nav-section">
+                                            <span class="nav-section-title"
+                                                >// Ana Panel</span
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item active"
+                                                data-page="home"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <rect
+                                                        x="3"
+                                                        y="3"
+                                                        width="7"
+                                                        height="7"
+                                                    />
+                                                    <rect
+                                                        x="14"
+                                                        y="3"
+                                                        width="7"
+                                                        height="7"
+                                                    />
+                                                    <rect
+                                                        x="14"
+                                                        y="14"
+                                                        width="7"
+                                                        height="7"
+                                                    />
+                                                    <rect
+                                                        x="3"
+                                                        y="14"
+                                                        width="7"
+                                                        height="7"
+                                                    /></svg
+                                                ><span>Genel Bakış</span></a
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="terminal"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <polyline
+                                                        points="4 17 10 11 4 5"
+                                                    />
+                                                    <line
+                                                        x1="12"
+                                                        y1="19"
+                                                        x2="20"
+                                                        y2="19"
+                                                    /></svg
+                                                ><span>Terminal</span></a
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="playground"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <path
+                                                        d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+                                                    />
+                                                    <path d="M9 12l2 2 4-5" />
+                                                </svg>
+                                                <span>Hack Oyun Alanı</span></a
+                                            >
+                                        </div>
+                                        <div class="nav-section">
+                                            <span class="nav-section-title"
+                                                >// Keşif & Tarama</span
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="recon"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <circle
+                                                        cx="11"
+                                                        cy="11"
+                                                        r="8"
+                                                    />
+                                                    <line
+                                                        x1="21"
+                                                        y1="21"
+                                                        x2="16.65"
+                                                        y2="16.65"
+                                                    /></svg
+                                                ><span>Keşif (Recon)</span
+                                                ><span
+                                                    class="nav-badge"
+                                                    data-cat="recon"
+                                                    >0</span
+                                                ></a
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="network"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <circle
+                                                        cx="12"
+                                                        cy="5"
+                                                        r="3"
+                                                    />
+                                                    <circle
+                                                        cx="5"
+                                                        cy="19"
+                                                        r="3"
+                                                    />
+                                                    <circle
+                                                        cx="19"
+                                                        cy="19"
+                                                        r="3"
+                                                    />
+                                                    <line
+                                                        x1="12"
+                                                        y1="8"
+                                                        x2="5"
+                                                        y2="16"
+                                                    />
+                                                    <line
+                                                        x1="12"
+                                                        y1="8"
+                                                        x2="19"
+                                                        y2="16"
+                                                    /></svg
+                                                ><span>Ağ Saldırıları</span
+                                                ><span
+                                                    class="nav-badge"
+                                                    data-cat="network"
+                                                    >0</span
+                                                ></a
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="wireless"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <path
+                                                        d="M5 12.55a11 11 0 0 1 14.08 0"
+                                                    />
+                                                    <path
+                                                        d="M1.42 9a16 16 0 0 1 21.16 0"
+                                                    />
+                                                    <path
+                                                        d="M8.53 16.11a6 6 0 0 1 6.95 0"
+                                                    />
+                                                    <line
+                                                        x1="12"
+                                                        y1="20"
+                                                        x2="12.01"
+                                                        y2="20"
+                                                    /></svg
+                                                ><span>Kablosuz Saldırı</span
+                                                ><span
+                                                    class="nav-badge"
+                                                    data-cat="wireless"
+                                                    >0</span
+                                                ></a
+                                            >
+                                        </div>
+                                        <div class="nav-section">
+                                            <span class="nav-section-title"
+                                                >// Web & OSINT</span
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="web"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <circle
+                                                        cx="12"
+                                                        cy="12"
+                                                        r="10"
+                                                    />
+                                                    <line
+                                                        x1="2"
+                                                        y1="12"
+                                                        x2="22"
+                                                        y2="12"
+                                                    />
+                                                    <path
+                                                        d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"
+                                                    /></svg
+                                                ><span>Web Güvenliği</span
+                                                ><span
+                                                    class="nav-badge"
+                                                    data-cat="web"
+                                                    >0</span
+                                                ></a
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="osint"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <path
+                                                        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                                                    />
+                                                    <circle
+                                                        cx="12"
+                                                        cy="12"
+                                                        r="3"
+                                                    /></svg
+                                                ><span>OSINT</span
+                                                ><span
+                                                    class="nav-badge"
+                                                    data-cat="osint"
+                                                    >0</span
+                                                ></a
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="social"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <path
+                                                        d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+                                                    /></svg
+                                                ><span>Sosyal Mühendislik</span
+                                                ><span
+                                                    class="nav-badge"
+                                                    data-cat="social"
+                                                    >0</span
+                                                ></a
+                                            >
+                                        </div>
+                                        <div class="nav-section">
+                                            <span class="nav-section-title"
+                                                >// Exploit & Zararlı</span
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="exploit"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <path
+                                                        d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"
+                                                    /></svg
+                                                ><span>Exploit & Payload</span
+                                                ><span
+                                                    class="nav-badge"
+                                                    data-cat="exploit"
+                                                    >0</span
+                                                ></a
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="malware"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <path
+                                                        d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+                                                    />
+                                                    <line
+                                                        x1="12"
+                                                        y1="8"
+                                                        x2="12"
+                                                        y2="12"
+                                                    />
+                                                    <line
+                                                        x1="12"
+                                                        y1="16"
+                                                        x2="12.01"
+                                                        y2="16"
+                                                    /></svg
+                                                ><span>Zararlı Yazılım</span
+                                                ><span
+                                                    class="nav-badge"
+                                                    data-cat="malware"
+                                                    >0</span
+                                                ></a
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="bruteforce"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <rect
+                                                        x="3"
+                                                        y="11"
+                                                        width="18"
+                                                        height="11"
+                                                        rx="2"
+                                                        ry="2"
+                                                    />
+                                                    <path
+                                                        d="M7 11V7a5 5 0 0 1 10 0v4"
+                                                    /></svg
+                                                ><span>Kaba Kuvvet</span
+                                                ><span
+                                                    class="nav-badge"
+                                                    data-cat="bruteforce"
+                                                    >0</span
+                                                ></a
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="ddos"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <polygon
+                                                        points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"
+                                                    /></svg
+                                                ><span>DDoS Araçları</span
+                                                ><span
+                                                    class="nav-badge"
+                                                    data-cat="ddos"
+                                                    >0</span
+                                                ></a
+                                            >
+                                        </div>
+                                        <div class="nav-section">
+                                            <span class="nav-section-title"
+                                                >// Kriptografi</span
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="crypto"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <path
+                                                        d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"
+                                                    /></svg
+                                                ><span>Kriptografi</span
+                                                ><span
+                                                    class="nav-badge"
+                                                    data-cat="crypto"
+                                                    >0</span
+                                                ></a
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="steganography"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <rect
+                                                        x="3"
+                                                        y="3"
+                                                        width="18"
+                                                        height="18"
+                                                        rx="2"
+                                                    />
+                                                    <circle
+                                                        cx="8.5"
+                                                        cy="8.5"
+                                                        r="1.5"
+                                                    />
+                                                    <polyline
+                                                        points="21 15 16 10 5 21"
+                                                    /></svg
+                                                ><span>Steganografi</span
+                                                ><span
+                                                    class="nav-badge"
+                                                    data-cat="steganography"
+                                                    >0</span
+                                                ></a
+                                            >
+                                        </div>
+                                        <div class="nav-section">
+                                            <span class="nav-section-title"
+                                                >// Yardımcı Araçlar</span
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="utilities"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <circle
+                                                        cx="12"
+                                                        cy="12"
+                                                        r="3"
+                                                    />
+                                                    <path
+                                                        d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M12 2v2M12 20v2M20 12h2M2 12h2M17.66 17.66l-1.41-1.41M6.34 17.66l1.41-1.41"
+                                                    /></svg
+                                                ><span>Yardımcı Araçlar</span
+                                                ><span
+                                                    class="nav-badge"
+                                                    data-cat="utilities"
+                                                    >0</span
+                                                ></a
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="file-tools"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <path
+                                                        d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"
+                                                    />
+                                                    <polyline
+                                                        points="13 2 13 9 20 9"
+                                                    /></svg
+                                                ><span>Dosya Araçları</span
+                                                ><span
+                                                    class="nav-badge"
+                                                    data-cat="file-tools"
+                                                    >0</span
+                                                ></a
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="reports"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <polyline
+                                                        points="22 12 18 12 15 21 9 3 6 12 2 12"
+                                                    /></svg
+                                                ><span>Raporlar</span></a
+                                            >
+                                            <a
+                                                href="#"
+                                                class="nav-item"
+                                                data-page="install"
+                                                ><svg
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                >
+                                                    <path
+                                                        d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"
+                                                    />
+                                                    <polyline
+                                                        points="7 10 12 15 17 10"
+                                                    />
+                                                    <line
+                                                        x1="12"
+                                                        y1="15"
+                                                        x2="12"
+                                                        y2="3"
+                                                    /></svg
+                                                ><span>Araç Kurulum</span
+                                                ><span
+                                                    class="nav-badge install-badge"
+                                                    style="background: #ff9500"
+                                                    >!</span
+                                                ></a
+                                            >
+                                        </div>
+                                    </nav>
+                                    <div class="sidebar-bottom">
+                                        <div
+                                            class="user-card"
+                                            role="button"
+                                            tabindex="0"
+                                            title="Profilimi aç"
+                                            onclick="
+                                                window.location.href =
+                                                    'profile.html'
+                                            "
+                                        >
+                                            <div
+                                                class="user-avatar"
+                                                id="user-avatar"
+                                            >
+                                                S
+                                            </div>
+                                            <div class="user-info">
+                                                <span
+                                                    class="user-name"
+                                                    id="user-name-display"
+                                                    >Öğrenci</span
+                                                >
+                                                <span
+                                                    class="user-role"
+                                                    id="user-role-display"
+                                                    >student@cyberlab</span
+                                                >
+                                            </div>
+                                        </div>
+                                        <button
+                                            class="logout-btn"
+                                            id="logout-btn"
+                                        >
+                                            Çıkış
+                                        </button>
+                                    </div>
+                                </aside>
+
+                                <!-- MAIN CONTENT -->
+                                <main class="main-content" id="main-content">
+                                    <div class="topbar">
+                                        <div class="topbar-left">
+                                            <button
+                                                class="mobile-menu-btn"
+                                                id="mobile-menu-btn"
+                                            >
+                                                ☰
+                                            </button>
+                                            <span
+                                                class="breadcrumb"
+                                                id="page-breadcrumb"
+                                                >/ Genel Bakış</span
+                                            >
+                                        </div>
+                                        <div class="topbar-right">
+                                            <div class="status-badge online">
+                                                <span class="status-dot"></span
+                                                >Sistem Çevrimiçi
+                                            </div>
+                                            <div
+                                                class="time-display"
+                                                id="clock"
+                                            ></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="pages-container">
+                                        <!-- ── HOME ── -->
+                                        <div class="page active" id="page-home">
+                                            <div class="page-header">
+                                                <h2>
+                                                    Hoş Geldiniz,
+                                                    <span id="welcome-name"
+                                                        >Öğrenci</span
+                                                    >
+                                                    👾
+                                                </h2>
+                                                <p>
+                                                    CyberLab — 80+ modüllü
+                                                    gelişmiş siber güvenlik
+                                                    laboratuvarı
+                                                </p>
+                                            </div>
+                                            <div class="metrics-grid">
+                                                <div
+                                                    class="metric-card accent-green"
+                                                >
+                                                    <div class="metric-icon">
+                                                        <svg
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            stroke-width="2"
+                                                        >
+                                                            <rect
+                                                                x="2"
+                                                                y="3"
+                                                                width="20"
+                                                                height="14"
+                                                                rx="2"
+                                                            />
+                                                            <line
+                                                                x1="8"
+                                                                y1="21"
+                                                                x2="16"
+                                                                y2="21"
+                                                            />
+                                                            <line
+                                                                x1="12"
+                                                                y1="17"
+                                                                x2="12"
+                                                                y2="21"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                    <div
+                                                        class="metric-val"
+                                                        data-target="84"
+                                                    >
+                                                        0
+                                                    </div>
+                                                    <div class="metric-label">
+                                                        Toplam Modül
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    class="metric-card accent-blue"
+                                                >
+                                                    <div class="metric-icon">
+                                                        <svg
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            stroke-width="2"
+                                                        >
+                                                            <path
+                                                                d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"
+                                                            />
+                                                            <circle
+                                                                cx="9"
+                                                                cy="7"
+                                                                r="4"
+                                                            />
+                                                            <path
+                                                                d="M23 21v-2a4 4 0 0 0-3-3.87"
+                                                            />
+                                                            <path
+                                                                d="M16 3.13a4 4 0 0 1 0 7.75"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                    <div
+                                                        class="metric-val"
+                                                        data-target="48"
+                                                    >
+                                                        0
+                                                    </div>
+                                                    <div class="metric-label">
+                                                        Aktif Öğrenci
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    class="metric-card accent-purple"
+                                                >
+                                                    <div class="metric-icon">
+                                                        <svg
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            stroke-width="2"
+                                                        >
+                                                            <path
+                                                                d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                    <div
+                                                        class="metric-val"
+                                                        data-target="12"
+                                                    >
+                                                        0
+                                                    </div>
+                                                    <div class="metric-label">
+                                                        Kategori
+                                                    </div>
+                                                </div>
+                                                <div
+                                                    class="metric-card accent-red"
+                                                >
+                                                    <div class="metric-icon">
+                                                        <svg
+                                                            viewBox="0 0 24 24"
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            stroke-width="2"
+                                                        >
+                                                            <polyline
+                                                                points="22 12 18 12 15 21 9 3 6 12 2 12"
+                                                            />
+                                                        </svg>
+                                                    </div>
+                                                    <div
+                                                        class="metric-val"
+                                                        data-target="312"
+                                                    >
+                                                        0
+                                                    </div>
+                                                    <div class="metric-label">
+                                                        Lab Oturumu
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Category Cards -->
+                                            <div
+                                                class="category-cards"
+                                                id="home-categories"
+                                            ></div>
+
+                                            <div class="content-grid">
+                                                <div class="content-card">
+                                                    <div
+                                                        class="content-card-header"
+                                                    >
+                                                        <h3>
+                                                            // Sistem Durumu
+                                                        </h3>
+                                                    </div>
+                                                    <div
+                                                        class="sys-status-list"
+                                                    >
+                                                        <div class="sys-item">
+                                                            <span
+                                                                >CyberLab
+                                                                Araçları</span
+                                                            ><span
+                                                                class="sys-badge online"
+                                                                >Yüklü ✓</span
+                                                            >
+                                                        </div>
+                                                        <div class="sys-item">
+                                                            <span
+                                                                >Python
+                                                                3.x</span
+                                                            ><span
+                                                                class="sys-badge online"
+                                                                >Aktif</span
+                                                            >
+                                                        </div>
+                                                        <div class="sys-item">
+                                                            <span
+                                                                >searchsploit</span
+                                                            ><span
+                                                                class="sys-badge online"
+                                                                >Hazır</span
+                                                            >
+                                                        </div>
+                                                        <div class="sys-item">
+                                                            <span
+                                                                >nmap /
+                                                                ncrack</span
+                                                            ><span
+                                                                class="sys-badge online"
+                                                                >Hazır</span
+                                                            >
+                                                        </div>
+                                                        <div class="sys-item">
+                                                            <span>msfvenom</span
+                                                            ><span
+                                                                class="sys-badge online"
+                                                                >Hazır</span
+                                                            >
+                                                        </div>
+                                                        <div class="sys-item">
+                                                            <span>sqlmap</span
+                                                            ><span
+                                                                class="sys-badge online"
+                                                                >Hazır</span
+                                                            >
+                                                        </div>
+                                                        <div class="sys-item">
+                                                            <span
+                                                                >aircrack-ng</span
+                                                            ><span
+                                                                class="sys-badge online"
+                                                                >Hazır</span
+                                                            >
+                                                        </div>
+                                                        <div class="sys-item">
+                                                            <span
+                                                                >Lab
+                                                                Sandbox</span
+                                                            ><span
+                                                                class="sys-badge online"
+                                                                >Güvenli</span
+                                                            >
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="content-card">
+                                                    <div
+                                                        class="content-card-header"
+                                                    >
+                                                        <h3>
+                                                            // Canlı Aktivite
+                                                        </h3>
+                                                        <span class="live-badge"
+                                                            ><span
+                                                                class="live-dot"
+                                                            ></span
+                                                            >CANLI</span
+                                                        >
+                                                    </div>
+                                                    <div
+                                                        class="activity-feed"
+                                                        id="activity-feed"
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- ── HACK PLAYGROUND ── -->
+                                        <div class="page" id="page-playground">
+                                            <div class="page-header">
+                                                <h2>Hack Oyun Alanı</h2>
+                                                <p>
+                                                    İzole görevlerle web
+                                                    güvenliği, keşif ve log
+                                                    analizi pratiği
+                                                </p>
+                                            </div>
+                                            <section class="playground-hero">
+                                                <div>
+                                                    <span class="playground-kicker"
+                                                        >LAB-ONLY CTF MOTORU</span
+                                                    >
+                                                    <h3>
+                                                        Gerçekçi senaryolar,
+                                                        kontrollü hedefler
+                                                    </h3>
+                                                    <p>
+                                                        Her görev tarayıcı
+                                                        içinde simüle edilir:
+                                                        istekleri incele,
+                                                        parametreleri değiştir,
+                                                        loglardan kanıt çıkar ve
+                                                        flag formatında sonucu
+                                                        gönder.
+                                                    </p>
+                                                </div>
+                                                <div class="playground-score">
+                                                    <strong id="hacklab-score"
+                                                        >0%</strong
+                                                    >
+                                                    <span
+                                                        id="hacklab-score-label"
+                                                        >0/0 görev</span
+                                                    >
+                                                    <div
+                                                        class="playground-scorebar"
+                                                    >
+                                                        <i
+                                                            id="hacklab-scorebar"
+                                                            style="width: 0%"
+                                                        ></i>
+                                                    </div>
+                                                </div>
+                                            </section>
+                                            <div class="playground-layout">
+                                                <aside class="playground-list">
+                                                    <div
+                                                        class="playground-list-head"
+                                                    >
+                                                        <span>Görevler</span>
+                                                        <button
+                                                            id="hacklab-reset"
+                                                            type="button"
+                                                        >
+                                                            Sıfırla
+                                                        </button>
+                                                    </div>
+                                                    <div
+                                                        id="hacklab-mission-list"
+                                                        class="playground-missions"
+                                                    ></div>
+                                                </aside>
+                                                <section
+                                                    class="playground-workbench"
+                                                    id="hacklab-workbench"
+                                                ></section>
+                                            </div>
+                                        </div>
+
+                                        <!-- ── TERMINAL ── -->
+                                        <div class="page" id="page-terminal">
+                                            <!-- Linux Terminal Başlık -->
+                                            <div class="linux-term-header">
+                                                <div
+                                                    class="linux-term-title-bar"
+                                                >
+                                                    <div
+                                                        class="linux-term-dots"
+                                                    >
+                                                        <span
+                                                            class="dot red"
+                                                            title="Kapat"
+                                                        ></span>
+                                                        <span
+                                                            class="dot yellow"
+                                                            title="Küçült"
+                                                        ></span>
+                                                        <span
+                                                            class="dot green"
+                                                            title="Tam Ekran"
+                                                        ></span>
+                                                    </div>
+                                                    <div
+                                                        class="linux-term-tabs"
+                                                        id="term-tabs"
+                                                    >
+                                                        <button
+                                                            class="term-tab active"
+                                                            data-tab="0"
+                                                            onclick="
+                                                                switchTab(0)
+                                                            "
+                                                        >
+                                                            <span
+                                                                class="term-tab-icon"
+                                                                >⬡</span
+                                                            >
+                                                            bash —
+                                                            SiberPhp@cyberlab
+                                                        </button>
+                                                        <button
+                                                            class="term-tab"
+                                                            data-tab="1"
+                                                            onclick="
+                                                                switchTab(1)
+                                                            "
+                                                        >
+                                                            <span
+                                                                class="term-tab-icon"
+                                                                >⬡</span
+                                                            >
+                                                            zsh — root
+                                                        </button>
+                                                        <button
+                                                            class="term-tab new-tab-btn"
+                                                            onclick="newTab()"
+                                                            title="Yeni terminal"
+                                                        >
+                                                            +
+                                                        </button>
+                                                    </div>
+                                                    <div
+                                                        class="linux-term-winbtns"
+                                                    >
+                                                        <button
+                                                            class="term-winbtn"
+                                                            onclick="
+                                                                toggleFullTerm()
+                                                            "
+                                                            title="Tam ekran"
+                                                        >
+                                                            ⛶
+                                                        </button>
+                                                        <button
+                                                            class="term-winbtn"
+                                                            onclick="
+                                                                clearTerm()
+                                                            "
+                                                            title="Temizle"
+                                                        >
+                                                            ⌫
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <!-- İkinci Satır: Path + sistem bilgisi -->
+                                                <div
+                                                    class="linux-term-statusbar"
+                                                >
+                                                    <span
+                                                        class="tsb-item tsb-user"
+                                                        ><span
+                                                            class="tsb-dot green"
+                                                        ></span
+                                                        >SiberPhp@cyberlab</span
+                                                    >
+                                                    <span class="tsb-sep"
+                                                        >›</span
+                                                    >
+                                                    <span
+                                                        class="tsb-item tsb-path"
+                                                        id="tsb-path"
+                                                        >~/siberphp</span
+                                                    >
+                                                    <span class="tsb-sep"
+                                                        >›</span
+                                                    >
+                                                    <span
+                                                        class="tsb-item tsb-branch"
+                                                        >⎇ main</span
+                                                    >
+                                                    <div class="tsb-right">
+                                                        <span
+                                                            class="tsb-item tsb-cpu"
+                                                            id="tsb-cpu"
+                                                            >CPU: —</span
+                                                        >
+                                                        <span
+                                                            class="tsb-item tsb-mem"
+                                                            id="tsb-mem"
+                                                            >MEM: —</span
+                                                        >
+                                                        <span
+                                                            class="tsb-item tsb-time"
+                                                            id="tsb-clock2"
+                                                            >00:00:00</span
+                                                        >
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Terminal Gövdesi -->
+                                            <div
+                                                class="linux-terminal"
+                                                id="linux-terminal"
+                                            >
+                                                <div
+                                                    class="linux-term-body"
+                                                    id="terminal-body"
+                                                ></div>
+                                                <div
+                                                    class="linux-term-input-wrap"
+                                                    id="term-input-wrap"
+                                                >
+                                                    <span class="linux-prompt">
+                                                        <span class="lp-user"
+                                                            >SiberPhp</span
+                                                        ><span class="lp-at"
+                                                            >@</span
+                                                        ><span class="lp-host"
+                                                            >cyberlab</span
+                                                        ><span class="lp-colon"
+                                                            >:</span
+                                                        ><span
+                                                            class="lp-path"
+                                                            id="lp-path"
+                                                            >~/siberphp</span
+                                                        ><span class="lp-dollar"
+                                                            >$</span
+                                                        >
+                                                    </span>
+                                                    <div
+                                                        class="linux-input-area"
+                                                    >
+                                                        <input
+                                                            type="text"
+                                                            class="linux-term-input"
+                                                            id="terminal-input"
+                                                            placeholder=""
+                                                            autocomplete="off"
+                                                            spellcheck="false"
+                                                        />
+                                                        <span
+                                                            class="linux-cursor"
+                                                            id="linux-cursor"
+                                                            >▋</span
+                                                        >
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Hızlı Komut Paneli -->
+                                            <div class="term-quick-panel">
+                                                <div class="tqp-section">
+                                                    <span class="tqp-label"
+                                                        >// SistemInfo</span
+                                                    >
+                                                    <button
+                                                        class="tqp-btn"
+                                                        onclick="
+                                                            runCommand(
+                                                                'uname -a',
+                                                            )
+                                                        "
+                                                    >
+                                                        uname -a
+                                                    </button>
+                                                    <button
+                                                        class="tqp-btn"
+                                                        onclick="
+                                                            runCommand('ls -la')
+                                                        "
+                                                    >
+                                                        ls -la
+                                                    </button>
+                                                    <button
+                                                        class="tqp-btn"
+                                                        onclick="
+                                                            runCommand('pwd')
+                                                        "
+                                                    >
+                                                        pwd
+                                                    </button>
+                                                    <button
+                                                        class="tqp-btn"
+                                                        onclick="
+                                                            runCommand('whoami')
+                                                        "
+                                                    >
+                                                        whoami
+                                                    </button>
+                                                    <button
+                                                        class="tqp-btn"
+                                                        onclick="
+                                                            runCommand('ps aux')
+                                                        "
+                                                    >
+                                                        ps aux
+                                                    </button>
+                                                </div>
+                                                <div class="tqp-section">
+                                                    <span class="tqp-label"
+                                                        >// Araçlar</span
+                                                    >
+                                                    <button
+                                                        class="tqp-btn tqp-green"
+                                                        onclick="
+                                                            runCommand(
+                                                                'python3 siberphp.py --help',
+                                                            )
+                                                        "
+                                                    >
+                                                        --help
+                                                    </button>
+                                                    <button
+                                                        class="tqp-btn tqp-green"
+                                                        onclick="
+                                                            runCommand(
+                                                                'python3 siberphp.py --modules',
+                                                            )
+                                                        "
+                                                    >
+                                                        --modules
+                                                    </button>
+                                                    <button
+                                                        class="tqp-btn tqp-green"
+                                                        onclick="
+                                                            runCommand(
+                                                                'python3 siberphp.py --version',
+                                                            )
+                                                        "
+                                                    >
+                                                        --version
+                                                    </button>
+                                                    <button
+                                                        class="tqp-btn tqp-blue"
+                                                        onclick="
+                                                            runCommand(
+                                                                'nmap -v --version 2>&1 || echo nmap not found',
+                                                            )
+                                                        "
+                                                    >
+                                                        nmap -v
+                                                    </button>
+                                                    <button
+                                                        class="tqp-btn tqp-blue"
+                                                        onclick="
+                                                            runCommand(
+                                                                'sqlmap --version 2>&1 || python3 -m sqlmap --version',
+                                                            )
+                                                        "
+                                                    >
+                                                        sqlmap -v
+                                                    </button>
+                                                </div>
+                                                <div class="tqp-section">
+                                                    <span class="tqp-label"
+                                                        >// Demo</span
+                                                    >
+                                                    <button
+                                                        class="tqp-btn tqp-orange"
+                                                        onclick="
+                                                            runCommand(
+                                                                'python3 siberphp.py --nmap 127.0.0.1',
+                                                            )
+                                                        "
+                                                    >
+                                                        nmap demo
+                                                    </button>
+                                                    <button
+                                                        class="tqp-btn tqp-orange"
+                                                        onclick="
+                                                            runCommand(
+                                                                'python3 siberphp.py --whois example.com',
+                                                            )
+                                                        "
+                                                    >
+                                                        whois demo
+                                                    </button>
+                                                    <button
+                                                        class="tqp-btn tqp-orange"
+                                                        onclick="
+                                                            runCommand(
+                                                                'python3 siberphp.py --dns google.com',
+                                                            )
+                                                        "
+                                                    >
+                                                        dns demo
+                                                    </button>
+                                                    <button
+                                                        class="tqp-btn tqp-red"
+                                                        onclick="clearTerm()"
+                                                    >
+                                                        🗑 clear
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- ── DYNAMIC MODULE PAGES ── -->
+                                        <div class="page" id="page-recon">
+                                            <div class="page-header">
+                                                <h2>Keşif (Reconnaissance)</h2>
+                                                <p>
+                                                    Hedef sistem bilgisi toplama
+                                                    araçları
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="module-grid"
+                                                id="grid-recon"
+                                            ></div>
+                                        </div>
+                                        <div class="page" id="page-network">
+                                            <div class="page-header">
+                                                <h2>Ağ Saldırıları</h2>
+                                                <p>
+                                                    Ağ tarama, analiz ve saldırı
+                                                    araçları
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="module-grid"
+                                                id="grid-network"
+                                            ></div>
+                                        </div>
+                                        <div class="page" id="page-wireless">
+                                            <div class="page-header">
+                                                <h2>Kablosuz Saldırılar</h2>
+                                                <p>
+                                                    WiFi, Bluetooth ve kablosuz
+                                                    ağ güvenlik araçları
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="module-grid"
+                                                id="grid-wireless"
+                                            ></div>
+                                        </div>
+                                        <div class="page" id="page-web">
+                                            <div class="page-header">
+                                                <h2>Web Güvenliği</h2>
+                                                <p>
+                                                    Web uygulama güvenlik test
+                                                    araçları
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="module-grid"
+                                                id="grid-web"
+                                            ></div>
+                                        </div>
+                                        <div class="page" id="page-osint">
+                                            <div class="page-header">
+                                                <h2>OSINT</h2>
+                                                <p>
+                                                    Açık kaynak istihbarat
+                                                    araçları
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="module-grid"
+                                                id="grid-osint"
+                                            ></div>
+                                        </div>
+                                        <div class="page" id="page-social">
+                                            <div class="page-header">
+                                                <h2>Sosyal Mühendislik</h2>
+                                                <p>
+                                                    Phishing, spam ve sosyal
+                                                    mühendislik araçları
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="module-grid"
+                                                id="grid-social"
+                                            ></div>
+                                        </div>
+                                        <div class="page" id="page-exploit">
+                                            <div class="page-header">
+                                                <h2>Exploit & Payload</h2>
+                                                <p>
+                                                    Açık istismar ve payload
+                                                    üretme araçları
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="module-grid"
+                                                id="grid-exploit"
+                                            ></div>
+                                        </div>
+                                        <div class="page" id="page-malware">
+                                            <div class="page-header">
+                                                <h2>
+                                                    Zararlı Yazılım Araçları
+                                                </h2>
+                                                <p>
+                                                    Trojan, virüs oluşturma ve
+                                                    rootkit tarama
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="module-grid"
+                                                id="grid-malware"
+                                            ></div>
+                                        </div>
+                                        <div class="page" id="page-bruteforce">
+                                            <div class="page-header">
+                                                <h2>Kaba Kuvvet Saldırıları</h2>
+                                                <p>
+                                                    Ncrack, Hydra ve özel
+                                                    brute-force araçları
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="module-grid"
+                                                id="grid-bruteforce"
+                                            ></div>
+                                        </div>
+                                        <div class="page" id="page-ddos">
+                                            <div class="page-header">
+                                                <h2>DDoS Araçları</h2>
+                                                <p>
+                                                    12 farklı saldırı türü ile
+                                                    DoS/DDoS testleri
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="module-grid"
+                                                id="grid-ddos"
+                                            ></div>
+                                        </div>
+                                        <div class="page" id="page-crypto">
+                                            <div class="page-header">
+                                                <h2>Kriptografi</h2>
+                                                <p>
+                                                    Şifreleme, şifre kırma ve
+                                                    hash araçları
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="module-grid"
+                                                id="grid-crypto"
+                                            ></div>
+                                        </div>
+                                        <div
+                                            class="page"
+                                            id="page-steganography"
+                                        >
+                                            <div class="page-header">
+                                                <h2>Steganografi</h2>
+                                                <p>
+                                                    Veri gizleme ve görsel
+                                                    analiz araçları
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="module-grid"
+                                                id="grid-steganography"
+                                            ></div>
+                                        </div>
+                                        <div class="page" id="page-utilities">
+                                            <div class="page-header">
+                                                <h2>Yardımcı Araçlar</h2>
+                                                <p>
+                                                    Genel kullanım araçları ve
+                                                    otomasyon
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="module-grid"
+                                                id="grid-utilities"
+                                            ></div>
+                                        </div>
+                                        <div class="page" id="page-file-tools">
+                                            <div class="page-header">
+                                                <h2>Dosya Araçları</h2>
+                                                <p>
+                                                    Dosya analiz, manipülasyon
+                                                    ve dönüştürme araçları
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="module-grid"
+                                                id="grid-file-tools"
+                                            ></div>
+                                        </div>
+
+                                        <!-- ── REPORTS ── -->
+                                        <div class="page" id="page-reports">
+                                            <div class="page-header">
+                                                <h2>Lab Raporları</h2>
+                                                <p>
+                                                    Oturum logları ve aktivite
+                                                    kayıtları
+                                                </p>
+                                            </div>
+                                            <div
+                                                class="reports-area"
+                                                id="reports-area"
+                                            ></div>
+                                        </div>
+
+                                        <!-- ── INSTALL ── -->
+                                        <div class="page" id="page-install">
+                                            <div class="page-header">
+                                                <h2>⚙️ Araç Kurulum Merkezi</h2>
+                                                <p>
+                                                    Web paneli üzerinden tüm
+                                                    siber güvenlik araçlarını
+                                                    tek tıkla kurun
+                                                </p>
+                                            </div>
+                                            <div class="install-toolbar">
+                                                <button
+                                                    class="install-check-btn"
+                                                    id="check-all-tools"
+                                                >
+                                                    🔍 Durumları Kontrol Et
+                                                </button>
+                                                <button
+                                                    class="install-all-btn"
+                                                    id="install-all-missing"
+                                                >
+                                                    ⚡ Eksikleri Hepsini Kur
+                                                </button>
+                                                <div class="install-legend">
+                                                    <span class="leg-item"
+                                                        ><span
+                                                            class="leg-dot installed"
+                                                        ></span
+                                                        >Kurulu</span
+                                                    >
+                                                    <span class="leg-item"
+                                                        ><span
+                                                            class="leg-dot missing"
+                                                        ></span
+                                                        >Kurulu Değil</span
+                                                    >
+                                                    <span class="leg-item"
+                                                        ><span
+                                                            class="leg-dot installing"
+                                                        ></span
+                                                        >Kuruluyor...</span
+                                                    >
+                                                </div>
+                                            </div>
+                                            <!-- Kurulum Terminali -->
+                                            <div
+                                                class="install-terminal"
+                                                id="install-terminal"
+                                            >
+                                                <div class="terminal-topbar">
+                                                    <span class="dot red"></span
+                                                    ><span
+                                                        class="dot yellow"
+                                                    ></span
+                                                    ><span
+                                                        class="dot green"
+                                                    ></span>
+                                                    <span class="terminal-title"
+                                                        >install@cyberlab:~$</span
+                                                    >
+                                                </div>
+                                                <div
+                                                    class="terminal-body"
+                                                    id="install-term-body"
+                                                    style="
+                                                        min-height: 120px;
+                                                        max-height: 200px;
+                                                    "
+                                                ></div>
+                                            </div>
+                                            <!-- Araç Kartları -->
+                                            <div
+                                                class="install-grid"
+                                                id="install-grid"
+                                            ></div>
+                                        </div>
+                                    </div>
+                                    <!-- /pages-container -->
+                                </main>
+                            </div>
+
+                            <!-- ── MODULE MODAL ── -->
+                            <div class="modal-overlay" id="modal-overlay">
+                                <div class="modal">
+                                    <div class="modal-header">
+                                        <div class="modal-header-left">
+                                            <span
+                                                class="modal-cat-badge"
+                                                id="modal-cat-badge"
+                                                >CAT</span
+                                            >
+                                            <span id="modal-title">Modül</span>
+                                        </div>
+                                        <button
+                                            class="modal-close"
+                                            id="modal-close"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p
+                                            class="modal-desc"
+                                            id="modal-desc"
+                                        ></p>
+
+                                        <!-- Nasıl kullanılır ipucu -->
+                                        <div id="modal-howto"></div>
+
+                                        <div class="modal-field">
+                                            <label id="modal-param-label"
+                                                >Hedef / Parametre</label
+                                            >
+                                            <input
+                                                type="text"
+                                                id="modal-target"
+                                                placeholder="örn: example.com veya 192.168.1.1"
+                                            />
+                                        </div>
+
+                                        <!-- Dosya Seçici (sadece gerekli araçlarda görünür) -->
+                                        <div
+                                            id="modal-file-picker"
+                                            style="
+                                                display: none;
+                                                align-items: center;
+                                                gap: 10px;
+                                                margin: 6px 0 10px 0;
+                                            "
+                                        >
+                                            <button
+                                                id="modal-file-btn"
+                                                style="
+                                                    background: #1e2a1e;
+                                                    border: 1px solid #00ff88;
+                                                    color: #00ff88;
+                                                    padding: 6px 14px;
+                                                    border-radius: 6px;
+                                                    cursor: pointer;
+                                                    font-family: monospace;
+                                                    font-size: 12px;
+                                                "
+                                            >
+                                                📂 Dosya Seç
+                                            </button>
+                                            <span
+                                                style="
+                                                    color: #666;
+                                                    font-size: 12px;
+                                                    font-family: monospace;
+                                                "
+                                                >veya dosya yolunu manuel
+                                                girin</span
+                                            >
+                                            <input
+                                                type="file"
+                                                id="modal-file-input"
+                                                style="display: none"
+                                            />
+                                        </div>
+
+                                        <div class="modal-command-preview">
+                                            <span class="modal-cmd-label"
+                                                >Komut:</span
+                                            >
+                                            <code id="modal-cmd-preview"></code>
+                                        </div>
+                                        <div class="modal-note">
+                                            ⚠️ Bu laboratuvar yalnızca yetkili
+                                            ve kontrollü sistemlerde kullanılmak
+                                            üzere tasarlanmıştır.
+                                        </div>
+
+                                        <div
+                                            class="modal-actions"
+                                            style="
+                                                display: flex;
+                                                gap: 10px;
+                                                flex-wrap: wrap;
+                                            "
+                                        >
+                                            <button
+                                                class="modal-run-btn"
+                                                id="modal-run"
+                                            >
+                                                ▶ Terminalde Çalıştır
+                                            </button>
+                                            <button
+                                                class="modal-copy-btn"
+                                                id="modal-copy"
+                                            >
+                                                📋 Kopyala
+                                            </button>
+                                            <button
+                                                class="modal-copy-btn"
+                                                id="modal-academy"
+                                                style="
+                                                    background: transparent;
+                                                    border: 1px solid #00ff88;
+                                                    color: #00ff88;
+                                                    width: 100%;
+                                                "
+                                            >
+                                                💡 Academy: Nasıl Kullanılır?
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ── SEARCH OVERLAY ── -->
+                            <div class="search-overlay" id="search-overlay">
+                                <div
+                                    class="search-results"
+                                    id="search-results"
+                                ></div>
+                            </div>
+                        </div>
+                        <!-- /window-content -->
+                    </div>
+                    <!-- /linux-window -->
+                </div>
+                <!-- /linux-workspace -->
+            </div>
+            <!-- /desktop-body -->
+        </div>
+        <!-- /linux-desktop -->
+
+        <script>
+            function updateUbuntuClock() {
+                const now = new Date();
+                const options = {
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                };
+                document.getElementById("linux-clock").innerText =
+                    now.toLocaleDateString("tr-TR", options);
+            }
+            setInterval(updateUbuntuClock, 1000);
+            updateUbuntuClock();
+        </script>
+
+        <!-- Socket.IO client -->
+        <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+        <script src="lessons.js?v=9"></script>
+        <script src="app.js?v=18" defer></script>
+    </body>
+</html>

@@ -35,6 +35,7 @@ import { Route as PaketlerAiRouteImport } from './routes/paketler.ai'
 import { Route as PaketlerSlugRouteImport } from './routes/paketler.$slug'
 import { Route as PCodeRouteImport } from './routes/p.$code'
 import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
+import { Route as CyberlabSsoRouteImport } from './routes/cyberlab/sso'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as BakiyeYukleTopupIdRouteImport } from './routes/bakiye-yukle.$topupId'
 import { Route as BCodeRouteImport } from './routes/b.$code'
@@ -153,6 +154,7 @@ import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/pub
 import { Route as ApiPublicHooksAbandonmentReminderRouteImport } from './routes/api/public/hooks/abandonment-reminder'
 import { Route as ApiPublicDealerSplatRouteImport } from './routes/api/public/dealer/$'
 import { Route as ApiPublicCyberlabVerifyRouteImport } from './routes/api/public/cyberlab/verify'
+import { Route as ApiPublicCyberlabProxyRouteImport } from './routes/api/public/cyberlab/proxy'
 import { Route as ApiPublicV1AuthVerifyRouteImport } from './routes/api/public/v1/auth/verify'
 
 const UrunlerRoute = UrunlerRouteImport.update({
@@ -283,6 +285,11 @@ const OdemeOrderIdRoute = OdemeOrderIdRouteImport.update({
   id: '/odeme/$orderId',
   path: '/odeme/$orderId',
   getParentRoute: () => rootRouteImport,
+} as any)
+const CyberlabSsoRoute = CyberlabSsoRouteImport.update({
+  id: '/sso',
+  path: '/sso',
+  getParentRoute: () => CyberlabRoute,
 } as any)
 const BlogSlugRoute = BlogSlugRouteImport.update({
   id: '/blog/$slug',
@@ -945,6 +952,11 @@ const ApiPublicCyberlabVerifyRoute = ApiPublicCyberlabVerifyRouteImport.update({
   path: '/api/public/cyberlab/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCyberlabProxyRoute = ApiPublicCyberlabProxyRouteImport.update({
+  id: '/api/public/cyberlab/proxy',
+  path: '/api/public/cyberlab/proxy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicV1AuthVerifyRoute = ApiPublicV1AuthVerifyRouteImport.update({
   id: '/api/public/v1/auth/verify',
   path: '/api/public/v1/auth/verify',
@@ -956,7 +968,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/bayilik': typeof BayilikRoute
   '/cekilis': typeof CekilisRoute
-  '/cyberlab': typeof CyberlabRoute
+  '/cyberlab': typeof CyberlabRouteWithChildren
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
   '/iletisim': typeof IletisimRoute
@@ -998,6 +1010,7 @@ export interface FileRoutesByFullPath {
   '/b/$code': typeof BCodeRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/cyberlab/sso': typeof CyberlabSsoRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/p/$code': typeof PCodeRoute
   '/paketler/$slug': typeof PaketlerSlugRoute
@@ -1079,6 +1092,7 @@ export interface FileRoutesByFullPath {
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/araclar/': typeof AuthenticatedAraclarIndexRoute
+  '/api/public/cyberlab/proxy': typeof ApiPublicCyberlabProxyRoute
   '/api/public/cyberlab/verify': typeof ApiPublicCyberlabVerifyRoute
   '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
@@ -1102,7 +1116,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/bayilik': typeof BayilikRoute
   '/cekilis': typeof CekilisRoute
-  '/cyberlab': typeof CyberlabRoute
+  '/cyberlab': typeof CyberlabRouteWithChildren
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
   '/iletisim': typeof IletisimRoute
@@ -1142,6 +1156,7 @@ export interface FileRoutesByTo {
   '/b/$code': typeof BCodeRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/cyberlab/sso': typeof CyberlabSsoRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/p/$code': typeof PCodeRoute
   '/paketler/$slug': typeof PaketlerSlugRoute
@@ -1223,6 +1238,7 @@ export interface FileRoutesByTo {
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/araclar': typeof AuthenticatedAraclarIndexRoute
+  '/api/public/cyberlab/proxy': typeof ApiPublicCyberlabProxyRoute
   '/api/public/cyberlab/verify': typeof ApiPublicCyberlabVerifyRoute
   '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
@@ -1248,7 +1264,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/bayilik': typeof BayilikRoute
   '/cekilis': typeof CekilisRoute
-  '/cyberlab': typeof CyberlabRoute
+  '/cyberlab': typeof CyberlabRouteWithChildren
   '/gizlilik': typeof GizlilikRoute
   '/iade': typeof IadeRoute
   '/iletisim': typeof IletisimRoute
@@ -1290,6 +1306,7 @@ export interface FileRoutesById {
   '/b/$code': typeof BCodeRoute
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
+  '/cyberlab/sso': typeof CyberlabSsoRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/p/$code': typeof PCodeRoute
   '/paketler/$slug': typeof PaketlerSlugRoute
@@ -1371,6 +1388,7 @@ export interface FileRoutesById {
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/araclar/': typeof AuthenticatedAraclarIndexRoute
+  '/api/public/cyberlab/proxy': typeof ApiPublicCyberlabProxyRoute
   '/api/public/cyberlab/verify': typeof ApiPublicCyberlabVerifyRoute
   '/api/public/dealer/$': typeof ApiPublicDealerSplatRoute
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
@@ -1438,6 +1456,7 @@ export interface FileRouteTypes {
     | '/b/$code'
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
+    | '/cyberlab/sso'
     | '/odeme/$orderId'
     | '/p/$code'
     | '/paketler/$slug'
@@ -1519,6 +1538,7 @@ export interface FileRouteTypes {
     | '/api/public/sitemap.xml'
     | '/admin/'
     | '/araclar/'
+    | '/api/public/cyberlab/proxy'
     | '/api/public/cyberlab/verify'
     | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
@@ -1582,6 +1602,7 @@ export interface FileRouteTypes {
     | '/b/$code'
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
+    | '/cyberlab/sso'
     | '/odeme/$orderId'
     | '/p/$code'
     | '/paketler/$slug'
@@ -1663,6 +1684,7 @@ export interface FileRouteTypes {
     | '/api/public/sitemap.xml'
     | '/admin'
     | '/araclar'
+    | '/api/public/cyberlab/proxy'
     | '/api/public/cyberlab/verify'
     | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
@@ -1729,6 +1751,7 @@ export interface FileRouteTypes {
     | '/b/$code'
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
+    | '/cyberlab/sso'
     | '/odeme/$orderId'
     | '/p/$code'
     | '/paketler/$slug'
@@ -1810,6 +1833,7 @@ export interface FileRouteTypes {
     | '/api/public/sitemap.xml'
     | '/_authenticated/admin/'
     | '/_authenticated/araclar/'
+    | '/api/public/cyberlab/proxy'
     | '/api/public/cyberlab/verify'
     | '/api/public/dealer/$'
     | '/api/public/hooks/abandonment-reminder'
@@ -1835,7 +1859,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   BayilikRoute: typeof BayilikRoute
   CekilisRoute: typeof CekilisRoute
-  CyberlabRoute: typeof CyberlabRoute
+  CyberlabRoute: typeof CyberlabRouteWithChildren
   GizlilikRoute: typeof GizlilikRoute
   IadeRoute: typeof IadeRoute
   IletisimRoute: typeof IletisimRoute
@@ -1879,6 +1903,7 @@ export interface RootRouteChildren {
   ApiPublicEmbedDotjsRoute: typeof ApiPublicEmbedDotjsRoute
   ApiPublicLoginRoute: typeof ApiPublicLoginRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
+  ApiPublicCyberlabProxyRoute: typeof ApiPublicCyberlabProxyRoute
   ApiPublicCyberlabVerifyRoute: typeof ApiPublicCyberlabVerifyRoute
   ApiPublicDealerSplatRoute: typeof ApiPublicDealerSplatRoute
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
@@ -2081,6 +2106,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/odeme/$orderId'
       preLoaderRoute: typeof OdemeOrderIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/cyberlab/sso': {
+      id: '/cyberlab/sso'
+      path: '/sso'
+      fullPath: '/cyberlab/sso'
+      preLoaderRoute: typeof CyberlabSsoRouteImport
+      parentRoute: typeof CyberlabRoute
     }
     '/blog/$slug': {
       id: '/blog/$slug'
@@ -2908,6 +2940,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCyberlabVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cyberlab/proxy': {
+      id: '/api/public/cyberlab/proxy'
+      path: '/api/public/cyberlab/proxy'
+      fullPath: '/api/public/cyberlab/proxy'
+      preLoaderRoute: typeof ApiPublicCyberlabProxyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/v1/auth/verify': {
       id: '/api/public/v1/auth/verify'
       path: '/api/public/v1/auth/verify'
@@ -3122,13 +3161,25 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface CyberlabRouteChildren {
+  CyberlabSsoRoute: typeof CyberlabSsoRoute
+}
+
+const CyberlabRouteChildren: CyberlabRouteChildren = {
+  CyberlabSsoRoute: CyberlabSsoRoute,
+}
+
+const CyberlabRouteWithChildren = CyberlabRoute._addFileChildren(
+  CyberlabRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   BayilikRoute: BayilikRoute,
   CekilisRoute: CekilisRoute,
-  CyberlabRoute: CyberlabRoute,
+  CyberlabRoute: CyberlabRouteWithChildren,
   GizlilikRoute: GizlilikRoute,
   IadeRoute: IadeRoute,
   IletisimRoute: IletisimRoute,
@@ -3172,6 +3223,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicEmbedDotjsRoute: ApiPublicEmbedDotjsRoute,
   ApiPublicLoginRoute: ApiPublicLoginRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
+  ApiPublicCyberlabProxyRoute: ApiPublicCyberlabProxyRoute,
   ApiPublicCyberlabVerifyRoute: ApiPublicCyberlabVerifyRoute,
   ApiPublicDealerSplatRoute: ApiPublicDealerSplatRoute,
   ApiPublicHooksAbandonmentReminderRoute:
@@ -3195,13 +3247,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

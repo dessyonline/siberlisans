@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CyberLab — Araçlar Galerisi</title>
+  <meta name="description" content="CyberLab siber güvenlik araçları kataloğu — 100+ modül, kategoriler ve hızlı erişim"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+:root {
+  --bg:#060a0f;--panel:#0d1319;--panel2:#111b24;
+  --border:rgba(0,255,136,0.12);--border-s:rgba(0,255,136,0.35);
+  --green:#00ff88;--blue:#00b8ff;--purple:#a855f7;--red:#ff4444;--yellow:#ffcc00;--orange:#ff8800;--teal:#2dd4bf;
+  --text:#e2f0e8;--muted:#8fa89a;--dim:#3a4a42;
+  --mono:'JetBrains Mono',monospace;--sans:'Inter',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0.18}
+
+/* ── Topbar ── */
+.topbar{position:sticky;top:0;z-index:200;height:56px;display:flex;align-items:center;gap:10px;padding:0 20px;border-bottom:1px solid var(--border);background:rgba(6,10,15,0.95);backdrop-filter:blur(16px)}
+.brand{font-weight:800;font-size:1.1rem;color:var(--green);margin-right:auto;letter-spacing:2px}
+.brand span{color:var(--text);font-weight:400}
+.nav-link{display:flex;align-items:center;gap:5px;padding:6px 12px;border:1px solid var(--border);border-radius:7px;color:var(--muted);text-decoration:none;font-size:0.74rem;transition:all 0.2s;background:var(--panel)}
+.nav-link:hover{border-color:var(--green);color:var(--green)}
+
+/* ── Layout ── */
+.layout{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 56px);position:relative;z-index:1}
+
+/* ── Sidebar ── */
+.sidebar{border-right:1px solid var(--border);padding:20px 14px;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;background:var(--panel)}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
+.sidebar h3{font-family:var(--mono);font-size:0.65rem;color:var(--dim);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:10px;padding-left:4px}
+.cat-btn{display:flex;align-items:center;justify-content:space-between;width:100%;padding:9px 12px;border:1px solid transparent;border-radius:8px;color:var(--muted);font-size:0.78rem;cursor:pointer;text-align:left;transition:all 0.18s;background:none;margin-bottom:4px}
+.cat-btn:hover{border-color:var(--border);background:rgba(0,255,136,0.04);color:var(--text)}
+.cat-btn.active{border-color:var(--border-s);background:rgba(0,255,136,0.08);color:var(--green)}
+.cat-btn-icon{font-size:1rem;flex-shrink:0}
+.cat-btn-label{flex:1;margin-left:8px}
+.cat-btn-count{font-family:var(--mono);font-size:0.65rem;padding:1px 6px;border-radius:10px;background:rgba(255,255,255,0.06)}
+.cat-btn.active .cat-btn-count{background:rgba(0,255,136,0.15);color:var(--green)}
+.sidebar-divider{height:1px;background:var(--border);margin:14px 0}
+
+/* ── Main ── */
+.main-area{padding:24px;overflow-y:auto}
+
+/* ── Arama + Stats ── */
+.tools-top{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.tool-search{flex:1;min-width:180px;padding:10px 16px;background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:0.82rem;font-family:var(--mono);outline:none;transition:border-color 0.2s}
+.tool-search:focus{border-color:var(--green)}
+.tool-search::placeholder{color:var(--dim)}
+.tools-stats{display:flex;gap:12px;flex-wrap:wrap}
+.stat-pill{display:flex;align-items:center;gap:6px;padding:7px 13px;background:var(--panel);border:1px solid var(--border);border-radius:20px;font-family:var(--mono);font-size:0.72rem;color:var(--muted)}
+.stat-pill strong{color:var(--text)}
+
+/* ── Araç Grid ── */
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.tool-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;transition:all 0.2s;cursor:pointer;position:relative;overflow:hidden}
+.tool-card::before{content:'';position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity 0.2s;background:linear-gradient(135deg,rgba(0,255,136,0.05),transparent)}
+.tool-card:hover{border-color:var(--border-s);transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,0,0,0.4)}
+.tool-card:hover::before{opacity:1}
+.tool-card.fav{border-color:rgba(255,204,0,0.3);background:rgba(255,204,0,0.02)}
+.tool-head{display:flex;align-items:flex-start;gap:10px}
+.tool-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;border:1px solid}
+.tool-meta{flex:1;min-width:0}
+.tool-name{font-size:0.88rem;font-weight:700;color:var(--text);line-height:1.25}
+.tool-tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;font-family:var(--mono);font-size:0.58rem;font-weight:700;margin-top:3px}
+.tool-desc{font-size:0.75rem;color:var(--muted);line-height:1.55;flex:1}
+.tool-cmd{padding:7px 10px;background:rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.06);border-radius:7px;font-family:var(--mono);font-size:0.65rem;color:#88d0a8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tool-footer{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.tool-param-badge{font-family:var(--mono);font-size:0.62rem;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.tool-actions{display:flex;gap:6px;flex-shrink:0}
+.tool-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:rgba(0,0,0,0.3);color:var(--muted);font-size:0.8rem;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;justify-content:center}
+.tool-btn:hover{border-color:var(--green);color:var(--green);background:rgba(0,255,136,0.08)}
+.tool-btn.fav-btn.active{border-color:rgba(255,204,0,0.5);color:var(--yellow)}
+.tool-btn.copy-btn.copied{border-color:var(--green);color:var(--green)}
+
+/* ── Kategori Başlığı ── */
+.cat-heading{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+.cat-heading-icon{font-size:1.5rem}
+.cat-heading-name{font-size:1.1rem;font-weight:800;color:var(--text)}
+.cat-heading-count{font-family:var(--mono);font-size:0.72rem;color:var(--muted);background:var(--panel2);border:1px solid var(--border);padding:2px 8px;border-radius:10px}
+
+/* ── Boş State ── */
+.empty-state{text-align:center;padding:64px 24px;color:var(--muted)}
+.empty-state-icon{font-size:3.5rem;margin-bottom:14px;opacity:0.6}
+.empty-state h3{font-size:1rem;font-weight:600;margin-bottom:6px;color:var(--text)}
+
+/* ── Detay Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);padding:16px}
+.modal-overlay.open{display:flex}
+.tool-modal{background:var(--panel2);border:1px solid var(--border-s);border-radius:14px;width:100%;max-width:580px;overflow:hidden;box-shadow:0 0 60px rgba(0,255,136,0.08);animation:slideUp 0.25s ease-out}
+@keyframes slideUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.tm-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);background:rgba(0,0,0,0.2)}
+.tm-header h3{font-family:var(--mono);font-size:0.88rem;color:var(--green);display:flex;align-items:center;gap:8px}
+.tm-close{background:none;border:none;color:var(--muted);font-size:1.2rem;cursor:pointer;transition:color 0.2s}
+.tm-close:hover{color:var(--red)}
+.tm-body{padding:22px}
+.tm-section{margin-bottom:18px}
+.tm-label{font-family:var(--mono);font-size:0.65rem;color:var(--dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
+.tm-desc{font-size:0.82rem;color:var(--muted);line-height:1.6}
+.tm-cmd-box{padding:12px 14px;background:rgba(0,0,0,0.5);border:1px solid rgba(255,255,255,0.08);border-radius:9px;font-family:var(--mono);font-size:0.78rem;color:#00ff88;word-break:break-all}
+.tm-param-box{padding:10px 14px;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;font-family:var(--mono);font-size:0.78rem;color:var(--muted)}
+.tm-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px}
+.tm-open-btn{flex:1;padding:11px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:8px;color:var(--green);font-family:var(--mono);font-size:0.8rem;font-weight:700;cursor:pointer;transition:all 0.2s}
+.tm-open-btn:hover{background:rgba(0,255,136,0.2)}
+.tm-copy-btn{padding:11px 18px;background:rgba(0,0,0,0.3);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:var(--mono);font-size:0.8rem;cursor:pointer;transition:all 0.2s}
+.tm-copy-btn:hover{border-color:var(--green);color:var(--green)}
+
+@media(max-width:700px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{position:static;height:auto;display:flex;gap:6px;overflow-x:auto;padding:12px;flex-wrap:nowrap;border-right:none;border-bottom:1px solid var(--border)}
+  .sidebar h3{display:none}
+  .sidebar-divider{width:1px;height:32px;flex-shrink:0;margin:0 4px}
+  .cat-btn{white-space:nowrap;flex-shrink:0;width:auto}
+  .cat-btn-count{display:none}
+  .main-area{padding:14px}
+}
+  </style>
+<script src="siber-sso.js"></script></head>
+<body>
+<canvas id="bg-canvas"></canvas>
+
+<header class="topbar">
+  <div class="brand">Cyber<span>Lab</span> <span style="font-size:0.8rem;color:var(--muted);font-weight:400;letter-spacing:0">/ Araçlar</span></div>
+  <a class="nav-link" href="profile.html">👤 Profil</a>
+  <a class="nav-link" href="courses.html">🎓 Kurslar</a>
+  <a class="nav-link" href="ranks.html">⚔️ Rütbeler</a>
+  <a class="nav-link" href="index.html">⌂ Masaüstü</a>
+</header>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <h3>KATEGORİLER</h3>
+    <button class="cat-btn active" data-cat="all">
+      <span class="cat-btn-icon">🌐</span>
+      <span class="cat-btn-label">Tümü</span>
+      <span class="cat-btn-count" id="count-all">0</span>
+    </button>
+    <button class="cat-btn" data-cat="favorites">
+      <span class="cat-btn-icon">⭐</span>
+      <span class="cat-btn-label">Favoriler</span>
+      <span class="cat-btn-count" id="count-fav">0</span>
+    </button>
+    <div class="sidebar-divider"></div>
+    <button class="cat-btn" data-cat="recon">
+      <span class="cat-btn-icon">🔍</span>
+      <span class="cat-btn-label">Keşif & Recon</span>
+      <span class="cat-btn-count" id="count-recon">0</span>
+    </button>
+    <button class="cat-btn" data-cat="network">
+      <span class="cat-btn-icon">🌐</span>
+      <span class="cat-btn-label">Ağ Saldırısı</span>
+      <span class="cat-btn-count" id="count-network">0</span>
+    </button>
+    <button class="cat-btn" data-cat="wireless">
+      <span class="cat-btn-icon">📡</span>
+      <span class="cat-btn-label">Kablosuz</span>
+      <span class="cat-btn-count" id="count-wireless">0</span>
+    </button>
+    <button class="cat-btn" data-cat="web">
+      <span class="cat-btn-icon">🕸</span>
+      <span class="cat-btn-label">Web Güvenliği</span>
+      <span class="cat-btn-count" id="count-web">0</span>
+    </button>
+    <button class="cat-btn" data-cat="password">
+      <span class="cat-btn-icon">🔐</span>
+      <span class="cat-btn-label">Şifre Kırma</span>
+      <span class="cat-btn-count" id="count-password">0</span>
+    </button>
+    <button class="cat-btn" data-cat="exploit">
+      <span class="cat-btn-icon">💀</span>
+      <span class="cat-btn-label">Exploit & Payload</span>
+      <span class="cat-btn-count" id="count-exploit">0</span>
+    </button>
+    <button class="cat-btn" data-cat="social">
+      <span class="cat-btn-icon">🎭</span>
+      <span class="cat-btn-label">Sosyal Mühendislik</span>
+      <span class="cat-btn-count" id="count-social">0</span>
+    </button>
+    <button class="cat-btn" data-cat="blue">
+      <span class="cat-btn-icon">🔵</span>
+      <span class="cat-btn-label">Blue Team</span>
+      <span class="cat-btn-count" id="count-blue">0</span>
+    </button>
+    <button class="cat-btn" data-cat="ai">
+      <span class="cat-btn-icon">🧠</span>
+      <span class="cat-btn-label">Yapay Zekâ</span>
+      <span class="cat-btn-count" id="count-ai">0</span>
+    </button>
+    <button class="cat-btn" data-cat="osint">
+      <span class="cat-btn-icon">🕵️</span>
+      <span class="cat-btn-label">OSINT</span>
+      <span class="cat-btn-count" id="count-osint">0</span>
+    </button>
+    <button class="cat-btn" data-cat="other">
+      <span class="cat-btn-icon">⚙️</span>
+      <span class="cat-btn-label">Diğer</span>
+      <span class="cat-btn-count" id="count-other">0</span>
+    </button>
+  </aside>
+
+  <!-- Ana İçerik -->
+  <main class="main-area">
+    <div class="tools-top">
+      <input class="tool-search" type="text" id="tool-search" placeholder="🔍  Araç, komut veya açıklama ara..." autocomplete="off"/>
+      <div class="tools-stats">
+        <div class="stat-pill">🛠 <strong id="visible-count">0</strong> araç</div>
+        <div class="stat-pill">⭐ <strong id="fav-count-pill">0</strong> favori</div>
+        <div class="stat-pill">🖱 <strong id="total-runs">0</strong> çalıştırma</div>
+      </div>
+    </div>
+    <div id="cat-heading-wrap"></div>
+    <div id="tools-container"></div>
+  </main>
+</div>
+
+<!-- Araç Detay Modal -->
+<div class="modal-overlay" id="tool-modal-overlay">
+  <div class="tool-modal">
+    <div class="tm-header">
+      <h3 id="tm-title">Araç Detayı</h3>
+      <button class="tm-close" id="tm-close">×</button>
+    </div>
+    <div class="tm-body">
+      <div class="tm-section">
+        <div class="tm-label">Açıklama</div>
+        <div class="tm-desc" id="tm-desc"></div>
+      </div>
+      <div class="tm-section">
+        <div class="tm-label">Komut Şablonu</div>
+        <div class="tm-cmd-box" id="tm-cmd"></div>
+      </div>
+      <div class="tm-section">
+        <div class="tm-label">Gerekli Parametre</div>
+        <div class="tm-param-box" id="tm-param"></div>
+      </div>
+      <div class="tm-section">
+        <div class="tm-label">Araç</div>
+        <div class="tm-param-box" id="tm-tool"></div>
+      </div>
+    </div>
+    <div class="tm-footer">
+      <button class="tm-open-btn" id="tm-open">⌃ Terminalde Çalıştır</button>
+      <button class="tm-copy-btn" id="tm-copy">📋 Komutu Kopyala</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   CyberLab — Araçlar Galerisi JS
+   ══════════════════════════════════════ */
+
+const CAT_META = {
+  recon:    { label:'Keşif & Recon',         icon:'🔍', color:'#00ff88' },
+  network:  { label:'Ağ Saldırısı',          icon:'🌐', color:'#00b8ff' },
+  wireless: { label:'Kablosuz',              icon:'📡', color:'#ff8800' },
+  web:      { label:'Web Güvenliği',         icon:'🕸',  color:'#a855f7' },
+  password: { label:'Şifre Kırma',           icon:'🔐', color:'#ff4444' },
+  exploit:  { label:'Exploit & Payload',     icon:'💀', color:'#ff1744' },
+  social:   { label:'Sosyal Mühendislik',    icon:'🎭', color:'#ff8800' },
+  blue:     { label:'Blue Team',             icon:'🔵', color:'#2dd4bf' },
+  ai:       { label:'Yapay Zekâ',            icon:'🧠', color:'#c77dff' },
+  osint:    { label:'OSINT',                 icon:'🕵️', color:'#54d2ff' },
+  other:    { label:'Diğer',                 icon:'⚙️',  color:'#8fa89a' },
+};
+
+const esc = v => { const d = document.createElement('div'); d.textContent = v; return d.innerHTML; };
+
+let modules = [];
+let favorites = JSON.parse(localStorage.getItem('clab_fav_tools') || '[]');
+let activeCat = 'all';
+let searchQ = '';
+let totalRuns = 0;
+let currentModal = null;
+
+/* ── Yükle ── */
+async function init() {
+  // ALL_MODULES app.js'ten gelir — script olarak include etmek yerine
+  // aynı origin'den alıyoruz
+  const res = await fetch('/api/profile', {credentials:'same-origin'});
+  const data = res.ok ? await res.json() : { stats: { tool_runs: 0 } };
+  totalRuns = data.stats.tool_runs || 0;
+  document.getElementById('total-runs').textContent = totalRuns;
+
+  // ALL_MODULES window scope'undan al
+  if (window.ALL_MODULES) {
+    modules = window.ALL_MODULES;
+  } else {
+    // Fallback: app.js yüklenmemişse bilinen kategorilerden örnek veri
+    modules = [];
+  }
+  updateCounts();
+  renderTools();
+}
+
+/* ── Sayaçlar ── */
+function updateCounts() {
+  const cats = Object.keys(CAT_META);
+  cats.forEach(cat => {
+    const el = document.getElementById('count-' + cat);
+    if (el) el.textContent = modules.filter(m => m.cat === cat).length;
+  });
+  document.getElementById('count-all').textContent = modules.length;
+  const favCount = modules.filter(m => favorites.includes(getToolKey(m))).length;
+  document.getElementById('count-fav').textContent = favCount;
+  document.getElementById('fav-count-pill').textContent = favCount;
+}
+
+function getToolKey(m) { return `${m.cat}::${m.name}`; }
+function isFav(m) { return favorites.includes(getToolKey(m)); }
+
+/* ── Araçları Render ── */
+function renderTools() {
+  let filtered = modules;
+  if (activeCat === 'favorites') {
+    filtered = modules.filter(m => isFav(m));
+  } else if (activeCat !== 'all') {
+    filtered = modules.filter(m => m.cat === activeCat);
+  }
+  if (searchQ) {
+    filtered = filtered.filter(m =>
+      m.name.toLowerCase().includes(searchQ) ||
+      (m.desc||'').toLowerCase().includes(searchQ) ||
+      (m.tool||'').toLowerCase().includes(searchQ) ||
+      (m.cmd||'').toLowerCase().includes(searchQ)
+    );
+  }
+
+  document.getElementById('visible-count').textContent = filtered.length;
+
+  // Kategori başlığı
+  const headWrap = document.getElementById('cat-heading-wrap');
+  if (activeCat !== 'all' && searchQ === '') {
+    const meta = activeCat === 'favorites' ? {icon:'⭐',label:'Favoriler',color:'#ffcc00'} : (CAT_META[activeCat]||{icon:'🛠',label:activeCat,color:'#00ff88'});
+    headWrap.innerHTML = `<div class="cat-heading">
+      <div class="cat-heading-icon">${meta.icon}</div>
+      <div class="cat-heading-name" style="color:${meta.color}">${meta.label}</div>
+      <div class="cat-heading-count">${filtered.length} araç</div>
+    </div>`;
+  } else {
+    headWrap.innerHTML = '';
+  }
+
+  const container = document.getElementById('tools-container');
+  if (!filtered.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-state-icon">🔎</div><h3>Araç bulunamadı</h3><p>Farklı bir arama terimi veya kategori deneyin.</p></div>`;
+    return;
+  }
+  container.innerHTML = `<div class="tools-grid">${filtered.map((m, i) => renderToolCard(m, i)).join('')}</div>`;
+}
+
+function renderToolCard(m, i) {
+  const meta = CAT_META[m.cat] || {color:'#8fa89a',icon:'🛠'};
+  const favActive = isFav(m) ? 'active' : '';
+  const key = esc(getToolKey(m));
+  return `<div class="tool-card ${isFav(m)?'fav':''}" 
+      data-key="${key}"
+      onclick="openModal(${i})"
+      style="animation-delay:${(i%20)*0.02}s">
+    <div class="tool-head">
+      <div class="tool-icon" style="background:${meta.color}15;color:${meta.color};border-color:${meta.color}30">
+        ${meta.icon}
+      </div>
+      <div class="tool-meta">
+        <div class="tool-name">${esc(m.name)}</div>
+        <span class="tool-tag" style="background:${meta.color}15;color:${meta.color};border:1px solid ${meta.color}30">
+          ${m.tag || m.cat.toUpperCase()}
+        </span>
+      </div>
+    </div>
+    <div class="tool-desc">${esc(m.desc || '')}</div>
+    <div class="tool-cmd">${esc(m.cmd || '')}</div>
+    <div class="tool-footer">
+      <div class="tool-param-badge">📌 ${esc(m.param || 'Parametre gerekmez')}</div>
+      <div class="tool-actions" onclick="event.stopPropagation()">
+        <button class="tool-btn fav-btn ${favActive}" title="${isFav(m)?'Favoriden çıkar':'Favoriye ekle'}"
+          onclick="toggleFav('${key}',this)">⭐</button>
+        <button class="tool-btn copy-btn" title="Komutu kopyala"
+          onclick="copyCmd('${esc(m.cmd||'')}',this)">📋</button>
+        <button class="tool-btn" title="Terminalde aç"
+          onclick="openInTerminal('${esc(m.cmd||'')}')">⌃</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Favori ── */
+function toggleFav(key, btn) {
+  const realKey = key;
+  if (favorites.includes(realKey)) {
+    favorites = favorites.filter(k => k !== realKey);
+    btn.classList.remove('active');
+    btn.closest('.tool-card').classList.remove('fav');
+  } else {
+    favorites.push(realKey);
+    btn.classList.add('active');
+    btn.closest('.tool-card').classList.add('fav');
+  }
+  localStorage.setItem('clab_fav_tools', JSON.stringify(favorites));
+  updateCounts();
+}
+
+/* ── Kopyala ── */
+async function copyCmd(cmd, btn) {
+  try { await navigator.clipboard.writeText(cmd); } catch { return; }
+  btn.classList.add('copied');
+  btn.textContent = '✓';
+  setTimeout(() => { btn.classList.remove('copied'); btn.textContent = '📋'; }, 1500);
+}
+
+/* ── Terminalde Aç ── */
+function openInTerminal(cmd) {
+  // Ana sayfaya yönlendir ve komutu localStorage ile ilet
+  localStorage.setItem('clab_pending_cmd', cmd);
+  location.href = '/index.html#terminal';
+}
+
+/* ── Modal ── */
+let modalModules = [];
+function openModal(idx) {
+  const filtered = getFilteredModules();
+  const m = filtered[idx];
+  if (!m) return;
+  currentModal = m;
+  document.getElementById('tm-title').textContent = m.name;
+  document.getElementById('tm-desc').textContent  = m.desc || '';
+  document.getElementById('tm-cmd').textContent   = m.cmd || '';
+  document.getElementById('tm-param').textContent = m.param || 'Parametre gerekmez';
+  document.getElementById('tm-tool').textContent  = m.tool || '—';
+  document.getElementById('tool-modal-overlay').classList.add('open');
+}
+
+function getFilteredModules() {
+  let filtered = modules;
+  if (activeCat === 'favorites') filtered = modules.filter(m => isFav(m));
+  else if (activeCat !== 'all')  filtered = modules.filter(m => m.cat === activeCat);
+  if (searchQ) filtered = filtered.filter(m =>
+    m.name.toLowerCase().includes(searchQ) ||
+    (m.desc||'').toLowerCase().includes(searchQ) ||
+    (m.tool||'').toLowerCase().includes(searchQ)
+  );
+  return filtered;
+}
+
+document.getElementById('tm-close').addEventListener('click', () =>
+  document.getElementById('tool-modal-overlay').classList.remove('open'));
+document.getElementById('tool-modal-overlay').addEventListener('click', e => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.remove('open');
+});
+document.getElementById('tm-copy').addEventListener('click', async () => {
+  if (!currentModal) return;
+  try { await navigator.clipboard.writeText(currentModal.cmd || ''); } catch {}
+  document.getElementById('tm-copy').textContent = '✓ Kopyalandı';
+  setTimeout(() => document.getElementById('tm-copy').textContent = '📋 Komutu Kopyala', 1500);
+});
+document.getElementById('tm-open').addEventListener('click', () => {
+  if (!currentModal) return;
+  document.getElementById('tool-modal-overlay').classList.remove('open');
+  openInTerminal(currentModal.cmd || '');
+});
+
+/* ── Sidebar ── */
+document.getElementById('sidebar').addEventListener('click', e => {
+  const btn = e.target.closest('.cat-btn');
+  if (!btn) return;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeCat = btn.dataset.cat;
+  renderTools();
+});
+
+/* ── Arama ── */
+document.getElementById('tool-search').addEventListener('input', e => {
+  searchQ = e.target.value.toLowerCase();
+  renderTools();
+});
+
+/* ── Arka Plan ── */
+(function(){
+  const c = document.getElementById('bg-canvas');
+  const ctx = c.getContext('2d');
+  c.width = window.innerWidth; c.height = window.innerHeight;
+  const pts = Array.from({length:25},()=>({x:Math.random()*c.width,y:Math.random()*c.height,vx:(Math.random()-.5)*.18,vy:(Math.random()-.5)*.18,r:1+Math.random()*2,a:.06+Math.random()*.2}));
+  function draw(){ctx.clearRect(0,0,c.width,c.height);pts.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=c.width;if(p.x>c.width)p.x=0;if(p.y<0)p.y=c.height;if(p.y>c.height)p.y=0;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=`rgba(0,255,136,${p.a})`;ctx.fill();});requestAnimationFrame(draw);}
+  draw();
+})();
+
+/* ── Başlat ── */
+// ALL_MODULES'ü almak için app.js'i yüklememiz gerekiyor
+// Ama kendi başına sayfa olduğu için dinamik yüklüyoruz:
+const appScript = document.createElement('script');
+appScript.src = '/app.js';
+appScript.onload = () => init();
+appScript.onerror = () => { modules = []; renderTools(); };
+document.body.appendChild(appScript);
+</script>
+</body>
+</html>
