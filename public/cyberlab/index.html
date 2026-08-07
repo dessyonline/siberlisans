@@ -21,6 +21,9 @@
         #login-screen { display: none !important; }
         body.sso-ready #login-screen { display: flex !important; }
         body.sso-authenticated #login-screen { display: none !important; }
+        /* Masaüstü varsayılan olarak gizli, sso-authenticated ile açılacak */
+        #linux-desktop { display: none; }
+        body.sso-authenticated #linux-desktop { display: block !important; }
     </style>
     </head>
     <body>

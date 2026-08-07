@@ -20,8 +20,7 @@
 
     const token = localStorage.getItem('cyberlab_sso_token');
 
-    // Eğer sso.tsx üzerinden geldiysek ve hala sso sayfasındaysak yönlendirme yapma,
-    // sso.tsx zaten window.location.href = "/cyberlab/index.html" yapıyor.
+    // Eğer sso.tsx üzerinden geldiysek ve hala sso sayfasındaysak yönlendirme yapma
     if (window.location.pathname.includes('/cyberlab/sso')) {
         return;
     }
@@ -29,7 +28,6 @@
     if (token) {
         console.log("[SSO] Token bulundu, backend doğrulaması yapılıyor...");
         
-        // Proxy üzerinden çağrıldığında path relativite sorunu olmaması için mutlak yol
         fetch('/api/public/cyberlab/verify?token=' + encodeURIComponent(token))
             .then(res => {
                 if (!res.ok) throw new Error("Backend error: " + res.status);
@@ -40,10 +38,14 @@
                     console.log("[SSO] Giriş başarılı:", data.user.name);
                     localStorage.setItem('cyberlab_user', JSON.stringify(data.user));
                     
-                    // Arayüzü güncelle (Kullanıcı adı vb.)
-                    const userElements = document.querySelectorAll('.user-name, #profile-name, .kali-panel-user, #kali-user-name');
+                    // Arayüzü güncelle
+                    const userElements = document.querySelectorAll('.user-name, #profile-name, .kali-panel-user, #kali-user-name, #kali-user-avatar');
                     userElements.forEach(el => {
-                        el.textContent = data.user.name;
+                        if (el.id === 'kali-user-avatar') {
+                            el.textContent = data.user.name.charAt(0).toUpperCase();
+                        } else {
+                            el.textContent = data.user.name;
+                        }
                     });
                     
                     if (document.getElementById('kali-user-role')) {
@@ -54,25 +56,23 @@
                     document.body.classList.add('sso-authenticated');
                     document.body.classList.remove('sso-ready');
                     
-                    // CyberLab'in kendi yükleme animasyonlarını tetiklemesi için küçük bir gecikme
-                    setTimeout(() => {
-                        if (typeof window.showBootScreen === 'function') {
-                            window.showBootScreen();
-                        } else if (document.getElementById('login-screen')) {
-                            document.getElementById('login-screen').classList.remove('active');
-                            document.getElementById('linux-desktop').style.display = 'block';
-                        }
-                    }, 500);
+                    // ÖNEMLİ: CyberLab'in kendi yükleme mantığını (boot screen vb.) zorla tetikle
+                    const desktop = document.getElementById('linux-desktop');
+                    const loginScreen = document.getElementById('login-screen');
+                    
+                    if (desktop) desktop.style.display = 'block';
+                    if (loginScreen) {
+                        loginScreen.classList.remove('active');
+                        loginScreen.style.display = 'none';
+                    }
+
+                    // CyberLab global fonksiyonlarını kontrol et
+                    if (typeof window.showBootScreen === 'function') {
+                        window.showBootScreen();
+                    }
                 } else {
                     console.error("[SSO] Geçersiz token:", data.error);
-                    localStorage.removeItem('cyberlab_sso_token');
-                    localStorage.removeItem('cyberlab_user');
-                    // Sadece korumalı sayfalardaysak yönlendir
-                    if (isProtectedPath()) {
-                        window.location.href = '/cyberlab';
-                    } else {
-                        document.body.classList.add('sso-ready');
-                    }
+                    handleAuthFailure();
                 }
             })
             .catch(err => {
@@ -81,9 +81,18 @@
             });
     } else {
         console.log("[SSO] Token bulunamadı.");
-        // Sadece korumalı sayfalardaysak ve token yoksa ana sayfaya yönlendir
         if (isProtectedPath()) {
             console.log("[SSO] Korumalı alan, giriş sayfasına yönlendiriliyor...");
+            window.location.href = '/cyberlab';
+        } else {
+            document.body.classList.add('sso-ready');
+        }
+    }
+
+    function handleAuthFailure() {
+        localStorage.removeItem('cyberlab_sso_token');
+        localStorage.removeItem('cyberlab_user');
+        if (isProtectedPath()) {
             window.location.href = '/cyberlab';
         } else {
             document.body.classList.add('sso-ready');
@@ -102,7 +111,6 @@
             'admin.html'
         ];
         
-        // Eğer path korumalı dosyalardan birini içeriyorsa
         const isProtectedFile = protectedFiles.some(file => path.includes(file));
         const isRoot = path === '/cyberlab/' || path === '/cyberlab';
         
