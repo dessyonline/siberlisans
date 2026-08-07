@@ -114,7 +114,7 @@ function MyInvoices() {
           <div className="font-mono text-xl mt-1 text-warn">
             ₺
             {(invoices ?? [])
-              .reduce((s, i) => s + Number(i.vat_amount_try), 0)
+              .reduce((s, i) => s + (Number(i.vat_amount_try) || 0), 0)
               .toLocaleString("tr-TR", { minimumFractionDigits: 2 })}
           </div>
         </div>
@@ -256,7 +256,13 @@ function MyInvoices() {
                     {Number(i.total_try).toLocaleString("tr-TR", { minimumFractionDigits: 2 })}
                   </div>
                   <div className="text-[10px] text-muted-foreground">
-                    kdv ₺
+                    matrah ₺
+                    {(Number(i.subtotal_try) || Number(i.total_try) / 1.2).toLocaleString("tr-TR", {
+                      minimumFractionDigits: 2,
+                    })}
+                  </div>
+                  <div className="text-[10px] text-muted-foreground">
+                    kdv (%{(i.vat_rate || 20)}) ₺
                     {Number(i.vat_amount_try).toLocaleString("tr-TR", {
                       minimumFractionDigits: 2,
                     })}
