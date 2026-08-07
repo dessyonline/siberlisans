@@ -1,0 +1,3113 @@
+<!doctype html>
+<html lang="tr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CyberLab — Profilim</title>
+        <meta
+            name="description"
+            content="CyberLab kullanıcı profili — XP, rütbe, başarımlar ve akademi istatistikleri"
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <style>
+            /* ══════════════════════════════════════════════════════
+   CYBERLAB — GELİŞMİŞ PROFİL SAYFASI
+   ══════════════════════════════════════════════════════ */
+            :root {
+                --bg: #060a0f;
+                --panel: #0d1319;
+                --panel2: #111b24;
+                --border: rgba(0, 255, 136, 0.12);
+                --border-s: rgba(0, 255, 136, 0.35);
+                --green: #00ff88;
+                --green-dim: rgba(0, 255, 136, 0.12);
+                --blue: #00b8ff;
+                --purple: #a855f7;
+                --red: #ff4444;
+                --yellow: #ffcc00;
+                --orange: #ff8800;
+                --text: #e2f0e8;
+                --muted: #8fa89a;
+                --text-muted: #8fa89a; /* alias for --muted, used in some inline styles */
+                --dim: #3a4a42;
+                --mono: "JetBrains Mono", monospace;
+                --sans: "Inter", sans-serif;
+                --radius: 10px;
+                --radius-lg: 14px;
+                --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            /* RANK RENK SİSTEMİ */
+            :root {
+                --rank-cayla: #adb5bd; /* Çaylak */
+                --rank-stajyer: #54d2ff; /* Stajyer */
+                --rank-uzman: #00ff88; /* Uzman */
+                --rank-kıdemli: #ff8800; /* Kıdemli */
+                --rank-efsa: #a855f7; /* Efsane */
+                --rank-founder: #ff1744; /* Kurucu */
+                --rank-admin: #c77dff; /* Admin */
+            }
+
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            html {
+                font-size: 14px;
+                scroll-behavior: smooth;
+            }
+            body {
+                background: var(--bg);
+                color: var(--text);
+                font-family: var(--sans);
+                min-height: 100vh;
+                overflow-x: hidden;
+            }
+
+            /* ── Arka Plan Parçacıkları ── */
+            #bg-canvas {
+                position: fixed;
+                inset: 0;
+                z-index: 0;
+                pointer-events: none;
+                opacity: 0.25;
+            }
+
+            /* ── Topbar ── */
+            .topbar {
+                position: sticky;
+                top: 0;
+                z-index: 200;
+                height: 56px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 0 24px;
+                border-bottom: 1px solid var(--border);
+                background: rgba(6, 10, 15, 0.92);
+                backdrop-filter: blur(16px);
+            }
+            .brand {
+                font-weight: 800;
+                font-size: 1.1rem;
+                color: var(--green);
+                margin-right: auto;
+                letter-spacing: 2px;
+            }
+            .brand span {
+                color: var(--text);
+                font-weight: 400;
+            }
+            .nav-link {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                padding: 6px 12px;
+                border: 1px solid var(--border);
+                border-radius: 7px;
+                color: var(--muted);
+                text-decoration: none;
+                font-size: 0.76rem;
+                transition: all var(--transition);
+                background: var(--panel);
+            }
+            .nav-link:hover {
+                border-color: var(--green);
+                color: var(--green);
+            }
+            .logout-link {
+                background: rgba(255, 68, 68, 0.08);
+                border-color: rgba(255, 68, 68, 0.25);
+                color: var(--red);
+                cursor: pointer;
+            }
+            .logout-link:hover {
+                background: rgba(255, 68, 68, 0.18);
+            }
+
+            /* ── Shell ── */
+            .shell {
+                width: min(1100px, calc(100% - 32px));
+                margin: 28px auto 80px;
+                position: relative;
+                z-index: 1;
+            }
+
+            /* ════════ COVER + AVATAR ════════ */
+            .profile-cover-wrap {
+                position: relative;
+                border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+                overflow: hidden;
+                height: 200px;
+                background: linear-gradient(135deg, #061424, #0a1f0f, #06142e);
+            }
+            .profile-cover-canvas {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+            }
+            .cover-overlay {
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(
+                    to bottom,
+                    transparent 40%,
+                    rgba(6, 10, 15, 0.85) 100%
+                );
+            }
+
+            .profile-head {
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-top: none;
+                border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+                padding: 0 28px 24px;
+                position: relative;
+            }
+
+            .avatar-wrap {
+                position: relative;
+                display: inline-block;
+                margin-top: -44px;
+                z-index: 5;
+            }
+            .avatar {
+                width: 88px;
+                height: 88px;
+                border-radius: 20px;
+                border: 3px solid var(--green);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font: 700 36px var(--mono);
+                background: linear-gradient(135deg, #0d2c20, #061810);
+                color: var(--green);
+                box-shadow:
+                    0 0 30px rgba(0, 255, 136, 0.18),
+                    0 8px 24px rgba(0, 0, 0, 0.5);
+                transition:
+                    border-color 0.3s,
+                    box-shadow 0.3s;
+                flex-shrink: 0;
+            }
+            .rank-tick {
+                position: absolute;
+                bottom: -6px;
+                right: -6px;
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 11px;
+                font-weight: 900;
+                border: 2px solid var(--bg);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            }
+            .rank-tick.blue {
+                background: #1877f2;
+                color: #fff;
+            }
+            .rank-tick.gold {
+                background: linear-gradient(135deg, #f5a623, #f0c040);
+                color: #000;
+            }
+            .rank-tick.green {
+                background: #00ff88;
+                color: #000;
+            }
+
+            .profile-meta-row {
+                display: flex;
+                align-items: flex-end;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 12px;
+                margin-top: 12px;
+            }
+            .profile-identity {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .display-name {
+                font-size: 1.55rem;
+                font-weight: 800;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            .founder-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #2a0008, #110003);
+                border: 2px solid var(--rank-founder);
+                color: var(--rank-founder);
+                font-size: 11px;
+                font-weight: 900;
+                animation: badgePulse 2s infinite alternate;
+                box-shadow: 0 0 12px rgba(255, 23, 68, 0.5);
+            }
+            @keyframes badgePulse {
+                0% {
+                    box-shadow: 0 0 8px rgba(255, 23, 68, 0.4);
+                    transform: scale(1);
+                }
+                100% {
+                    box-shadow: 0 0 20px rgba(255, 23, 68, 0.8);
+                    transform: scale(1.05);
+                }
+            }
+
+            .username-line {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-family: var(--mono);
+                font-size: 0.8rem;
+                color: var(--muted);
+            }
+            .rank-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 5px;
+                padding: 3px 10px;
+                border-radius: 20px;
+                font-family: var(--mono);
+                font-size: 0.65rem;
+                font-weight: 700;
+                border: 1px solid;
+                letter-spacing: 0.5px;
+            }
+            .meta-info {
+                font-size: 0.75rem;
+                color: var(--muted);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                flex-wrap: wrap;
+            }
+            .meta-info span {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+            .meta-info .sep {
+                color: var(--dim);
+            }
+
+            /* Sosyal linkler */
+            .social-links {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+                margin-top: 6px;
+            }
+            .social-btn {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                padding: 4px 10px;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                color: var(--muted);
+                font-size: 0.72rem;
+                text-decoration: none;
+                transition: all var(--transition);
+                background: rgba(0, 0, 0, 0.2);
+            }
+            .social-btn:hover {
+                border-color: var(--green);
+                color: var(--green);
+            }
+
+            .profile-actions {
+                display: flex;
+                gap: 8px;
+                align-items: flex-start;
+            }
+            .completion-ring {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 3px;
+                padding: 12px 16px;
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+            }
+            .completion-ring strong {
+                font: 700 1.8rem var(--mono);
+                color: var(--green);
+            }
+            .completion-ring span {
+                font-size: 0.65rem;
+                color: var(--muted);
+                text-align: center;
+            }
+
+            /* ════════ RÜTBE & XP BAR ════════ */
+            .rank-section {
+                margin-top: 20px;
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-lg);
+                padding: 20px 24px;
+                display: flex;
+                align-items: center;
+                gap: 24px;
+                flex-wrap: wrap;
+            }
+            .rank-icon {
+                width: 64px;
+                height: 64px;
+                border-radius: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 28px;
+                flex-shrink: 0;
+                border: 2px solid;
+                box-shadow: 0 0 20px;
+            }
+            .rank-info {
+                flex: 1;
+                min-width: 200px;
+            }
+            .rank-title {
+                font-size: 1.15rem;
+                font-weight: 700;
+            }
+            .rank-subtitle {
+                font-family: var(--mono);
+                font-size: 0.72rem;
+                color: var(--muted);
+                margin-top: 3px;
+            }
+            .xp-bar-wrap {
+                margin-top: 10px;
+            }
+            .xp-bar-labels {
+                display: flex;
+                justify-content: space-between;
+                font-family: var(--mono);
+                font-size: 0.68rem;
+                color: var(--muted);
+                margin-bottom: 5px;
+            }
+            .xp-bar {
+                height: 8px;
+                border-radius: 4px;
+                background: rgba(255, 255, 255, 0.06);
+                overflow: hidden;
+            }
+            .xp-bar-fill {
+                height: 100%;
+                border-radius: 4px;
+                background: linear-gradient(90deg, var(--green), var(--blue));
+                box-shadow: 0 0 10px rgba(0, 255, 136, 0.4);
+                transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .rank-milestones {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            .milestone {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 4px;
+                padding: 8px 14px;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                background: rgba(0, 0, 0, 0.2);
+                min-width: 80px;
+                text-align: center;
+                transition: all var(--transition);
+            }
+            .milestone.achieved {
+                border-color: var(--green);
+                background: var(--green-dim);
+            }
+            .milestone.current {
+                border-color: var(--yellow);
+                background: rgba(255, 204, 0, 0.08);
+                animation: milGlow 2s infinite;
+            }
+            @keyframes milGlow {
+                0%,
+                100% {
+                    box-shadow: 0 0 8px rgba(255, 204, 0, 0.2);
+                }
+                50% {
+                    box-shadow: 0 0 18px rgba(255, 204, 0, 0.5);
+                }
+            }
+            .milestone-icon {
+                font-size: 1.1rem;
+            }
+            .milestone-name {
+                font-family: var(--mono);
+                font-size: 0.6rem;
+                color: var(--muted);
+            }
+            .milestone-xp {
+                font-family: var(--mono);
+                font-size: 0.62rem;
+            }
+            .milestone.achieved .milestone-xp {
+                color: var(--green);
+            }
+            .milestone.current .milestone-xp {
+                color: var(--yellow);
+            }
+
+            /* ════════ İSTATİSTİK KARTLARI ════════ */
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 12px;
+                margin-top: 20px;
+            }
+            .stat-card {
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-lg);
+                padding: 18px;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                position: relative;
+                overflow: hidden;
+                transition: all var(--transition);
+            }
+            .stat-card::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 2px;
+            }
+            .stat-card.accent-green::before {
+                background: linear-gradient(90deg, var(--green), transparent);
+            }
+            .stat-card.accent-blue::before {
+                background: linear-gradient(90deg, var(--blue), transparent);
+            }
+            .stat-card.accent-purple::before {
+                background: linear-gradient(90deg, var(--purple), transparent);
+            }
+            .stat-card.accent-yellow::before {
+                background: linear-gradient(90deg, var(--yellow), transparent);
+            }
+            .stat-card.accent-orange::before {
+                background: linear-gradient(90deg, var(--orange), transparent);
+            }
+            .stat-card.accent-red::before {
+                background: linear-gradient(90deg, var(--red), transparent);
+            }
+            .stat-card:hover {
+                border-color: var(--border-s);
+                transform: translateY(-2px);
+            }
+            .stat-icon {
+                font-size: 1.2rem;
+                opacity: 0.8;
+            }
+            .stat-val {
+                font: 700 1.7rem var(--mono);
+                color: var(--text);
+            }
+            .stat-label {
+                font-size: 0.72rem;
+                color: var(--muted);
+            }
+
+            /* ════════ ANA İÇERİK GRID ════════ */
+            .main-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+                margin-top: 20px;
+            }
+            .full-width {
+                grid-column: 1 / -1;
+            }
+
+            .card {
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: var(--radius-lg);
+                overflow: hidden;
+                transition: border-color var(--transition);
+            }
+            .card:hover {
+                border-color: rgba(0, 255, 136, 0.2);
+            }
+            .card-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 14px 20px;
+                border-bottom: 1px solid var(--border);
+                background: rgba(0, 0, 0, 0.2);
+            }
+            .card-header h3 {
+                font-family: var(--mono);
+                font-size: 0.8rem;
+                color: var(--green);
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 7px;
+            }
+            .card-body {
+                padding: 20px;
+            }
+
+            /* ════════ AKTİVİTE HEATMAP ════════ */
+            .heatmap-wrap {
+                overflow-x: auto;
+            }
+            .heatmap-grid {
+                display: grid;
+                grid-template-columns: repeat(52, 11px);
+                grid-template-rows: repeat(7, 11px);
+                gap: 2px;
+                width: max-content;
+            }
+            .hm-cell {
+                width: 11px;
+                height: 11px;
+                border-radius: 2px;
+                background: rgba(255, 255, 255, 0.04);
+                cursor: default;
+                transition: transform 0.15s;
+            }
+            .hm-cell:hover {
+                transform: scale(1.4);
+                z-index: 2;
+            }
+            .hm-cell.l1 {
+                background: rgba(0, 255, 136, 0.18);
+            }
+            .hm-cell.l2 {
+                background: rgba(0, 255, 136, 0.38);
+            }
+            .hm-cell.l3 {
+                background: rgba(0, 255, 136, 0.62);
+            }
+            .hm-cell.l4 {
+                background: rgba(0, 255, 136, 0.88);
+            }
+            .heatmap-legend {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                margin-top: 8px;
+                font-family: var(--mono);
+                font-size: 0.62rem;
+                color: var(--muted);
+            }
+            .hm-legend-cell {
+                width: 11px;
+                height: 11px;
+                border-radius: 2px;
+            }
+
+            /* ════════ AKTİVİTE AKIŞI ════════ */
+            .activity-feed {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+            .activity-item {
+                display: flex;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 9px 12px;
+                background: rgba(0, 0, 0, 0.2);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                font-size: 0.78rem;
+                animation: fadeUp 0.3s ease-out;
+            }
+            @keyframes fadeUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(6px);
+                }
+                to {
+                    opacity: 1;
+                    transform: none;
+                }
+            }
+            .activity-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                flex-shrink: 0;
+                margin-top: 4px;
+            }
+            .activity-dot.green {
+                background: var(--green);
+                box-shadow: 0 0 6px var(--green);
+            }
+            .activity-dot.blue {
+                background: var(--blue);
+                box-shadow: 0 0 6px var(--blue);
+            }
+            .activity-dot.yellow {
+                background: var(--yellow);
+            }
+            .activity-dot.red {
+                background: var(--red);
+            }
+            .activity-dot.purple {
+                background: var(--purple);
+            }
+            .activity-dot.muted {
+                background: var(--muted);
+            }
+            .activity-body {
+                flex: 1;
+            }
+            .activity-text {
+                color: var(--text);
+            }
+            .activity-detail {
+                color: var(--muted);
+                font-family: var(--mono);
+                font-size: 0.68rem;
+                margin-top: 1px;
+            }
+            .activity-time {
+                font-family: var(--mono);
+                font-size: 0.65rem;
+                color: var(--dim);
+                white-space: nowrap;
+            }
+
+            /* ════════ BAŞARIM ROZETLERİ ════════ */
+            .achievements-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+                gap: 10px;
+            }
+            .achievement {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 6px;
+                padding: 14px 8px;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                background: rgba(0, 0, 0, 0.2);
+                text-align: center;
+                transition: all var(--transition);
+                cursor: default;
+                position: relative;
+            }
+            .achievement:hover {
+                border-color: var(--border-s);
+                transform: translateY(-3px);
+                box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            }
+            .achievement.locked {
+                opacity: 0.35;
+                filter: grayscale(1);
+            }
+            .achievement.unlocked {
+                border-color: rgba(0, 255, 136, 0.25);
+                background: rgba(0, 255, 136, 0.04);
+            }
+            .ach-icon {
+                font-size: 1.8rem;
+                line-height: 1;
+            }
+            .ach-name {
+                font-family: var(--mono);
+                font-size: 0.58rem;
+                color: var(--muted);
+                line-height: 1.3;
+            }
+            .ach-glow {
+                position: absolute;
+                top: -2px;
+                right: -2px;
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: var(--green);
+                box-shadow: 0 0 6px var(--green);
+                border: 1.5px solid var(--bg);
+                display: none;
+            }
+            .achievement.unlocked .ach-glow {
+                display: block;
+            }
+
+            /* ════════ PROFİL FORMU ════════ */
+            .field-group {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+                margin-bottom: 14px;
+            }
+            .field-group label {
+                font-size: 0.68rem;
+                font-weight: 600;
+                color: var(--muted);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+            .field-input {
+                width: 100%;
+                padding: 10px 13px;
+                background: rgba(0, 0, 0, 0.4);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                color: var(--text);
+                font-family: var(--mono);
+                font-size: 0.82rem;
+                outline: none;
+                transition:
+                    border-color var(--transition),
+                    box-shadow var(--transition);
+            }
+            .field-input:focus {
+                border-color: var(--green);
+                box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
+            }
+            .field-input:disabled {
+                opacity: 0.45;
+                cursor: not-allowed;
+            }
+            textarea.field-input {
+                min-height: 90px;
+                resize: vertical;
+                font-family: var(--sans);
+            }
+            .char-count {
+                font-family: var(--mono);
+                font-size: 0.6rem;
+                color: var(--dim);
+                text-align: right;
+            }
+
+            .social-inputs-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .btn-primary {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 7px;
+                padding: 11px 20px;
+                background: linear-gradient(
+                    135deg,
+                    rgba(0, 255, 136, 0.18),
+                    rgba(0, 255, 136, 0.06)
+                );
+                border: 1px solid var(--green);
+                border-radius: var(--radius);
+                color: var(--green);
+                font-family: var(--mono);
+                font-size: 0.82rem;
+                font-weight: 700;
+                cursor: pointer;
+                letter-spacing: 1px;
+                transition: all var(--transition);
+                width: 100%;
+            }
+            .btn-primary:hover {
+                background: rgba(0, 255, 136, 0.22);
+                box-shadow: 0 0 18px rgba(0, 255, 136, 0.25);
+            }
+            .btn-primary:disabled {
+                opacity: 0.5;
+                pointer-events: none;
+            }
+
+            .msg {
+                min-height: 18px;
+                margin-top: 8px;
+                font-size: 0.75rem;
+                font-family: var(--mono);
+            }
+            .msg.ok {
+                color: var(--green);
+            }
+            .msg.err {
+                color: var(--red);
+            }
+
+            /* ════════ ŞİFRE FORM ════════ */
+            .pw-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+                align-items: end;
+            }
+
+            /* ════════ KURUCU BÖLÜMÜ ════════ */
+            .founder-section {
+                display: none;
+                margin-top: 20px;
+            }
+            .founder-section.visible {
+                display: block;
+            }
+            .founder-banner {
+                position: relative;
+                overflow: hidden;
+                padding: 28px;
+                border: 1px solid rgba(255, 23, 68, 0.5);
+                border-radius: var(--radius-lg);
+                background: linear-gradient(
+                    120deg,
+                    #2b000b,
+                    #10091d 55%,
+                    #1b0929
+                );
+                box-shadow: 0 0 40px rgba(255, 23, 68, 0.1);
+            }
+            .founder-banner::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: repeating-linear-gradient(
+                    115deg,
+                    transparent 0 30px,
+                    rgba(255, 255, 255, 0.015) 30px 31px
+                );
+                pointer-events: none;
+            }
+            .founder-title {
+                position: relative;
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                margin-bottom: 24px;
+            }
+            .founder-crown {
+                width: 64px;
+                height: 64px;
+                border: 1px solid #ff3158;
+                border-radius: 16px;
+                background: #26000a;
+                color: #ff3158;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 32px;
+                box-shadow: 0 0 24px rgba(255, 49, 88, 0.4);
+            }
+            .founder-title h2 {
+                margin: 4px 0 0;
+                font-size: 1.5rem;
+                color: #fff;
+                text-shadow: 0 0 14px rgba(255, 49, 88, 0.7);
+            }
+            .founder-title small {
+                display: block;
+                color: #ff7188;
+                font: 700 0.68rem var(--mono);
+                letter-spacing: 0.2em;
+            }
+            .founder-grid {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 18px;
+            }
+            .founder-block {
+                padding: 18px;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 10px;
+                background: rgba(0, 0, 0, 0.25);
+            }
+            .founder-block h3 {
+                margin: 0 0 14px;
+                color: #ff8ca0;
+                font: 700 0.72rem var(--mono);
+                letter-spacing: 0.1em;
+            }
+            .badge-wall {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .boss-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 7px 11px;
+                border: 1px solid rgba(255, 67, 100, 0.33);
+                border-radius: 7px;
+                background: linear-gradient(
+                    135deg,
+                    rgba(255, 23, 68, 0.1),
+                    rgba(155, 58, 255, 0.06)
+                );
+                color: #ffd9df;
+                font: 700 0.68rem var(--mono);
+            }
+            .boss-badge.primary {
+                border-color: #ff3158;
+                color: #ff7b92;
+                box-shadow: 0 0 12px rgba(255, 23, 68, 0.15);
+            }
+            .skills-list {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .skill-row {
+            }
+            .skill-head {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 4px;
+                color: #ced9df;
+                font-size: 0.78rem;
+            }
+            .skill-head strong {
+                color: #ff7188;
+                font: 700 0.68rem var(--mono);
+            }
+            .skill-track {
+                height: 5px;
+                border-radius: 5px;
+                background: rgba(255, 255, 255, 0.07);
+                overflow: hidden;
+            }
+            .skill-fill {
+                height: 100%;
+                border-radius: 5px;
+                background: linear-gradient(90deg, #ff1744, #b63cff);
+                box-shadow: 0 0 8px rgba(255, 23, 68, 0.5);
+            }
+            .founder-authority {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+                margin-top: 20px;
+            }
+            .authority-card {
+                padding: 14px;
+                border: 1px solid rgba(255, 255, 255, 0.07);
+                border-radius: 8px;
+                background: rgba(0, 0, 0, 0.2);
+                text-align: center;
+            }
+            .authority-card strong {
+                display: block;
+                margin-bottom: 5px;
+                color: #ff7188;
+                font: 700 0.72rem var(--mono);
+            }
+            .authority-card span {
+                color: #8795a1;
+                font-size: 0.7rem;
+            }
+
+            /* ════════ RESPONSIVE ════════ */
+            @media (max-width: 860px) {
+                .main-grid {
+                    grid-template-columns: 1fr;
+                }
+                .social-inputs-grid {
+                    grid-template-columns: 1fr;
+                }
+                .pw-grid {
+                    grid-template-columns: 1fr;
+                }
+                .founder-grid {
+                    grid-template-columns: 1fr;
+                }
+                .founder-authority {
+                    grid-template-columns: 1fr 1fr;
+                }
+                .profile-meta-row {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+                .stats-grid {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+            }
+            @media (max-width: 540px) {
+                .shell {
+                    margin-top: 14px;
+                }
+                .topbar {
+                    padding: 0 14px;
+                }
+                .profile-head {
+                    padding: 0 16px 18px;
+                }
+                .stats-grid {
+                    grid-template-columns: 1fr 1fr;
+                }
+                .rank-section {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+                .achievements-grid {
+                    grid-template-columns: repeat(auto-fill, minmax(78px, 1fr));
+                }
+            }
+
+            /* Loader */
+            .loader {
+                display: flex;
+                justify-content: center;
+                padding: 40px;
+            }
+            .loader-spinner {
+                width: 36px;
+                height: 36px;
+                border: 3px solid rgba(0, 255, 136, 0.15);
+                border-top-color: var(--green);
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+            }
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            /* Tooltip */
+            [data-tip] { position: relative; }
+            [data-tip]:hover::after {
+                content: attr(data-tip);
+                position: absolute;
+                bottom: calc(100% + 6px);
+                left: 50%;
+                transform: translateX(-50%);
+                padding: 4px 8px;
+                background: #1a2530;
+                border: 1px solid var(--border);
+                border-radius: 5px;
+                font-family: var(--mono);
+                font-size: 0.62rem;
+                color: var(--text);
+                white-space: nowrap;
+                z-index: 100;
+                pointer-events: none;
+            }
+
+            /* SECURITY SCORE */
+            .security-score-wrap { display:flex; align-items:center; gap:28px; flex-wrap:wrap; }
+            .score-ring-svg { flex-shrink:0; transform:rotate(-90deg); }
+            .score-ring-bg { fill:none; stroke:rgba(255,255,255,0.06); stroke-width:10; }
+            .score-ring-fill { fill:none; stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1); }
+            .score-ring-label { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:var(--mono); }
+            .score-ring-label strong { font-size:1.6rem; font-weight:700; line-height:1; }
+            .score-ring-label small { font-size:0.58rem; color:var(--muted); margin-top:2px; }
+            .security-checks { flex:1; display:flex; flex-direction:column; gap:8px; min-width:180px; }
+            .sec-check { display:flex; align-items:center; gap:10px; font-size:0.78rem; }
+            .sec-check-dot { width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; flex-shrink:0; }
+            .sec-check-dot.pass { background:rgba(0,255,136,0.15); color:var(--green); border:1px solid rgba(0,255,136,0.3); }
+            .sec-check-dot.fail { background:rgba(255,68,68,0.1); color:var(--red); border:1px solid rgba(255,68,68,0.25); }
+            .sec-check-label { flex:1; color:var(--text); }
+            .sec-check-status { font-family:var(--mono); font-size:0.65rem; color:var(--muted); }
+
+            /* COURSE PROGRESS LIST */
+            .course-progress-list { display:flex; flex-direction:column; gap:12px; }
+            .cp-item { padding:14px 16px; background:rgba(0,0,0,0.25); border:1px solid var(--border); border-radius:10px; transition:all var(--transition); }
+            .cp-item:hover { border-color:rgba(0,255,136,0.2); transform:translateX(3px); }
+            .cp-item-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; gap:8px; }
+            .cp-item-name { font-size:0.8rem; font-weight:600; color:var(--text); flex:1; display:flex; align-items:center; gap:8px; }
+            .cp-item-emoji { font-size:1.1rem; }
+            .cp-item-pct { font-family:var(--mono); font-size:0.72rem; font-weight:700; }
+            .cp-bar { height:5px; background:rgba(255,255,255,0.06); border-radius:3px; overflow:hidden; }
+            .cp-bar-fill { height:100%; border-radius:3px; background:linear-gradient(90deg,var(--green),var(--blue)); box-shadow:0 0 8px rgba(0,255,136,0.3); transition:width 1s cubic-bezier(0.4,0,0.2,1); }
+            .cp-bar-fill.complete { background:linear-gradient(90deg,#00ff88,#00ff88); }
+            .cp-item-meta { display:flex; justify-content:space-between; margin-top:6px; font-family:var(--mono); font-size:0.6rem; color:var(--muted); }
+
+            /* PASSWORD STRENGTH */
+            .pw-strength-wrap { margin-top:6px; }
+            .pw-strength-bars { display:flex; gap:3px; height:4px; }
+            .pw-bar-seg { flex:1; height:100%; border-radius:2px; background:rgba(255,255,255,0.08); transition:background 0.3s; }
+            .pw-bar-seg.active-weak { background:var(--red); }
+            .pw-bar-seg.active-fair { background:var(--yellow); }
+            .pw-bar-seg.active-good { background:var(--blue); }
+            .pw-bar-seg.active-strong { background:var(--green); }
+            .pw-strength-label { font-family:var(--mono); font-size:0.62rem; margin-top:4px; }
+
+            /* AVATAR PICKER */
+            .avatar-picker { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+            .avatar-color-btn { width:28px; height:28px; border-radius:8px; border:2px solid transparent; cursor:pointer; transition:all 0.2s; outline:none; flex-shrink:0; }
+            .avatar-color-btn:hover, .avatar-color-btn.active { border-color:#fff; transform:scale(1.15); }
+            .avatar-preview-row { display:flex; align-items:center; gap:14px; margin-bottom:10px; }
+            .avatar-preview-big { width:64px; height:64px; border-radius:16px; display:flex; align-items:center; justify-content:center; font:700 26px var(--mono); border:2px solid; transition:all 0.3s; flex-shrink:0; }
+
+            /* JOURNEY TIMELINE */
+            .journey-timeline { position:relative; padding-left:24px; }
+            .journey-timeline::before { content:''; position:absolute; left:7px; top:0; bottom:0; width:2px; background:linear-gradient(180deg,var(--green),transparent); opacity:0.3; }
+            .journey-item { position:relative; margin-bottom:18px; animation:fadeUp 0.4s ease; }
+            .journey-item::before { content:''; position:absolute; left:-21px; top:6px; width:10px; height:10px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); }
+            .journey-date { font-family:var(--mono); font-size:0.6rem; color:var(--muted); margin-bottom:2px; }
+            .journey-title { font-size:0.8rem; font-weight:600; color:var(--text); }
+            .journey-sub { font-size:0.72rem; color:var(--muted); margin-top:2px; }
+
+            /* TOAST */
+            .profile-toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(80px); background:#0d1e12; border:1px solid rgba(0,255,136,0.35); border-radius:10px; padding:12px 20px; font-family:var(--mono); font-size:0.78rem; color:var(--green); z-index:9999; transition:transform 0.35s cubic-bezier(0.34,1.56,0.64,1); white-space:nowrap; pointer-events:none; }
+            .profile-toast.show { transform:translateX(-50%) translateY(0); }
+        </style>
+    </head>
+    <body>
+        <canvas id="bg-canvas"></canvas>
+
+        <!-- ── Topbar ── -->
+        <header class="topbar">
+            <div class="brand">
+                Cyber<span>Lab</span>
+                <span
+                    style="
+                        font-size: 0.8rem;
+                        color: var(--muted);
+                        font-weight: 400;
+                        letter-spacing: 0;
+                    "
+                    >/ Profil</span
+                >
+            </div>
+            <a class="nav-link" href="admin.html" id="admin-link" hidden
+                >⚙ Admin</a
+            >
+            <a class="nav-link" href="academy.html">🎓 Academy</a>
+            <a class="nav-link" href="index.html">⌂ Masaüstü</a>
+            <button class="nav-link logout-link" id="logout-btn">
+                ⏻ Çıkış
+            </button>
+        </header>
+
+        <main class="shell" id="profile-root" hidden>
+            <!-- ── Cover + Avatar + Kimlik ── -->
+            <div class="profile-cover-wrap">
+                <canvas class="profile-cover-canvas" id="cover-canvas"></canvas>
+                <div class="cover-overlay"></div>
+            </div>
+
+            <section class="profile-head">
+                <div class="profile-meta-row">
+                    <div
+                        style="
+                            display: flex;
+                            gap: 18px;
+                            align-items: flex-end;
+                            flex-wrap: wrap;
+                        "
+                    >
+                        <div class="avatar-wrap">
+                            <div class="avatar" id="avatar">?</div>
+                            <span
+                                class="rank-tick blue"
+                                id="rank-tick"
+                                hidden
+                                title="Doğrulanmış Hesap"
+                                >✓</span
+                            >
+                        </div>
+                        <div class="profile-identity">
+                            <div class="display-name" id="display-title">
+                                Yükleniyor
+                            </div>
+                            <div class="username-line">
+                                <span
+                                    id="username-span"
+                                    style="color: var(--muted)"
+                                    >@...</span
+                                >
+                                <span id="role-badge" class="rank-badge"
+                                    >Öğrenci</span
+                                >
+                            </div>
+                            <div class="meta-info" id="meta-info"></div>
+                            <div class="social-links" id="social-links"></div>
+                        </div>
+                    </div>
+                    <div class="profile-actions">
+                        <div
+                            id="public-actions"
+                            style="
+                                display: none;
+                                gap: 8px;
+                                align-items: center;
+                                flex-wrap: wrap;
+                                margin-right: 16px;
+                            "
+                        ></div>
+                        <div class="completion-ring">
+                            <strong id="completion">0%</strong>
+                            <span>Academy<br />Tamamlama</span>
+                        </div>
+                    </div>
+                </div>
+                <p
+                    id="bio-display"
+                    style="
+                        margin-top: 14px;
+                        font-size: 0.82rem;
+                        color: var(--muted);
+                        line-height: 1.6;
+                        max-width: 600px;
+                    "
+                ></p>
+            </section>
+
+            <!-- ── Rütbe & XP ── -->
+            <section class="rank-section" id="rank-section">
+                <div class="rank-icon" id="rank-icon">🔰</div>
+                <div class="rank-info">
+                    <div class="rank-title" id="rank-title">Çaylak</div>
+                    <div class="rank-subtitle" id="rank-subtitle">
+                        Siber güvenlik yolculuğuna yeni başladın
+                    </div>
+                    <div class="xp-bar-wrap">
+                        <div class="xp-bar-labels">
+                            <span id="xp-current">0 XP</span>
+                            <span id="xp-next">Sonraki: 500 XP</span>
+                        </div>
+                        <div class="xp-bar">
+                            <div
+                                class="xp-bar-fill"
+                                id="xp-fill"
+                                style="width: 0%"
+                            ></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="rank-milestones" id="rank-milestones"></div>
+            </section>
+
+            <!-- ── İstatistikler ── -->
+            <div class="stats-grid">
+                <div class="stat-card accent-green">
+                    <div class="stat-icon">📚</div>
+                    <div class="stat-val" id="stat-lessons">0</div>
+                    <div class="stat-label">Tamamlanan Ders</div>
+                </div>
+                <div class="stat-card accent-yellow">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-val" id="stat-xp">0</div>
+                    <div class="stat-label">Toplam XP</div>
+                </div>
+                <div class="stat-card accent-blue">
+                    <div class="stat-icon">🧩</div>
+                    <div class="stat-val" id="stat-quiz">0</div>
+                    <div class="stat-label">Geçilen Quiz</div>
+                </div>
+                <div class="stat-card accent-purple">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-val" id="stat-quiz-average">0%</div>
+                    <div class="stat-label">Quiz Ortalaması</div>
+                </div>
+                <div class="stat-card accent-orange" id="card-stat-tools">
+                    <div class="stat-icon">🛠</div>
+                    <div class="stat-val" id="stat-tools">0</div>
+                    <div class="stat-label">Araç Çalıştırma</div>
+                </div>
+                <div class="stat-card accent-red" id="card-stat-logins">
+                    <div class="stat-icon">🔑</div>
+                    <div class="stat-val" id="stat-logins">0</div>
+                    <div class="stat-label">Başarılı Giriş</div>
+                </div>
+            </div>
+
+            <!-- ── Başarımlar + Radar + Heatmap ── -->
+            <div class="main-grid">
+                <!-- Başarımlar -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🏆 Başarımlar ve Rozetler</h3>
+                        <span
+                            id="ach-count"
+                            style="
+                                font-family: var(--mono);
+                                font-size: 0.68rem;
+                                color: var(--muted);
+                            "
+                            >0 / 0 kazanıldı</span
+                        >
+                    </div>
+                    <div class="card-body">
+                        <div
+                            class="achievements-grid"
+                            id="achievements-grid"
+                        ></div>
+                    </div>
+                </div>
+
+                <!-- Analitik Radar -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🎯 Yetkinlik Analizi</h3>
+                        <span
+                            style="
+                                font-family: var(--mono);
+                                font-size: 0.68rem;
+                                color: var(--muted);
+                            "
+                            >Kategori Bazlı XP</span
+                        >
+                    </div>
+                    <div
+                        class="card-body"
+                        style="
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            min-height: 280px;
+                            position: relative;
+                        "
+                    >
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Siber İstekler (Sadece Kendi Profilinde) -->
+                <div
+                    class="card full-width"
+                    id="interactions-card"
+                    style="display: none"
+                >
+                    <div class="card-header">
+                        <h3>📡 Gelen Siber İstekler</h3>
+                        <span
+                            style="
+                                font-family: var(--mono);
+                                font-size: 0.68rem;
+                                color: var(--text-muted);
+                            "
+                            >Son Etkileşimler</span
+                        >
+                    </div>
+                    <div class="card-body">
+                        <div
+                            id="interactions-list"
+                            style="
+                                display: flex;
+                                flex-direction: column;
+                                gap: 0.5rem;
+                                max-height: 250px;
+                                overflow-y: auto;
+                            "
+                        >
+                            Yükleniyor...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aktivite Heatmap -->
+                <div class="card full-width" id="heatmap-card">
+                    <div class="card-header">
+                        <h3>📅 Aktivite Haritası</h3>
+                        <span
+                            style="
+                                font-family: var(--mono);
+                                font-size: 0.68rem;
+                                color: var(--muted);
+                            "
+                            >Son 12 ay</span
+                        >
+                    </div>
+                    <div class="card-body">
+                        <div class="heatmap-wrap">
+                            <div class="heatmap-grid" id="heatmap-grid"></div>
+                        </div>
+                        <div class="heatmap-legend">
+                            <span>Az</span>
+                            <div
+                                class="hm-legend-cell"
+                                style="background: rgba(0, 255, 136, 0.04)"
+                            ></div>
+                            <div class="hm-legend-cell l1"></div>
+                            <div class="hm-legend-cell l2"></div>
+                            <div class="hm-legend-cell l3"></div>
+                            <div class="hm-legend-cell l4"></div>
+                            <span>Çok</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profil Formu -->
+                <div class="card" id="profile-form-card">
+                    <div class="card-header"><h3>✏️ Profil Bilgileri</h3></div>
+                    <div class="card-body">
+                        <!-- Avatar Picker -->
+                        <div style="padding-bottom:16px;border-bottom:1px solid var(--border);margin-bottom:16px;">
+                            <div style="font-size:0.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;">Avatar Rengi</div>
+                            <div class="avatar-preview-row">
+                                <div class="avatar-preview-big" id="avatar-preview-big">?</div>
+                                <div>
+                                    <div style="font-size:0.72rem;color:var(--muted);margin-bottom:8px;">Bir tema seç:</div>
+                                    <div class="avatar-picker" id="avatar-picker"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <form id="profile-form">
+                            <div class="field-group">
+                                <label>Görünen Ad</label>
+                                <input class="field-input" id="display-name" maxlength="60" required placeholder="Adın Soyadın" />
+                            </div>
+                            <div class="field-group">
+                                <label>Kullanıcı Adı</label>
+                                <input
+                                    class="field-input"
+                                    id="username-inp"
+                                    disabled
+                                />
+                            </div>
+                            <div class="field-group">
+                                <label>E-posta</label>
+                                <input
+                                    class="field-input"
+                                    id="email-inp"
+                                    disabled
+                                />
+                            </div>
+                            <div class="field-group">
+                                <label
+                                    >Hakkımda
+                                    <span
+                                        id="bio-len"
+                                        style="
+                                            color: var(--dim);
+                                            font-weight: 400;
+                                        "
+                                        >(0/280)</span
+                                    ></label
+                                >
+                                <textarea
+                                    class="field-input"
+                                    id="bio-inp"
+                                    maxlength="280"
+                                    placeholder="Kendinizi kısaca tanıtın, öğrenme hedeflerinizi yazın..."
+                                ></textarea>
+                            </div>
+                            <div class="field-group">
+                                <label>Ülke / Şehir (opsiyonel)</label>
+                                <input
+                                    class="field-input"
+                                    id="location-inp"
+                                    maxlength="60"
+                                    placeholder="Türkiye, İstanbul"
+                                />
+                            </div>
+                            <div style="margin-bottom: 14px">
+                                <label
+                                    style="
+                                        display: block;
+                                        font-size: 0.68rem;
+                                        font-weight: 600;
+                                        color: var(--muted);
+                                        text-transform: uppercase;
+                                        letter-spacing: 1px;
+                                        margin-bottom: 8px;
+                                    "
+                                    >Sosyal Linkler</label
+                                >
+                                <div class="social-inputs-grid">
+                                    <input
+                                        class="field-input"
+                                        id="github-inp"
+                                        maxlength="100"
+                                        placeholder="🐙 GitHub URL"
+                                    />
+                                    <input
+                                        class="field-input"
+                                        id="linkedin-inp"
+                                        maxlength="100"
+                                        placeholder="💼 LinkedIn URL"
+                                    />
+                                    <input
+                                        class="field-input"
+                                        id="twitter-inp"
+                                        maxlength="100"
+                                        placeholder="🐦 X / Twitter URL"
+                                    />
+                                    <input
+                                        class="field-input"
+                                        id="website-inp"
+                                        maxlength="100"
+                                        placeholder="🌐 Web Sitesi"
+                                    />
+                                </div>
+                            </div>
+                            <button
+                                class="btn-primary"
+                                type="submit"
+                                id="save-btn"
+                            >
+                                💾 Profili Kaydet
+                            </button>
+                            <p class="msg" id="profile-msg"></p>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Aktivite Akışı -->
+                <div class="card" id="activity-feed-card">
+                    <div class="card-header"><h3>⚡ Son Etkinlikler</h3></div>
+                    <div class="card-body">
+                        <div class="activity-feed" id="activity-feed">
+                            <div class="loader">
+                                <div class="loader-spinner"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Şifre Değiştir -->
+                <div class="card full-width" id="password-form-card">
+                    <div class="card-header"><h3>🔐 Şifre Değiştir</h3></div>
+                    <div class="card-body">
+                        <form id="password-form">
+                            <div class="pw-grid">
+                                <div class="field-group" style="margin:0">
+                                    <label>Mevcut Şifre</label>
+                                    <input class="field-input" type="password" id="current-password" autocomplete="current-password" maxlength="128" required />
+                                </div>
+                                <div class="field-group" style="margin:0">
+                                    <label>Yeni Şifre
+                                        <span id="pw-strength-text" class="pw-strength-label" style="margin-left:8px;"></span>
+                                    </label>
+                                    <input class="field-input" type="password" id="new-password" autocomplete="new-password" maxlength="128" minlength="10" required />
+                                    <div class="pw-strength-wrap">
+                                        <div class="pw-strength-bars">
+                                            <div class="pw-bar-seg" id="ps1"></div>
+                                            <div class="pw-bar-seg" id="ps2"></div>
+                                            <div class="pw-bar-seg" id="ps3"></div>
+                                            <div class="pw-bar-seg" id="ps4"></div>
+                                        </div>
+                                    </div>
+                                    <div style="font-size:0.65rem;color:var(--muted);margin-top:5px;font-family:var(--mono);" id="pw-hints"></div>
+                                </div>
+                            </div>
+                            <div style="margin-top:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                                <button class="btn-primary" type="submit" style="width:auto;padding:10px 24px;">🔒 Şifreyi Değiştir</button>
+                                <span style="font-size:0.72rem;color:var(--muted);">Değişiklik diğer açık oturumları kapatır.</span>
+                            </div>
+                            <p class="msg" id="password-msg"></p>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Güvenlik Skoru -->
+                <div class="card full-width" id="security-score-card">
+                    <div class="card-header">
+                        <h3>🔒 Hesap Güvenlik Skoru</h3>
+                        <span id="security-score-label" style="font-family:var(--mono);font-size:0.68rem;color:var(--muted);">Hesaplanıyor...</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="security-score-wrap">
+                            <div style="position:relative;width:110px;height:110px;flex-shrink:0;">
+                                <svg class="score-ring-svg" width="110" height="110" viewBox="0 0 110 110">
+                                    <circle class="score-ring-bg" cx="55" cy="55" r="44"/>
+                                    <circle class="score-ring-fill" id="score-ring-fill" cx="55" cy="55" r="44" stroke-dasharray="276.5" stroke-dashoffset="276.5" stroke="#00ff88"/>
+                                </svg>
+                                <div class="score-ring-label">
+                                    <strong id="security-score-num" style="color:var(--green);">0</strong>
+                                    <small>/ 100</small>
+                                </div>
+                            </div>
+                            <div class="security-checks" id="security-checks"></div>
+                            <div style="flex:1;min-width:160px;">
+                                <div style="font-family:var(--mono);font-size:0.68rem;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.08em;">İyileştirme Önerileri</div>
+                                <div id="security-tips" style="display:flex;flex-direction:column;gap:6px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kurs İlerleme Paneli -->
+                <div class="card full-width">
+                    <div class="card-header">
+                        <h3>📚 Kurs Bazında İlerleme</h3>
+                        <span style="font-family:var(--mono);font-size:0.68rem;color:var(--muted);">Tüm Modüller</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="course-progress-list" id="course-progress-list">
+                            <div class="loader"><div class="loader-spinner"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Öğrenme Yolculuğu -->
+                <div class="card full-width" id="journey-card">
+                    <div class="card-header">
+                        <h3>🗺️ Öğrenme Yolculuğu</h3>
+                        <span style="font-family:var(--mono);font-size:0.68rem;color:var(--muted);">Son Tamamlananlar</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="journey-timeline" id="journey-timeline">
+                            <div class="loader"><div class="loader-spinner"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!-- end main-grid -->
+
+            <!-- ── Kurucu Bölümü ── -->
+            <section class="founder-section" id="founder-section">
+                <div class="founder-banner">
+                    <div class="founder-title">
+                        <div class="founder-crown">♛</div>
+                        <div>
+                            <small>FOUNDER CLEARANCE // LEVEL ∞</small>
+                            <h2>CyberLab Founder · System Owner</h2>
+                        </div>
+                    </div>
+                    <div class="founder-grid">
+                        <div class="founder-block">
+                            <h3>DOĞRULANMIŞ ROZETLER</h3>
+                            <div class="badge-wall" id="founder-badges"></div>
+                        </div>
+                        <div class="founder-block">
+                            <h3>UZMANLIK VE YETENEKLERİ</h3>
+                            <div class="skills-list" id="founder-skills"></div>
+                        </div>
+                    </div>
+                    <div class="founder-authority">
+                        <div class="authority-card">
+                            <strong>ROOT ACCESS</strong
+                            ><span>Tüm sistem yetkileri</span>
+                        </div>
+                        <div class="authority-card">
+                            <strong id="founder-course-access">0 DERS</strong
+                            ><span>Kilitsiz Academy erişimi</span>
+                        </div>
+                        <div class="authority-card">
+                            <strong>USER CONTROL</strong
+                            ><span>Kullanıcı ve rol yönetimi</span>
+                        </div>
+                        <div class="authority-card">
+                            <strong>ACADEMY OWNER</strong
+                            ><span>Kurs ve quiz yönetimi</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+        <!-- end shell -->
+
+        <!-- ── Loader state ── -->
+        <div
+            id="page-loader"
+            style="
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 60vh;
+            "
+        >
+            <div class="loader-spinner"></div>
+        </div>
+
+        <script src="lessons.js?v=10"></script>
+        <script>
+            /* ══════════════════════════════════════════
+   CyberLab — Gelişmiş Profil Sayfası JS
+   ══════════════════════════════════════════ */
+
+            /* ── Rütbe Sistemi ── */
+            const RANKS = [
+                {
+                    id: "cayla",
+                    name: "Çaylak",
+                    emoji: "🔰",
+                    min: 0,
+                    max: 499,
+                    color: "#adb5bd",
+                    desc: "Siber güvenlik yolculuğuna yeni başladın",
+                },
+                {
+                    id: "stajyer",
+                    name: "Stajyer",
+                    emoji: "📡",
+                    min: 500,
+                    max: 1499,
+                    color: "#54d2ff",
+                    desc: "Temelleri kavramaya başlıyorsun",
+                },
+                {
+                    id: "uzman",
+                    name: "Uzman",
+                    emoji: "⚡",
+                    min: 1500,
+                    max: 3499,
+                    color: "#00ff88",
+                    desc: "Araçları etkin kullanabiliyorsun",
+                },
+                {
+                    id: "kıdemli",
+                    name: "Kıdemli",
+                    emoji: "🔥",
+                    min: 3500,
+                    max: 7499,
+                    color: "#ff8800",
+                    desc: "Karmaşık sistemleri analiz edebiliyorsun",
+                },
+                {
+                    id: "efsa",
+                    name: "Efsane",
+                    emoji: "💜",
+                    min: 7500,
+                    max: Infinity,
+                    color: "#a855f7",
+                    desc: "Siber güvenliğin zirvesine ulaştın",
+                },
+            ];
+            const FOUNDER_RANK = {
+                id: "founder",
+                name: "Kurucu",
+                emoji: "♛",
+                color: "#ff1744",
+                desc: "CyberLab'ın sistem mimarı ve kurucusu",
+            };
+            const ADMIN_RANK = {
+                id: "admin",
+                name: "Yönetici",
+                emoji: "⚙️",
+                color: "#c77dff",
+                desc: "Platform yöneticisi",
+            };
+
+            function getRankForXP(xp, isFounder, role) {
+                if (isFounder) return FOUNDER_RANK;
+                if (role === "admin") return ADMIN_RANK;
+                return (
+                    RANKS.find((r) => xp >= r.min && xp <= r.max) || RANKS[0]
+                );
+            }
+
+            /* ── Etkinlik etiketleri ── */
+            const ACT_LABELS = {
+                register: { label: "Kayıt", icon: "🆕", color: "green" },
+                login: { label: "Giriş", icon: "🔑", color: "blue" },
+                logout: { label: "Çıkış", icon: "⏻", color: "muted" },
+                profile_update: {
+                    label: "Profil Güncellendi",
+                    icon: "✏️",
+                    color: "blue",
+                },
+                password_change: {
+                    label: "Şifre Değiştirildi",
+                    icon: "🔐",
+                    color: "yellow",
+                },
+                lesson_complete: {
+                    label: "Ders Tamamlandı",
+                    icon: "📚",
+                    color: "green",
+                },
+                lesson_reopen: {
+                    label: "Ders Yeniden Açıldı",
+                    icon: "🔄",
+                    color: "muted",
+                },
+                quiz_passed: {
+                    label: "Quiz Geçildi",
+                    icon: "✅",
+                    color: "green",
+                },
+                quiz_failed: {
+                    label: "Quiz Başarısız",
+                    icon: "❌",
+                    color: "red",
+                },
+                tool_run: {
+                    label: "Araç Çalıştırıldı",
+                    icon: "🛠",
+                    color: "purple",
+                },
+            };
+
+            /* ── Başarımlar Tanımı ── */
+            const ACHIEVEMENTS = [
+                {
+                    id: "first_lesson",
+                    icon: "📖",
+                    name: "İlk Ders",
+                    desc: "İlk dersini tamamla",
+                    check: (s) => s.completed_lessons >= 1,
+                },
+                {
+                    id: "lesson_5",
+                    icon: "📚",
+                    name: "5 Ders",
+                    desc: "5 ders tamamla",
+                    check: (s) => s.completed_lessons >= 5,
+                },
+                {
+                    id: "lesson_20",
+                    icon: "🎓",
+                    name: "20 Ders",
+                    desc: "20 ders tamamla",
+                    check: (s) => s.completed_lessons >= 20,
+                },
+                {
+                    id: "lesson_50",
+                    icon: "🏛️",
+                    name: "50 Ders",
+                    desc: "50 ders tamamla",
+                    check: (s) => s.completed_lessons >= 50,
+                },
+                {
+                    id: "quiz_first",
+                    icon: "🧩",
+                    name: "İlk Quiz",
+                    desc: "İlk quiz'i geç",
+                    check: (s) => s.quizzes_passed >= 1,
+                },
+                {
+                    id: "quiz_10",
+                    icon: "🎯",
+                    name: "10 Quiz",
+                    desc: "10 quiz geç",
+                    check: (s) => s.quizzes_passed >= 10,
+                },
+                {
+                    id: "perfect_score",
+                    icon: "💯",
+                    name: "Mükemmel",
+                    desc: "Quiz'de 100 puan al",
+                    check: (s) => s.quiz_average >= 95,
+                },
+                {
+                    id: "xp_500",
+                    icon: "⚡",
+                    name: "500 XP",
+                    desc: "500 XP kazan",
+                    check: (s) => s.total_xp >= 500,
+                },
+                {
+                    id: "xp_1500",
+                    icon: "🔥",
+                    name: "1500 XP",
+                    desc: "1500 XP kazan",
+                    check: (s) => s.total_xp >= 1500,
+                },
+                {
+                    id: "xp_3500",
+                    icon: "💎",
+                    name: "3500 XP",
+                    desc: "3500 XP kazan",
+                    check: (s) => s.total_xp >= 3500,
+                },
+                {
+                    id: "tool_first",
+                    icon: "🛠",
+                    name: "İlk Araç",
+                    desc: "İlk aracı çalıştır",
+                    check: (s) => s.tool_runs >= 1,
+                },
+                {
+                    id: "tool_50",
+                    icon: "🔧",
+                    name: "50 Araç",
+                    desc: "50 araç çalıştır",
+                    check: (s) => s.tool_runs >= 50,
+                },
+                {
+                    id: "login_10",
+                    icon: "🔑",
+                    name: "Sadık Üye",
+                    desc: "10 kez giriş yap",
+                    check: (s) => s.login_count >= 10,
+                },
+                {
+                    id: "stajyer",
+                    icon: "📡",
+                    name: "Stajyer",
+                    desc: "Stajyer rütbesine ulaş",
+                    check: (s) => s.total_xp >= 500,
+                },
+                {
+                    id: "uzman",
+                    icon: "⚡",
+                    name: "Uzman",
+                    desc: "Uzman rütbesine ulaş",
+                    check: (s) => s.total_xp >= 1500,
+                },
+            ];
+
+            /* ── Yardımcı Fonksiyonlar ── */
+            const esc = (v) => {
+                const d = document.createElement("div");
+                d.textContent = v;
+                return d.innerHTML;
+            };
+            const fmt = (v) =>
+                v
+                    ? new Intl.DateTimeFormat("tr-TR", {
+                          dateStyle: "medium",
+                          timeStyle: "short",
+                      }).format(new Date(v))
+                    : "—";
+            const fmtShort = (v) =>
+                v
+                    ? new Intl.DateTimeFormat("tr-TR", {
+                          dateStyle: "short",
+                      }).format(new Date(v))
+                    : "—";
+
+            let csrfToken = null;
+            let profileData = null;
+            let isPublicView = false;
+            let publicUsername = null;
+
+            /* ── Sayfa Yükle ── */
+            async function loadProfile() {
+                const urlParams = new URLSearchParams(window.location.search);
+                publicUsername = urlParams.get("u");
+                isPublicView = !!publicUsername;
+
+                let profileUrl = "/api/profile";
+                let progressUrl = "/api/academy/progress";
+
+                if (isPublicView) {
+                    profileUrl = `/api/profile/${publicUsername}`;
+                }
+
+                const [profileRes, progressRes] = await Promise.all([
+                    fetch(profileUrl, { credentials: "same-origin" }),
+                    isPublicView
+                        ? Promise.resolve(null)
+                        : fetch(progressUrl, { credentials: "same-origin" }),
+                ]);
+
+                if (profileRes.status === 401 || profileRes.status === 404) {
+                    location.href = "/";
+                    return;
+                }
+                profileData = await profileRes.json();
+
+                let progressMap = {};
+                if (isPublicView) {
+                    progressMap =
+                        profileData.progress_map || profileData.progress || {};
+                } else {
+                    const progressData =
+                        progressRes && progressRes.ok
+                            ? await progressRes.json()
+                            : { progress: {} };
+                    progressMap = progressData.progress || {};
+                    csrfToken = profileData.csrf_token;
+                }
+
+                const u = profileData.user,
+                    s = profileData.stats;
+
+                /* Toplam ders sayısı */
+                const totalLessons = (window.ACADEMY_COURSES || []).reduce(
+                    (n, c) => n + c.lessons.length,
+                    0,
+                );
+                const pct = totalLessons
+                    ? Math.round((s.completed_lessons / totalLessons) * 100)
+                    : 0;
+
+                /* Rütbe */
+                const rank = getRankForXP(s.total_xp, u.is_founder, u.role);
+
+                /* ── Avatar & İsim ── */
+                const avatarEl = document.getElementById("avatar");
+                avatarEl.textContent = u.is_founder ? "♛" : u.avatar;
+                avatarEl.style.borderColor = rank.color;
+                avatarEl.style.color = rank.color;
+                avatarEl.style.boxShadow = `0 0 30px ${rank.color}30, 0 8px 24px rgba(0,0,0,0.5)`;
+
+                /* Doğrulama tiki */
+                const tickEl = document.getElementById("rank-tick");
+                if (u.is_founder) {
+                    tickEl.className = "rank-tick gold";
+                    tickEl.title = "CyberLab Kurucusu";
+                    tickEl.hidden = false;
+                } else if (u.role === "admin") {
+                    tickEl.className = "rank-tick blue";
+                    tickEl.title = "Admin";
+                    tickEl.hidden = false;
+                } else if (s.completed_lessons >= 10) {
+                    tickEl.className = "rank-tick green";
+                    tickEl.title = "Doğrulanmış Öğrenci";
+                    tickEl.hidden = false;
+                }
+
+                /* İsim */
+                const nameEl = document.getElementById("display-title");
+                nameEl.innerHTML =
+                    esc(u.display_name) +
+                    (u.is_founder
+                        ? '<span class="founder-badge" title="CyberLab Kurucusu">♛</span>'
+                        : "");
+                nameEl.style.color = rank.color;
+
+                /* Kullanıcı adı */
+                document.getElementById("username-span").innerHTML =
+                    `<span style="color:${rank.color}">@${esc(u.username)}</span>`;
+
+                /* Rütbe rozeti */
+                const roleEl = document.getElementById("role-badge");
+                roleEl.textContent = rank.emoji + " " + rank.name;
+                roleEl.style.color = rank.color;
+                roleEl.style.borderColor = rank.color + "55";
+                roleEl.style.background = rank.color + "18";
+
+                /* Meta bilgi */
+                const metaEl = document.getElementById("meta-info");
+                metaEl.innerHTML = [
+                    `<span>📅 ${fmtShort(u.created_at)} katıldı</span>`,
+                    `<span class="sep">·</span>`,
+                    `<span>🕐 Son giriş: ${fmt(u.last_login_at)}</span>`,
+                    u.is_founder
+                        ? `<span class="sep">·</span><span style="color:var(--rank-founder)">⚠ Kurucu Hesabı</span>`
+                        : "",
+                ].join("");
+
+                /* Bio */
+                if (u.bio) {
+                    document.getElementById("bio-display").textContent = u.bio;
+                }
+
+                /* Tamamlama */
+                document.getElementById("completion").textContent = pct + "%";
+
+                /* Admin link */
+                document.getElementById("admin-link").hidden =
+                    u.role !== "admin";
+
+                /* ── Form değerleri ── */
+                document.getElementById("display-name").value = u.display_name;
+                document.getElementById("username-inp").value = u.username;
+                document.getElementById("email-inp").value = u.email;
+                document.getElementById("bio-inp").value = u.bio || "";
+                updateBioCount(u.bio ? u.bio.length : 0);
+
+                /* Extra alanlar varsa (sosyal linkler) */
+                if (u.location)
+                    document.getElementById("location-inp").value = u.location;
+                if (u.github)
+                    document.getElementById("github-inp").value = u.github;
+                if (u.linkedin)
+                    document.getElementById("linkedin-inp").value = u.linkedin;
+                if (u.twitter)
+                    document.getElementById("twitter-inp").value = u.twitter;
+                if (u.website)
+                    document.getElementById("website-inp").value = u.website;
+
+                /* Sosyal linkler gösterimi */
+                renderSocialLinks(u);
+
+                /* ── İstatistikler ── */
+                animateCounter("stat-lessons", 0, s.completed_lessons, 800);
+                animateCounter("stat-xp", 0, s.total_xp, 1000);
+                animateCounter("stat-quiz", 0, s.quizzes_passed, 700);
+                document.getElementById("stat-quiz-average").textContent =
+                    s.quiz_average + "%";
+                animateCounter("stat-tools", 0, s.tool_runs, 600);
+                animateCounter("stat-logins", 0, s.login_count, 500);
+
+                /* ── Rütbe Bölümü ── */
+                renderRankSection(rank, s.total_xp, u.is_founder);
+
+                /* ── Başarımlar ── */
+                renderAchievements(s, profileData.badges || []);
+
+                /* ── Analitik Radar ── */
+                renderRadarChart(progressMap, u.is_founder);
+
+                /* ── Public / Private UI Toggle ── */
+                const publicActions = document.getElementById("public-actions");
+                const editableInputs = document.querySelectorAll(
+                    "#profile-form .field-input",
+                );
+
+                if (isPublicView) {
+                    // Show interaction buttons
+                    if (publicActions) {
+                        publicActions.style.display = "flex";
+                        publicActions.innerHTML = `
+        <button class="btn-primary" onclick="interactWithUser('ping')" style="background:var(--blue); border-color:var(--blue); font-size: 0.75rem; padding: 6px 12px;"><span style="margin-right:6px">📡</span>Ping At</button>
+        <button class="btn-primary" onclick="interactWithUser('port_scan')" style="background:var(--green); border-color:var(--green); font-size: 0.75rem; padding: 6px 12px;"><span style="margin-right:6px">🔍</span>Port Tara</button>
+        <button class="btn-primary" onclick="interactWithUser('ddos')" style="background:#ff1744; border-color:#ff1744; font-size: 0.75rem; padding: 6px 12px;"><span style="margin-right:6px">💥</span>DDoS At</button>
+      `;
+                    }
+                    // Hide the whole profile form card
+                    const profileFormCard =
+                        document.getElementById("profile-form-card");
+                    if (profileFormCard) profileFormCard.style.display = "none";
+
+                    // Hide private statistics and activities
+                    const toolCard = document.getElementById("card-stat-tools");
+                    if (toolCard) toolCard.style.display = "none";
+                    const loginCard =
+                        document.getElementById("card-stat-logins");
+                    if (loginCard) loginCard.style.display = "none";
+                    const activityCard =
+                        document.getElementById("activity-feed-card");
+                    if (activityCard) activityCard.style.display = "none";
+
+                    // Hide password form and heatmap
+                    const pwCard =
+                        document.getElementById("password-form-card");
+                    if (pwCard) pwCard.style.display = "none";
+                    const heatmapCard = document.getElementById("heatmap-card");
+                    if (heatmapCard) heatmapCard.style.display = "none";
+                } else {
+                    // Kendi profilimiz, gelen istekleri yükle
+                    document.getElementById("interactions-card").style.display =
+                        "block";
+                    loadInteractions();
+                }
+
+                /* ── Heatmap ── */
+                renderHeatmap(profileData.activities || []);
+
+                /* ── Aktivite Akışı ── */
+                renderActivityFeed(profileData.activities || []);
+
+                /* ── Kurucu ── */
+                if (u.is_founder) renderFounderSection(totalLessons);
+
+                /* ── Görünür yap ── */
+                document.getElementById("page-loader").remove();
+                document.getElementById("profile-root").hidden = false;
+
+                /* Kapak animasyonu */
+                renderCoverCanvas(rank.color);
+            }
+
+            /* ── Sosyal Linkler ── */
+            function renderSocialLinks(u) {
+                const links = [];
+                if (u.github)
+                    links.push(
+                        `<a class="social-btn" href="${esc(u.github)}"   target="_blank" rel="noreferrer">🐙 GitHub</a>`,
+                    );
+                if (u.linkedin)
+                    links.push(
+                        `<a class="social-btn" href="${esc(u.linkedin)}" target="_blank" rel="noreferrer">💼 LinkedIn</a>`,
+                    );
+                if (u.twitter)
+                    links.push(
+                        `<a class="social-btn" href="${esc(u.twitter)}"  target="_blank" rel="noreferrer">🐦 Twitter</a>`,
+                    );
+                if (u.website)
+                    links.push(
+                        `<a class="social-btn" href="${esc(u.website)}"  target="_blank" rel="noreferrer">🌐 Web</a>`,
+                    );
+                if (u.location)
+                    links.push(
+                        `<span class="social-btn">📍 ${esc(u.location)}</span>`,
+                    );
+                document.getElementById("social-links").innerHTML =
+                    links.join("");
+            }
+
+            /* ── Rütbe Bölümü ── */
+            function renderRankSection(rank, totalXP, isFounder) {
+                document.getElementById("rank-icon").textContent = rank.emoji;
+                document.getElementById("rank-icon").style.borderColor =
+                    rank.color;
+                document.getElementById("rank-icon").style.boxShadow =
+                    `0 0 20px ${rank.color}40`;
+                document.getElementById("rank-icon").style.color = rank.color;
+                document.getElementById("rank-title").textContent = rank.name;
+                document.getElementById("rank-title").style.color = rank.color;
+                document.getElementById("rank-subtitle").textContent =
+                    rank.desc;
+
+                /* XP bar */
+                let pct = 0,
+                    nextXP = 0,
+                    curLabel = totalXP + " XP";
+                if (!isFounder) {
+                    const nextRank = RANKS.find((r) => r.min > totalXP);
+                    if (nextRank) {
+                        const cur =
+                            RANKS.find(
+                                (r) => totalXP >= r.min && totalXP <= r.max,
+                            ) || RANKS[0];
+                        pct = Math.min(
+                            100,
+                            ((totalXP - cur.min) / (nextRank.min - cur.min)) *
+                                100,
+                        );
+                        nextXP = nextRank.min;
+                        document.getElementById("xp-next").textContent =
+                            `Sonraki rütbe: ${nextXP} XP (${nextRank.name})`;
+                    } else {
+                        pct = 100;
+                        document.getElementById("xp-next").textContent =
+                            "🏆 Maksimum Rütbe";
+                    }
+                } else {
+                    pct = 100;
+                    document.getElementById("xp-next").textContent =
+                        "∞ Sınırsız Erişim";
+                }
+                document.getElementById("xp-current").textContent = curLabel;
+                setTimeout(() => {
+                    document.getElementById("xp-fill").style.width = pct + "%";
+                }, 300);
+
+                /* Milestone'lar */
+                const msEl = document.getElementById("rank-milestones");
+                msEl.innerHTML = RANKS.map((r) => {
+                    const achieved = isFounder || totalXP >= r.min;
+                    const current =
+                        !isFounder && totalXP >= r.min && totalXP <= r.max;
+                    return `<div class="milestone ${achieved ? "achieved" : ""} ${current ? "current" : ""}" data-tip="${r.name}: ${r.min}+ XP">
+      <div class="milestone-icon">${r.emoji}</div>
+      <div class="milestone-name">${r.name}</div>
+      <div class="milestone-xp">${r.min} XP</div>
+    </div>`;
+                }).join("");
+            }
+
+            /* ── Başarımlar ── */
+            function renderAchievements(s, badges) {
+                const grid = document.getElementById("achievements-grid");
+                let unlocked = 0;
+                let html = "";
+
+                if (badges && badges.length > 0) {
+                    unlocked += badges.length;
+                    html += badges
+                        .map(
+                            (b) => `
+        <div class="achievement unlocked" data-tip="${esc(b.description)}">
+          <div class="ach-glow"></div>
+          <div class="ach-icon">${b.icon_svg}</div>
+          <div class="ach-name">${esc(b.name)}</div>
+        </div>
+      `,
+                        )
+                        .join("");
+                }
+
+                html += ACHIEVEMENTS.map((a) => {
+                    const ok = a.check(s);
+                    if (ok) unlocked++;
+                    return `<div class="achievement ${ok ? "unlocked" : "locked"}" data-tip="${a.desc}">
+      <div class="ach-glow"></div>
+      <div class="ach-icon">${a.icon}</div>
+      <div class="ach-name">${a.name}</div>
+    </div>`;
+                }).join("");
+                grid.innerHTML = html;
+                document.getElementById("ach-count").textContent =
+                    `${unlocked} kazanıldı`;
+            }
+
+            /* ── Analitik Radar Çizimi ── */
+            function renderRadarChart(progressMap, isFounder) {
+                const ctx = document.getElementById("radarChart");
+                if (!ctx) return;
+
+                const categories = {};
+                const courses = window.ACADEMY_COURSES || [];
+
+                // XP per category
+                courses.forEach((c) => {
+                    if (!categories[c.category]) {
+                        categories[c.category] = { current: 0, max: 0 };
+                    }
+                    c.lessons.forEach((l) => {
+                        categories[c.category].max += l.xp || 10;
+                        if (progressMap[`${c.id}:${l.id}`]) {
+                            categories[c.category].current += l.xp || 10;
+                        }
+                    });
+                });
+
+                const labels = Object.keys(categories);
+                const dataPoints = labels.map(
+                    (label) => categories[label].current,
+                );
+                const maxPoints = labels.map((label) => categories[label].max);
+
+                new Chart(ctx, {
+                    type: "radar",
+                    data: {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: "Kazanılan XP",
+                                data: dataPoints,
+                                backgroundColor: "rgba(0, 255, 136, 0.2)",
+                                borderColor: "rgba(0, 255, 136, 1)",
+                                pointBackgroundColor: "rgba(0, 255, 136, 1)",
+                                pointBorderColor: "#fff",
+                                pointHoverBackgroundColor: "#fff",
+                                pointHoverBorderColor: "rgba(0, 255, 136, 1)",
+                                borderWidth: 2,
+                            },
+                            {
+                                label: "Maksimum XP",
+                                data: maxPoints,
+                                backgroundColor: "rgba(255, 255, 255, 0.05)",
+                                borderColor: "rgba(255, 255, 255, 0.1)",
+                                borderDash: [5, 5],
+                                borderWidth: 1,
+                                pointRadius: 0,
+                            },
+                        ],
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            r: {
+                                angleLines: {
+                                    color: "rgba(255, 255, 255, 0.1)",
+                                },
+                                grid: { color: "rgba(255, 255, 255, 0.1)" },
+                                pointLabels: {
+                                    color: "#8fa89a",
+                                    font: {
+                                        family: "'JetBrains Mono', monospace",
+                                        size: 11,
+                                    },
+                                },
+                                ticks: { display: false, beginAtZero: true },
+                            },
+                        },
+                        plugins: {
+                            legend: { display: false },
+                        },
+                    },
+                });
+            }
+
+            /* ── Etkileşimler (Ping/Port/DDoS) ── */
+            async function interactWithUser(actionType) {
+                if (!publicUsername) return;
+                // Get CSRF Token
+                let token = csrfToken;
+                if (!token) {
+                    const r = await fetch("/api/profile");
+                    const d = await r.json();
+                    token = d.csrf_token;
+                }
+
+                try {
+                    const res = await fetch("/api/interact", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-Token": token,
+                        },
+                        body: JSON.stringify({
+                            target_username: publicUsername,
+                            action_type: actionType,
+                        }),
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        alert(
+                            `Hedefe (${publicUsername}) [${actionType}] isteği başarıyla gönderildi!`,
+                        );
+                    } else {
+                        alert(data.error || "İşlem başarısız oldu.");
+                    }
+                } catch (err) {
+                    alert("Bağlantı hatası.");
+                }
+            }
+
+            async function loadInteractions() {
+                try {
+                    const res = await fetch("/api/interactions");
+                    if (!res.ok) return;
+                    const data = await res.json();
+                    const list = document.getElementById("interactions-list");
+
+                    if (!data.interactions || data.interactions.length === 0) {
+                        list.innerHTML =
+                            '<div style="color:var(--text-muted); font-size:0.85rem; padding:1rem; border:1px dashed var(--border); border-radius:6px; text-align:center;">Henüz hiç siber istek almadın. Liderlik tablosunda yükselerek dikkat çek!</div>';
+                        return;
+                    }
+
+                    const actionNames = {
+                        ping: "📡 Ping Attı",
+                        port_scan: "🔍 Portlarını Taradı",
+                        ddos: "💥 DDoS Gönderdi",
+                    };
+
+                    list.innerHTML = data.interactions
+                        .map(
+                            (i) => `
+      <div style="display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.2); padding:0.75rem 1rem; border-radius:6px; border:1px solid var(--border);">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <div style="width:30px; height:30px; background:var(--bg2); border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--mono); color:var(--green); border:1px solid rgba(0,255,136,0.3);">
+            ${i.username.substring(0, 2).toUpperCase()}
+          </div>
+          <div>
+            <a href="profile.html?u=${encodeURIComponent(i.username)}" style="color:var(--blue); text-decoration:none; font-weight:600;">@${esc(i.username)}</a>
+            <span style="color:var(--text); margin-left:0.5rem;">sana ${actionNames[i.action_type] || i.action_type}</span>
+          </div>
+        </div>
+        <div style="color:var(--text-muted); font-size:0.75rem; font-family:var(--mono);">
+          ${new Date(i.created_at).toLocaleString("tr-TR")}
+        </div>
+      </div>
+    `,
+                        )
+                        .join("");
+                } catch (err) {
+                    console.error("Etkileşimler yüklenemedi", err);
+                }
+            }
+
+            /* ── Heatmap ── */
+            function renderHeatmap(activities) {
+                const grid = document.getElementById("heatmap-grid");
+                // Son 364 gün (52 hafta × 7 gün)
+                const days = 364;
+                const counts = {};
+                activities.forEach((a) => {
+                    const d = a.created_at ? a.created_at.slice(0, 10) : null;
+                    if (d) counts[d] = (counts[d] || 0) + 1;
+                });
+                // Bugünden geriye git
+                const today = new Date();
+                const cells = [];
+                for (let i = days - 1; i >= 0; i--) {
+                    const d = new Date(today);
+                    d.setDate(today.getDate() - i);
+                    const key = d.toISOString().slice(0, 10);
+                    const cnt = counts[key] || 0;
+                    const lvl =
+                        cnt === 0
+                            ? ""
+                            : cnt === 1
+                              ? "l1"
+                              : cnt <= 3
+                                ? "l2"
+                                : cnt <= 6
+                                  ? "l3"
+                                  : "l4";
+                    cells.push(
+                        `<div class="hm-cell ${lvl}" data-tip="${key}: ${cnt} etkinlik"></div>`,
+                    );
+                }
+                grid.innerHTML = cells.join("");
+            }
+
+            /* ── Aktivite Akışı ── */
+            function renderActivityFeed(activities) {
+                const feed = document.getElementById("activity-feed");
+                if (!activities.length) {
+                    feed.innerHTML =
+                        '<p style="color:var(--muted);font-size:0.78rem;">Henüz etkinlik yok.</p>';
+                    return;
+                }
+                feed.innerHTML = activities
+                    .slice(0, 12)
+                    .map((a) => {
+                        const info = ACT_LABELS[a.event_type] || {
+                            label: a.event_type,
+                            icon: "•",
+                            color: "muted",
+                        };
+                        return `<div class="activity-item">
+      <div class="activity-dot ${info.color}"></div>
+      <div class="activity-body">
+        <div class="activity-text">${info.icon} ${info.label}</div>
+        ${a.detail ? `<div class="activity-detail">${esc(a.detail)}</div>` : ""}
+      </div>
+      <div class="activity-time">${fmt(a.created_at)}</div>
+    </div>`;
+                    })
+                    .join("");
+            }
+
+            /* ── Kurucu Bölümü ── */
+            function renderFounderSection(totalLessons) {
+                document
+                    .getElementById("founder-section")
+                    .classList.add("visible");
+                document.getElementById("founder-course-access").textContent =
+                    totalLessons + " DERS";
+                const badges = [
+                    ["♛", "CyberLab Kurucusu", "primary"],
+                    ["◆", "BOSS", "primary"],
+                    ["⚡", "Sistem Sahibi", "primary"],
+                    ["★", "Baş Yönetici", ""],
+                    ["🎓", "Academy Architect", ""],
+                    ["🔴", "Red Team Leader", ""],
+                    ["🔵", "Blue Team Leader", ""],
+                    ["🧠", "AI Security", ""],
+                    ["🌐", "Web Security", ""],
+                    ["🐧", "Linux Operator", ""],
+                ];
+                document.getElementById("founder-badges").innerHTML = badges
+                    .map(
+                        ([i, l, t]) =>
+                            `<span class="boss-badge ${t}">${i} ${l}</span>`,
+                    )
+                    .join("");
+                const skills = [
+                    ["Siber Güvenlik Liderliği", 100],
+                    ["Red Team Operasyonları", 96],
+                    ["Blue Team Savunması", 94],
+                    ["Web Uygulama Güvenliği", 97],
+                    ["Ağ & Linux Sistemleri", 95],
+                    ["Yapay Zekâ Güvenliği", 91],
+                    ["Eğitim Mimarisi", 99],
+                    ["Sistem Yönetimi", 98],
+                ];
+                document.getElementById("founder-skills").innerHTML = skills
+                    .map(
+                        ([n, v]) =>
+                            `<div class="skill-row">
+      <div class="skill-head"><span>${n}</span><strong>${v}%</strong></div>
+      <div class="skill-track"><div class="skill-fill" style="width:${v}%"></div></div>
+    </div>`,
+                    )
+                    .join("");
+            }
+
+            /* ── Counter Animasyonu ── */
+            function animateCounter(id, from, to, duration) {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const start = performance.now();
+                function update(now) {
+                    const p = Math.min((now - start) / duration, 1);
+                    const ease = 1 - Math.pow(1 - p, 3);
+                    el.textContent = Math.round(from + (to - from) * ease);
+                    if (p < 1) requestAnimationFrame(update);
+                }
+                requestAnimationFrame(update);
+            }
+
+            /* ── Bio Karakter Sayısı ── */
+            function updateBioCount(len) {
+                const el = document.getElementById("bio-len");
+                if (el) el.textContent = `(${len}/280)`;
+            }
+            document
+                .getElementById("bio-inp")
+                .addEventListener("input", (e) =>
+                    updateBioCount(e.target.value.length),
+                );
+
+            /* ── Kapak Kanvas ── */
+            function renderCoverCanvas(accentColor) {
+                const canvas = document.getElementById("cover-canvas");
+                const ctx = canvas.getContext("2d");
+                canvas.width = canvas.offsetWidth;
+                canvas.height = canvas.offsetHeight;
+                const W = canvas.width,
+                    H = canvas.height;
+                // Izgara çiz
+                ctx.strokeStyle = accentColor + "22";
+                ctx.lineWidth = 1;
+                const spacing = 40;
+                for (let x = 0; x <= W; x += spacing) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, H);
+                    ctx.stroke();
+                }
+                for (let y = 0; y <= H; y += spacing) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(W, y);
+                    ctx.stroke();
+                }
+                // Glow noktaları
+                for (let i = 0; i < 8; i++) {
+                    const x = Math.random() * W,
+                        y = Math.random() * H;
+                    const r = 2 + Math.random() * 4;
+                    const g = ctx.createRadialGradient(x, y, 0, x, y, r * 6);
+                    g.addColorStop(0, accentColor + "88");
+                    g.addColorStop(1, "transparent");
+                    ctx.fillStyle = g;
+                    ctx.beginPath();
+                    ctx.arc(x, y, r * 6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            /* ── Arka Plan Parçacıkları ── */
+            (function initBgCanvas() {
+                const canvas = document.getElementById("bg-canvas");
+                if (!canvas) return;
+                const ctx = canvas.getContext("2d");
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                const particles = Array.from({ length: 40 }, () => ({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.3,
+                    vy: (Math.random() - 0.5) * 0.3,
+                    r: 1 + Math.random() * 2,
+                    alpha: 0.1 + Math.random() * 0.4,
+                }));
+                function draw() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    particles.forEach((p) => {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        if (p.x < 0) p.x = canvas.width;
+                        if (p.x > canvas.width) p.x = 0;
+                        if (p.y < 0) p.y = canvas.height;
+                        if (p.y > canvas.height) p.y = 0;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(0,255,136,${p.alpha})`;
+                        ctx.fill();
+                    });
+                    requestAnimationFrame(draw);
+                }
+                draw();
+                window.addEventListener("resize", () => {
+                    canvas.width = window.innerWidth;
+                    canvas.height = window.innerHeight;
+                });
+            })();
+
+            /* ── Profil Kaydet ── */
+            document
+                .getElementById("profile-form")
+                .addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    const btn = document.getElementById("save-btn");
+                    const msg = document.getElementById("profile-msg");
+                    btn.disabled = true;
+                    btn.textContent = "⏳ Kaydediliyor...";
+                    msg.className = "msg";
+                    msg.textContent = "";
+                    const payload = {
+                        display_name:
+                            document.getElementById("display-name").value,
+                        bio: document.getElementById("bio-inp").value,
+                        location: document.getElementById("location-inp").value,
+                        github: document.getElementById("github-inp").value,
+                        linkedin: document.getElementById("linkedin-inp").value,
+                        twitter: document.getElementById("twitter-inp").value,
+                        website: document.getElementById("website-inp").value,
+                    };
+                    try {
+                        const res = await fetch("/api/profile", {
+                            method: "PATCH",
+                            credentials: "same-origin",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRF-Token": csrfToken,
+                            },
+                            body: JSON.stringify(payload),
+                        });
+                        const data = await res.json();
+                        if (!res.ok) {
+                            msg.className = "msg err";
+                            msg.textContent = data.error || "Kaydedilemedi";
+                        } else {
+                            msg.className = "msg ok";
+                            msg.textContent = "✓ Profil başarıyla güncellendi.";
+                            loadProfile();
+                        }
+                    } catch {
+                        msg.className = "msg err";
+                        msg.textContent = "Bağlantı hatası.";
+                    } finally {
+                        btn.disabled = false;
+                        btn.textContent = "💾 Profili Kaydet";
+                    }
+                });
+
+            /* ── Şifre Değiştir ── */
+            document
+                .getElementById("password-form")
+                .addEventListener("submit", async (e) => {
+                    e.preventDefault();
+                    const msg = document.getElementById("password-msg");
+                    msg.className = "msg";
+                    msg.textContent = "⏳ Değiştiriliyor...";
+                    try {
+                        const res = await fetch("/api/profile/password", {
+                            method: "PUT",
+                            credentials: "same-origin",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRF-Token": csrfToken,
+                            },
+                            body: JSON.stringify({
+                                current_password:
+                                    document.getElementById("current-password")
+                                        .value,
+                                new_password:
+                                    document.getElementById("new-password")
+                                        .value,
+                            }),
+                        });
+                        const data = await res.json();
+                        if (!res.ok) {
+                            msg.className = "msg err";
+                            msg.textContent = data.error || "Değiştirilemedi";
+                        } else {
+                            csrfToken = data.csrf_token;
+                            document.getElementById("password-form").reset();
+                            msg.className = "msg ok";
+                            msg.textContent =
+                                "✓ Şifre değiştirildi; diğer oturumlar kapatıldı.";
+                        }
+                    } catch {
+                        msg.className = "msg err";
+                        msg.textContent = "Bağlantı hatası.";
+                    }
+                });
+
+            /* ── Çıkış ── */
+            document
+                .getElementById("logout-btn")
+                .addEventListener("click", async () => {
+                    try {
+                        await fetch("/api/auth/logout", {
+                            method: "POST",
+                            credentials: "same-origin",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRF-Token": csrfToken,
+                            },
+                            body: "{}",
+                        });
+                    } finally {
+                        location.href = "/";
+                    }
+                });
+
+            /* ── Başlat ── */
+            loadProfile().catch(() => (location.href = "/"));
+
+            /* ══════════════════════════════════════════
+               YENİ PANEL ÖZELLİKLERİ
+            ══════════════════════════════════════════ */
+
+            // ─── Avatar Renk Picker ──────────────────────────────────
+            const AVATAR_THEMES = [
+                { name:'Hacker Green', bg:'linear-gradient(135deg,#0d2c20,#061810)', border:'#00ff88', color:'#00ff88' },
+                { name:'Cyber Blue',   bg:'linear-gradient(135deg,#071a2e,#0a1628)', border:'#00b8ff', color:'#00b8ff' },
+                { name:'Purple Haze',  bg:'linear-gradient(135deg,#1a0a2e,#0f0618)', border:'#a855f7', color:'#a855f7' },
+                { name:'Fire Red',     bg:'linear-gradient(135deg,#2b000b,#200006)', border:'#ff4444', color:'#ff4444' },
+                { name:'Solar',        bg:'linear-gradient(135deg,#1c1200,#100a00)', border:'#ffcc00', color:'#ffcc00' },
+                { name:'Ember',        bg:'linear-gradient(135deg,#200d00,#1a0800)', border:'#ff8800', color:'#ff8800' },
+                { name:'Arctic',       bg:'linear-gradient(135deg,#051523,#040e1a)', border:'#54d2ff', color:'#54d2ff' },
+                { name:'Rose',         bg:'linear-gradient(135deg,#1e0614,#14040e)', border:'#f472b6', color:'#f472b6' },
+            ];
+            let _activeThemeIdx = parseInt(localStorage.getItem('cl_avatar_theme') || '0');
+
+            function _applyAvatarTheme(initials) {
+                const t = AVATAR_THEMES[_activeThemeIdx];
+                const mainAvatar = document.getElementById('avatar');
+                const previewBig = document.getElementById('avatar-preview-big');
+                if (mainAvatar && !profileData?.user?.is_founder) {
+                    mainAvatar.style.background = t.bg;
+                    mainAvatar.style.borderColor = t.border;
+                    mainAvatar.style.color = t.color;
+                    mainAvatar.style.boxShadow = `0 0 30px ${t.color}22, 0 8px 24px rgba(0,0,0,0.5)`;
+                }
+                if (previewBig) {
+                    previewBig.style.background = t.bg;
+                    previewBig.style.borderColor = t.border;
+                    previewBig.style.color = t.color;
+                    previewBig.style.boxShadow = `0 0 20px ${t.color}33`;
+                    previewBig.textContent = initials || '?';
+                }
+            }
+
+            function _renderAvatarPicker() {
+                const picker = document.getElementById('avatar-picker');
+                if (!picker) return;
+                const initials = document.getElementById('avatar')?.textContent?.trim() || '?';
+                picker.innerHTML = '';
+                AVATAR_THEMES.forEach((t, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'avatar-color-btn' + (i === _activeThemeIdx ? ' active' : '');
+                    btn.style.background = t.bg;
+                    btn.style.borderColor = i === _activeThemeIdx ? t.border : 'transparent';
+                    btn.title = t.name;
+                    btn.type = 'button';
+                    btn.onclick = () => {
+                        _activeThemeIdx = i;
+                        localStorage.setItem('cl_avatar_theme', i);
+                        _renderAvatarPicker();
+                        _applyAvatarTheme(initials);
+                    };
+                    picker.appendChild(btn);
+                });
+                _applyAvatarTheme(initials);
+            }
+
+            // ─── Şifre Gücü Metre ────────────────────────────────────
+            function _measurePwStrength(pw) {
+                if (!pw) return { level: 0, label: '', hint: '' };
+                let score = 0;
+                const hints = [];
+                if (pw.length >= 10) score++; else hints.push('En az 10 karakter');
+                if (pw.length >= 16) score++;
+                if (/[A-Z]/.test(pw)) score++; else hints.push('Büyük harf ekle');
+                if (/[0-9]/.test(pw)) score++; else hints.push('Rakam ekle');
+                if (/[^A-Za-z0-9]/.test(pw)) score++; else hints.push('Özel karakter ekle (!@#$)');
+                const level = Math.min(4, Math.max(pw.length > 0 ? 1 : 0, Math.round(score * 0.8)));
+                const labels = ['','Zayıf','Orta','İyi','Güçlü'];
+                return { level, label: labels[level] || '', hint: hints.slice(0,2).join(' · ') };
+            }
+
+            document.getElementById('new-password')?.addEventListener('input', (e) => {
+                const r = _measurePwStrength(e.target.value);
+                ['ps1','ps2','ps3','ps4'].forEach((id, i) => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    const cls = ['','active-weak','active-fair','active-good','active-strong'];
+                    el.className = 'pw-bar-seg' + (i < r.level ? ' ' + cls[r.level] : '');
+                });
+                const lbl = document.getElementById('pw-strength-text');
+                if (lbl) {
+                    lbl.textContent = r.label;
+                    lbl.style.color = ['','#ff4444','#ffcc00','#00b8ff','#00ff88'][r.level] || '';
+                }
+                const hints = document.getElementById('pw-hints');
+                if (hints) hints.textContent = r.hint;
+            });
+
+            // ─── Güvenlik Skoru ──────────────────────────────────────
+            function _renderSecurityScore(u, s, progressMap) {
+                const checks = [
+                    { label: 'E-posta doğrulandı',      ok: true },
+                    { label: 'Profil tamamlandı',        ok: !!(u?.bio && u?.location), tip: 'Bio ve konum bilgisi giriniz' },
+                    { label: 'Academy\'e katıldı',       ok: s?.completed_lessons > 0, tip: 'En az 1 ders tamamlayınız' },
+                    { label: 'Sosyal profil bağlandı',   ok: !!(u?.github || u?.linkedin), tip: 'GitHub veya LinkedIn ekleyiniz' },
+                    { label: 'Başarım kazanıldı',        ok: s?.quizzes_passed > 0, tip: 'En az 1 quiz geçiniz' },
+                ];
+                const score = Math.round((checks.filter(c => c.ok).length / checks.length) * 100);
+
+                const fill = document.getElementById('score-ring-fill');
+                const numEl = document.getElementById('security-score-num');
+                const lbl = document.getElementById('security-score-label');
+                if (fill) {
+                    const circumf = 276.5;
+                    const offset = circumf - (circumf * score / 100);
+                    const color = score >= 80 ? '#00ff88' : score >= 60 ? '#ffcc00' : '#ff4444';
+                    setTimeout(() => { fill.style.strokeDashoffset = offset; fill.style.stroke = color; }, 200);
+                    if (numEl) { numEl.textContent = score; numEl.style.color = color; }
+                }
+                const grades = ['Kritik','Düşük','Orta','İyi','Mükemmel'];
+                if (lbl) lbl.textContent = grades[Math.floor(score / 25)] || 'Mükemmel';
+
+                const container = document.getElementById('security-checks');
+                if (container) {
+                    container.innerHTML = checks.map(c => `
+                        <div class="sec-check">
+                            <span class="sec-check-dot ${c.ok ? 'pass' : 'fail'}">${c.ok ? '✓' : '✗'}</span>
+                            <span class="sec-check-label">${c.label}</span>
+                            <span class="sec-check-status">${c.ok ? 'OK' : 'Eksik'}</span>
+                        </div>
+                    `).join('');
+                }
+
+                const tips = document.getElementById('security-tips');
+                if (tips) {
+                    const failed = checks.filter(c => !c.ok && c.tip);
+                    tips.innerHTML = failed.length === 0
+                        ? '<span style="color:var(--green);font-size:0.78rem;">✓ Hesabın tam güvende!</span>'
+                        : failed.map(f => `<div style="display:flex;gap:8px;align-items:flex-start;font-size:0.75rem;"><span style="color:var(--yellow);margin-top:1px;">▸</span><span style="color:var(--muted);">${f.tip}</span></div>`).join('');
+                }
+            }
+
+            // ─── Kurs İlerleme Listesi ────────────────────────────────
+            const COURSE_EMOJI_MAP = {
+                'linux-basics':'🐧','network-basics':'🌐','defensive-scanning':'🔍',
+                'web-security':'🕸️','stealth-cyber-operator':'🥷',
+                'certified-penetration-tester':'🎯','burpsuite-a-to-z':'🔧'
+            };
+
+            function _renderCourseProgressList(progressMap) {
+                const container = document.getElementById('course-progress-list');
+                if (!container) return;
+                const courses = window.ACADEMY_COURSES || [];
+                if (!courses.length) {
+                    container.innerHTML = '<p style="color:var(--muted);font-size:0.78rem;">Kurs verisi bulunamadı.</p>';
+                    return;
+                }
+                container.innerHTML = courses.map(course => {
+                    const lessons = course.lessons || [];
+                    const total = lessons.length;
+                    const done = lessons.filter(l => progressMap[course.id + ':' + l.id]).length;
+                    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+                    const isComplete = pct === 100;
+                    const color = isComplete ? 'var(--green)' : pct > 0 ? 'var(--blue)' : 'var(--muted)';
+                    return `
+                        <div class="cp-item">
+                            <div class="cp-item-head">
+                                <div class="cp-item-name">
+                                    <span class="cp-item-emoji">${COURSE_EMOJI_MAP[course.id] || '📘'}</span>
+                                    ${course.title || course.id}
+                                </div>
+                                <span class="cp-item-pct" style="color:${color}">${isComplete ? '✓ Tamamlandı' : pct + '%'}</span>
+                            </div>
+                            <div class="cp-bar"><div class="cp-bar-fill ${isComplete ? 'complete' : ''}" style="width:0%" data-target="${pct}"></div></div>
+                            <div class="cp-item-meta">
+                                <span>${done} / ${total} ders</span>
+                                <span>${course.level || ''}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                // Animate bars after render
+                requestAnimationFrame(() => {
+                    container.querySelectorAll('.cp-bar-fill').forEach(el => {
+                        el.style.width = el.dataset.target + '%';
+                    });
+                });
+            }
+
+            // ─── Öğrenme Yolculuğu ───────────────────────────────────
+            function _renderJourneyTimeline(progressMap) {
+                const container = document.getElementById('journey-timeline');
+                if (!container) return;
+                const courses = window.ACADEMY_COURSES || [];
+
+                const completed = [];
+                courses.forEach(c => {
+                    (c.lessons || []).forEach(l => {
+                        const key = c.id + ':' + l.id;
+                        if (progressMap[key]) {
+                            const val = progressMap[key];
+                            const ts = (typeof val === 'object') ? (val.completedAt || val.updated_at || null) : null;
+                            completed.push({ courseTitle: c.title || c.id, lessonTitle: l.title || l.id, ts, xp: l.xp || 50 });
+                        }
+                    });
+                });
+
+                if (!completed.length) {
+                    container.innerHTML = '<p style="color:var(--muted);font-size:0.78rem;">Henüz tamamlanan ders yok.</p>';
+                    return;
+                }
+
+                completed.sort((a, b) => ((b.ts || '') > (a.ts || '')) ? 1 : -1);
+                const recent = completed.slice(0, 10);
+
+                container.innerHTML = recent.map((item, i) => {
+                    const dateStr = item.ts
+                        ? new Date(item.ts).toLocaleDateString('tr-TR', {day:'2-digit',month:'short',year:'numeric'})
+                        : 'Tamamlandı';
+                    return `
+                        <div class="journey-item" style="animation-delay:${i*0.06}s">
+                            <div class="journey-date">${dateStr}</div>
+                            <div class="journey-title">📖 ${item.lessonTitle}</div>
+                            <div class="journey-sub">${item.courseTitle} &nbsp;·&nbsp; +${item.xp} XP</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // ─── Toast Bildirimi ─────────────────────────────────────
+            function _showProfileToast(msg, type) {
+                let toast = document.getElementById('_profile_toast');
+                if (!toast) {
+                    toast = document.createElement('div');
+                    toast.id = '_profile_toast';
+                    toast.className = 'profile-toast';
+                    document.body.appendChild(toast);
+                }
+                toast.textContent = msg;
+                toast.style.color = type === 'err' ? 'var(--red)' : 'var(--green)';
+                toast.style.borderColor = type === 'err' ? 'rgba(255,68,68,0.35)' : 'rgba(0,255,136,0.35)';
+                toast.classList.add('show');
+                clearTimeout(toast._t);
+                toast._t = setTimeout(() => toast.classList.remove('show'), 2800);
+            }
+
+            // Patch profile save to show toast
+            document.getElementById('profile-form')?.addEventListener('submit', () => {
+                setTimeout(() => {
+                    const msg = document.getElementById('profile-msg');
+                    if (msg?.classList.contains('ok')) _showProfileToast('✓ Profil güncellendi!');
+                    else if (msg?.classList.contains('err')) _showProfileToast('✗ ' + (msg.textContent || 'Hata'), 'err');
+                }, 1400);
+            });
+
+            // Patch password form to show toast
+            document.getElementById('password-form')?.addEventListener('submit', () => {
+                setTimeout(() => {
+                    const msg = document.getElementById('password-msg');
+                    if (msg?.classList.contains('ok')) _showProfileToast('✓ Şifre değiştirildi!');
+                }, 1400);
+            });
+
+            // ─── Hook into loadProfile result ─────────────────────
+            // We wrap the existing loadProfile by patching its progressMap exposure.
+            // The simplest approach: observe when profile-root becomes visible.
+            const _profileObs = new MutationObserver(() => {
+                const root = document.getElementById('profile-root');
+                if (root && !root.hidden) {
+                    _profileObs.disconnect();
+                    // Give the original code 100ms to finish DOM updates
+                    setTimeout(() => {
+                        // progressMap is not exposed globally so we try to infer from DOM
+                        const courses = window.ACADEMY_COURSES || [];
+                        // Build a fake progressMap by checking which course keys exist
+                        // The original code stored progressMap locally; we can try to
+                        // re-fetch it quietly for our panels.
+                        fetch('/api/academy/progress', { credentials: 'same-origin' })
+                            .then(r => r.ok ? r.json() : { progress: {} })
+                            .then(data => {
+                                const pm = data.progress || {};
+                                const u = profileData?.user;
+                                const s = profileData?.stats;
+                                _renderAvatarPicker();
+                                _renderSecurityScore(u, s, pm);
+                                _renderCourseProgressList(pm);
+                                _renderJourneyTimeline(pm);
+                            })
+                            .catch(() => {
+                                // Fallback for public views or errors
+                                _renderAvatarPicker();
+                                const pm = profileData?.progress_map || profileData?.progress || {};
+                                const u = profileData?.user;
+                                const s = profileData?.stats;
+                                _renderSecurityScore(u, s, pm);
+                                _renderCourseProgressList(pm);
+                                _renderJourneyTimeline(pm);
+                            });
+                    }, 300);
+                }
+            });
+            const _rootEl = document.getElementById('profile-root');
+            if (_rootEl) _profileObs.observe(_rootEl, { attributes: true, attributeFilter: ['hidden'] });
+        </script>
+    </body>
+</html>

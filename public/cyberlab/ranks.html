@@ -1,0 +1,1170 @@
+<!doctype html>
+<html lang="tr">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>CyberLab — Rütbe Sistemi</title>
+        <meta
+            name="description"
+            content="CyberLab XP tabanlı rütbe sistemi ve liderlik tablosu"
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link
+            href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            :root {
+                --bg: #060a0f;
+                --panel: #0d1319;
+                --panel2: #111b24;
+                --border: rgba(0, 255, 136, 0.12);
+                --green: #00ff88;
+                --blue: #00b8ff;
+                --purple: #a855f7;
+                --red: #ff4444;
+                --yellow: #ffcc00;
+                --orange: #ff8800;
+                --text: #e2f0e8;
+                --muted: #8fa89a;
+                --dim: #3a4a42;
+                --mono: "JetBrains Mono", monospace;
+                --sans: "Inter", sans-serif;
+            }
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            html {
+                font-size: 14px;
+            }
+            body {
+                background: var(--bg);
+                color: var(--text);
+                font-family: var(--sans);
+                min-height: 100vh;
+                overflow-x: hidden;
+            }
+            #bg-canvas {
+                position: fixed;
+                inset: 0;
+                z-index: 0;
+                pointer-events: none;
+                opacity: 0.2;
+            }
+
+            /* ── Topbar ── */
+            .topbar {
+                position: sticky;
+                top: 0;
+                z-index: 200;
+                height: 56px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 0 24px;
+                border-bottom: 1px solid var(--border);
+                background: rgba(6, 10, 15, 0.92);
+                backdrop-filter: blur(16px);
+            }
+            .brand {
+                font-weight: 800;
+                font-size: 1.1rem;
+                color: var(--green);
+                margin-right: auto;
+                letter-spacing: 2px;
+            }
+            .brand span {
+                color: var(--text);
+                font-weight: 400;
+            }
+            .nav-link {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                padding: 6px 12px;
+                border: 1px solid var(--border);
+                border-radius: 7px;
+                color: var(--muted);
+                text-decoration: none;
+                font-size: 0.76rem;
+                transition: all 0.2s;
+                background: var(--panel);
+            }
+            .nav-link:hover {
+                border-color: var(--green);
+                color: var(--green);
+            }
+
+            /* ── Shell ── */
+            .shell {
+                width: min(1100px, calc(100% - 32px));
+                margin: 28px auto 80px;
+                position: relative;
+                z-index: 1;
+            }
+
+            /* ── Page Header ── */
+            .page-hero {
+                text-align: center;
+                padding: 48px 0 36px;
+                position: relative;
+            }
+            .page-hero::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: radial-gradient(
+                    ellipse at 50% 0,
+                    rgba(0, 255, 136, 0.07),
+                    transparent 70%
+                );
+                pointer-events: none;
+            }
+            .page-hero h1 {
+                font-size: clamp(1.8rem, 4vw, 2.8rem);
+                font-weight: 800;
+                color: var(--text);
+                letter-spacing: -0.02em;
+                position: relative;
+            }
+            .page-hero h1 span {
+                color: var(--green);
+            }
+            .page-hero p {
+                margin-top: 10px;
+                color: var(--muted);
+                font-size: 0.9rem;
+                max-width: 480px;
+                margin-inline: auto;
+                position: relative;
+            }
+
+            /* ── Benim Rütbem ── */
+            .my-rank-card {
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                padding: 28px;
+                display: flex;
+                align-items: center;
+                gap: 24px;
+                flex-wrap: wrap;
+                margin-bottom: 28px;
+                position: relative;
+                overflow: hidden;
+            }
+            .my-rank-card::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: linear-gradient(
+                    135deg,
+                    rgba(0, 255, 136, 0.04),
+                    transparent
+                );
+                pointer-events: none;
+            }
+            .my-rank-icon {
+                font-size: 3rem;
+                width: 76px;
+                height: 76px;
+                border-radius: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 2px solid;
+                flex-shrink: 0;
+            }
+            .my-rank-info {
+                flex: 1;
+                min-width: 180px;
+            }
+            .my-rank-name {
+                font-size: 1.4rem;
+                font-weight: 800;
+            }
+            .my-rank-desc {
+                color: var(--muted);
+                font-size: 0.82rem;
+                margin-top: 4px;
+            }
+            .my-xp-row {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                margin-top: 14px;
+                flex-wrap: wrap;
+            }
+            .my-xp-val {
+                font-family: var(--mono);
+                font-size: 0.85rem;
+            }
+            .my-xp-bar {
+                flex: 1;
+                min-width: 120px;
+                height: 8px;
+                border-radius: 4px;
+                background: rgba(255, 255, 255, 0.06);
+                overflow: hidden;
+            }
+            .my-xp-fill {
+                height: 100%;
+                border-radius: 4px;
+                background: linear-gradient(90deg, var(--green), var(--blue));
+                transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .my-xp-next {
+                font-family: var(--mono);
+                font-size: 0.72rem;
+                color: var(--muted);
+                white-space: nowrap;
+            }
+
+            /* ── Rütbe Yol Haritası ── */
+            .ranks-roadmap {
+                display: flex;
+                flex-direction: column;
+                gap: 0;
+                margin-bottom: 32px;
+                position: relative;
+            }
+            .ranks-roadmap::before {
+                content: "";
+                position: absolute;
+                left: 48px;
+                top: 0;
+                bottom: 0;
+                width: 2px;
+                background: linear-gradient(
+                    to bottom,
+                    var(--green),
+                    var(--blue),
+                    var(--purple)
+                );
+                opacity: 0.3;
+                z-index: 0;
+            }
+            .rank-row {
+                display: flex;
+                align-items: flex-start;
+                gap: 20px;
+                padding: 20px 0;
+                position: relative;
+            }
+            .rank-row:not(:last-child)::after {
+                content: "";
+                display: none;
+            }
+            .rank-dot-wrap {
+                width: 98px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+                flex-shrink: 0;
+                z-index: 1;
+            }
+            .rank-dot {
+                width: 48px;
+                height: 48px;
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+                border: 2px solid;
+                position: relative;
+                transition: all 0.3s;
+            }
+            .rank-dot.achieved {
+                box-shadow: 0 0 20px;
+                animation: rankGlow 3s infinite alternate;
+            }
+            @keyframes rankGlow {
+                0% {
+                    box-shadow: 0 0 10px;
+                    transform: scale(1);
+                }
+                100% {
+                    box-shadow: 0 0 24px;
+                    transform: scale(1.04);
+                }
+            }
+            .rank-dot.current {
+                animation: rankGlow 2s infinite alternate;
+            }
+            .rank-dot-xp {
+                font-family: var(--mono);
+                font-size: 0.6rem;
+                color: var(--muted);
+                white-space: nowrap;
+            }
+            .rank-content {
+                flex: 1;
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                padding: 20px;
+                transition: all 0.2s;
+            }
+            .rank-content:hover {
+                border-color: rgba(0, 255, 136, 0.25);
+            }
+            .rank-content.current {
+                border-color: rgba(0, 255, 136, 0.4);
+                background: rgba(0, 255, 136, 0.03);
+            }
+            .rank-content.achieved {
+                opacity: 0.75;
+            }
+            .rank-content-top {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            .rank-content-name {
+                font-size: 1.05rem;
+                font-weight: 700;
+            }
+            .rank-status {
+                font-family: var(--mono);
+                font-size: 0.65rem;
+                padding: 3px 10px;
+                border-radius: 20px;
+            }
+            .rank-status.done {
+                background: rgba(0, 255, 136, 0.1);
+                color: var(--green);
+                border: 1px solid rgba(0, 255, 136, 0.25);
+            }
+            .rank-status.active {
+                background: rgba(255, 204, 0, 0.1);
+                color: var(--yellow);
+                border: 1px solid rgba(255, 204, 0, 0.25);
+                animation: blinkBg 1.5s infinite;
+            }
+            @keyframes blinkBg {
+                0%,
+                100% {
+                    opacity: 1;
+                }
+                50% {
+                    opacity: 0.7;
+                }
+            }
+            .rank-status.locked {
+                background: rgba(255, 255, 255, 0.04);
+                color: var(--dim);
+                border: 1px solid var(--border);
+            }
+            .rank-content-desc {
+                font-size: 0.8rem;
+                color: var(--muted);
+                margin: 8px 0;
+                line-height: 1.55;
+            }
+            .rank-perks {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                margin-top: 10px;
+            }
+            .rank-perk {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                padding: 4px 10px;
+                border: 1px solid var(--border);
+                border-radius: 6px;
+                font-size: 0.7rem;
+                color: var(--muted);
+                background: rgba(0, 0, 0, 0.2);
+            }
+            .rank-perk.active {
+                color: var(--green);
+                border-color: rgba(0, 255, 136, 0.2);
+                background: rgba(0, 255, 136, 0.06);
+            }
+
+            /* ── Liderlik Tablosu ── */
+            .leaderboard-card {
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                overflow: hidden;
+            }
+            .lb-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 16px 20px;
+                border-bottom: 1px solid var(--border);
+                background: rgba(0, 0, 0, 0.2);
+            }
+            .lb-header h3 {
+                font-family: var(--mono);
+                font-size: 0.88rem;
+                color: var(--green);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .lb-search {
+                padding: 6px 12px;
+                background: rgba(0, 0, 0, 0.35);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                color: var(--text);
+                font-size: 0.78rem;
+                outline: none;
+                transition: border-color 0.2s;
+            }
+            .lb-search:focus {
+                border-color: var(--green);
+            }
+            .lb-table-wrap {
+                overflow-x: auto;
+            }
+            .lb-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .lb-table th {
+                font-family: var(--mono);
+                font-size: 0.65rem;
+                color: var(--dim);
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                padding: 10px 16px;
+                text-align: left;
+                border-bottom: 1px solid var(--border);
+                background: rgba(0, 0, 0, 0.15);
+            }
+            .lb-table td {
+                padding: 11px 16px;
+                font-size: 0.82rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            }
+            .lb-table tr:hover td {
+                background: rgba(0, 255, 136, 0.03);
+            }
+            .lb-table tr:last-child td {
+                border-bottom: none;
+            }
+            .lb-rank-num {
+                font-family: var(--mono);
+                font-weight: 700;
+                width: 36px;
+                text-align: center;
+            }
+            .lb-rank-num.gold {
+                color: #f0c040;
+            }
+            .lb-rank-num.silver {
+                color: #adb5bd;
+            }
+            .lb-rank-num.bronze {
+                color: #cd7f32;
+            }
+            .lb-avatar {
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font: 700 0.85rem var(--mono);
+                flex-shrink: 0;
+            }
+            .lb-name {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            .lb-name-info strong {
+                display: block;
+                font-size: 0.84rem;
+                color: var(--text);
+            }
+            .lb-name-info span {
+                font-family: var(--mono);
+                font-size: 0.65rem;
+                color: var(--muted);
+            }
+            .lb-rank-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+                padding: 2px 8px;
+                border-radius: 20px;
+                font-family: var(--mono);
+                font-size: 0.6rem;
+                border: 1px solid;
+                white-space: nowrap;
+            }
+            .lb-xp {
+                font-family: var(--mono);
+                font-weight: 700;
+                white-space: nowrap;
+            }
+            .lb-bar-cell {
+                min-width: 80px;
+            }
+            .lb-mini-bar {
+                height: 4px;
+                border-radius: 2px;
+                background: rgba(255, 255, 255, 0.06);
+                overflow: hidden;
+            }
+            .lb-mini-fill {
+                height: 100%;
+                border-radius: 2px;
+                background: linear-gradient(90deg, var(--green), var(--blue));
+            }
+            .lb-me td {
+                background: rgba(0, 255, 136, 0.04) !important;
+                border: 1px solid rgba(0, 255, 136, 0.15);
+            }
+
+            /* ── Tick Açıklaması ── */
+            .tick-explain {
+                background: var(--panel);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                padding: 24px;
+                margin-bottom: 28px;
+            }
+            .tick-explain h3 {
+                font-family: var(--mono);
+                font-size: 0.85rem;
+                color: var(--green);
+                margin-bottom: 16px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .tick-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 14px;
+            }
+            .tick-item {
+                display: flex;
+                align-items: center;
+                gap: 14px;
+                padding: 14px;
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                background: rgba(0, 0, 0, 0.2);
+            }
+            .tick-badge {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                font-weight: 900;
+                flex-shrink: 0;
+            }
+            .tick-badge.blue {
+                background: #1877f2;
+                color: #fff;
+            }
+            .tick-badge.gold {
+                background: linear-gradient(135deg, #f5a623, #f0c040);
+                color: #000;
+            }
+            .tick-badge.green {
+                background: #00ff88;
+                color: #000;
+            }
+            .tick-info strong {
+                display: block;
+                font-size: 0.82rem;
+                color: var(--text);
+            }
+            .tick-info span {
+                font-size: 0.72rem;
+                color: var(--muted);
+            }
+
+            /* ── Loader ── */
+            .loader {
+                display: flex;
+                justify-content: center;
+                padding: 40px;
+            }
+            .loader-spinner {
+                width: 36px;
+                height: 36px;
+                border: 3px solid rgba(0, 255, 136, 0.15);
+                border-top-color: var(--green);
+                border-radius: 50%;
+                animation: spin 0.8s linear infinite;
+            }
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+
+            @media (max-width: 700px) {
+                .my-rank-card {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+                .ranks-roadmap::before {
+                    left: 24px;
+                }
+                .rank-dot-wrap {
+                    width: 60px;
+                }
+                .rank-dot {
+                    width: 36px;
+                    height: 36px;
+                    font-size: 1.1rem;
+                }
+                .lb-table th:nth-child(5),
+                .lb-table td:nth-child(5) {
+                    display: none;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="bg-canvas"></canvas>
+
+        <header class="topbar">
+            <div class="brand">
+                Cyber<span>Lab</span>
+                <span
+                    style="
+                        font-size: 0.8rem;
+                        color: var(--muted);
+                        font-weight: 400;
+                        letter-spacing: 0;
+                    "
+                    >/ Rütbeler</span
+                >
+            </div>
+            <a class="nav-link" href="profile.html">👤 Profil</a>
+            <a class="nav-link" href="academy.html">🎓 Academy</a>
+            <a class="nav-link" href="index.html">⌂ Masaüstü</a>
+        </header>
+
+        <main class="shell">
+            <div class="page-hero">
+                <h1>⚔️ Rütbe <span>Sistemi</span></h1>
+                <p>
+                    XP kazanarak rütbe atla. Dersler, quizler ve araçlar seni
+                    bir üst seviyeye taşır.
+                </p>
+            </div>
+
+            <!-- Benim rütbem -->
+            <div id="my-rank-wrap">
+                <div class="loader"><div class="loader-spinner"></div></div>
+            </div>
+
+            <!-- Doğrulama tikleri açıklaması -->
+            <div class="tick-explain">
+                <h3>✓ Doğrulama Tikleri</h3>
+                <div class="tick-grid">
+                    <div class="tick-item">
+                        <div class="tick-badge gold">♛</div>
+                        <div class="tick-info">
+                            <strong>Altın Tik — Kurucu</strong>
+                            <span
+                                >CyberLab kurucusuna özel. Platform mimarı ve
+                                sistem sahibi.</span
+                            >
+                        </div>
+                    </div>
+                    <div class="tick-item">
+                        <div class="tick-badge blue">✓</div>
+                        <div class="tick-info">
+                            <strong>Mavi Tik — Admin</strong>
+                            <span
+                                >Platform yöneticileri. İçerik ve kullanıcı
+                                yönetim yetkisi.</span
+                            >
+                        </div>
+                    </div>
+                    <div class="tick-item">
+                        <div class="tick-badge green">✓</div>
+                        <div class="tick-info">
+                            <strong>Yeşil Tik — Doğrulanmış Öğrenci</strong>
+                            <span>10+ ders tamamlayan aktif öğrenciler.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rütbe Yol Haritası -->
+            <div class="ranks-roadmap" id="roadmap"></div>
+
+            <!-- Kurucu Özel Kartı (Buraya JS ile Eklenecek) -->
+            <div id="founder-spotlight"></div>
+
+            <!-- Liderlik Tablosu -->
+            <div class="leaderboard-card">
+                <div class="lb-header">
+                    <h3>🏆 Liderlik Tablosu</h3>
+                    <input
+                        class="lb-search"
+                        type="text"
+                        id="lb-search"
+                        placeholder="Kullanıcı ara..."
+                        autocomplete="off"
+                    />
+                </div>
+                <div class="lb-table-wrap">
+                    <table class="lb-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Kullanıcı</th>
+                                <th>Rütbe</th>
+                                <th>Ödüller</th>
+                                <th>XP</th>
+                                <th>Ders</th>
+                                <th style="min-width: 100px">İlerleme</th>
+                            </tr>
+                        </thead>
+                        <tbody id="lb-body">
+                            <tr>
+                                <td
+                                    colspan="7"
+                                    style="
+                                        text-align: center;
+                                        padding: 30px;
+                                        color: var(--muted);
+                                    "
+                                >
+                                    Yükleniyor...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+
+        <script src="lessons.js?v=9"></script>
+        <script>
+            /* ══════════════════════════════════════
+   CyberLab — Rütbe Sistemi JS
+   ══════════════════════════════════════ */
+
+            const RANKS = [
+                {
+                    id: "cayla",
+                    name: "Çaylak",
+                    emoji: "🔰",
+                    min: 0,
+                    max: 499,
+                    color: "#adb5bd",
+                    desc: "Siber güvenlik yolculuğuna yeni başlıyorsun. Temel Linux, ağ ve web bilgilerini öğren.",
+                    perks: [
+                        "Academy erişimi",
+                        "Terminal araçları",
+                        "Temel dersler",
+                    ],
+                },
+                {
+                    id: "stajyer",
+                    name: "Stajyer",
+                    emoji: "📡",
+                    min: 500,
+                    max: 1499,
+                    color: "#54d2ff",
+                    desc: "Temelleri kavradın ve araçları kullanmaya başlıyorsun. Yeşil tike adaysın.",
+                    perks: [
+                        "Ağ araçları",
+                        "Tarama modülleri",
+                        "Orta seviye içerik",
+                        "Quiz kilitleri açılır",
+                    ],
+                },
+                {
+                    id: "uzman",
+                    name: "Uzman",
+                    emoji: "⚡",
+                    min: 1500,
+                    max: 3499,
+                    color: "#00ff88",
+                    desc: "Karmaşık saldırı vektörlerini anlıyor ve savunma tekniklerini uygulayabiliyorsun.",
+                    perks: [
+                        "Tüm araçlara erişim",
+                        "İleri seviye dersler",
+                        "Uzman rozeti",
+                        "Toplulukta öne çık",
+                    ],
+                },
+                {
+                    id: "kıdemli",
+                    name: "Kıdemli",
+                    emoji: "🔥",
+                    min: 3500,
+                    max: 7499,
+                    color: "#ff8800",
+                    desc: "Platform liderlerindensin. Red Team & Blue Team simülasyonlarında ustasın.",
+                    perks: [
+                        "Liderlik tablosu üstü",
+                        "Özel kıdemli rozeti",
+                        "Beta özelliklere erken erişim",
+                    ],
+                },
+                {
+                    id: "efsa",
+                    name: "Efsane",
+                    emoji: "💜",
+                    min: 7500,
+                    max: Infinity,
+                    color: "#a855f7",
+                    desc: "Siber güvenliğin zirvesi. Bu seviyeye ulaşmak yüzde birlik bir başarıdır.",
+                    perks: [
+                        "Efsane rozeti",
+                        "Tüm kilitler açık",
+                        "Profilde özel banner",
+                        "Topluluk ikonu",
+                    ],
+                },
+            ];
+
+            const esc = (v) => {
+                const d = document.createElement("div");
+                d.textContent = v;
+                return d.innerHTML;
+            };
+            let myXP = 0,
+                myRole = "",
+                isFounder = false,
+                myId = 0;
+            let allLessons = 0;
+
+            function getRankForXP(xp) {
+                if (isFounder)
+                    return {
+                        id: "founder",
+                        name: "Kurucu",
+                        emoji: "♛",
+                        color: "#ff1744",
+                    };
+                if (myRole === "admin")
+                    return {
+                        id: "admin",
+                        name: "Yönetici",
+                        emoji: "⚙️",
+                        color: "#c77dff",
+                    };
+                return (
+                    RANKS.find((r) => xp >= r.min && xp <= r.max) || RANKS[0]
+                );
+            }
+
+            /* ── Benim Rütbem ── */
+            async function loadMyRank() {
+                const res = await fetch("/api/profile", {
+                    credentials: "same-origin",
+                });
+                const data = res.ok
+                    ? await res.json()
+                    : {
+                          user: {
+                              id: 0,
+                              display_name: "Misafir Öğrenci",
+                              username: "guest",
+                              role: "student",
+                              is_founder: false,
+                          },
+                          stats: {
+                              total_xp: 0,
+                              completed_lessons: 0,
+                              quizzes_passed: 0,
+                          },
+                      };
+                const u = data.user,
+                    s = data.stats;
+                myXP = s.total_xp;
+                myRole = u.role;
+                isFounder = u.is_founder;
+                myId = u.id;
+                allLessons = (window.ACADEMY_COURSES || []).reduce(
+                    (n, c) => n + c.lessons.length,
+                    0,
+                );
+
+                const rank = getRankForXP(myXP);
+                const nextRank = isFounder
+                    ? null
+                    : RANKS.find((r) => r.min > myXP);
+                const curRank = isFounder
+                    ? null
+                    : RANKS.find((r) => myXP >= r.min && myXP <= r.max) ||
+                      RANKS[0];
+                const pct = isFounder
+                    ? 100
+                    : nextRank && curRank
+                      ? Math.min(
+                            100,
+                            ((myXP - curRank.min) /
+                                (nextRank.min - curRank.min)) *
+                                100,
+                        )
+                      : 100;
+
+                document.getElementById("my-rank-wrap").innerHTML = `
+    <div class="my-rank-card" style="border-color:${rank.color}40">
+      <div class="my-rank-icon" style="color:${rank.color};border-color:${rank.color};box-shadow:0 0 24px ${rank.color}30">
+        ${rank.emoji}
+      </div>
+      <div class="my-rank-info">
+        <div class="my-rank-name" style="color:${rank.color}">${rank.name}</div>
+        <div class="my-rank-desc">${esc(u.display_name)} · @${esc(u.username)}</div>
+        <div class="my-xp-row">
+          <span class="my-xp-val" style="color:${rank.color}">${myXP} XP</span>
+          <div class="my-xp-bar"><div class="my-xp-fill" id="my-xp-fill" style="width:0%"></div></div>
+          <span class="my-xp-next">${nextRank ? `${nextRank.min} XP → ${nextRank.name}` : "🏆 Maksimum"}</span>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--mono);font-size:1.6rem;font-weight:700;color:${rank.color}">${s.completed_lessons}</div>
+        <div style="font-size:0.7rem;color:var(--muted)">Tamamlanan Ders</div>
+        <div style="font-family:var(--mono);font-size:1.4rem;font-weight:700;color:var(--green);margin-top:6px">${s.quizzes_passed}</div>
+        <div style="font-size:0.7rem;color:var(--muted)">Geçilen Quiz</div>
+      </div>
+    </div>`;
+                setTimeout(() => {
+                    document.getElementById("my-xp-fill").style.width =
+                        pct + "%";
+                }, 300);
+                renderRoadmap();
+            }
+
+            /* ── Yol Haritası ── */
+            function renderRoadmap() {
+                const roadmap = document.getElementById("roadmap");
+                roadmap.innerHTML = RANKS.map((rank) => {
+                    const current =
+                        myXP >= rank.min &&
+                        myXP <= rank.max &&
+                        !isFounder &&
+                        myRole !== "admin";
+                    const achieved =
+                        myXP > rank.max && !isFounder && myRole !== "admin";
+                    const locked =
+                        myXP < rank.min && !isFounder && myRole !== "admin";
+                    let statusText = locked
+                        ? "🔒 Kilitli"
+                        : current
+                          ? "⚡ Mevcut Rütbe"
+                          : "✓ Tamamlandı";
+                    let statusClass = locked
+                        ? "locked"
+                        : current
+                          ? "active"
+                          : "done";
+                    const dotStyle = `color:${rank.color};border-color:${rank.color};box-shadow:0 0 20px ${rank.color}40`;
+                    return `
+      <div class="rank-row">
+        <div class="rank-dot-wrap">
+          <div class="rank-dot ${achieved || current ? "achieved" : ""}" style="${locked ? "opacity:0.35" : dotStyle}">
+            ${rank.emoji}
+          </div>
+          <div class="rank-dot-xp">${rank.min === 0 ? "0" : rank.min.toLocaleString("tr")} XP</div>
+        </div>
+        <div class="rank-content ${current ? "current" : ""} ${achieved && !current ? "achieved" : ""} ${locked && !current && !achieved ? "locked" : ""}">
+          <div class="rank-content-top">
+            <div class="rank-content-name" style="color:${locked ? "var(--muted)" : rank.color}">${rank.emoji} ${rank.name}</div>
+            <span class="rank-status ${statusClass}">${statusText}</span>
+          </div>
+          <div class="rank-content-desc">${rank.desc}</div>
+          <div class="rank-perks">
+            ${rank.perks.map((p) => `<div class="rank-perk ${!locked ? "active" : ""}">✦ ${p}</div>`).join("")}
+          </div>
+          ${
+              current && !isFounder
+                  ? `
+            <div style="margin-top:12px;font-family:var(--mono);font-size:0.68rem;color:var(--muted)">
+              İlerleme: <strong style="color:${rank.color}">${myXP} / ${RANKS[RANKS.indexOf(rank) + 1]?.min ?? rank.min} XP</strong>
+            </div>`
+                  : ""
+          }
+        </div>
+      </div>`;
+                }).join("");
+            }
+
+            /* ── Liderlik Tablosu ── */
+            let lbData = [];
+            async function loadLeaderboard() {
+                const res = await fetch("/api/leaderboard", {
+                    credentials: "same-origin",
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                lbData = data.leaderboard || [];
+                renderLeaderboard(lbData);
+            }
+
+            function renderLeaderboard(rows) {
+                const maxXP = rows[0]?.total_xp || 1;
+                const tbody = document.getElementById("lb-body");
+                if (!rows.length) {
+                    tbody.innerHTML =
+                        '<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Henüz veri yok.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = rows
+                    .map((r, i) => {
+                        const rank = getRankForXPStatic(
+                            r.total_xp,
+                            r.is_founder,
+                            r.role,
+                        );
+                        const pct = Math.round((r.total_xp / maxXP) * 100);
+                        const isMe = r.id === myId;
+                        const numClass =
+                            i === 0
+                                ? "gold"
+                                : i === 1
+                                  ? "silver"
+                                  : i === 2
+                                    ? "bronze"
+                                    : "";
+                        const avatarLetter = (r.display_name ||
+                            r.username)[0].toUpperCase();
+
+                        // Render Badges
+                        const badgesHtml = (r.badges || [])
+                            .map(
+                                (b) =>
+                                    `<span title="${esc(b.name)}" style="font-size:1.1rem; cursor:help; margin-right:4px;">${b.icon_svg}</span>`,
+                            )
+                            .join("");
+
+                        return `<tr class="${isMe ? "lb-me" : ""}">
+      <td><div class="lb-rank-num ${numClass}">${i + 1}</div></td>
+      <td>
+        <a class="lb-name" href="profile.html?u=${encodeURIComponent(r.username)}" style="text-decoration:none;">
+          <div class="lb-avatar" style="background:${rank.color}22;color:${rank.color};border:1px solid ${rank.color}44">${r.is_founder ? "♛" : avatarLetter}</div>
+          <div class="lb-name-info">
+            <strong style="color:${isMe ? "var(--green)" : "var(--text)"}">${esc(r.display_name)}${isMe ? " (Sen)" : ""}</strong>
+            <span style="color:var(--muted); transition:color 0.2s;">@${esc(r.username)}</span>
+          </div>
+        </a>
+      </td>
+      <td>
+        <span class="lb-rank-badge" style="color:${rank.color};border-color:${rank.color}44;background:${rank.color}14">
+          ${rank.emoji} ${rank.name}
+        </span>
+      </td>
+      <td>${badgesHtml || '<span style="color:var(--muted);font-size:0.7rem;">-</span>'}</td>
+      <td class="lb-xp" style="color:${rank.color}">${r.total_xp.toLocaleString("tr")} XP</td>
+      <td style="font-family:var(--mono);font-size:0.78rem;color:var(--muted)">${r.completed_lessons} ders</td>
+      <td class="lb-bar-cell">
+        <div class="lb-mini-bar" title="${pct}%">
+          <div class="lb-mini-fill" style="width:${pct}%"></div>
+        </div>
+      </td>
+    </tr>`;
+                    })
+                    .join("");
+
+                // ── Kurucu Kartını Render Et ──
+                const founder = rows.find((r) => r.is_founder);
+                if (founder) {
+                    const founderHtml = `
+      <div class="card" style="background:linear-gradient(135deg, rgba(255,23,68,0.1) 0%, rgba(10,14,19,1) 100%); border:1px solid rgba(255,23,68,0.3); margin-bottom:2rem;">
+        <div class="card-body" style="display:flex; align-items:center; gap:2rem; padding:2rem;">
+          <div style="font-size:5rem; color:#ff1744; text-shadow:0 0 30px rgba(255,23,68,0.5);">♛</div>
+          <div>
+            <div style="font-family:var(--mono); font-size:0.85rem; color:#ff1744; letter-spacing:0.1em; margin-bottom:0.5rem; text-transform:uppercase;">Platform Mimarı ve Kurucu</div>
+            <h2 style="font-size:2rem; margin:0 0 0.5rem 0;"><a href="profile.html?u=${encodeURIComponent(founder.username)}" style="color:var(--text); text-decoration:none;">${esc(founder.display_name)} <span style="font-size:1.2rem; color:var(--muted);">@${esc(founder.username)}</span></a></h2>
+                        <p style="color:var(--muted); margin:0 0 1rem 0; line-height:1.5;">CyberLab'in kurucusu ve baş mimarı. Tüm eğitim sistemleri, CTF laboratuvarları ve güvenlik müfredatının yaratıcısı.</p>
+            <div style="display:flex; gap:1rem;">
+              <div style="background:rgba(255,23,68,0.15); color:#ff1744; padding:0.4rem 0.8rem; border-radius:4px; font-family:var(--mono); font-size:0.8rem; border:1px solid rgba(255,23,68,0.3);">⚡ ${founder.total_xp.toLocaleString("tr")} XP</div>
+              <div style="background:rgba(255,255,255,0.05); color:var(--muted); padding:0.4rem 0.8rem; border-radius:4px; font-family:var(--mono); font-size:0.8rem; border:1px solid rgba(255,255,255,0.1);">📚 Tüm Dersler Tamamlandı</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+                    document.getElementById("founder-spotlight").innerHTML =
+                        founderHtml;
+                }
+            }
+
+            function getRankForXPStatic(xp, founder, role) {
+                if (founder)
+                    return { emoji: "♛", name: "Kurucu", color: "#ff1744" };
+                if (role === "admin")
+                    return { emoji: "⚙️", name: "Yönetici", color: "#c77dff" };
+                return (
+                    RANKS.find((r) => xp >= r.min && xp <= r.max) || RANKS[0]
+                );
+            }
+
+            /* ── Arama ── */
+            document
+                .getElementById("lb-search")
+                .addEventListener("input", (e) => {
+                    const q = e.target.value.toLowerCase();
+                    renderLeaderboard(
+                        q
+                            ? lbData.filter(
+                                  (r) =>
+                                      r.username.toLowerCase().includes(q) ||
+                                      r.display_name.toLowerCase().includes(q),
+                              )
+                            : lbData,
+                    );
+                });
+
+            /* ── Arka Plan ── */
+            (function () {
+                const canvas = document.getElementById("bg-canvas");
+                const ctx = canvas.getContext("2d");
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                const pts = Array.from({ length: 30 }, () => ({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    vx: (Math.random() - 0.5) * 0.25,
+                    vy: (Math.random() - 0.5) * 0.25,
+                    r: 1 + Math.random() * 2,
+                    a: 0.1 + Math.random() * 0.3,
+                }));
+                function draw() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    pts.forEach((p) => {
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        if (p.x < 0) p.x = canvas.width;
+                        if (p.x > canvas.width) p.x = 0;
+                        if (p.y < 0) p.y = canvas.height;
+                        if (p.y > canvas.height) p.y = 0;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(0,255,136,${p.a})`;
+                        ctx.fill();
+                    });
+                    requestAnimationFrame(draw);
+                }
+                draw();
+            })();
+
+            /* ── Başlat ── */
+            loadMyRank().then(() => loadLeaderboard());
+        </script>
+    </body>
+</html>
