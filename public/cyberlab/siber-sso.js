@@ -49,6 +49,9 @@
                     if (document.getElementById('kali-user-role')) {
                         document.getElementById('kali-user-role').textContent = data.user.email;
                     }
+
+                    // Eğer index.html'de değilsek ve token varsa, app.js'in login ekranını tetiklemesini bekle veya zorla
+                    // CyberLab'in kendi login kontrolünü bypass etmesi için cyberlab_user'ı set ettik zaten.
                 } else {
                     console.error("[SSO] Geçersiz token:", data.error);
                     localStorage.removeItem('cyberlab_sso_token');
@@ -83,10 +86,10 @@
             'admin.html'
         ];
         
-        // Eğer path kök dizinse veya korumalı dosyalardan birini içeriyorsa
-        const isRoot = path === '/cyberlab/' || path === '/cyberlab';
+        // Eğer path korumalı dosyalardan birini içeriyorsa
         const isProtectedFile = protectedFiles.some(file => path.includes(file));
+        const isRoot = path === '/cyberlab/' || path === '/cyberlab';
         
-        return isProtectedFile || (isRoot && token === null);
+        return isProtectedFile || isRoot;
     }
 })();
