@@ -43,6 +43,8 @@ import { Wallet } from "lucide-react";
 import { AdminEditBadge } from "@/components/AdminEditBadge";
 import { RaffleFloatingBadge } from "@/components/RaffleFloatingBadge";
 import { LiveSalesTicker } from "@/components/LiveSalesTicker";
+import { Badge } from "@/components/ui/badge";
+import { TrendingUp, Users, Award, Shield, Timer, Rocket } from "lucide-react";
 
 const SITE_URL = "https://siberlisans.com";
 
@@ -292,10 +294,11 @@ function Index() {
   }, [products, search]);
 
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       <RaffleFloatingBadge />
       <UserBalanceWelcome />
       <AnnouncementBar />
+      <LiveSalesTicker />
       {/* HERO — cinematic */}
 
       <section className="relative overflow-hidden border-b border-border/40">
@@ -327,7 +330,7 @@ function Index() {
                 </span>
                 <span className="block">
                   <span className="text-muted-foreground/80">&gt;</span>{" "}
-                  <span className="text-foreground">lisans</span>
+                  <span className="text-foreground">Siber</span>
                   <span className="text-primary">.</span>
                   <CyberRotator />
                 </span>
@@ -343,11 +346,17 @@ function Index() {
                 />
               </p>
               <div className="mt-9 flex flex-wrap gap-3">
-                <Button asChild size="lg" className="font-medium neon-glow-strong">
-                  <Link to="/urunler">Lisansları keşfet →</Link>
+                <Button asChild size="lg" className="font-mono neon-glow-strong group h-14 px-8 text-base">
+                  <Link to="/urunler">
+                    <Rocket className="mr-2 h-5 w-5 group-hover:animate-bounce" />
+                    Lisansları Keşfet
+                  </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="font-medium border-primary/40 hover:bg-primary/10">
-                  <Link to="/nasil-calisir">Nasıl çalışır</Link>
+                <Button asChild size="lg" variant="outline" className="font-mono border-primary/40 hover:bg-primary/10 h-14 px-8 text-base">
+                  <Link to="/cyberlab">
+                    <FlaskConical className="mr-2 h-5 w-5" />
+                    Laboratuvar
+                  </Link>
                 </Button>
               </div>
 
@@ -1243,6 +1252,38 @@ function CategoryStrip({ products }: { products: CatStripProduct[] }) {
             </Link>
           );
         })}
+      </div>
+    </section>
+  );
+}
+
+// ============================================================================
+// HERO STATS BAR — Hero altında ince, güven veren istatistik şeridi
+// ============================================================================
+function HeroStatsBar() {
+  const stats = [
+    { icon: Users, label: "Mutlu Müşteri", value: "12,400+", color: "text-blue-400" },
+    { icon: Shield, label: "Güvenli Ödeme", value: "SSL/256-bit", color: "text-green-400" },
+    { icon: Timer, label: "Anında Teslim", value: "7/24 Aktif", color: "text-yellow-400" },
+    { icon: Award, label: "Garanti", value: "24 Saat İade", color: "text-purple-400" },
+  ];
+
+  return (
+    <section className="border-b border-border/40 bg-background/40 backdrop-blur-sm relative z-20">
+      <div className="mx-auto max-w-6xl px-4 py-4 sm:py-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+          {stats.map((s, idx) => (
+            <div key={idx} className="flex items-center gap-3 group">
+              <div className={`p-2 rounded-lg bg-white/5 border border-white/10 group-hover:border-primary/50 transition-colors ${s.color}`}>
+                <s.icon className="h-5 w-5" />
+              </div>
+              <div className="font-mono">
+                <div className="text-[10px] uppercase tracking-widest text-muted-foreground/60">{s.label}</div>
+                <div className="text-sm font-bold text-foreground/90">{s.value}</div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );
