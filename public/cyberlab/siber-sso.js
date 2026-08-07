@@ -13,9 +13,10 @@
     if (tokenFromUrl) {
         console.log("[SSO] URL'den token alındı");
         localStorage.setItem('cyberlab_sso_token', tokenFromUrl);
-        // URL'den tokenı temizle
+        // URL'den tokenı temizle, ancak aynı sayfada kal (yönlendirme yapma)
         const newUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
+        console.log("[SSO] URL temizlendi, doğrulama devam ediyor...");
     }
 
     const token = localStorage.getItem('cyberlab_sso_token');
