@@ -276,8 +276,12 @@ function LaunchPanel({
       )}
 
       {access.launchUrl ? (
-        <Button asChild size="lg" className="w-full sm:w-auto font-mono neon-glow">
-          <Link to="/cyberlab/sso" search={{ token: access.launchUrl.split("token=")[1] } as any}>
+        <Button asChild size="lg" className="w-full sm:w-auto font-mono neon-glow cursor-pointer relative z-10">
+          <Link 
+            to="/cyberlab/sso" 
+            search={{ token: access.launchUrl.split("token=")[1] } as any}
+            className="flex items-center justify-center w-full h-full"
+          >
             <ExternalLink className="mr-2 h-4 w-4" />
             CyberLab'i aç
           </Link>
