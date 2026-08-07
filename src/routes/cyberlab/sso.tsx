@@ -12,8 +12,8 @@ function CyberlabSsoHandler() {
   useEffect(() => {
     if (search.token) {
       localStorage.setItem("cyberlab_sso_token", search.token);
-      // SSO sonrası ana sayfaya yönlendir
-      window.location.href = "/cyberlab/index.html";
+      // SSO sonrası index.html'e token ile git (siber-sso.js yakalayacak)
+      window.location.href = `/cyberlab/index.html?token=${encodeURIComponent(search.token)}`;
     } else {
       navigate({ to: "/cyberlab" });
     }
