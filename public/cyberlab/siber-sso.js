@@ -50,8 +50,19 @@
                         document.getElementById('kali-user-role').textContent = data.user.email;
                     }
 
-                    // Eğer index.html'de değilsek ve token varsa, app.js'in login ekranını tetiklemesini bekle veya zorla
-                    // CyberLab'in kendi login kontrolünü bypass etmesi için cyberlab_user'ı set ettik zaten.
+                    // Başarılı girişten sonra login ekranını kapatıp masaüstünü göster
+                    document.body.classList.add('sso-authenticated');
+                    document.body.classList.remove('sso-ready');
+                    
+                    // CyberLab'in kendi yükleme animasyonlarını tetiklemesi için küçük bir gecikme
+                    setTimeout(() => {
+                        if (typeof window.showBootScreen === 'function') {
+                            window.showBootScreen();
+                        } else if (document.getElementById('login-screen')) {
+                            document.getElementById('login-screen').classList.remove('active');
+                            document.getElementById('linux-desktop').style.display = 'block';
+                        }
+                    }, 500);
                 } else {
                     console.error("[SSO] Geçersiz token:", data.error);
                     localStorage.removeItem('cyberlab_sso_token');
@@ -59,11 +70,14 @@
                     // Sadece korumalı sayfalardaysak yönlendir
                     if (isProtectedPath()) {
                         window.location.href = '/cyberlab';
+                    } else {
+                        document.body.classList.add('sso-ready');
                     }
                 }
             })
             .catch(err => {
                 console.error("[SSO] Doğrulama hatası:", err);
+                document.body.classList.add('sso-ready');
             });
     } else {
         console.log("[SSO] Token bulunamadı.");
@@ -71,6 +85,8 @@
         if (isProtectedPath()) {
             console.log("[SSO] Korumalı alan, giriş sayfasına yönlendiriliyor...");
             window.location.href = '/cyberlab';
+        } else {
+            document.body.classList.add('sso-ready');
         }
     }
 
