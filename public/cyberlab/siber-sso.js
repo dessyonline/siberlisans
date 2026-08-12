@@ -1,5 +1,5 @@
 /**
- * SiberLisans SSO Entegrasyonu v2.1
+ * SiberLisans SSO Entegrasyonu v2.2
  * Bu dosya CyberLab'in siberlisans.com ile oturum paylaşmasını sağlar.
  */
 
@@ -13,7 +13,7 @@
     if (tokenFromUrl) {
         console.log("[SSO] URL'den token alındı");
         localStorage.setItem('cyberlab_sso_token', tokenFromUrl);
-        // URL'den tokenı temizle
+        // URL'den tokenı temizle (yönlendirme döngüsünü engellemek için önemli)
         const newUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
         console.log("[SSO] URL temizlendi, doğrulama devam ediyor...");
@@ -21,7 +21,7 @@
 
     const token = localStorage.getItem('cyberlab_sso_token');
 
-    // Eğer sso.tsx üzerinden geldiysek ve hala sso sayfasındaysak
+    // Eğer sso.tsx üzerinden geldiysek ve hala sso sayfasındaysak (siberlisans tarafı)
     if (window.location.pathname.includes('/cyberlab/sso')) {
         return;
     }
@@ -38,6 +38,7 @@
         `;
         document.head.appendChild(style);
         
+        // /api/public/cyberlab/verify adresine istek at
         fetch('/api/public/cyberlab/verify?token=' + encodeURIComponent(token))
             .then(res => {
                 if (!res.ok) throw new Error("Backend error: " + res.status);
@@ -49,6 +50,7 @@
                     localStorage.setItem('cyberlab_user', JSON.stringify(data.user));
                     
                     const applyUI = () => {
+                        console.log("[SSO] Arayüz uygulanıyor...");
                         document.body.classList.add('sso-authenticated');
                         document.body.classList.remove('sso-ready');
                         
@@ -88,10 +90,11 @@
 
                         forceVisibility();
 
-                        // Periyodik kontrol
+                        // Periyodik kontrol (CyberLab app.js yüklenince bazı elementleri ezebiliyor)
                         let checks = 0;
                         const finalForce = setInterval(() => {
                             forceVisibility();
+                            // Uygulama tamamen yüklenmişse veya 10 saniye geçmişse dur
                             if (++checks > 50) clearInterval(finalForce);
                         }, 200);
                     };
@@ -100,6 +103,7 @@
                         document.addEventListener('DOMContentLoaded', applyUI);
                     } else {
                         applyUI();
+                        // Sayfa tam yüklenince tekrar çalıştır (scriptlerin çakışmasını engellemek için)
                         window.addEventListener('load', applyUI);
                     }
                 } else {
@@ -143,9 +147,11 @@
             'tools.html', 
             'ranks.html', 
             'profile.html',
-            'admin.html'
+            'admin.html',
+            'index.html'
         ];
         
-        return protectedFiles.some(file => path.includes(file));
+        // Ana sayfa veya korumalı html dosyaları
+        return protectedFiles.some(file => path.includes(file)) || path === '/cyberlab' || path === '/cyberlab/';
     }
 })();
