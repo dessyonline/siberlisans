@@ -131,7 +131,10 @@
             console.log("[SSO] Korumalı alan, giriş sayfasına yönlendiriliyor...");
             window.location.href = '/cyberlab';
         } else {
+            // Token yok ama ana sayfadayız, giriş formunu göster
             document.body.classList.add('sso-ready');
+            const boot = document.getElementById('boot-screen');
+            if (boot) boot.style.display = 'none';
         }
     }
 
