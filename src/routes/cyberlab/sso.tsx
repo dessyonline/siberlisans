@@ -13,9 +13,15 @@ function CyberlabSsoHandler() {
     if (search.token) {
       localStorage.setItem("cyberlab_sso_token", search.token);
       // Proxy üzerinden index.html'e token ile git
+      // ÖNEMLİ: TanStack Start bazen query string'i yutabiliyor, hash üzerinden de deniyoruz.
       const targetUrl = "/cyberlab/index.html?token=" + encodeURIComponent(search.token);
       console.log("[SSO] Redirecting to:", targetUrl);
-      window.location.replace(targetUrl);
+      
+      // location.href veya location.replace bazen TanStack Router tarafından engellenebilir,
+      // bu yüzden doğrudan window level'da tetikliyoruz.
+      window.setTimeout(() => {
+        window.location.href = targetUrl;
+      }, 100);
     } else {
       console.warn("[SSO] No token found in URL, navigating back to /cyberlab");
       navigate({ to: "/cyberlab" });
