@@ -17,12 +17,12 @@
     }
     
     if (tokenFromUrl) {
-        console.log("[SSO] URL'den token alındı");
+        console.log("[SSO] URL'den token alındı:", tokenFromUrl.substring(0, 10) + "...");
         localStorage.setItem('cyberlab_sso_token', tokenFromUrl);
-        // URL'den tokenı temizle
-        const newUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
-        console.log("[SSO] URL temizlendi, doğrulama devam ediyor...");
+        // URL'den tokenı temizle (loopları önlemek için önemli)
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+        console.log("[SSO] URL temizlendi, doğrulama başlıyor.");
     }
 
     const token = localStorage.getItem('cyberlab_sso_token');
@@ -40,6 +40,7 @@
         #linux-desktop { display: none; }
         body.sso-authenticated #linux-desktop { display: block !important; opacity: 1 !important; visibility: visible !important; z-index: 100 !important; }
         body.sso-ready #login-screen { display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 100 !important; }
+        body.sso-ready #boot-screen { display: none !important; }
     `;
     document.head.appendChild(style);
 
@@ -102,6 +103,9 @@
                         let checks = 0;
                         const finalForce = setInterval(() => {
                             forceVisibility();
+                            // Eğer bir modal veya overlay çıkarsa onu da kapat
+                            const overlays = document.querySelectorAll('.modal-backdrop, .loading-overlay');
+                            overlays.forEach(o => o.remove());
                             if (++checks > 50) clearInterval(finalForce);
                         }, 200);
                     };
@@ -127,7 +131,10 @@
             console.log("[SSO] Korumalı alan, giriş sayfasına yönlendiriliyor...");
             window.location.href = '/cyberlab';
         } else {
+            // Token yok ama ana sayfadayız, giriş formunu göster
             document.body.classList.add('sso-ready');
+            const boot = document.getElementById('boot-screen');
+            if (boot) boot.style.display = 'none';
         }
     }
 
