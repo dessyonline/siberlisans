@@ -40,6 +40,7 @@
         #linux-desktop { display: none; }
         body.sso-authenticated #linux-desktop { display: block !important; opacity: 1 !important; visibility: visible !important; z-index: 100 !important; }
         body.sso-ready #login-screen { display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 100 !important; }
+        body.sso-ready #boot-screen { display: none !important; }
     `;
     document.head.appendChild(style);
 
@@ -102,6 +103,9 @@
                         let checks = 0;
                         const finalForce = setInterval(() => {
                             forceVisibility();
+                            // Eğer bir modal veya overlay çıkarsa onu da kapat
+                            const overlays = document.querySelectorAll('.modal-backdrop, .loading-overlay');
+                            overlays.forEach(o => o.remove());
                             if (++checks > 50) clearInterval(finalForce);
                         }, 200);
                     };
