@@ -17,12 +17,12 @@
     }
     
     if (tokenFromUrl) {
-        console.log("[SSO] URL'den token alındı");
+        console.log("[SSO] URL'den token alındı:", tokenFromUrl.substring(0, 10) + "...");
         localStorage.setItem('cyberlab_sso_token', tokenFromUrl);
-        // URL'den tokenı temizle
-        const newUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
-        console.log("[SSO] URL temizlendi, doğrulama devam ediyor...");
+        // URL'den tokenı temizle (loopları önlemek için önemli)
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+        console.log("[SSO] URL temizlendi, doğrulama başlıyor.");
     }
 
     const token = localStorage.getItem('cyberlab_sso_token');
