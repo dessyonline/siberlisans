@@ -173,6 +173,36 @@ function ReportPage() {
         </h1>
       </div>
 
+      {/* Monthly Fast Select / Summary */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+        {Array.from({ length: 6 }).map((_, i) => {
+          const d = new Date();
+          d.setMonth(d.getMonth() - i);
+          const monthName = d.toLocaleDateString("tr-TR", { month: "long" });
+          const year = d.getFullYear();
+          const firstDay = toLocalDateInput(new Date(d.getFullYear(), d.getMonth(), 1));
+          const lastDay = toLocalDateInput(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+          const isActive = from === firstDay && to === lastDay;
+
+          return (
+            <button
+              key={i}
+              onClick={() => {
+                setFrom(firstDay);
+                setTo(lastDay);
+                setGranularity("day");
+              }}
+              className={`glass-card rounded-lg p-2 text-left border transition-all ${
+                isActive ? "border-primary bg-primary/10" : "border-primary/10 hover:border-primary/40"
+              }`}
+            >
+              <div className="font-mono text-[9px] uppercase text-muted-foreground">{year}</div>
+              <div className="font-mono text-xs font-bold text-foreground">{monthName}</div>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Filters */}
       <div className="glass-card rounded-lg p-3 flex flex-wrap gap-2 items-end">
         <div>
