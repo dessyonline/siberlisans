@@ -1,19 +1,25 @@
 /**
- * SiberLisans SSO Entegrasyonu v2.2
+ * SiberLisans SSO Entegrasyonu v2.3
  * Bu dosya CyberLab'in siberlisans.com ile oturum paylaşmasını sağlar.
  */
 
 (function() {
     console.log("[SSO] Entegrasyon başlatıldı");
 
-    // SSO tokenını kontrol et
+    // SSO tokenını kontrol et (hem Query hem de Hash üzerinden)
     const params = new URLSearchParams(window.location.search);
-    const tokenFromUrl = params.get('token');
+    let tokenFromUrl = params.get('token');
+    
+    // Eğer query'de yoksa hash'e bak (bazı routerlar hash kullanabiliyor)
+    if (!tokenFromUrl && window.location.hash.includes('token=')) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        tokenFromUrl = hashParams.get('token');
+    }
     
     if (tokenFromUrl) {
         console.log("[SSO] URL'den token alındı");
         localStorage.setItem('cyberlab_sso_token', tokenFromUrl);
-        // URL'den tokenı temizle (yönlendirme döngüsünü engellemek için önemli)
+        // URL'den tokenı temizle
         const newUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, document.title, newUrl);
         console.log("[SSO] URL temizlendi, doğrulama devam ediyor...");
@@ -26,17 +32,19 @@
         return;
     }
 
+    // CSS ile önceden gizlemeyi garantile (token olsa da olmasa da boot screen'i kontrol etmeliyiz)
+    const style = document.createElement('style');
+    style.id = 'sso-force-style';
+    style.innerHTML = `
+        #login-screen, .login-wrapper, #boot-screen { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -1 !important; }
+        #linux-desktop { display: none; }
+        body.sso-authenticated #linux-desktop { display: block !important; opacity: 1 !important; visibility: visible !important; z-index: 100 !important; }
+        body.sso-ready #login-screen { display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 100 !important; }
+    `;
+    document.head.appendChild(style);
+
     if (token) {
         console.log("[SSO] Token bulundu, backend doğrulaması yapılıyor...");
-        
-        // CSS ile önceden gizlemeyi garantile
-        const style = document.createElement('style');
-        style.id = 'sso-force-style';
-        style.innerHTML = `
-            #login-screen, .login-wrapper, #boot-screen { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -1 !important; }
-            #linux-desktop { display: block !important; opacity: 1 !important; visibility: visible !important; z-index: 100 !important; }
-        `;
-        document.head.appendChild(style);
         
         // /api/public/cyberlab/verify adresine istek at
         fetch('/api/public/cyberlab/verify?token=' + encodeURIComponent(token))
@@ -94,7 +102,6 @@
                         let checks = 0;
                         const finalForce = setInterval(() => {
                             forceVisibility();
-                            // Uygulama tamamen yüklenmişse veya 10 saniye geçmişse dur
                             if (++checks > 50) clearInterval(finalForce);
                         }, 200);
                     };
@@ -103,20 +110,15 @@
                         document.addEventListener('DOMContentLoaded', applyUI);
                     } else {
                         applyUI();
-                        // Sayfa tam yüklenince tekrar çalıştır (scriptlerin çakışmasını engellemek için)
                         window.addEventListener('load', applyUI);
                     }
                 } else {
                     console.error("[SSO] Geçersiz token:", data.error);
-                    const forceStyle = document.getElementById('sso-force-style');
-                    if (forceStyle) forceStyle.remove();
                     handleAuthFailure();
                 }
             })
             .catch(err => {
                 console.error("[SSO] Doğrulama hatası:", err);
-                const forceStyle = document.getElementById('sso-force-style');
-                if (forceStyle) forceStyle.remove();
                 document.body.classList.add('sso-ready');
             });
     } else {
@@ -151,7 +153,7 @@
             'index.html'
         ];
         
-        // Ana sayfa veya korumalı html dosyaları
         return protectedFiles.some(file => path.includes(file)) || path === '/cyberlab' || path === '/cyberlab/';
     }
 })();
+
