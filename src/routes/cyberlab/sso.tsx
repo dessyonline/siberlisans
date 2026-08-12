@@ -17,9 +17,8 @@ function CyberlabSsoHandler() {
       console.log("[SSO] Token detected in URL, writing to localStorage...");
       localStorage.setItem("cyberlab_sso_token", token);
       
-      // Navigate to the static entry point
-      const targetUrl = "/cyberlab/index.html?token=" + encodeURIComponent(token);
-      window.location.assign(targetUrl);
+      // Navigate to index.html directly
+      window.location.href = "/cyberlab/index.html?token=" + encodeURIComponent(token);
     } else {
       // Fallback: check if it's already in localStorage
       const existing = localStorage.getItem("cyberlab_sso_token");
