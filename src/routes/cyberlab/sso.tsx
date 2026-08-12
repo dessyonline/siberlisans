@@ -17,11 +17,13 @@ function CyberlabSsoHandler() {
       const targetUrl = "/cyberlab/index.html?token=" + encodeURIComponent(search.token);
       console.log("[SSO] Redirecting to:", targetUrl);
       
-      // location.href veya location.replace bazen TanStack Router tarafından engellenebilir,
-      // bu yüzden doğrudan window level'da tetikliyoruz.
+      // Try multiple ways to escape TanStack Router's grasp for an external static file
+      window.location.replace(targetUrl);
+      
+      // Fallback
       window.setTimeout(() => {
         window.location.href = targetUrl;
-      }, 100);
+      }, 50);
     } else {
       console.warn("[SSO] No token found in URL, navigating back to /cyberlab");
       navigate({ to: "/cyberlab" });
