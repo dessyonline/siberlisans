@@ -1,5 +1,5 @@
 /**
- * SiberLisans SSO Entegrasyonu v2.3
+ * SiberLisans SSO Entegrasyonu v2.6
  * Bu dosya CyberLab'in siberlisans.com ile oturum paylaşmasını sağlar.
  */
 
@@ -32,19 +32,21 @@
         return;
     }
 
-    // CSS ile önceden gizlemeyi garantile (token olsa da olmasa da boot screen'i kontrol etmeliyiz)
+    // CSS ile önceden gizlemeyi garantile
     const style = document.createElement('style');
     style.id = 'sso-force-style';
     style.innerHTML = `
-        #login-screen, .login-wrapper, #boot-screen { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -1 !important; }
+        #login-screen, .login-wrapper, #boot-screen, .modal-backdrop, .loading-overlay { display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -1 !important; }
         #linux-desktop { display: none; }
         body.sso-authenticated #linux-desktop { display: block !important; opacity: 1 !important; visibility: visible !important; z-index: 100 !important; }
         body.sso-ready #login-screen { display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 100 !important; }
         body.sso-ready #boot-screen { display: none !important; }
+        body.sso-loading #boot-screen { display: flex !important; z-index: 999999 !important; }
     `;
     document.head.appendChild(style);
 
     if (token) {
+        document.body.classList.add('sso-loading');
         console.log("[SSO] Token bulundu, backend doğrulaması yapılıyor...");
         
         // /api/public/cyberlab/verify adresine istek at
@@ -54,9 +56,12 @@
                 return res.json();
             })
             .then(data => {
+                document.body.classList.remove('sso-loading');
                 if (data.success) {
                     console.log("[SSO] Giriş başarılı:", data.user.name);
                     localStorage.setItem('cyberlab_user', JSON.stringify(data.user));
+                    // app.js'in beklediği anahtar
+                    localStorage.setItem('auth_user', JSON.stringify(data.user));
                     
                     const applyUI = () => {
                         console.log("[SSO] Arayüz uygulanıyor...");
@@ -123,6 +128,7 @@
             })
             .catch(err => {
                 console.error("[SSO] Doğrulama hatası:", err);
+                document.body.classList.remove('sso-loading');
                 document.body.classList.add('sso-ready');
             });
     } else {
