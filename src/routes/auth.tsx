@@ -62,6 +62,7 @@ function AuthPage() {
   const [captcha, setCaptcha] = useState(() => newCaptcha());
   const [captchaInput, setCaptchaInput] = useState("");
   const [signupSent, setSignupSent] = useState<string | null>(null);
+  const [telegram, setTelegram] = useState("");
   const [mfaMode, setMfaMode] = useState(false);
   const [manualRef, setManualRef] = useState("");
   const urlRef = search.ref?.toUpperCase() ?? "";
