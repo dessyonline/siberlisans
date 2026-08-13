@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Terminal, Gift, MailCheck } from "lucide-react";
+import { Terminal, Gift, MailCheck, Send, Info } from "lucide-react";
 import { MfaChallenge } from "@/components/security/MfaChallenge";
 
 const authSearch = z.object({ ref: z.string().max(20).optional() });
@@ -62,6 +62,7 @@ function AuthPage() {
   const [captcha, setCaptcha] = useState(() => newCaptcha());
   const [captchaInput, setCaptchaInput] = useState("");
   const [signupSent, setSignupSent] = useState<string | null>(null);
+  const [telegram, setTelegram] = useState("");
   const [mfaMode, setMfaMode] = useState(false);
   const [manualRef, setManualRef] = useState("");
   const urlRef = search.ref?.toUpperCase() ?? "";
@@ -106,6 +107,7 @@ function AuthPage() {
       return toast.error("[!] geçici / disposable e-posta adresleri kabul edilmiyor");
     }
     if (password.length < 6) return toast.error("[!] şifre en az 6 karakter olmalı");
+    if (!telegram.trim()) return toast.error("[!] telegram adresi zorunludur (yoksa 'yok' yazın)");
     if (parseInt(captchaInput, 10) !== captcha.answer) {
       setCaptcha(newCaptcha());
       setCaptchaInput("");
@@ -120,6 +122,7 @@ function AuthPage() {
         emailRedirectTo: `${window.location.origin}/hesabim`,
         data: {
           display_name: displayName || em.split("@")[0],
+          telegram_handle: telegram.trim(),
           ...(refCode ? { ref: refCode } : {}),
         },
       },
@@ -237,6 +240,28 @@ function AuthPage() {
                 <Field label="görünen ad" value={displayName} onChange={setDisplayName} />
                 <Field label="e-posta" value={email} onChange={setEmail} type="email" autoComplete="email" />
                 <Field label="şifre (min 6)" value={password} onChange={setPassword} type="password" autoComplete="new-password" />
+                
+                <div className="space-y-1.5">
+                  <Label className="font-mono text-xs text-muted-foreground flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Send className="h-3 w-3 text-primary" /> telegram adresi
+                    </span>
+                    <span className="text-[10px] text-primary/70">zorunlu</span>
+                  </Label>
+                  <Input
+                    value={telegram}
+                    onChange={(e) => setTelegram(e.target.value)}
+                    placeholder="@kullaniciadi veya 'yok'"
+                    className="font-mono"
+                  />
+                  <div className="flex items-start gap-1.5 rounded bg-primary/5 p-2 border border-primary/20">
+                    <Info className="h-3 w-3 text-primary shrink-0 mt-0.5" />
+                    <p className="font-mono text-[9px] text-muted-foreground leading-tight">
+                      Destek, lisans teslimi ve acil bildirimler için gereklidir. Telegram kullanmıyorsanız 
+                      <span className="text-primary mx-1">'yok'</span> yazarak devam edebilirsiniz.
+                    </p>
+                  </div>
+                </div>
                 {!urlRef && (
                   <div className="space-y-1.5">
                     <Label className="font-mono text-xs text-muted-foreground flex items-center gap-1.5">
