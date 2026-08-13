@@ -222,14 +222,15 @@ function SiteHeader() {
   const { user, isAdmin, signOut } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 w-full pt-3 md:pt-4 px-3 md:px-4">
-      <div className="relative group mx-auto max-w-6xl">
-        {/* outer glow */}
-        <div className="absolute -inset-1 bg-primary/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none" />
+    <header className="fixed top-0 z-50 w-full pt-4 px-4 md:px-6 pointer-events-none">
+      <div className="relative group mx-auto max-w-6xl pointer-events-auto">
+        {/* glass refraction effect */}
+        <div className="absolute inset-0 bg-primary/5 blur-3xl opacity-20 rounded-3xl pointer-events-none" />
 
-        <div className="relative flex items-center justify-between gap-3 md:gap-4 px-4 md:px-5 py-2.5 bg-background/90 backdrop-blur-xl border border-primary/20 rounded-2xl shadow-2xl">
-          {/* bottom status line */}
-          <div className="absolute -bottom-px left-8 right-8 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+        <div className="relative flex items-center justify-between gap-3 md:gap-4 px-5 md:px-6 py-3 bg-background/60 backdrop-blur-2xl border border-primary/15 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300 hover:border-primary/30">
+          {/* animated bottom highlight */}
+          <div className="absolute -bottom-px left-12 right-12 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
+
 
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 pr-3 md:pr-4 border-r border-primary/10 shrink-0 min-w-0">

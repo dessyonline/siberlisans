@@ -476,8 +476,73 @@ body, .glass-card, header, footer, main, section, aside, nav {
 @utility cyan-text {
   color: var(--color-cyan);
 }
+
+/* Advanced Cinematic Effects */
 @utility glass-card {
   background: oklch(0.17 0.015 240 / 0.78);
+  backdrop-filter: blur(16px);
+  border: 1px solid oklch(0.82 0.20 145 / 0.15);
+  box-shadow: 
+    0 4px 24px -1px oklch(0 0 0 / 0.2),
+    inset 0 0 0 1px oklch(1 1 0 / 0.03);
+}
+
+@utility glass-card-hover {
+  transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
+}
+@utility glass-card-hover:hover {
+  background: oklch(0.19 0.018 240 / 0.85);
+  border-color: oklch(0.82 0.20 145 / 0.4);
+  box-shadow: 
+    0 0 0 1px oklch(0.82 0.20 145 / 0.2),
+    0 12px 40px -4px oklch(0.82 0.20 145 / 0.15);
+  transform: translateY(-2px);
+}
+
+@utility cyber-button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+@utility cyber-button::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent,
+    oklch(0.82 0.20 145 / 0.1),
+    transparent
+  );
+  transform: rotate(45deg);
+  transition: 0.5s;
+  pointer-events: none;
+}
+@utility cyber-button:hover::after {
+  left: 100%;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+  50% { transform: translateY(-20px) scale(1.05); opacity: 0.8; }
+}
+
+@utility floating-particle {
+  animation: float 8s ease-in-out infinite;
+}
+
+@keyframes text-reveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+@utility reveal-text {
+  animation: text-reveal 1.2s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+
   backdrop-filter: blur(8px);
   border: 1px solid oklch(0.28 0.02 220 / 0.8);
 }

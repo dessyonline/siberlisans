@@ -303,14 +303,20 @@ function Index() {
 
       <section className="relative overflow-hidden border-b border-border/40">
         {/* animated grid backdrop */}
-        <div className="pointer-events-none absolute inset-0 cyber-grid grid-drift" aria-hidden />
+        <div className="pointer-events-none absolute inset-0 cyber-grid grid-drift opacity-60" aria-hidden />
 
-        {/* floating orbs */}
-        <div className="hero-orb h-[420px] w-[420px] left-[-120px] top-[-80px]" style={{ background: "oklch(0.82 0.20 145 / 0.55)" }} aria-hidden />
-        <div className="hero-orb h-[380px] w-[380px] right-[-100px] top-[40%] animation-delay-[3s]" style={{ background: "oklch(0.65 0.20 300 / 0.35)", animationDelay: "3s" }} aria-hidden />
-        <div className="hero-orb h-[300px] w-[300px] left-[35%] bottom-[-120px]" style={{ background: "oklch(0.75 0.13 210 / 0.30)", animationDelay: "6s" }} aria-hidden />
+        {/* floating particles/orbs */}
+        <div className="hero-orb h-[420px] w-[420px] left-[-120px] top-[-80px] floating-particle" style={{ background: "oklch(0.82 0.20 145 / 0.4)" }} aria-hidden />
+        <div className="hero-orb h-[380px] w-[380px] right-[-100px] top-[20%] floating-particle" style={{ background: "oklch(0.65 0.20 300 / 0.3)", animationDelay: "-2s" }} aria-hidden />
+        <div className="hero-orb h-[250px] w-[250px] left-[60%] bottom-[10%] floating-particle" style={{ background: "oklch(0.75 0.13 210 / 0.2)", animationDelay: "-4s" }} aria-hidden />
+        
+        {/* additional micro-particles */}
+        <div className="absolute top-[20%] left-[10%] w-1 h-1 bg-primary rounded-full animate-ping opacity-40" />
+        <div className="absolute top-[40%] right-[15%] w-1 h-1 bg-primary rounded-full animate-ping opacity-20 animation-delay-[1s]" />
+        
         {/* subtle scan lines */}
-        <div className="pointer-events-none absolute inset-0 scan-line opacity-40" aria-hidden />
+        <div className="pointer-events-none absolute inset-0 scan-line opacity-20" aria-hidden />
+
 
         <div className="relative mx-auto max-w-6xl px-4 pt-28 pb-24 sm:pt-32 sm:pb-28">
           <div className="grid gap-14 lg:grid-cols-[1.15fr_1fr] items-center">
@@ -345,19 +351,20 @@ function Index() {
                   delay={1600}
                 />
               </p>
-              <div className="mt-9 flex flex-wrap gap-3">
-                <Button asChild size="lg" className="font-mono neon-glow-strong group h-14 px-8 text-base">
+              <div className="mt-9 flex flex-wrap gap-4">
+                <Button asChild size="lg" className="font-mono neon-glow-strong cyber-button group h-14 px-10 text-base rounded-xl">
                   <Link to="/urunler">
-                    <Rocket className="mr-2 h-5 w-5 group-hover:animate-bounce" />
+                    <Rocket className="mr-2 h-5 w-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                     Lisansları Keşfet
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="font-mono border-primary/40 hover:bg-primary/10 h-14 px-8 text-base">
+                <Button asChild size="lg" variant="outline" className="font-mono border-primary/40 hover:bg-primary/10 glass-card-hover h-14 px-10 text-base rounded-xl">
                   <Link to="/cyberlab">
                     <FlaskConical className="mr-2 h-5 w-5" />
                     Laboratuvar
                   </Link>
                 </Button>
+
               </div>
 
               {/* mini trust stats */}
