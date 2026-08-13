@@ -240,6 +240,28 @@ function AuthPage() {
                 <Field label="görünen ad" value={displayName} onChange={setDisplayName} />
                 <Field label="e-posta" value={email} onChange={setEmail} type="email" autoComplete="email" />
                 <Field label="şifre (min 6)" value={password} onChange={setPassword} type="password" autoComplete="new-password" />
+                
+                <div className="space-y-1.5">
+                  <Label className="font-mono text-xs text-muted-foreground flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Send className="h-3 w-3 text-primary" /> telegram adresi
+                    </span>
+                    <span className="text-[10px] text-primary/70">zorunlu</span>
+                  </Label>
+                  <Input
+                    value={telegram}
+                    onChange={(e) => setTelegram(e.target.value)}
+                    placeholder="@kullaniciadi veya 'yok'"
+                    className="font-mono"
+                  />
+                  <div className="flex items-start gap-1.5 rounded bg-primary/5 p-2 border border-primary/20">
+                    <Info className="h-3 w-3 text-primary shrink-0 mt-0.5" />
+                    <p className="font-mono text-[9px] text-muted-foreground leading-tight">
+                      Destek, lisans teslimi ve acil bildirimler için gereklidir. Telegram kullanmıyorsanız 
+                      <span className="text-primary mx-1">'yok'</span> yazarak devam edebilirsiniz.
+                    </p>
+                  </div>
+                </div>
                 {!urlRef && (
                   <div className="space-y-1.5">
                     <Label className="font-mono text-xs text-muted-foreground flex items-center gap-1.5">
