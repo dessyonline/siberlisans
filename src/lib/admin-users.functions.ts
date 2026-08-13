@@ -24,7 +24,7 @@ export const listUsers = createServerFn({ method: "GET" })
       await Promise.all([
         supabaseAdmin
           .from("profiles")
-          .select("id, email, display_name, created_at, last_seen_ip, last_seen_at")
+          .select("id, email, display_name, created_at, last_seen_ip, last_seen_at, telegram_handle")
           .order("created_at", { ascending: false }),
         supabaseAdmin.from("user_roles").select("user_id, role"),
         supabaseAdmin.from("orders").select("user_id, status, price_try, client_ip, user_agent, created_at").order("created_at", { ascending: false }),
@@ -120,6 +120,7 @@ export const listUsers = createServerFn({ method: "GET" })
         recent_ips: recentIps,
         roles: roleMap.get(p.id) ?? [],
         stats: orderStats.get(p.id) ?? { total: 0, approved: 0, pending: 0, spend: 0 },
+        telegram_handle: (p as any).telegram_handle ?? null,
       };
     });
   });
