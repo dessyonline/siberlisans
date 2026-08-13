@@ -107,6 +107,7 @@ function AuthPage() {
       return toast.error("[!] geçici / disposable e-posta adresleri kabul edilmiyor");
     }
     if (password.length < 6) return toast.error("[!] şifre en az 6 karakter olmalı");
+    if (!telegram.trim()) return toast.error("[!] telegram adresi zorunludur (yoksa 'yok' yazın)");
     if (parseInt(captchaInput, 10) !== captcha.answer) {
       setCaptcha(newCaptcha());
       setCaptchaInput("");
