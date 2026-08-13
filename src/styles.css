@@ -503,26 +503,26 @@ body, .glass-card, header, footer, main, section, aside, nav {
   position: relative;
   overflow: hidden;
   transition: all 0.3s ease;
-}
-@utility cyber-button::after {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    45deg,
-    transparent,
-    oklch(0.82 0.20 145 / 0.1),
-    transparent
-  );
-  transform: rotate(45deg);
-  transition: 0.5s;
-  pointer-events: none;
-}
-@utility cyber-button:hover::after {
-  left: 100%;
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      45deg,
+      transparent,
+      oklch(0.82 0.20 145 / 0.1),
+      transparent
+    );
+    transform: rotate(45deg);
+    transition: 0.5s;
+    pointer-events: none;
+  }
+  &:hover::after {
+    left: 100%;
+  }
 }
 
 @keyframes float {
