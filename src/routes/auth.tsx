@@ -122,6 +122,7 @@ function AuthPage() {
         emailRedirectTo: `${window.location.origin}/hesabim`,
         data: {
           display_name: displayName || em.split("@")[0],
+          telegram_handle: telegram.trim(),
           ...(refCode ? { ref: refCode } : {}),
         },
       },
