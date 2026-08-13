@@ -397,8 +397,8 @@ body, .glass-card, header, footer, main, section, aside, nav {
   transition: background-color 260ms ease, border-color 260ms ease, color 260ms ease;
 }
 
-/* =================== THEME-AWARE REMAPS FOR HARDCODED bg-black / text-white =================== *
- * Some legacy components use bg-black/40 etc. Remap them per theme so cards
+/* =================== THEME-AWARE REMAPS FOR HARDCODED bg-black / text-white =================== */
+/* Some legacy components use bg-black/40 etc. Remap them per theme so cards
  * inherit the palette instead of forcing a black slab on light/matrix/sunset. */
 
 /* Non-dark themes: use card/background tint instead of raw black */
