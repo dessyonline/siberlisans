@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Terminal, Gift, MailCheck } from "lucide-react";
+import { Terminal, Gift, MailCheck, Send, Info } from "lucide-react";
 import { MfaChallenge } from "@/components/security/MfaChallenge";
 
 const authSearch = z.object({ ref: z.string().max(20).optional() });
