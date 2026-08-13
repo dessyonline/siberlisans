@@ -660,7 +660,7 @@ function ProfileTab({ userId, email, telegramHandle, onSignOut }: { userId: stri
   const updateTelegram = async () => {
     setTgSaving(true);
     try {
-      const { error } = await supabase.from("profiles").update({ telegram_handle: telegram }).eq("id", userId);
+      const { error } = await supabase.from("profiles").update({ telegram_handle: telegram } as any).eq("id", userId);
       if (error) throw error;
       toast.success("[✓] telegram güncellendi");
     } catch (e) {
