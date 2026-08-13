@@ -17,6 +17,7 @@ import {
   X,
   MailCheck,
   MailX,
+  Send,
 } from "lucide-react";
 
 type SortKey = "recent_signup" | "recent_login" | "top_spender" | "most_orders";
@@ -233,8 +234,16 @@ function UsersAdmin() {
                           <MailX className="h-3 w-3 text-warn" aria-label="e-posta doğrulanmamış" />
                         )}
                       </div>
-                      <div className="text-xs text-muted-foreground truncate font-mono">
-                        {u.email ?? "—"}
+                      <div className="flex flex-col gap-0.5">
+                        <div className="text-xs text-muted-foreground truncate font-mono">
+                          {u.email ?? "—"}
+                        </div>
+                        {(u as any).telegram_handle && (
+                          <div className="text-[10px] text-cyan/80 font-mono flex items-center gap-1">
+                            <Send className="h-2.5 w-2.5" />
+                            {(u as any).telegram_handle}
+                          </div>
+                        )}
                       </div>
                     </div>
                     <div className="hidden sm:flex flex-col items-end shrink-0 font-mono text-[10px] text-muted-foreground">

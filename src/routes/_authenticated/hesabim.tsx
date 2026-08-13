@@ -268,7 +268,12 @@ function MyAccount() {
           <AffiliateBlock />
         </TabsContent>
         <TabsContent value="profile" className="mt-6">
-          <ProfileTab userId={user?.id ?? ""} email={user?.email ?? ""} onSignOut={signOut} />
+          <ProfileTab 
+            userId={user?.id ?? ""} 
+            email={user?.email ?? ""} 
+            telegramHandle={(user as any)?.telegram_handle ?? ""}
+            onSignOut={signOut} 
+          />
         </TabsContent>
         <TabsContent value="badges" className="mt-6">
           <BadgesBlock />
@@ -606,7 +611,9 @@ function KeyRowItem({ row }: { row: KeyRow }) {
   );
 }
 
-function ProfileTab({ userId, email, onSignOut }: { userId: string; email: string; onSignOut: () => void }) {
+function ProfileTab({ userId, email, telegramHandle, onSignOut }: { userId: string; email: string; telegramHandle?: string; onSignOut: () => void }) {
+  const [telegram, setTelegram] = useState(telegramHandle || "");
+  const [tgSaving, setTgSaving] = useState(false);
   const [pw, setPw] = useState("");
   const [pw2, setPw2] = useState("");
   const [saving, setSaving] = useState(false);
@@ -648,6 +655,19 @@ function ProfileTab({ userId, email, onSignOut }: { userId: string; email: strin
     setPw("");
     setPw2("");
     toast.success("[✓] şifre güncellendi");
+  };
+
+  const updateTelegram = async () => {
+    setTgSaving(true);
+    try {
+      const { error } = await supabase.from("profiles").update({ telegram_handle: telegram } as any).eq("id", userId);
+      if (error) throw error;
+      toast.success("[✓] telegram güncellendi");
+    } catch (e) {
+      toast.error(`[!] ${(e as Error).message}`);
+    } finally {
+      setTgSaving(false);
+    }
   };
 
   const currentAvatarId = profile?.avatar_id ?? null;
