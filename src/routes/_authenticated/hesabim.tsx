@@ -268,7 +268,12 @@ function MyAccount() {
           <AffiliateBlock />
         </TabsContent>
         <TabsContent value="profile" className="mt-6">
-          <ProfileTab userId={user?.id ?? ""} email={user?.email ?? ""} onSignOut={signOut} />
+          <ProfileTab 
+            userId={user?.id ?? ""} 
+            email={user?.email ?? ""} 
+            telegramHandle={(user as any)?.telegram_handle ?? ""}
+            onSignOut={signOut} 
+          />
         </TabsContent>
         <TabsContent value="badges" className="mt-6">
           <BadgesBlock />
