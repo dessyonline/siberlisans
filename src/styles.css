@@ -489,14 +489,14 @@ body, .glass-card, header, footer, main, section, aside, nav {
 
 @utility glass-card-hover {
   transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-}
-@utility glass-card-hover:hover {
-  background: oklch(0.19 0.018 240 / 0.85);
-  border-color: oklch(0.82 0.20 145 / 0.4);
-  box-shadow: 
-    0 0 0 1px oklch(0.82 0.20 145 / 0.2),
-    0 12px 40px -4px oklch(0.82 0.20 145 / 0.15);
-  transform: translateY(-2px);
+  &:hover {
+    background: oklch(0.19 0.018 240 / 0.85);
+    border-color: oklch(0.82 0.20 145 / 0.4);
+    box-shadow: 
+      0 0 0 1px oklch(0.82 0.20 145 / 0.2),
+      0 12px 40px -4px oklch(0.82 0.20 145 / 0.15);
+    transform: translateY(-2px);
+  }
 }
 
 @utility cyber-button {
