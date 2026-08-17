@@ -225,17 +225,32 @@ function TypedLine({ text, delay = 0, className = "" }: { text: string; delay?: 
 function Index() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const { data: products } = useQuery({
+  const { data: products = [], isLoading } = useQuery({
     queryKey: ["products", "active"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("id, name, slug, description, duration, price_try, image_url, category, featured, manual_fulfillment, stock_hint, unlimited_stock, created_at, sort_order, tier, retail_price_try, retail_price_source_url, duration_label, license_keys(status)")
-        .eq("active", true)
-        .order("price_try");
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from("products")
+          .select("id, name, slug, description, duration, price_try, image_url, category, featured, manual_fulfillment, stock_hint, unlimited_stock, created_at, sort_order, tier, retail_price_try, retail_price_source_url, duration_label, license_keys(status)")
+          .eq("active", true)
+          .order("price_try");
+        if (error) throw error;
+        
+        // Cache to local storage
+        import("@/lib/local-storage").then(({ storage }) => {
+          storage.setItem("products", data);
+        });
+        
+        return data || [];
+      } catch (err) {
+        console.warn("Backend unavailable, falling back to local storage", err);
+        const { storage, seedLocalData } = await import("@/lib/local-storage");
+        await seedLocalData();
+        const local = await storage.getItem("products");
+        return (local as any[]) || [];
+      }
     },
+    retry: 1,
   });
 
   // AI ürünlerini üstte gösterme sırası
