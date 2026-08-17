@@ -25,7 +25,7 @@ export const storage = {
   async clear(): Promise<void> {
     try {
       const allKeys = await keys();
-      await Promise.all(allKeys.map(k => del(k)));
+      await Promise.all(allKeys.map((k) => del(k)));
       localStorage.clear();
     } catch (e) {
       localStorage.clear();

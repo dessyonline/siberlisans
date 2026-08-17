@@ -225,7 +225,7 @@ function TypedLine({ text, delay = 0, className = "" }: { text: string; delay?: 
 function Index() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const { data: products, isLoading } = useQuery({
+  const { data: products = [], isLoading } = useQuery({
     queryKey: ["products", "active"],
     queryFn: async () => {
       try {
@@ -241,12 +241,13 @@ function Index() {
           storage.setItem("products", data);
         });
         
-        return data;
+        return data || [];
       } catch (err) {
         console.warn("Backend unavailable, falling back to local storage", err);
         const { storage, seedLocalData } = await import("@/lib/local-storage");
         await seedLocalData();
-        return await storage.getItem("products") || [];
+        const local = await storage.getItem("products");
+        return (local as any[]) || [];
       }
     },
     retry: 1,
