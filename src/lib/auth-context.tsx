@@ -37,17 +37,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     });
 
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-      if (data.session?.user) {
-        supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", data.session.user.id)
-          .then(({ data: r }) => setRoles((r ?? []).map((x) => x.role as Role)));
+    const initializeAuth = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        setSession(data.session);
+        if (data.session?.user) {
+          const { data: r } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", data.session.user.id);
+          setRoles((r ?? []).map((x) => x.role as Role));
+        }
+      } catch (err) {
+        console.warn("Auth backend unavailable, checking local session");
+        const { storage } = await import("@/lib/local-storage");
+        const localUser = await storage.getItem("user_profile");
+        if (localUser) {
+          // Mock session for local dev
+          setSession({ user: localUser, access_token: 'local-token' } as any);
+          setRoles(['user']);
+        }
+      } finally {
+        setLoading(false);
       }
-    });
+    };
+
+    initializeAuth();
 
     return () => sub.subscription.unsubscribe();
   }, []);
