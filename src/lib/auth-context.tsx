@@ -49,14 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setRoles((r ?? []).map((x) => x.role as Role));
         }
       } catch (err) {
-        console.warn("Auth backend unavailable, checking local session");
-        const { storage } = await import("@/lib/local-storage");
-        const localUser = await storage.getItem("user_profile");
-        if (localUser) {
-          // Mock session for local dev
-          setSession({ user: localUser, access_token: 'local-token' } as any);
-          setRoles(['user']);
-        }
+        console.error("Auth initialization failed:", err);
       } finally {
         setLoading(false);
       }

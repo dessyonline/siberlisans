@@ -235,19 +235,10 @@ function Index() {
           .eq("active", true)
           .order("price_try");
         if (error) throw error;
-        
-        // Cache to local storage
-        import("@/lib/local-storage").then(({ storage }) => {
-          storage.setItem("products", data);
-        });
-        
         return data || [];
       } catch (err) {
-        console.warn("Backend unavailable, falling back to local storage", err);
-        const { storage, seedLocalData } = await import("@/lib/local-storage");
-        await seedLocalData();
-        const local = await storage.getItem("products");
-        return (local as any[]) || [];
+        console.error("Failed to fetch products:", err);
+        return [];
       }
     },
     retry: 1,
