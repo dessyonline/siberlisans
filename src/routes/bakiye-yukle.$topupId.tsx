@@ -147,7 +147,7 @@ function TopupPayment() {
                     ⚠︎ açıklamaya mutlaka referansı yaz — eşleşmezse onaylanmaz
                   </div>
                 </div>
-                <img src={enparaQr} alt="QR" className="h-32 w-32 rounded border border-border object-cover" />
+                <img src={enparaQr} alt="Ödeme için Enpara QR kodu" className="h-32 w-32 rounded border border-border object-cover" />
               </div>
             </div>
           ) : (

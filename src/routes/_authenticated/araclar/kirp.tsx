@@ -161,7 +161,7 @@ function Page() {
             {outUrl && (
               <div>
                 <div className="text-[11px] font-mono text-primary mb-1">çıktı</div>
-                <img src={outUrl} alt="çıktı" className="rounded border border-primary/40 max-w-[400px]" />
+                <img src={outUrl} alt="Kırpılmış çıktı görseli" className="rounded border border-primary/40 max-w-[400px]" />
                 <a
                   href={outUrl}
                   download="siberphp-crop.png"
