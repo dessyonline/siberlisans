@@ -1,0 +1,27 @@
+# SiberPHP (Siberlisans)
+
+> Dijital lisans ve yazılım anahtarı satışı yapan Türkçe e-ticaret platformu: anında teslimat, cüzdan bakiyesi, paketler ve yapay zekâ araçları.
+
+SiberPHP; orijinal yazılım lisansları, abonelik paketleri ve tarayıcı tabanlı yapay zekâ araçları sunar. Siparişler otomatik teslim edilir, ödemeler cüzdan bakiyesi veya Shopier üzerinden alınır.
+
+## Pages
+
+- [Ana sayfa](/): Öne çıkan ürünler, kampanyalar ve hızlı erişim.
+- [Ürünler](/urunler): Tüm lisans ve yazılım ürünleri kataloğu.
+- [Paketler](/paketler): Abonelik ve kombine ürün paketleri.
+- [AI Paketleri](/paketler/ai): Yapay zekâ araçları için kredi ve abonelik planları.
+- [Karşılaştır](/karsilastir): Ürünleri özellik ve fiyat bazında karşılaştırma.
+- [Çekiliş](/cekilis): Aktif çekilişler ve kazananlar.
+- [Liderlik](/liderlik): Aylık kullanıcı liderlik tablosu.
+- [Bayilik](/bayilik): Bayi ve toptan satış programı.
+- [Blog](/blog): Lisans, yazılım ve güvenlik rehberleri.
+- [Nasıl Çalışır](/nasil-calisir): Sipariş ve teslimat süreci.
+- [SSS](/sss): Sık sorulan sorular.
+- [İletişim](/iletisim): Destek ve iletişim kanalları.
+
+## Optional
+
+- [Gizlilik Politikası](/gizlilik): Veri işleme ve gizlilik esasları.
+- [KVKK](/kvkk): Kişisel verilerin korunması aydınlatma metni.
+- [İade Politikası](/iade): İade ve iptal koşulları.
+- [Kullanım Koşulları](/kosullar): Hizmet kullanım şartları.
