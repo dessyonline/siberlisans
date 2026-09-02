@@ -85,7 +85,7 @@ function Page() {
             {srcUrl && (
               <div>
                 <div className="text-[11px] font-mono text-muted-foreground mb-1">orijinal</div>
-                <img src={srcUrl} alt="orijinal" className="rounded border border-border/60 w-full" />
+                <img src={srcUrl} alt="Yüklenen orijinal görsel" className="rounded border border-border/60 w-full" />
               </div>
             )}
             {outUrl && (
@@ -100,7 +100,7 @@ function Page() {
                     backgroundPosition: "0 0, 8px 8px",
                   }}
                 >
-                  <img src={outUrl} alt="arkaplansız" className="w-full" />
+                  <img src={outUrl} alt="Arka planı kaldırılmış görsel" className="w-full" />
                 </div>
                 <a
                   href={outUrl}

@@ -154,7 +154,7 @@ function Page() {
               <div className="text-[11px] font-mono text-muted-foreground mb-1">
                 orijinal · {bytesToKb(src.file.size)} KB
               </div>
-              <img src={src.url} alt="src" className="rounded border border-border/60 w-full" />
+              <img src={src.url} alt="Sıkıştırılacak kaynak görsel" className="rounded border border-border/60 w-full" />
             </div>
             {out && (
               <div>
@@ -162,7 +162,7 @@ function Page() {
                   çıktı · {bytesToKb(out.size)} KB · {out.w}×{out.h} ·{" "}
                   {(((src.file.size - out.size) / src.file.size) * 100).toFixed(0)}% küçüldü
                 </div>
-                <img src={out.url} alt="out" className="rounded border border-primary/40 w-full" />
+                <img src={out.url} alt="Sıkıştırılmış çıktı görseli" className="rounded border border-primary/40 w-full" />
                 <a
                   href={out.url}
                   download={`siberphp-compressed.${ext}`}

@@ -67,13 +67,13 @@ function Page() {
               <div className="text-[11px] font-mono text-muted-foreground mb-1">
                 orijinal · {(origSize / 1024).toFixed(1)} KB · EXIF olabilir
               </div>
-              <img src={src.url} alt="orig" className="rounded border border-border/60 w-full" />
+              <img src={src.url} alt="Orijinal yüklenen görsel" className="rounded border border-border/60 w-full" />
             </div>
             <div>
               <div className="text-[11px] font-mono text-primary mb-1">
                 temizlenmiş · {(out.size / 1024).toFixed(1)} KB · 0 metadata
               </div>
-              <img src={out.url} alt="clean" className="rounded border border-primary/40 w-full" />
+              <img src={out.url} alt="EXIF verisi temizlenmiş görsel" className="rounded border border-primary/40 w-full" />
               <a
                 href={out.url}
                 download={`siberphp-clean-${src.file.name.replace(/\.[^.]+$/, "")}.${src.file.type === "image/png" ? "png" : "jpg"}`}

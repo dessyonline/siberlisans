@@ -98,7 +98,7 @@ function Page() {
 
         {imgUrl && (
           <div className="grid gap-4 md:grid-cols-2">
-            <img src={imgUrl} alt="src" className="rounded border border-border/60 w-full" />
+            <img src={imgUrl} alt="Renk paleti çıkarılan kaynak görsel" className="rounded border border-border/60 w-full" />
             <div className="space-y-2">
               {palette.map((s) => (
                 <button
