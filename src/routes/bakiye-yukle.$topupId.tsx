@@ -1,14 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth-context";
-import { useServerFn } from "@tanstack/react-start";
-import { markTopupPaid } from "@/lib/wallet.functions";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import enparaQr from "@/assets/enpara-qr.png";
-import { Copy, UploadCloud, CheckCircle2, Clock, XCircle, ShieldCheck, ArrowRight } from "lucide-react";
+import { Copy, CheckCircle2, Clock, XCircle, ShieldCheck, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/bakiye-yukle/$topupId")({
   component: TopupPayment,
@@ -24,18 +19,13 @@ function copy(text: string, label = "kopyalandı") {
 
 function TopupPayment() {
   const { topupId } = Route.useParams();
-  const { user } = useAuth();
-  const qc = useQueryClient();
-  const markPaidFn = useServerFn(markTopupPaid);
-  const [uploading, setUploading] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const { data: topup } = useQuery({
     queryKey: ["topup", topupId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wallet_topups")
-        .select("id, user_id, reference_code, amount_try, status, receipt_path, admin_note, created_at, approved_at")
+        .select("id, user_id, reference_code, amount_try, status, admin_note, created_at, approved_at")
         .eq("id", topupId)
         .single();
       if (error) throw error;
@@ -51,24 +41,6 @@ function TopupPayment() {
       return data;
     },
   });
-
-  async function onFile(file: File | null) {
-    if (!file || !user || !topup) return;
-    setUploading(true);
-    try {
-      const ext = file.name.split(".").pop() ?? "jpg";
-      const path = `${user.id}/topup-${topup.id}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("receipts").upload(path, file, { upsert: true });
-      if (upErr) throw upErr;
-      await markPaidFn({ data: { topupId: topup.id, receiptPath: path } });
-      toast.success("Dekont yüklendi, inceleniyor");
-      qc.invalidateQueries({ queryKey: ["topup", topupId] });
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setUploading(false);
-    }
-  }
 
   if (!topup) return <div className="p-8 text-center font-mono text-muted-foreground">yükleniyor…</div>;
 
@@ -154,29 +126,6 @@ function TopupPayment() {
             <div className="glass-card rounded-lg p-4 text-sm text-muted-foreground">Banka bilgisi tanımlı değil.</div>
           )}
 
-          <div className="glass-card rounded-lg p-4 md:p-5 mt-4">
-            <div className="mb-3 font-mono text-xs text-muted-foreground">$ dekont_yukle</div>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*,application/pdf"
-              className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0] ?? null)}
-            />
-            <Button
-              onClick={() => fileRef.current?.click()}
-              disabled={uploading}
-              className="w-full neon-glow font-mono"
-            >
-              <UploadCloud className="h-4 w-4 mr-2" />
-              {uploading ? "yükleniyor…" : status === "reviewing" ? "yeni dekont yükle" : "dekont yükle"}
-            </Button>
-            {topup.receipt_path && (
-              <div className="mt-2 text-[11px] text-muted-foreground font-mono">
-                mevcut dekont yüklendi — admin inceliyor
-              </div>
-            )}
-          </div>
         </>
       )}
     </div>
