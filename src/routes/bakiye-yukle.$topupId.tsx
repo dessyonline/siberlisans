@@ -24,18 +24,13 @@ function copy(text: string, label = "kopyalandı") {
 
 function TopupPayment() {
   const { topupId } = Route.useParams();
-  const { user } = useAuth();
-  const qc = useQueryClient();
-  const markPaidFn = useServerFn(markTopupPaid);
-  const [uploading, setUploading] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const { data: topup } = useQuery({
     queryKey: ["topup", topupId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wallet_topups")
-        .select("id, user_id, reference_code, amount_try, status, receipt_path, admin_note, created_at, approved_at")
+        .select("id, user_id, reference_code, amount_try, status, admin_note, created_at, approved_at")
         .eq("id", topupId)
         .single();
       if (error) throw error;
@@ -51,24 +46,6 @@ function TopupPayment() {
       return data;
     },
   });
-
-  async function onFile(file: File | null) {
-    if (!file || !user || !topup) return;
-    setUploading(true);
-    try {
-      const ext = file.name.split(".").pop() ?? "jpg";
-      const path = `${user.id}/topup-${topup.id}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("receipts").upload(path, file, { upsert: true });
-      if (upErr) throw upErr;
-      await markPaidFn({ data: { topupId: topup.id, receiptPath: path } });
-      toast.success("Dekont yüklendi, inceleniyor");
-      qc.invalidateQueries({ queryKey: ["topup", topupId] });
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setUploading(false);
-    }
-  }
 
   if (!topup) return <div className="p-8 text-center font-mono text-muted-foreground">yükleniyor…</div>;
 
