@@ -1,14 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/lib/auth-context";
-import { useServerFn } from "@tanstack/react-start";
-import { markTopupPaid } from "@/lib/wallet.functions";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import enparaQr from "@/assets/enpara-qr.png";
-import { Copy, UploadCloud, CheckCircle2, Clock, XCircle, ShieldCheck, ArrowRight } from "lucide-react";
+import { Copy, CheckCircle2, Clock, XCircle, ShieldCheck, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/bakiye-yukle/$topupId")({
   component: TopupPayment,
@@ -131,29 +126,6 @@ function TopupPayment() {
             <div className="glass-card rounded-lg p-4 text-sm text-muted-foreground">Banka bilgisi tanımlı değil.</div>
           )}
 
-          <div className="glass-card rounded-lg p-4 md:p-5 mt-4">
-            <div className="mb-3 font-mono text-xs text-muted-foreground">$ dekont_yukle</div>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*,application/pdf"
-              className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0] ?? null)}
-            />
-            <Button
-              onClick={() => fileRef.current?.click()}
-              disabled={uploading}
-              className="w-full neon-glow font-mono"
-            >
-              <UploadCloud className="h-4 w-4 mr-2" />
-              {uploading ? "yükleniyor…" : status === "reviewing" ? "yeni dekont yükle" : "dekont yükle"}
-            </Button>
-            {topup.receipt_path && (
-              <div className="mt-2 text-[11px] text-muted-foreground font-mono">
-                mevcut dekont yüklendi — admin inceliyor
-              </div>
-            )}
-          </div>
         </>
       )}
     </div>
