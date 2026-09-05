@@ -32,7 +32,7 @@ function AdminWallet() {
     queryFn: async () => {
       const { data } = await supabase
         .from("wallet_topups")
-        .select("id, user_id, amount_try, reference_code, receipt_path, status, admin_note, created_at, client_ip, user_agent, is_vpn, ip_country")
+        .select("id, user_id, amount_try, reference_code, status, admin_note, created_at, client_ip, user_agent, is_vpn, ip_country")
         .order("created_at", { ascending: false })
         .limit(200);
       return data ?? [];
@@ -69,11 +69,6 @@ function AdminWallet() {
     },
     staleTime: 60_000,
   });
-
-  async function openReceipt(path: string) {
-    const { data } = await supabase.storage.from("receipts").createSignedUrl(path, 60 * 10);
-    if (data?.signedUrl) window.open(data.signedUrl, "_blank");
-  }
 
   async function onApprove(id: string) {
     if (!confirm("Bu yükleme onaylansın mı?")) return;
