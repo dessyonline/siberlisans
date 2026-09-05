@@ -124,11 +124,6 @@ function AdminWallet() {
                   </div>
                 </div>
                 <div className="font-mono text-lg font-bold">{fmt(Number(t.amount_try))} TL</div>
-                {t.receipt_path && (
-                  <Button size="sm" variant="outline" onClick={() => openReceipt(t.receipt_path!)}>
-                    <Eye className="h-3 w-3 mr-1" /> dekont
-                  </Button>
-                )}
                 <Button size="sm" onClick={() => onApprove(t.id)}>
                   <CheckCircle2 className="h-3 w-3 mr-1" /> onayla
                 </Button>
