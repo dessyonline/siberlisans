@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { CheckCircle2, XCircle, Wallet, Search, Plus, Minus, Eye } from "lucide-react";
+import { CheckCircle2, XCircle, Wallet, Search, Plus, Minus } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/cuzdan")({
   ssr: false,
