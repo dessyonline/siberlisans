@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Zap } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { listActiveFlashSales } from "@/lib/catalog.functions";
 
 type FlashSale = {
   id: string;
@@ -11,30 +13,15 @@ type FlashSale = {
 };
 
 export function useActiveFlashSale(productId: string | undefined) {
-  const [sale, setSale] = useState<FlashSale | null>(null);
-  useEffect(() => {
-    if (!productId) return;
-    let cancelled = false;
-    (async () => {
-      const nowIso = new Date().toISOString();
-      const { data } = await supabase
-        // biome-ignore lint/suspicious/noExplicitAny: new table
-        .from("flash_sales" as any)
-        .select("id, discount_type, discount_value, ends_at, label")
-        .eq("product_id", productId)
-        .eq("is_active", true)
-        .lte("starts_at", nowIso)
-        .gt("ends_at", nowIso)
-        .order("ends_at", { ascending: true })
-        .limit(1)
-        .maybeSingle();
-      if (!cancelled) setSale((data as unknown as FlashSale) ?? null);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [productId]);
-  return sale;
+  const fetchSales = useServerFn(listActiveFlashSales);
+  const { data } = useQuery({
+    queryKey: ["mysql-active-flash-sales"],
+    queryFn: () => fetchSales(),
+    enabled: !!productId,
+    staleTime: 15_000,
+    refetchInterval: 15_000,
+  });
+  return data?.find((sale) => sale.product_id === productId && new Date(sale.ends_at).getTime() > Date.now()) ?? null;
 }
 
 export function FlashSaleBadge({ sale }: { sale: FlashSale | null }) {

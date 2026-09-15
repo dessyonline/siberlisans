@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { getProduct } from "@/lib/catalog.functions";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
 import { createOrder } from "@/lib/orders.functions";
@@ -26,34 +26,19 @@ import { CompareToggle } from "@/components/CompareBar";
 import { pushRecent } from "@/lib/recently-viewed";
 
 
-const productMetaQuery = (slug: string) => ({
-  queryKey: ["product-meta", slug],
-  queryFn: async () => {
-    const { data: product } = await supabase
-      .from("products")
-      .select("id, name, description, image_url, price_try, category, avg_rating, review_count")
-      .eq("slug", slug)
-      .eq("active", true)
-      .maybeSingle();
-    if (!product) return null;
-    return {
-      ...product,
-      reviewCount: Number(product.review_count ?? 0),
-      ratingAvg: Number(product.avg_rating ?? 0),
-    };
-  },
+const productDetailQuery = (slug: string) => ({
+  queryKey: ["mysql-product", slug],
+  queryFn: () => getProduct({ data: { slug } }),
 });
 
 export const Route = createFileRoute("/urun/$slug")({
   component: ProductDetail,
   loader: async ({ params, context }) => {
-    const q = productMetaQuery(params.slug);
-    const product = await (context as { queryClient: import("@tanstack/react-query").QueryClient }).queryClient.ensureQueryData(q);
-    return { product };
+    return context.queryClient.ensureQueryData(productDetailQuery(params.slug));
   },
   head: ({ params, loaderData }) => {
     const p = loaderData?.product;
-    const url = `https://siberlisans.lovable.app/urun/${params.slug}`;
+    const url = `https://siberlisans.com/urun/${params.slug}`;
     const title = p ? `${p.name} — SiberPHP` : "Lisans — SiberPHP";
     const desc = p?.description
       ? p.description.replace(/\|/g, " · ").slice(0, 155)
@@ -64,9 +49,10 @@ export const Route = createFileRoute("/urun/$slug")({
       { property: "og:title", content: title },
       { property: "og:description", content: desc },
       { property: "og:type", content: "product" },
+      { name: "twitter:card", content: "summary_large_image" },
       { property: "og:url", content: url },
     ];
-    if (p?.image_url) {
+    if (p?.image_url?.startsWith("https://")) {
       meta.push({ property: "og:image", content: p.image_url });
       meta.push({ name: "twitter:image", content: p.image_url });
     }
@@ -93,11 +79,11 @@ export const Route = createFileRoute("/urun/$slug")({
           },
         }
       : {};
-    if (p && (p as { reviewCount?: number }).reviewCount && (p as { reviewCount?: number }).reviewCount! > 0) {
+    if (p && p.reviewCount > 0) {
       productLd.aggregateRating = {
         "@type": "AggregateRating",
-        ratingValue: Number((p as { ratingAvg?: number }).ratingAvg!.toFixed(2)),
-        reviewCount: (p as { reviewCount?: number }).reviewCount,
+        ratingValue: Number(p.ratingAvg.toFixed(2)),
+        reviewCount: p.reviewCount,
         bestRating: 5,
         worstRating: 1,
       };
@@ -114,8 +100,8 @@ export const Route = createFileRoute("/urun/$slug")({
               "@context": "https://schema.org",
               "@type": "BreadcrumbList",
               itemListElement: [
-                { "@type": "ListItem", position: 1, name: "Anasayfa", item: "https://siberlisans.lovable.app/" },
-                { "@type": "ListItem", position: 2, name: "Lisanslar", item: "https://siberlisans.lovable.app/urunler" },
+                { "@type": "ListItem", position: 1, name: "Anasayfa", item: "https://siberlisans.com/" },
+                { "@type": "ListItem", position: 2, name: "Lisanslar", item: "https://siberlisans.com/urunler" },
                 { "@type": "ListItem", position: 3, name: p.name, item: url },
               ],
             }),
@@ -171,34 +157,7 @@ function ProductDetail() {
   const addToCart = useCart((s) => s.addItem);
 
 
-  const { data: product, isLoading } = useQuery({
-    queryKey: ["product", slug],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("id, name, slug, description, duration, price_try, active, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, tier, retail_price_try, retail_price_source_url, duration_label, demo_video_url, created_at, orders_count, avg_rating, review_count, license_keys(status)")
-        .eq("slug", slug)
-        .single();
-      if (error) throw error;
-      return data;
-    },
-  });
-
-
-  const { data: relatedProducts } = useQuery({
-    queryKey: ["related-products", product?.category, product?.id],
-    enabled: !!product?.category,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("products")
-        .select("id, name, slug, price_try, image_url, category, tier")
-        .eq("active", true)
-        .eq("category", product!.category!)
-        .neq("id", product!.id)
-        .limit(4);
-      return data ?? [];
-    },
-  });
+  const { data: { product, relatedProducts } } = useSuspenseQuery(productDetailQuery(slug));
 
   useEffect(() => {
     if (!product) return;
@@ -267,20 +226,6 @@ function ProductDetail() {
   };
 
 
-  if (isLoading)
-    return (
-      <div className="mx-auto max-w-2xl px-4 py-10 animate-pulse">
-        <div className="glass-card rounded-xl p-8 space-y-4">
-          <div className="h-4 w-32 rounded bg-muted/40" />
-          <div className="h-56 rounded bg-muted/30" />
-          <div className="h-8 w-2/3 rounded bg-muted/40" />
-          <div className="h-4 w-full rounded bg-muted/30" />
-          <div className="h-4 w-5/6 rounded bg-muted/30" />
-          <div className="h-10 w-40 rounded bg-muted/40" />
-          <div className="h-11 w-full rounded bg-muted/40" />
-        </div>
-      </div>
-    );
   if (!product) return <div className="p-12 font-mono text-center">ürün bulunamadı</div>;
 
   const liveStock = (product.license_keys ?? []).filter((k: { status: string }) => k.status === "available").length;
