@@ -1,14 +1,16 @@
 # Roadmap
 
 ## MySQL (Hostinger) geçişi
-- [x] PHP köprü dosyası hazırla ve sunucuya yükle
-- [x] Köprü URL + token gizli anahtar olarak kayıtlı
+- [x] PHP köprü + gizli anahtarlar
 - [x] Şema + veri aktarımı (76 tablo, 1.561 kayıt)
-- [x] Sunucu tarafı veri katmanı (src/lib/mysql.server.ts)
-- [x] Ürün kataloğu (/urunler) MySQL'den okuyor
-- [ ] Anasayfa, ürün detay, karşılaştırma, paketler, blog
-- [ ] Sepet / sipariş / ödeme akışı
-- [ ] Cüzdan, kuponlar, referans/partner
-- [ ] Giriş sistemi (şifreler aktarılmadı → yeniden belirlenmeli)
-- [ ] Admin paneli
-- [ ] Postgres fonksiyon/trigger mantığının taşınması
+- [x] Sunucu veri katmanı (src/lib/mysql.server.ts)
+- [x] Ürün kataloğu (/urunler)
+- [x] Giriş sistemi: auth_users / auth_sessions / auth_password_tokens,
+      şifre (PBKDF2), çerez oturumu, kayıt, çıkış, /sifre-belirle
+- [ ] Anasayfa, ürün detay, paketler, blog, çekiliş, bayilik (okuma sayfaları)
+- [ ] Sepet / sipariş / ödeme
+- [ ] Cüzdan, kupon, referans/partner, görev & puan
+- [ ] Bildirimler, destek biletleri
+- [ ] Admin paneli (ürün, key, sipariş, rapor)
+- [ ] Postgres fonksiyon/trigger mantığının TypeScript'e taşınması (~200)
+- [ ] 2FA ve Google girişi (eski sistemde Supabase'e bağlıydı, yeniden kurulacak)
