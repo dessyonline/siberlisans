@@ -79,27 +79,20 @@ function AuthPage() {
 
   const signIn = async () => {
     setLoading(true);
-    const { data: signInData, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-    if (error) {
-      setLoading(false);
-      return toast.error(error.message);
-    }
-    // 2FA gerekli mi?
-    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    setLoading(false);
-    if (aal?.nextLevel === "aal2" && aal.currentLevel === "aal1") {
-      // Kullanıcı bu tarayıcıyı daha önce "hatırla" olarak işaretlemişse challenge'ı atla
-      const { isDeviceTrusted } = await import("@/lib/trusted-device");
-      if (isDeviceTrusted(signInData.user?.id)) {
-        toast.success("Giriş başarılı · güvenilir cihaz");
-        navigate({ to: "/hesabim" });
-        return;
+    try {
+      const res = await doSignIn({ data: { email: email.trim(), password } });
+      if (!res.ok) {
+        setLoading(false);
+        return toast.error(res.error);
       }
-      setMfaMode(true);
-      return;
+      await refresh();
+      setLoading(false);
+      toast.success("Giriş başarılı");
+      navigate({ to: "/hesabim" });
+    } catch {
+      setLoading(false);
+      toast.error("Giriş yapılamadı, tekrar deneyin.");
     }
-    toast.success("Giriş başarılı");
-    navigate({ to: "/hesabim" });
   };
 
 
@@ -118,26 +111,31 @@ function AuthPage() {
     }
 
     setLoading(true);
-    const { error } = await supabase.auth.signUp({
-      email: em,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/hesabim`,
+    try {
+      const res = await doSignUp({
         data: {
-          display_name: displayName || em.split("@")[0],
-          telegram_handle: telegram.trim(),
-          ...(refCode ? { ref: refCode } : {}),
+          email: em,
+          password,
+          displayName: displayName || em.split("@")[0],
+          telegramUsername: telegram.trim(),
+          ...(refCode ? { referralCode: refCode } : {}),
         },
-      },
-    });
-    setLoading(false);
-    if (error) {
+      });
+      setLoading(false);
+      if (!res.ok) {
+        setCaptcha(newCaptcha());
+        setCaptchaInput("");
+        return toast.error(res.error);
+      }
+      await refresh();
+      toast.success("[✓] hesabın oluşturuldu");
+      navigate({ to: "/hesabim" });
+    } catch {
+      setLoading(false);
       setCaptcha(newCaptcha());
       setCaptchaInput("");
-      return toast.error(error.message);
+      toast.error("Kayıt tamamlanamadı, tekrar deneyin.");
     }
-    setSignupSent(em);
-    toast.success("[✓] doğrulama e-postası gönderildi");
   };
 
   const signInGoogle = async () => {
