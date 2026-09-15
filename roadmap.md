@@ -7,7 +7,11 @@
 - [x] Ürün kataloğu (/urunler)
 - [x] Giriş sistemi: auth_users / auth_sessions / auth_password_tokens,
       şifre (PBKDF2), çerez oturumu, kayıt, çıkış, /sifre-belirle
-- [ ] Anasayfa, ürün detay, paketler, blog, çekiliş, bayilik (okuma sayfaları)
+- [x] Anasayfa ürünleri + ürün detay/benzer ürün okumaları (HTTP 200 ve fiyat görüntüsü doğrulandı)
+- [x] Ortak flash indirim okuması MySQL üzerinden
+- [ ] Anasayfa bakiye okuması taşındı; oturumlu doğrulama bekliyor
+- [ ] Yorum, soru-cevap, etiket, satış akışı, favori gibi alt bileşenler
+- [ ] Paketler, blog, çekiliş, bayilik (okuma sayfaları)
 - [ ] Sepet / sipariş / ödeme
 - [ ] Cüzdan, kupon, referans/partner, görev & puan
 - [ ] Bildirimler, destek biletleri
