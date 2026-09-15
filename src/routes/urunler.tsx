@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { listProducts } from "@/lib/catalog.functions";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -19,6 +21,7 @@ import {
 
 export const Route = createFileRoute("/urunler")({
   component: ProductsPage,
+  loader: async () => ({ products: await listProducts() }),
   validateSearch: (s: Record<string, unknown>): { q?: string } => ({
     q: typeof s.q === "string" && s.q.trim() ? s.q.trim().slice(0, 60) : undefined,
   }),
@@ -249,17 +252,12 @@ const SORT_LABELS: Record<SortKey, string> = {
 
 
 function ProductsPage() {
+  const loaderData = Route.useLoaderData();
+  const fetchProducts = useServerFn(listProducts);
   const { data } = useQuery({
     queryKey: ["products", "all"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("id, name, slug, description, duration, price_try, category, image_url, manual_fulfillment, stock_hint, unlimited_stock, supplier_out_of_stock, created_at, sort_order, tier, retail_price_try, retail_price_source_url, duration_label, orders_count, avg_rating, review_count, license_keys(status)")
-        .eq("active", true)
-        .order("price_try");
-      if (error) throw error;
-      return data as unknown as Row[];
-    },
+    queryFn: async () => (await fetchProducts()) as unknown as Row[],
+    initialData: loaderData.products as unknown as Row[],
   });
 
   const byCategory = useMemo(() => {
