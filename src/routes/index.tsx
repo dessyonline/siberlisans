@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { listProducts } from "@/lib/catalog.functions";
+import { getAccountSummary } from "@/lib/account-summary.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -75,7 +77,10 @@ const HOME_FAQ = [
   },
 ];
 
+const homeProductsQuery = { queryKey: ["mysql-products", "active"], queryFn: () => listProducts() };
+
 export const Route = createFileRoute("/")({
+  loader: ({ context }) => context.queryClient.ensureQueryData(homeProductsQuery),
   component: Index,
   head: () => ({
     meta: [
@@ -225,24 +230,7 @@ function TypedLine({ text, delay = 0, className = "" }: { text: string; delay?: 
 function Index() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
-  const { data: products = [], isLoading } = useQuery({
-    queryKey: ["products", "active"],
-    queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from("products")
-          .select("id, name, slug, description, duration, price_try, image_url, category, featured, manual_fulfillment, stock_hint, unlimited_stock, created_at, sort_order, tier, retail_price_try, retail_price_source_url, duration_label, license_keys(status)")
-          .eq("active", true)
-          .order("price_try");
-        if (error) throw error;
-        return data || [];
-      } catch (err) {
-        console.error("Failed to fetch products:", err);
-        return [];
-      }
-    },
-    retry: 1,
-  });
+  const { data: products } = useSuspenseQuery(homeProductsQuery);
 
   // AI ürünlerini üstte gösterme sırası
   const AI_ORDER = ["chatgpt", "gemini", "lovable", "claude", "midjourney", "nano banana", "ideogram"];
@@ -987,17 +975,7 @@ function UserBalanceWelcome() {
   const { data } = useQuery({
     queryKey: ["home-welcome", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const [{ data: p }, { data: w }] = await Promise.all([
-        supabase.from("profiles").select("avatar_id, display_name").eq("id", user!.id).maybeSingle(),
-        supabase.from("wallets").select("balance_try").eq("user_id", user!.id).maybeSingle(),
-      ]);
-      return {
-        avatar_id: (p?.avatar_id as string | null) ?? null,
-        display_name: (p?.display_name as string | null) ?? null,
-        balance_try: Number(w?.balance_try ?? 0),
-      };
-    },
+    queryFn: useServerFn(getAccountSummary),
     refetchInterval: 10000,
   });
   if (!user) return null;
