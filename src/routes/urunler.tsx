@@ -252,10 +252,12 @@ const SORT_LABELS: Record<SortKey, string> = {
 
 
 function ProductsPage() {
+  const loaderData = Route.useLoaderData();
   const fetchProducts = useServerFn(listProducts);
   const { data } = useQuery({
     queryKey: ["products", "all"],
     queryFn: async () => (await fetchProducts()) as unknown as Row[],
+    initialData: loaderData.products as unknown as Row[],
   });
 
   const byCategory = useMemo(() => {
