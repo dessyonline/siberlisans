@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UrunlerRouteImport } from './routes/urunler'
 import { Route as SssRouteImport } from './routes/sss'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SifreBelirleRouteImport } from './routes/sifre-belirle'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
 import { Route as LiderlikRouteImport } from './routes/liderlik'
@@ -170,6 +171,11 @@ const SssRoute = SssRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SifreBelirleRoute = SifreBelirleRouteImport.update({
+  id: '/sifre-belirle',
+  path: '/sifre-belirle',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
@@ -978,6 +984,7 @@ export interface FileRoutesByFullPath {
   '/liderlik': typeof LiderlikRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/sifre-belirle': typeof SifreBelirleRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
@@ -1126,6 +1133,7 @@ export interface FileRoutesByTo {
   '/liderlik': typeof LiderlikRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/sifre-belirle': typeof SifreBelirleRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
@@ -1274,6 +1282,7 @@ export interface FileRoutesById {
   '/liderlik': typeof LiderlikRoute
   '/nasil-calisir': typeof NasilCalisirRoute
   '/robots.txt': typeof RobotsDottxtRoute
+  '/sifre-belirle': typeof SifreBelirleRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
   '/urunler': typeof UrunlerRoute
@@ -1424,6 +1433,7 @@ export interface FileRouteTypes {
     | '/liderlik'
     | '/nasil-calisir'
     | '/robots.txt'
+    | '/sifre-belirle'
     | '/sitemap.xml'
     | '/sss'
     | '/urunler'
@@ -1572,6 +1582,7 @@ export interface FileRouteTypes {
     | '/liderlik'
     | '/nasil-calisir'
     | '/robots.txt'
+    | '/sifre-belirle'
     | '/sitemap.xml'
     | '/sss'
     | '/urunler'
@@ -1719,6 +1730,7 @@ export interface FileRouteTypes {
     | '/liderlik'
     | '/nasil-calisir'
     | '/robots.txt'
+    | '/sifre-belirle'
     | '/sitemap.xml'
     | '/sss'
     | '/urunler'
@@ -1869,6 +1881,7 @@ export interface RootRouteChildren {
   LiderlikRoute: typeof LiderlikRoute
   NasilCalisirRoute: typeof NasilCalisirRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SifreBelirleRoute: typeof SifreBelirleRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SssRoute: typeof SssRoute
   UrunlerRoute: typeof UrunlerRoute
@@ -1944,6 +1957,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sifre-belirle': {
+      id: '/sifre-belirle'
+      path: '/sifre-belirle'
+      fullPath: '/sifre-belirle'
+      preLoaderRoute: typeof SifreBelirleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/robots.txt': {
@@ -3189,6 +3209,7 @@ const rootRouteChildren: RootRouteChildren = {
   LiderlikRoute: LiderlikRoute,
   NasilCalisirRoute: NasilCalisirRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
+  SifreBelirleRoute: SifreBelirleRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SssRoute: SssRoute,
   UrunlerRoute: UrunlerRoute,
