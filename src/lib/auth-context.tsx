@@ -1,77 +1,59 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import type { Session, User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { getMe, signOut as signOutFn, type AuthUser } from "@/lib/auth.functions";
 
 type Role = "admin" | "user";
 
 interface AuthState {
-  session: Session | null;
-  user: User | null;
+  session: { user: AuthUser } | null;
+  user: AuthUser | null;
   roles: Role[];
   isAdmin: boolean;
   loading: boolean;
+  refresh: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 const AuthCtx = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [roles, setRoles] = useState<Role[]>([]);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const fetchMe = useServerFn(getMe);
+  const doSignOut = useServerFn(signOutFn);
+
+  const refresh = useCallback(async () => {
+    try {
+      const me = (await fetchMe()) as AuthUser | null;
+      setUser(me ?? null);
+    } catch (err) {
+      console.error("Oturum bilgisi alınamadı:", err);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchMe]);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
-      setSession(s);
-      if (s?.user) {
-        // Defer role fetch — don't await inside listener
-        setTimeout(() => {
-          supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", s.user.id)
-            .then(({ data }) => setRoles((data ?? []).map((r) => r.role as Role)));
-        }, 0);
-      } else {
-        setRoles([]);
-      }
-    });
-
-    const initializeAuth = async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        setSession(data.session);
-        if (data.session?.user) {
-          const { data: r } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", data.session.user.id);
-          setRoles((r ?? []).map((x) => x.role as Role));
-        }
-      } catch (err) {
-        console.error("Auth initialization failed:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    initializeAuth();
-
-    return () => sub.subscription.unsubscribe();
-  }, []);
+    void refresh();
+  }, [refresh]);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
+    await doSignOut({ data: undefined as never }).catch(() => {});
+    setUser(null);
   };
+
+  const roles = (user?.roles ?? []) as Role[];
 
   return (
     <AuthCtx.Provider
       value={{
-        session,
-        user: session?.user ?? null,
+        session: user ? { user } : null,
+        user,
         roles,
         isAdmin: roles.includes("admin"),
         loading,
+        refresh,
         signOut,
       }}
     >
