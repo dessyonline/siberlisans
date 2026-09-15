@@ -54,7 +54,9 @@ function newCaptcha() {
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refresh, signOut: ctxSignOut } = useAuth();
+  const doSignIn = useServerFn(signInFn);
+  const doSignUp = useServerFn(signUpFn);
   const search = useSearch({ from: "/auth" });
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
