@@ -166,7 +166,7 @@ function AuthPage() {
             <MfaChallenge
               title="iki adımlı doğrulama"
               onCancel={async () => {
-                await supabase.auth.signOut();
+                await ctxSignOut();
                 setMfaMode(false);
               }}
               onSuccess={() => {
@@ -177,7 +177,7 @@ function AuthPage() {
             <button
               type="button"
               onClick={async () => {
-                await supabase.auth.signOut();
+                await ctxSignOut();
                 setMfaMode(false);
               }}
               className="mt-3 font-mono text-[10px] text-muted-foreground hover:text-primary"
