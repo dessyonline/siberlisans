@@ -457,7 +457,7 @@ function Payment() {
                     {isCartOrder && order.status === "pending" && (
                       <button
                         type="button"
-                        onClick={() => handleRemoveItem(it.id)}
+                        onClick={() => handleRemoveItem(String(it.id ?? ""))}
                         disabled={removingItemId === it.id}
                         className="ml-1 shrink-0 rounded border border-destructive/40 bg-destructive/5 p-1.5 text-destructive/80 hover:bg-destructive/10 hover:text-destructive disabled:opacity-40"
                         aria-label="ürünü çıkar"
