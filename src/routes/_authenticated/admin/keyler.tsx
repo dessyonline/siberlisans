@@ -179,6 +179,7 @@ function KeysAdmin() {
       }
       qc.invalidateQueries({ queryKey: ["license-keys-recent"] });
       qc.invalidateQueries({ queryKey: ["admin-pool"] });
+      qc.invalidateQueries({ queryKey: ["admin-key-data"] });
     } catch (e) { toast.error((e as Error).message); }
     finally { setBusy(false); }
   };

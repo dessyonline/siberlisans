@@ -17,11 +17,11 @@
 - [x] Sepet / sipariş / ödeme
 - [ ] Cüzdan, kupon, referans/partner, görev & puan
 - [x] Bildirimler (zil + tercihler) ve destek biletleri MySQL üzerinden
-- [ ] Admin paneli (sipariş yönetimi ve blog tamam; ürün, key, rapor kaldı)
+- [x] Admin paneli (sipariş, blog, ürün, key ve kar/zarar raporu MySQL üzerinden)
 - [ ] Postgres fonksiyon/trigger mantığının TypeScript'e taşınması (~200)
 - [ ] 2FA ve Google girişi (eski sistemde Supabase'e bağlıydı, yeniden kurulacak)
 
 - [x] Cüzdan (bakiye, yükleme talebi, admin onay/ret, bakiye ile ödeme) MySQL'e taşındı
 - [x] Ödeme sayfası (sipariş detayı, banka bilgisi, bakiye, çapraz satış) MySQL'e taşındı
 - [x] Sipariş oluşturma/sepet/onay/red/iptal + kupon + flash indirim (orders.functions.ts) MySQL'e taşındı
-- [x] Admin sipariş yönetimi ve blog yönetimi
+- [x] Admin sipariş, blog, ürün, key ve kar/zarar yönetimi
