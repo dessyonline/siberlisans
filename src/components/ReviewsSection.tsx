@@ -28,54 +28,24 @@ export function ReviewsSection({ productId }: { productId: string }) {
   const qc = useQueryClient();
   const upsertFn = useServerFn(upsertReview);
   const deleteFn = useServerFn(deleteMyReview);
+  const listFn = useServerFn(listProductReviews);
+  const canFn = useServerFn(canReviewProduct);
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const { data: reviews = [], isLoading } = useQuery({
-    queryKey: ["reviews", productId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        // biome-ignore lint/suspicious/noExplicitAny: function not in generated types
-        .rpc("list_product_reviews" as any, { _product_id: productId });
-      if (error) throw error;
-      return (data ?? []) as unknown as Review[];
-    },
+    queryKey: ["reviews", productId, user?.id],
+    queryFn: async () => (await listFn({ data: { productId } })) as Review[],
   });
 
   const mine = user ? reviews.find((r) => r.is_mine) : undefined;
   const hasReviewed = !!mine;
 
-  // eligibility check: any approved order or order_items for this product+user
   const { data: canReview } = useQuery({
     queryKey: ["can-review", productId, user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const uid = user!.id;
-      const { data: byOrder } = await supabase
-        .from("orders")
-        .select("id")
-        .eq("user_id", uid)
-        .eq("status", "approved")
-        .eq("product_id", productId)
-        .limit(1);
-      if (byOrder && byOrder.length > 0) return true;
-      // find any order_items with this product, then check if any of those orders are ours + approved
-      const { data: items } = await supabase
-        .from("order_items")
-        .select("order_id")
-        .eq("product_id", productId);
-      const ids = (items ?? []).map((r) => r.order_id);
-      if (ids.length === 0) return false;
-      const { data: mine } = await supabase
-        .from("orders")
-        .select("id")
-        .in("id", ids)
-        .eq("user_id", uid)
-        .eq("status", "approved")
-        .limit(1);
-      return !!(mine && mine.length > 0);
-    },
+    queryFn: async () => (await canFn({ data: { productId } })) as boolean,
   });
 
   async function submit() {
