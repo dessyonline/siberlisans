@@ -228,7 +228,29 @@ function AuthPage() {
                 <Button disabled={loading} onClick={signIn} className="w-full font-mono neon-glow">
                   {"> "}giriş yap
                 </Button>
+                <button
+                  type="button"
+                  onClick={forgotPassword}
+                  disabled={loading}
+                  className="w-full text-center font-mono text-[11px] text-muted-foreground hover:text-primary"
+                >
+                  şifremi unuttum / ilk şifremi belirle
+                </button>
+                {resetInfo ? (
+                  <div className="space-y-2 rounded-md border border-primary/40 bg-primary/5 p-3 font-mono text-[11px] leading-relaxed">
+                    <div className="text-muted-foreground">{resetInfo.message}</div>
+                    {resetInfo.link ? (
+                      <a
+                        href={resetInfo.link}
+                        className="block break-all text-primary underline"
+                      >
+                        {"> "}şifre belirleme sayfasına git
+                      </a>
+                    ) : null}
+                  </div>
+                ) : null}
               </TabsContent>
+
               <TabsContent value="signup" className="space-y-4 mt-4">
                 {refCode ? (
                   <div className="flex items-center gap-2 rounded-md border border-primary/40 bg-primary/5 p-2.5 text-xs font-mono text-primary">
