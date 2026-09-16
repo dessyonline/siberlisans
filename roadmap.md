@@ -11,7 +11,8 @@
 - [x] Ortak flash indirim okuması MySQL üzerinden
 - [ ] Anasayfa bakiye okuması taşındı; oturumlu doğrulama bekliyor
 - [ ] Yorum, soru-cevap, etiket, satış akışı, favori gibi alt bileşenler
-- [ ] Paketler, blog, çekiliş, bayilik (okuma sayfaları)
+- [x] Blog ve paketler okuma sayfaları MySQL üzerinden
+- [ ] Çekiliş, bayilik (okuma sayfaları)
 - [ ] Sepet / sipariş / ödeme
 - [ ] Cüzdan, kupon, referans/partner, görev & puan
 - [ ] Bildirimler, destek biletleri
