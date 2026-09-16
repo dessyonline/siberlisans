@@ -34,10 +34,20 @@ export const getOrderDetail = createServerFn({ method: "GET" })
     const isAdmin = context.isAdmin === true;
     if (order.user_id !== context.userId && !isAdmin) throw new Error("Yetkisiz.");
 
-    const mapProduct = (p: Record<string, unknown> | null): Record<string, Json> | null =>
+    const s = (v: unknown): string | null => (v == null ? null : String(v));
+    const mapProduct = (p: Record<string, unknown> | null) =>
       p
         ? {
-            ...(p as Record<string, Json>),
+            id: s(p.id),
+            name: s(p.name),
+            slug: s(p.slug),
+            duration: s(p.duration),
+            image_url: s(p.image_url),
+            delivery_type: s(p.delivery_type),
+            tier: s(p.tier),
+            source: s(p.source),
+            shopier_url: s(p.shopier_url),
+            category: s(p.category),
             manual_fulfillment: bool(p.manual_fulfillment),
             unlimited_stock: bool(p.unlimited_stock),
             requires_email: bool(p.requires_email),
