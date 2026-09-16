@@ -191,11 +191,6 @@ function Payment() {
       const ext = dot >= 0 ? file.name.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 6) : "bin";
       const safeExt = ext || "bin";
       const path = `${user.id}/${orderId}-${Date.now()}.${safeExt}`;
-      const { error } = await supabase.storage.from("receipts").upload(path, file, {
-        upsert: true,
-        contentType: file.type || "application/octet-stream",
-      });
-      if (error) throw error;
       await markPaidFn({ data: { orderId, receiptPath: path } });
       toast.success("Dekont alındı · doğrulama başlatıldı");
       qc.invalidateQueries({ queryKey: ["order", orderId] });
