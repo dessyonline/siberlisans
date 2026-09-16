@@ -3,7 +3,7 @@ import { getBundleBySlug } from "@/lib/bundles.functions";
 import { Package, Check, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/paketler/$slug")({
   component: BundleDetail,
