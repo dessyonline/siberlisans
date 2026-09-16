@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { getOrderDetail, getActiveBankAccount, getMyBalance } from "@/lib/order-detail.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode, finalizeFreeOrder, setOrderCheckoutFields, addItemToOrder, removeItemFromOrder, cancelPendingOrder } from "@/lib/orders.functions";
 import { payOrderWithWallet } from "@/lib/wallet.functions";
