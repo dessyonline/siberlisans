@@ -923,7 +923,7 @@ function ProductCard({
 
       <div className="relative mt-4 flex flex-wrap items-center gap-1.5 font-mono text-[11px]">
         <span className="rounded-md bg-muted/40 text-muted-foreground border border-border px-2 py-0.5">
-          {DURATION_LABEL[p.duration] ?? p.duration}
+          {(p.duration ? DURATION_LABEL[p.duration] : null) ?? p.duration}
         </span>
         {hasSale && <FlashSaleBadge sale={flashSale} />}
       </div>
