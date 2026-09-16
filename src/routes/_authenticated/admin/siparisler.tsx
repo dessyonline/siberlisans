@@ -1,7 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { approveOrder, rejectOrder, adminCancelOrder } from "@/lib/orders.functions";
 import { syncUniquelisansOrder, syncAllPendingUniquelisans } from "@/lib/uniquelisans-sync.functions";
@@ -110,15 +109,9 @@ function AdminOrdersPage() {
   };
 
   useEffect(() => {
-    const channel = supabase
-      .channel("admin-orders-live")
-      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
-        invalidate();
-      })
-      .subscribe((s) => setLive(s === "SUBSCRIBED"));
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    const timer = setInterval(invalidate, 15_000);
+    setLive(true);
+    return () => clearInterval(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

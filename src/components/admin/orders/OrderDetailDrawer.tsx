@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,8 +89,8 @@ export function OrderDetailDrawer({
   };
 
   const openReceipt = async (path: string) => {
-    const { data: signed } = await supabase.storage.from("receipts").createSignedUrl(path, 600);
-    if (signed?.signedUrl) setReceiptUrl(signed.signedUrl);
+    if (/^https:\/\//i.test(path)) setReceiptUrl(path);
+    else toast.error("Bu eski dekont artık erişilebilir değil");
   };
 
   const copy = (v: string) => {
