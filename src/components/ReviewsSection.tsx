@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { upsertReview, deleteMyReview } from "@/lib/reviews.functions";
+import {
+  upsertReview,
+  deleteMyReview,
+  listProductReviews,
+  canReviewProduct,
+} from "@/lib/reviews.functions";
 import { StarRating } from "./StarRating";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
