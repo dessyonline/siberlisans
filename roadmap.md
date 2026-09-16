@@ -23,4 +23,5 @@
 
 - [x] Cüzdan (bakiye, yükleme talebi, admin onay/ret, bakiye ile ödeme) MySQL'e taşındı
 - [x] Ödeme sayfası (sipariş detayı, banka bilgisi, bakiye, çapraz satış) MySQL'e taşındı
-- [ ] Sepet/sipariş oluşturma (orders.functions.ts), kupon, bildirim, destek, admin paneli
+- [x] Sipariş oluşturma/sepet/onay/red/iptal + kupon + flash indirim (orders.functions.ts) MySQL'e taşındı
+- [ ] Bildirimler, destek biletleri, admin paneli, blog yönetimi

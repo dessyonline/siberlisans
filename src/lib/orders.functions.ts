@@ -1,9 +1,26 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { getRequestIP, getRequestHeader } from "@tanstack/react-start/server";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAuth, requireAdmin } from "./auth-middleware.server";
+import { mysqlQuery, mysqlOne, num, bool } from "./mysql.server";
 
-const createOrderInput = z.object({ productId: z.string().uuid() });
+/* ============ yardımcılar ============ */
+
+function ts(d: Date = new Date()) {
+  return d.toISOString().slice(0, 19).replace("T", " ");
+}
+
+function uid() {
+  return crypto.randomUUID();
+}
+
+function randomHex(bytes: number) {
+  const a = new Uint8Array(bytes);
+  crypto.getRandomValues(a);
+  return Array.from(a)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 function genRef() {
   const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -12,47 +29,224 @@ function genRef() {
   return out;
 }
 
+async function pushNotification(
+  userId: string,
+  type: string,
+  title: string,
+  body: string,
+  link: string | null,
+) {
+  try {
+    await mysqlQuery(
+      "INSERT INTO notifications (id,user_id,type,title,body,link,created_at) VALUES (?,?,?,?,?,?,?)",
+      [uid(), userId, type, title, body, link, ts()],
+    );
+  } catch (e) {
+    console.error("[notify] push", (e as Error).message);
+  }
+}
+
+type OrderRow = {
+  id: string;
+  user_id: string | null;
+  product_id: string | null;
+  price_try: string | number | null;
+  reference_code: string | null;
+  status: string | null;
+  paid_with: string | null;
+  checkout_fields: string | null;
+};
+
+async function getOrder(orderId: string) {
+  return mysqlOne<OrderRow>(
+    "SELECT id,user_id,product_id,price_try,reference_code,status,paid_with,checkout_fields FROM orders WHERE id=?",
+    [orderId],
+  );
+}
+
+function parseJson<T>(v: unknown, fallback: T): T {
+  if (v == null) return fallback;
+  if (typeof v === "object") return v as T;
+  try {
+    return JSON.parse(String(v)) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+/** Siparişin ürün listesi (tekil ürün ya da order_items). */
+async function orderLines(orderId: string) {
+  const items = await mysqlQuery<{ product_id: string; quantity: number }>(
+    "SELECT product_id, quantity FROM order_items WHERE order_id=?",
+    [orderId],
+  );
+  if (items.length > 0) {
+    return items.map((i) => ({ productId: i.product_id, quantity: Number(i.quantity) || 1 }));
+  }
+  const o = await mysqlOne<{ product_id: string | null }>(
+    "SELECT product_id FROM orders WHERE id=?",
+    [orderId],
+  );
+  return o?.product_id ? [{ productId: o.product_id, quantity: 1 }] : [];
+}
+
+/** Sipariş toplamını order_items'tan yeniden hesaplar. */
+async function recalcOrderTotal(orderId: string) {
+  const row = await mysqlOne<{ total: string | null; cnt: number | null }>(
+    "SELECT SUM(unit_price_try*quantity) total, SUM(quantity) cnt FROM order_items WHERE order_id=?",
+    [orderId],
+  );
+  const total = num(row?.total) ?? 0;
+  const cnt = Number(row?.cnt ?? 0);
+  await mysqlQuery("UPDATE orders SET price_try=?, item_count=?, updated_at=? WHERE id=?", [
+    total,
+    cnt,
+    ts(),
+    orderId,
+  ]);
+  return { total, count: cnt };
+}
+
+/** Havuzdan tek bir kullanılabilir anahtar ayırır (yarış korumalı). */
+async function assignKeyFromPool(productId: string, orderId: string, durationDays: number | null) {
+  const cand = await mysqlOne<{ id: string; key_value: string | null }>(
+    "SELECT id,key_value FROM license_keys WHERE product_id=? AND status='available' ORDER BY created_at ASC LIMIT 1",
+    [productId],
+  );
+  if (!cand) return null;
+  const token = randomHex(16);
+  const expires = durationDays && durationDays > 0 ? ts(new Date(Date.now() + durationDays * 86400_000)) : null;
+  const rows = await mysqlQuery<{ affected?: number }>(
+    `UPDATE license_keys
+        SET status='assigned', assigned_order_id=?, assigned_at=?,
+            activation_token=COALESCE(activation_token,?), duration_days=COALESCE(duration_days,?), expires_at=COALESCE(expires_at,?)
+      WHERE id=? AND status='available'`,
+    [orderId, ts(), token, durationDays, expires, cand.id],
+  );
+  void rows;
+  const check = await mysqlOne<{ status: string | null; assigned_order_id: string | null; activation_token: string | null }>(
+    "SELECT status,assigned_order_id,activation_token FROM license_keys WHERE id=?",
+    [cand.id],
+  );
+  if (check?.assigned_order_id !== orderId) return null;
+  await mysqlQuery("INSERT INTO order_keys (id,order_id,license_key_id,delivered_at) VALUES (?,?,?,?)", [
+    uid(),
+    orderId,
+    cand.id,
+    ts(),
+  ]);
+  return { id: cand.id, key_value: cand.key_value, activation_token: check?.activation_token ?? token };
+}
+
+/** Sipariş satırlarındaki ürünler için havuzdan anahtar ata. */
+async function fulfillOrderKeys(orderId: string) {
+  const lines = await orderLines(orderId);
+  let firstKey: string | null = null;
+  let firstToken: string | null = null;
+  for (const line of lines) {
+    const p = await mysqlOne<{
+      manual_fulfillment: number | null;
+      unlimited_stock: number | null;
+      default_license_days: number | null;
+    }>("SELECT manual_fulfillment, unlimited_stock, default_license_days FROM products WHERE id=?", [
+      line.productId,
+    ]);
+    if (!p || bool(p.manual_fulfillment) || bool(p.unlimited_stock)) continue;
+    const days = p.default_license_days != null ? Number(p.default_license_days) : 30;
+    for (let i = 0; i < line.quantity; i++) {
+      const assigned = await assignKeyFromPool(line.productId, orderId, days);
+      if (!assigned) break;
+      if (!firstKey) {
+        firstKey = assigned.key_value;
+        firstToken = assigned.activation_token;
+      }
+    }
+  }
+  return { licenseKey: firstKey, activationToken: firstToken };
+}
+
+/** Cüzdana iade (sipariş net tutarı). */
+async function refundOrderToWallet(orderId: string) {
+  const ord = await getOrder(orderId);
+  if (!ord?.user_id) return 0;
+  const disc = await mysqlOne<{ d: string | null }>(
+    "SELECT SUM(discount_try) d FROM order_discounts WHERE order_id=?",
+    [orderId],
+  );
+  const net = Math.max(0, (num(ord.price_try) ?? 0) - (num(disc?.d) ?? 0));
+  if (net <= 0) return 0;
+  await mysqlQuery(
+    `INSERT INTO wallets (user_id,balance_try,updated_at) VALUES (?,?,?)
+     ON DUPLICATE KEY UPDATE balance_try=balance_try+VALUES(balance_try), updated_at=VALUES(updated_at)`,
+    [ord.user_id, net, ts()],
+  );
+  const w = await mysqlOne<{ balance_try: string | null }>(
+    "SELECT balance_try FROM wallets WHERE user_id=?",
+    [ord.user_id],
+  );
+  await mysqlQuery(
+    "INSERT INTO wallet_transactions (id,user_id,kind,amount_try,balance_after,order_id,note,created_at) VALUES (?,?,?,?,?,?,?,?)",
+    [uid(), ord.user_id, "refund", net, num(w?.balance_try) ?? 0, orderId, "Sipariş iadesi", ts()],
+  );
+  return net;
+}
+
+/* ============ TEKİL SİPARİŞ ============ */
+
+const createOrderInput = z.object({ productId: z.string().uuid() });
+
 export const createOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => createOrderInput.parse(d))
+  .middleware([requireAuth])
+  .validator((d: unknown) => createOrderInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId, claims } = context;
-    const { data: product, error: pErr } = await supabase
-      .from("products")
-      .select("id, name, price_try, active, manual_fulfillment, unlimited_stock, source, external_id, external_price, supplier_out_of_stock")
-      .eq("id", data.productId)
-      .single();
-    if (pErr || !product || !product.active) throw new Error("Ürün bulunamadı.");
-    if (product.supplier_out_of_stock) {
-      throw new Error(`"${product.name}" tedarikçide geçici olarak stokta yok. Stok döndüğünde otomatik olarak tekrar satışa açılacak.`);
+    const userId = context.userId;
+    const email = context.user?.email ?? null;
+
+    const product = await mysqlOne<{
+      id: string;
+      name: string;
+      price_try: string | null;
+      active: number | null;
+      manual_fulfillment: number | null;
+      unlimited_stock: number | null;
+      source: string | null;
+      external_id: string | null;
+      external_price: string | null;
+      supplier_out_of_stock: number | null;
+    }>(
+      `SELECT id,name,price_try,active,manual_fulfillment,unlimited_stock,source,external_id,external_price,supplier_out_of_stock
+         FROM products WHERE id=?`,
+      [data.productId],
+    );
+    if (!product || !bool(product.active)) throw new Error("Ürün bulunamadı.");
+    if (bool(product.supplier_out_of_stock)) {
+      throw new Error(
+        `"${product.name}" tedarikçide geçici olarak stokta yok. Stok döndüğünde otomatik olarak tekrar satışa açılacak.`,
+      );
     }
 
-
-    // Stok ön-kontrolü: manuel değil ve sınırsız değilse, havuzda kullanılabilir key var mı?
-    // Uniquelisans ürünleri için havuz boşsa API'den çekileceği için bu kontrolü atlıyoruz;
-    // UL canlı stok kontrolü aşağıda ayrıca yapılıyor.
     const isUlProduct = product.source === "uniquelisans" && !!product.external_id;
-    if (!product.manual_fulfillment && !product.unlimited_stock && !isUlProduct) {
-      const { count } = await supabase
-        .from("license_keys")
-        .select("id", { count: "exact", head: true })
-        .eq("product_id", product.id)
-        .eq("status", "available");
-      if (!count || count === 0) {
+    if (!bool(product.manual_fulfillment) && !bool(product.unlimited_stock) && !isUlProduct) {
+      const c = await mysqlOne<{ c: number }>(
+        "SELECT COUNT(*) c FROM license_keys WHERE product_id=? AND status='available'",
+        [product.id],
+      );
+      if (!c || Number(c.c) === 0) {
         try {
           const { notifyTelegram, outOfStockAlertMessage } = await import("@/lib/telegram.server");
-          await notifyTelegram(outOfStockAlertMessage({
-            productName: product.name,
-            userEmail: (claims as { email?: string } | null)?.email ?? null,
-          }));
-        } catch (e) { console.error("[notify] outOfStock", (e as Error).message); }
+          await notifyTelegram(
+            outOfStockAlertMessage({ productName: product.name, userEmail: email }),
+          );
+        } catch (e) {
+          console.error("[notify] outOfStock", (e as Error).message);
+        }
         throw new Error(
-          `"${product.name}" şu an stokta yok. Yöneticiye bildirim gönderildi — kısa süre içinde yeniden stoklanacak. Havale ile ön sipariş için destekle iletişime geçebilirsin.`
+          `"${product.name}" şu an stokta yok. Yöneticiye bildirim gönderildi — kısa süre içinde yeniden stoklanacak. Havale ile ön sipariş için destekle iletişime geçebilirsin.`,
         );
       }
     }
 
-    // Uniquelisans canlı stok/bakiye kontrolü (fail-open: API erişilemezse engellemez)
+    // Uniquelisans canlı stok/bakiye kontrolü (fail-open)
     if (product.source === "uniquelisans" && product.external_id) {
       const { ulCheckAvailability, ulGetBalance, logSupplierCheck } = await import(
         "@/lib/uniquelisans.server"
@@ -75,11 +269,15 @@ export const createOrder = createServerFn({ method: "POST" })
           });
           try {
             const { notifyTelegram, outOfStockAlertMessage } = await import("@/lib/telegram.server");
-            await notifyTelegram(outOfStockAlertMessage({
-              productName: `${product.name} (Uniquelisans)`,
-              userEmail: (claims as { email?: string } | null)?.email ?? null,
-            }));
-          } catch { /* ignore */ }
+            await notifyTelegram(
+              outOfStockAlertMessage({
+                productName: `${product.name} (Uniquelisans)`,
+                userEmail: email,
+              }),
+            );
+          } catch {
+            /* ignore */
+          }
           throw new Error(
             `"${product.name}" tedarikçide (Uniquelisans) şu an stokta yok. Kısa süre içinde tekrar dener misin?`,
           );
@@ -108,7 +306,9 @@ export const createOrder = createServerFn({ method: "POST" })
             await notifyTelegram(
               `⚠️ Uniquelisans bakiyesi yetersiz — ${(bal ?? 0).toFixed(2)} < ${cost.toFixed(2)} · Ürün: ${product.name}`,
             );
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
           throw new Error(
             "Tedarikçi tarafında geçici bir aksaklık var, siparişini biraz sonra tekrar deneyebilir misin? Yöneticiye bildirim gönderildi.",
           );
@@ -130,60 +330,41 @@ export const createOrder = createServerFn({ method: "POST" })
       } catch (e) {
         if (e instanceof Error && /Uniquelisans|stokta yok|tedarikçi/i.test(e.message)) throw e;
         console.error("[uniquelisans] preflight", (e as Error).message);
-        await logSupplierCheck({
-          user_id: userId,
-          product_id: product.id,
-          product_name: product.name,
-          external_id: product.external_id,
-          blocked: false,
-          context: "single_order",
-          error: (e as Error).message,
-        });
       }
     }
 
-
-
     const referenceCode = genRef();
+    const orderId = uid();
     const clientIp = getRequestIP({ xForwardedFor: true }) ?? null;
     const clientUa = getRequestHeader("user-agent") ?? null;
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: order, error } = await supabaseAdmin
-      .from("orders")
-      .insert({
-        user_id: userId,
-        product_id: product.id,
-        price_try: product.price_try,
-        reference_code: referenceCode,
-        status: "pending",
-        client_ip: clientIp,
-        user_agent: clientUa,
-      })
-      .select("id, reference_code")
-      .single();
-    if (error) throw new Error(error.message);
+    await mysqlQuery(
+      `INSERT INTO orders (id,user_id,product_id,price_try,reference_code,status,item_count,client_ip,user_agent,created_at,updated_at)
+       VALUES (?,?,?,?,?,'pending',1,?,?,?,?)`,
+      [
+        orderId,
+        userId,
+        product.id,
+        num(product.price_try) ?? 0,
+        referenceCode,
+        clientIp,
+        clientUa,
+        ts(),
+        ts(),
+      ],
+    );
 
-    // Aktif flash indirimi otomatik uygula
     try {
-      await applyFlashDiscountToOrder(supabase, order.id, [
-        { productId: product.id, quantity: 1, unitPriceTry: Number(product.price_try) },
+      await applyFlashDiscountToOrder(orderId, [
+        { productId: product.id, quantity: 1, unitPriceTry: num(product.price_try) ?? 0 },
       ]);
     } catch (e) {
       console.error("[flash] apply", (e as Error).message);
     }
 
-    // NOT: "Satın al" tıklamasında TG bildirimi yollamıyoruz. Sadece
-    // başarılı sipariş (ödeme/dekont sonrası) admin'e bildiriliyor.
-    void claims;
-
-
-
-
-    return { orderId: order.id, referenceCode: order.reference_code };
+    return { orderId, referenceCode };
   });
 
-
-/* ============ CART / MULTI-ITEM ORDERS ============ */
+/* ============ SEPET / ÇOK ÜRÜNLÜ SİPARİŞ ============ */
 
 const cartOrderInput = z.object({
   items: z
@@ -199,34 +380,45 @@ const cartOrderInput = z.object({
 });
 
 export const createCartOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => cartOrderInput.parse(d))
+  .middleware([requireAuth])
+  .validator((d: unknown) => cartOrderInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, claims } = context;
+    const userId = context.userId;
+    const ids = data.items.map((i) => i.productId);
+    const placeholders = ids.map(() => "?").join(",");
 
-    // Uniquelisans canlı stok/bakiye ön-kontrolü (fail-open)
-    const userId = (context as { userId?: string }).userId ?? null;
-    try {
-      const { data: prods } = await supabase
-        .from("products")
-        .select("id, name, source, external_id, external_price, supplier_out_of_stock")
-        .in("id", data.items.map((i) => i.productId));
-      const oos = (prods ?? []).find((p) => p.supplier_out_of_stock);
-      if (oos) {
-        throw new Error(`"${oos.name}" tedarikçide geçici olarak stokta yok. Sepetten çıkarıp daha sonra tekrar deneyebilirsin.`);
-      }
-      const ulProds = (prods ?? []).filter(
-        (p) => p.source === "uniquelisans" && p.external_id,
+    const prods = await mysqlQuery<{
+      id: string;
+      name: string;
+      price_try: string | null;
+      active: number | null;
+      source: string | null;
+      external_id: string | null;
+      external_price: string | null;
+      supplier_out_of_stock: number | null;
+    }>(
+      `SELECT id,name,price_try,active,source,external_id,external_price,supplier_out_of_stock
+         FROM products WHERE id IN (${placeholders})`,
+      ids,
+    );
+    if (prods.length === 0) throw new Error("Ürün bulunamadı.");
+    const oos = prods.find((p) => bool(p.supplier_out_of_stock));
+    if (oos) {
+      throw new Error(
+        `"${oos.name}" tedarikçide geçici olarak stokta yok. Sepetten çıkarıp daha sonra tekrar deneyebilirsin.`,
       );
-      if (ulProds.length > 0) {
+    }
 
+    // Uniquelisans ön-kontrol (fail-open)
+    try {
+      const ulProds = prods.filter((p) => p.source === "uniquelisans" && p.external_id);
+      if (ulProds.length > 0) {
         const { ulCheckAvailability, ulGetBalance, logSupplierCheck } = await import(
           "@/lib/uniquelisans.server"
         );
         let totalCost = 0;
         const checked: Array<{
-          p: typeof ulProds[number];
-          qty: number;
+          p: (typeof ulProds)[number];
           amount: number;
           stock_count: number | null;
           is_stock: boolean | null;
@@ -256,7 +448,6 @@ export const createCartOrder = createServerFn({ method: "POST" })
           totalCost += amt * qty;
           checked.push({
             p,
-            qty,
             amount: amt,
             stock_count: avail.stock_count ?? null,
             is_stock: avail.is_stock ?? null,
@@ -265,29 +456,14 @@ export const createCartOrder = createServerFn({ method: "POST" })
         const bal = totalCost > 0 ? await ulGetBalance() : null;
         const balanceOk = bal === null || totalCost <= 0 ? null : bal >= totalCost;
         if (balanceOk === false) {
-          for (const c of checked) {
-            await logSupplierCheck({
-              user_id: userId,
-              product_id: c.p.id,
-              product_name: c.p.name,
-              external_id: c.p.external_id,
-              stock_ok: true,
-              stock_count: c.stock_count,
-              is_stock: c.is_stock,
-              supplier_amount: c.amount || null,
-              balance: bal,
-              balance_ok: false,
-              blocked: true,
-              block_reason: "insufficient_balance",
-              context: "cart_order",
-            });
-          }
           try {
             const { notifyTelegram } = await import("@/lib/telegram.server");
             await notifyTelegram(
               `⚠️ Uniquelisans bakiyesi yetersiz (sepet) — ${(bal ?? 0).toFixed(2)} < ${totalCost.toFixed(2)}`,
             );
-          } catch { /* ignore */ }
+          } catch {
+            /* ignore */
+          }
           throw new Error(
             "Tedarikçi tarafında geçici bir aksaklık var, sepetini biraz sonra tekrar deneyebilir misin?",
           );
@@ -314,43 +490,55 @@ export const createCartOrder = createServerFn({ method: "POST" })
       console.error("[uniquelisans] cart preflight", (e as Error).message);
     }
 
+    const priceMap = new Map(prods.map((p) => [p.id, num(p.price_try) ?? 0]));
+    const nameMap = new Map(prods.map((p) => [p.id, p.name]));
+    let total = 0;
+    let itemCount = 0;
+    for (const it of data.items) {
+      total += (priceMap.get(it.productId) ?? 0) * it.quantity;
+      itemCount += it.quantity;
+    }
+    total = Math.round(total * 100) / 100;
 
+    const orderId = uid();
+    const referenceCode = genRef();
+    const cartIp = getRequestIP({ xForwardedFor: true }) ?? null;
+    const cartUa = getRequestHeader("user-agent") ?? null;
+    const firstProduct = data.items[0]?.productId ?? null;
 
-    const { data: rows, error } = await supabase.rpc("create_cart_order", {
-      _items: data.items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
-      // biome-ignore lint/suspicious/noExplicitAny: rpc signature updated
-      _coupon_code: (data.couponCode ?? null) as any,
-    } as never);
-    if (error) throw new Error(error.message);
-
-    const row = Array.isArray(rows) ? rows[0] : rows;
-    if (!row?.order_id) throw new Error("Sipariş oluşturulamadı.");
-
-    // IP / user-agent kaydı (best-effort — hata yutulur)
-    try {
-      const cartIp = getRequestIP({ xForwardedFor: true }) ?? null;
-      const cartUa = getRequestHeader("user-agent") ?? null;
-      if (cartIp || cartUa) {
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        await supabaseAdmin
-          .from("orders")
-          .update({ client_ip: cartIp, user_agent: cartUa })
-          .eq("id", row.order_id as string);
-      }
-    } catch (e) {
-      console.error("[ip] cart order", (e as Error).message);
+    await mysqlQuery(
+      `INSERT INTO orders (id,user_id,product_id,price_try,reference_code,status,item_count,client_ip,user_agent,created_at,updated_at)
+       VALUES (?,?,?,?,?,'pending',?,?,?,?,?)`,
+      [orderId, userId, firstProduct, total, referenceCode, itemCount, cartIp, cartUa, ts(), ts()],
+    );
+    for (const it of data.items) {
+      await mysqlQuery(
+        `INSERT INTO order_items (id,order_id,product_id,quantity,unit_price_try,product_name_snapshot,created_at)
+         VALUES (?,?,?,?,?,?,?)`,
+        [
+          uid(),
+          orderId,
+          it.productId,
+          it.quantity,
+          priceMap.get(it.productId) ?? 0,
+          nameMap.get(it.productId) ?? null,
+          ts(),
+        ],
+      );
     }
 
-    // Aktif flash indirimlerini order_discounts'a yaz
+    // Kupon
+    if (data.couponCode) {
+      try {
+        await applyPromoToOrder(orderId, data.couponCode);
+      } catch (e) {
+        console.error("[coupon] cart", (e as Error).message);
+      }
+    }
+
     try {
-      const { data: prods } = await supabase
-        .from("products")
-        .select("id, price_try")
-        .in("id", data.items.map((i) => i.productId));
-      const priceMap = new Map<string, number>((prods ?? []).map((p) => [p.id, Number(p.price_try)]));
       await applyFlashDiscountToOrder(
-        supabase,
-        row.order_id as string,
+        orderId,
         data.items.map((i) => ({
           productId: i.productId,
           quantity: i.quantity,
@@ -361,68 +549,56 @@ export const createCartOrder = createServerFn({ method: "POST" })
       console.error("[flash] apply cart", (e as Error).message);
     }
 
-    // NOT: Sepet siparişi oluşturulduğunda TG bildirimi göndermiyoruz.
-    // Sadece ödeme/dekont sonrası "başarılı sipariş" bildirilir.
-    void claims;
-
-
-
-
-    return {
-      orderId: row.order_id as string,
-      referenceCode: row.reference_code as string,
-      totalTry: Number(row.total_try),
-    };
+    return { orderId, referenceCode, totalTry: total };
   });
 
+/* ============ MÜŞTERİ İŞLEMLERİ ============ */
 
 const markPaidInput = z.object({ orderId: z.string().uuid(), receiptPath: z.string().min(1) });
 
 export const markOrderPaid = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => markPaidInput.parse(d))
+  .middleware([requireAuth])
+  .validator((d: unknown) => markPaidInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId, claims } = context;
-    const { error } = await supabase
-      .from("orders")
-      .update({ receipt_path: data.receiptPath, status: "reviewing" })
-      .eq("id", data.orderId)
-      .eq("user_id", userId);
-    if (error) throw new Error(error.message);
-
+    await mysqlQuery(
+      "UPDATE orders SET receipt_path=?, status='reviewing', updated_at=? WHERE id=? AND user_id=?",
+      [data.receiptPath, ts(), data.orderId, context.userId],
+    );
     try {
-      const { data: o } = await supabase
-        .from("orders")
-        .select("reference_code, price_try, product:products(name)")
-        .eq("id", data.orderId)
-        .single();
+      const o = await mysqlOne<{ reference_code: string; price_try: string | null; name: string | null }>(
+        `SELECT o.reference_code, o.price_try, p.name
+           FROM orders o LEFT JOIN products p ON p.id=o.product_id WHERE o.id=?`,
+        [data.orderId],
+      );
       if (o) {
         const { notifyTelegram, receiptUploadedMessage } = await import("@/lib/telegram.server");
-        await notifyTelegram(receiptUploadedMessage({
-          reference: o.reference_code,
-          productName: (o.product as unknown as { name: string } | null)?.name ?? "—",
-          priceTry: Number(o.price_try),
-          userEmail: (claims as { email?: string } | null)?.email ?? null,
-        }));
+        await notifyTelegram(
+          receiptUploadedMessage({
+            reference: o.reference_code,
+            productName: o.name ?? "—",
+            priceTry: num(o.price_try) ?? 0,
+            userEmail: context.user?.email ?? null,
+          }),
+        );
       }
-    } catch (e) { console.error("[notify] markOrderPaid", (e as Error).message); }
-
+    } catch (e) {
+      console.error("[notify] markOrderPaid", (e as Error).message);
+    }
     return { ok: true };
   });
 
 const noteInput = z.object({ orderId: z.string().uuid(), note: z.string().min(1).max(1000) });
 
 export const setOrderUserNote = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => noteInput.parse(d))
+  .middleware([requireAuth])
+  .validator((d: unknown) => noteInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { error } = await supabase
-      .from("orders")
-      .update({ user_note: data.note })
-      .eq("id", data.orderId)
-      .eq("user_id", userId);
-    if (error) throw new Error(error.message);
+    await mysqlQuery("UPDATE orders SET user_note=?, updated_at=? WHERE id=? AND user_id=?", [
+      data.note,
+      ts(),
+      data.orderId,
+      context.userId,
+    ]);
     return { ok: true };
   });
 
@@ -431,63 +607,48 @@ const checkoutFieldsInput = z.object({
   fields: z.record(z.string(), z.string().max(2000)),
 });
 
-/**
- * Müşteri, Uniquelisans kaynaklı ürünlerde ödeme sayfasında gereken bilgileri
- * (email/link/wordpress vs.) buradan gönderir. Admin onayında API'ye iletilir.
- */
 export const setOrderCheckoutFields = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => checkoutFieldsInput.parse(d))
+  .middleware([requireAuth])
+  .validator((d: unknown) => checkoutFieldsInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
     const clean: Record<string, string> = {};
     for (const [k, v] of Object.entries(data.fields)) {
       const key = String(k).trim().slice(0, 64);
       const val = String(v ?? "").trim().slice(0, 2000);
       if (key && val) clean[key] = val;
     }
-    const { error } = await supabase
-      .from("orders")
-      .update({ checkout_fields: clean })
-      .eq("id", data.orderId)
-      .eq("user_id", userId);
-    if (error) throw new Error(error.message);
+    await mysqlQuery("UPDATE orders SET checkout_fields=?, updated_at=? WHERE id=? AND user_id=?", [
+      JSON.stringify(clean),
+      ts(),
+      data.orderId,
+      context.userId,
+    ]);
     return { ok: true };
   });
 
+/* ============ DÜŞÜK STOK BİLDİRİMİ ============ */
 
-
-/**
- * After key assignment, check whether any product in the order dropped below
- * its low_stock_threshold and notify the admin via Telegram (throttled server-side).
- * Fire-and-forget: never blocks the caller.
- */
-export async function notifyLowStockForOrder(
-  supabase: import("@supabase/supabase-js").SupabaseClient,
-  orderId: string,
-): Promise<void> {
+export async function notifyLowStockForOrder(orderId: string): Promise<void> {
   try {
-    const [{ data: order }, { data: items }] = await Promise.all([
-      supabase.from("orders").select("product_id").eq("id", orderId).maybeSingle(),
-      supabase.from("order_items").select("product_id").eq("order_id", orderId),
-    ]);
-    const productIds = new Set<string>();
-    if (order?.product_id) productIds.add(order.product_id);
-    (items ?? []).forEach((i: { product_id: string | null }) => {
-      if (i.product_id) productIds.add(i.product_id);
-    });
-
-    for (const pid of productIds) {
-      const { data } = await supabase.rpc("check_low_stock_after_assign", { _product_id: pid });
-      const row = Array.isArray(data) ? data[0] : data;
-      if (row?.should_alert) {
+    const lines = await orderLines(orderId);
+    for (const line of lines) {
+      const row = await mysqlOne<{
+        name: string;
+        low_stock_threshold: number | null;
+        available: number;
+      }>(
+        `SELECT p.name, p.low_stock_threshold,
+                (SELECT COUNT(*) FROM license_keys k WHERE k.product_id=p.id AND k.status='available') available
+           FROM products p WHERE p.id=?`,
+        [line.productId],
+      );
+      if (!row) continue;
+      const threshold = Number(row.low_stock_threshold ?? 0);
+      const available = Number(row.available ?? 0);
+      if (threshold > 0 && available <= threshold) {
         const { notifyTelegram, lowStockAlertMessage } = await import("@/lib/telegram.server");
         await notifyTelegram(
-          lowStockAlertMessage({
-            productName: row.product_name ?? "—",
-            available: Number(row.available ?? 0),
-            threshold: Number(row.threshold ?? 0),
-          }),
+          lowStockAlertMessage({ productName: row.name ?? "—", available, threshold }),
         );
       }
     }
@@ -496,32 +657,39 @@ export async function notifyLowStockForOrder(
   }
 }
 
+/* ============ ADMIN: ONAY / RED ============ */
+
 const approveInput = z.object({ orderId: z.string().uuid() });
 
 export const approveOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => approveInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Yetkisiz.");
+  .middleware([requireAdmin])
+  .validator((d: unknown) => approveInput.parse(d))
+  .handler(async ({ data }) => {
+    const ord = await mysqlOne<{
+      id: string;
+      user_id: string | null;
+      reference_code: string | null;
+      status: string | null;
+      product_id: string | null;
+      checkout_fields: string | null;
+      price_try: string | null;
+      p_id: string | null;
+      p_name: string | null;
+      p_source: string | null;
+      p_external_id: string | null;
+      p_required_fields: string | null;
+    }>(
+      `SELECT o.id,o.user_id,o.reference_code,o.status,o.product_id,o.checkout_fields,o.price_try,
+              p.id p_id, p.name p_name, p.source p_source, p.external_id p_external_id, p.required_fields p_required_fields
+         FROM orders o LEFT JOIN products p ON p.id=o.product_id WHERE o.id=?`,
+      [data.orderId],
+    );
+    if (!ord) throw new Error("Sipariş bulunamadı.");
 
-    // Ürün Uniquelisans kaynaklıysa → API'den otomatik satın al ve teslim et
-    const { data: ord } = await supabase
-      .from("orders")
-      .select("id, user_id, reference_code, status, product_id, checkout_fields, product:products(id, name, source, external_id, required_fields, delivery_type)")
-      .eq("id", data.orderId)
-      .single();
-
-    const product = ord?.product as {
-      id: string; name: string; source: string | null; external_id: string | null;
-      required_fields: unknown; delivery_type: string;
-    } | null;
-
-    if (product?.source === "uniquelisans" && product.external_id) {
-      if (ord?.status === "approved") throw new Error("Sipariş zaten onaylı.");
-      const required = (product.required_fields ?? []) as Array<{ name: string; required?: boolean }>;
-      const supplied = (ord?.checkout_fields ?? {}) as Record<string, string>;
+    if (ord.p_source === "uniquelisans" && ord.p_external_id && ord.p_id) {
+      if (ord.status === "approved") throw new Error("Sipariş zaten onaylı.");
+      const required = parseJson<Array<{ name: string; required?: boolean }>>(ord.p_required_fields, []);
+      const supplied = parseJson<Record<string, string>>(ord.checkout_fields, {});
       const missing = required
         .filter((r) => r?.required !== false)
         .map((r) => r.name)
@@ -532,260 +700,216 @@ export const approveOrder = createServerFn({ method: "POST" })
         );
       }
 
-      // Havuz-önceliği: UL ürünü olsa bile lokal havuzda "available" key varsa
-      // API'yi çağırmadan doğrudan havuzdan teslim et (bakiye harcamamak için).
-      {
-        const { data: pooled } = await supabase
-          .from("license_keys")
-          .select("id, key_value")
-          .eq("product_id", product.id)
-          .eq("status", "available")
-          .order("created_at", { ascending: true })
-          .limit(1)
-          .maybeSingle();
-        if (pooled?.id) {
-          const { error: upErr } = await supabase
-            .from("license_keys")
-            .update({
-              status: "assigned",
-              assigned_order_id: data.orderId,
-              assigned_at: new Date().toISOString(),
-            })
-            .eq("id", pooled.id)
-            .eq("status", "available"); // race guard
-          if (!upErr) {
-            await supabase.from("order_keys").insert({ order_id: data.orderId, license_key_id: pooled.id });
-            await supabase
-              .from("orders")
-              .update({
-                status: "approved",
-                approved_at: new Date().toISOString(),
-                external_delivery_data: pooled.key_value,
-                external_status: "pool",
-                admin_note: "Havuzdan otomatik teslim (UL API çağrılmadı).",
-              })
-              .eq("id", data.orderId);
-            try {
-              if (ord?.user_id) {
-                await supabase.rpc("push_notification" as never, {
-                  _user_id: ord.user_id,
-                  _type: "order_approved",
-                  _title: "Siparişin onaylandı 🎉",
-                  _body: `Ref: ${ord.reference_code} · Bilgilerin hesabında hazır.`,
-                  _link: "/hesabim",
-                } as never);
-                await supabase.rpc("process_referral_bonus" as never, { _user_id: ord.user_id } as never);
-              }
-            } catch { /* ignore */ }
-            try {
-              const { notifyTelegram } = await import("@/lib/telegram.server");
-              await notifyTelegram(`✅ Havuzdan teslim (UL ürünü) — Ref: ${ord?.reference_code}`);
-            } catch { /* ignore */ }
-            return { ok: true, source: "pool" as const };
-          }
-          // update başarısızsa API akışına düş
+      // Havuz önceliği — API çağırmadan yerel anahtarla teslim
+      const pooled = await assignKeyFromPool(ord.p_id, data.orderId, 30);
+      if (pooled) {
+        await mysqlQuery(
+          `UPDATE orders SET status='approved', approved_at=?, external_delivery_data=?, external_status='pool',
+                  admin_note='Havuzdan otomatik teslim (UL API çağrılmadı).', updated_at=? WHERE id=?`,
+          [ts(), pooled.key_value, ts(), data.orderId],
+        );
+        if (ord.user_id) {
+          await pushNotification(
+            ord.user_id,
+            "order_approved",
+            "Siparişin onaylandı 🎉",
+            `Ref: ${ord.reference_code} · Bilgilerin hesabında hazır.`,
+            "/hesabim",
+          );
         }
+        try {
+          const { notifyTelegram } = await import("@/lib/telegram.server");
+          await notifyTelegram(`✅ Havuzdan teslim (UL ürünü) — Ref: ${ord.reference_code}`);
+        } catch {
+          /* ignore */
+        }
+        return { ok: true, source: "pool" as const };
       }
 
       const { ulBuy } = await import("@/lib/uniquelisans.server");
       let resp;
       try {
-        resp = await ulBuy(Number(product.external_id), supplied);
+        resp = await ulBuy(Number(ord.p_external_id), supplied);
       } catch (e) {
-        // Ağ hatası → siparişi manuel inceleme olarak bırak
-        await supabase
-          .from("orders")
-          .update({ status: "reviewing", admin_note: `API hatası: ${(e as Error).message}` })
-          .eq("id", data.orderId);
+        await mysqlQuery("UPDATE orders SET status='reviewing', admin_note=?, updated_at=? WHERE id=?", [
+          `API hatası: ${(e as Error).message}`,
+          ts(),
+          data.orderId,
+        ]);
         try {
           const { notifyTelegram } = await import("@/lib/telegram.server");
           await notifyTelegram(
-            `⚠️ Uniquelisans otomatik alım başarısız — Ref: ${ord?.reference_code} · ${(e as Error).message}`,
+            `⚠️ Uniquelisans otomatik alım başarısız — Ref: ${ord.reference_code} · ${(e as Error).message}`,
           );
-        } catch { /* ignore */ }
-        throw new Error(`Uniquelisans API'ye ulaşılamadı: ${(e as Error).message}. Sipariş 'inceleniyor' bırakıldı.`);
+        } catch {
+          /* ignore */
+        }
+        throw new Error(
+          `Uniquelisans API'ye ulaşılamadı: ${(e as Error).message}. Sipariş 'inceleniyor' bırakıldı.`,
+        );
       }
 
-      // Hata durumları — sipariş inceleniyor kalır, admin manuel işlem yapar
-      if (resp.status === "error" || resp.code === 402 || resp.code === 422 || (resp.code === 200 && resp.status !== "success" && resp.status !== "pending")) {
-        const msg = resp.message
-          || (resp.required_fields ? `Eksik alanlar: ${Object.keys(resp.required_fields).join(", ")}` : "bilinmeyen hata");
-        await supabase
-          .from("orders")
-          .update({
-            status: "reviewing",
-            admin_note: `Uniquelisans: ${msg}`,
-            external_status: resp.status,
-          })
-          .eq("id", data.orderId);
+      if (
+        resp.status === "error" ||
+        resp.code === 402 ||
+        resp.code === 422 ||
+        (resp.code === 200 && resp.status !== "success" && resp.status !== "pending")
+      ) {
+        const msg =
+          resp.message ||
+          (resp.required_fields
+            ? `Eksik alanlar: ${Object.keys(resp.required_fields).join(", ")}`
+            : "bilinmeyen hata");
+        await mysqlQuery(
+          "UPDATE orders SET status='reviewing', admin_note=?, external_status=?, updated_at=? WHERE id=?",
+          [`Uniquelisans: ${msg}`, resp.status ?? null, ts(), data.orderId],
+        );
         try {
           const { notifyTelegram } = await import("@/lib/telegram.server");
-          await notifyTelegram(
-            `⚠️ Uniquelisans otomatik alım hatası — Ref: ${ord?.reference_code} · ${msg}`,
-          );
-        } catch { /* ignore */ }
+          await notifyTelegram(`⚠️ Uniquelisans otomatik alım hatası — Ref: ${ord.reference_code} · ${msg}`);
+        } catch {
+          /* ignore */
+        }
         throw new Error(`Uniquelisans: ${msg}. Sipariş 'inceleniyor' bırakıldı, manuel devam edebilirsin.`);
       }
 
-      // Başarılı ama stok yok (pending) — API teslim edecek, biz de manuel bekle
       if (resp.status === "pending") {
-        await supabase
-          .from("orders")
-          .update({
-            external_order_id: resp.order_id ? String(resp.order_id) : null,
-            external_status: "pending",
-            admin_note: "Uniquelisans: stok yok, tedarikçi hazırlıyor (pending).",
-          })
-          .eq("id", data.orderId);
+        await mysqlQuery(
+          `UPDATE orders SET external_order_id=?, external_status='pending',
+                  admin_note='Uniquelisans: stok yok, tedarikçi hazırlıyor (pending).', updated_at=? WHERE id=?`,
+          [resp.order_id ? String(resp.order_id) : null, ts(), data.orderId],
+        );
         try {
           const { notifyTelegram } = await import("@/lib/telegram.server");
           await notifyTelegram(
-            `⏳ Uniquelisans stok yok/beklemede — Ref: ${ord?.reference_code} · ext order: ${resp.order_id}`,
+            `⏳ Uniquelisans stok yok/beklemede — Ref: ${ord.reference_code} · ext order: ${resp.order_id}`,
           );
-        } catch { /* ignore */ }
-        throw new Error("Uniquelisans stoğu şu an yok — tedarikçi 'pending' verdi. Sipariş 'inceleniyor' kalıyor.");
+        } catch {
+          /* ignore */
+        }
+        throw new Error(
+          "Uniquelisans stoğu şu an yok — tedarikçi 'pending' verdi. Sipariş 'inceleniyor' kalıyor.",
+        );
       }
 
-      // Başarılı teslim — delivery_data'yı license_key olarak kaydet ve siparişi onayla
       const deliveryData = (resp.delivery_data ?? "").toString().trim();
       if (!deliveryData) throw new Error("Uniquelisans teslim verisi boş döndü.");
 
-      const { data: keyRow, error: keyErr } = await supabase
-        .from("license_keys")
-        .insert({
-          product_id: product.id,
-          key_value: deliveryData,
-          status: "assigned",
-          assigned_order_id: data.orderId,
-          assigned_at: new Date().toISOString(),
-        })
-        .select("id")
-        .single();
-      if (keyErr) throw new Error(`Key kaydedilemedi: ${keyErr.message}`);
-
-      await supabase.from("order_keys").insert({ order_id: data.orderId, license_key_id: keyRow.id });
-      await supabase
-        .from("orders")
-        .update({
-          status: "approved",
-          approved_at: new Date().toISOString(),
-          external_order_id: resp.order_id ? String(resp.order_id) : null,
-          external_delivery_data: deliveryData,
-          external_status: "success",
-        })
-        .eq("id", data.orderId);
-
-      // Bildirimler
-      try {
-        if (ord?.user_id) {
-          await supabase.rpc("push_notification" as never, {
-            _user_id: ord.user_id,
-            _type: "order_approved",
-            _title: "Siparişin onaylandı 🎉",
-            _body: `Ref: ${ord.reference_code} · Bilgilerin hesabında hazır.`,
-            _link: "/hesabim",
-          } as never);
-          await supabase.rpc("process_referral_bonus" as never, { _user_id: ord.user_id } as never);
-        }
-      } catch (e) { console.error("[notify] approveOrder(UL)", (e as Error).message); }
-
+      const keyId = uid();
+      await mysqlQuery(
+        `INSERT INTO license_keys (id,product_id,key_value,status,assigned_order_id,assigned_at,created_at)
+         VALUES (?,?,?,'assigned',?,?,?)`,
+        [keyId, ord.p_id, deliveryData, data.orderId, ts(), ts()],
+      );
+      await mysqlQuery(
+        "INSERT INTO order_keys (id,order_id,license_key_id,delivered_at) VALUES (?,?,?,?)",
+        [uid(), data.orderId, keyId, ts()],
+      );
+      await mysqlQuery(
+        `UPDATE orders SET status='approved', approved_at=?, external_order_id=?, external_delivery_data=?,
+                external_status='success', updated_at=? WHERE id=?`,
+        [ts(), resp.order_id ? String(resp.order_id) : null, deliveryData, ts(), data.orderId],
+      );
+      if (ord.user_id) {
+        await pushNotification(
+          ord.user_id,
+          "order_approved",
+          "Siparişin onaylandı 🎉",
+          `Ref: ${ord.reference_code} · Bilgilerin hesabında hazır.`,
+          "/hesabim",
+        );
+      }
       return { ok: true, licenseKey: deliveryData, activationToken: null };
     }
 
-    // Standart yol — yerel key havuzundan ata
-    const { data: result, error } = await supabase.rpc("approve_order", { _order_id: data.orderId });
-    if (error) throw new Error(error.message);
-    const row = Array.isArray(result) ? result[0] : null;
-    await notifyLowStockForOrder(supabase, data.orderId);
+    // Standart yol — yerel havuzdan ata
+    if (ord.status === "approved") throw new Error("Sipariş zaten onaylı.");
+    const res = await fulfillOrderKeys(data.orderId);
+    await mysqlQuery("UPDATE orders SET status='approved', approved_at=?, updated_at=? WHERE id=?", [
+      ts(),
+      ts(),
+      data.orderId,
+    ]);
+    await notifyLowStockForOrder(data.orderId);
 
-    // Push bildirim + referral bonus (owner user'a) + admin Telegram
+    if (ord.user_id) {
+      await pushNotification(
+        ord.user_id,
+        "order_approved",
+        "Siparişin onaylandı 🎉",
+        `Ref: ${ord.reference_code} · Anahtarların hesabında hazır.`,
+        "/hesabim",
+      );
+    }
     try {
-      const { data: ord2 } = await supabase
-        .from("orders")
-        .select("user_id, reference_code, price_try, product:products(name)")
-        .eq("id", data.orderId)
-        .single();
-      if (ord2?.user_id) {
-        await supabase.rpc("push_notification" as never, {
-          _user_id: ord2.user_id,
-          _type: "order_approved",
-          _title: "Siparişin onaylandı 🎉",
-          _body: `Ref: ${ord2.reference_code} · Anahtarların hesabında hazır.`,
-          _link: "/hesabim",
-        } as never);
-        await supabase.rpc("process_referral_bonus" as never, { _user_id: ord2.user_id } as never);
-      }
-      try {
-        const { notifyTelegram } = await import("@/lib/telegram.server");
-        const pname = (ord2?.product as unknown as { name?: string } | null)?.name ?? "—";
-        await notifyTelegram(
-          `🎉 <b>Sipariş onaylandı</b>\n` +
-          `📦 ${pname}\n` +
-          `💰 ₺${Number(ord2?.price_try ?? 0).toLocaleString("tr-TR")}\n` +
-          `🔖 <code>${ord2?.reference_code ?? ""}</code>`,
-        );
-      } catch (e) { console.error("[tg] approveOrder", (e as Error).message); }
-    } catch (e) { console.error("[notify] approveOrder", (e as Error).message); }
+      const { notifyTelegram } = await import("@/lib/telegram.server");
+      await notifyTelegram(
+        `🎉 <b>Sipariş onaylandı</b>\n📦 ${ord.p_name ?? "—"}\n💰 ₺${(num(ord.price_try) ?? 0).toLocaleString("tr-TR")}\n🔖 <code>${ord.reference_code ?? ""}</code>`,
+      );
+    } catch (e) {
+      console.error("[tg] approveOrder", (e as Error).message);
+    }
 
-    return {
-      ok: true,
-      licenseKey: row?.license_key ?? null,
-      activationToken: row?.activation_token ?? null,
-    };
+    return { ok: true, licenseKey: res.licenseKey, activationToken: res.activationToken };
   });
-
 
 const rejectInput = z.object({ orderId: z.string().uuid(), note: z.string().max(500).optional() });
 
 export const rejectOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => rejectInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Yetkisiz.");
-
-    const { data: ord } = await supabase
-      .from("orders")
-      .select("paid_with, status")
-      .eq("id", data.orderId)
-      .single();
+  .middleware([requireAdmin])
+  .validator((d: unknown) => rejectInput.parse(d))
+  .handler(async ({ data }) => {
+    const ord = await getOrder(data.orderId);
     let refunded = false;
     if (ord?.paid_with === "wallet" && ord.status !== "rejected") {
-      const { error: refErr } = await supabase.rpc("refund_order_to_wallet", {
-        _order_id: data.orderId,
-      });
-      if (refErr) throw new Error("İade başarısız: " + refErr.message);
-      refunded = true;
+      const amount = await refundOrderToWallet(data.orderId);
+      refunded = amount > 0;
     }
-
-    const { error } = await supabase
-      .from("orders")
-      .update({ status: "rejected", admin_note: data.note ?? null })
-      .eq("id", data.orderId);
-    if (error) throw new Error(error.message);
+    await mysqlQuery("UPDATE orders SET status='rejected', admin_note=?, updated_at=? WHERE id=?", [
+      data.note ?? null,
+      ts(),
+      data.orderId,
+    ]);
     return { ok: true, refunded };
   });
 
 const finalizeFreeInput = z.object({ orderId: z.string().uuid() });
 
 export const finalizeFreeOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => finalizeFreeInput.parse(d))
+  .middleware([requireAuth])
+  .validator((d: unknown) => finalizeFreeInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
-    const { data: rows, error } = await supabase.rpc("finalize_free_order", {
-      _order_id: data.orderId,
-    });
-    if (error) throw new Error(error.message);
-    const row = Array.isArray(rows) ? rows[0] : rows;
-    await notifyLowStockForOrder(supabase, data.orderId);
-    return {
-      ok: true,
-      licenseKey: row?.license_key ?? null,
-      activationToken: row?.activation_token ?? null,
-    };
+    const ord = await getOrder(data.orderId);
+    if (!ord) throw new Error("Sipariş bulunamadı.");
+    if (ord.user_id !== context.userId && !context.isAdmin) throw new Error("Yetkisiz.");
+    if (ord.status === "approved") throw new Error("Sipariş zaten onaylı.");
+
+    const disc = await mysqlOne<{ d: string | null }>(
+      "SELECT SUM(discount_try) d FROM order_discounts WHERE order_id=?",
+      [data.orderId],
+    );
+    const net = (num(ord.price_try) ?? 0) - (num(disc?.d) ?? 0);
+    if (net > 0.009) throw new Error("Sipariş ücretsiz değil.");
+
+    const res = await fulfillOrderKeys(data.orderId);
+    await mysqlQuery(
+      "UPDATE orders SET status='approved', approved_at=?, paid_with='free', updated_at=? WHERE id=?",
+      [ts(), ts(), data.orderId],
+    );
+    await notifyLowStockForOrder(data.orderId);
+    if (ord.user_id) {
+      await pushNotification(
+        ord.user_id,
+        "order_approved",
+        "Siparişin onaylandı 🎉",
+        `Ref: ${ord.reference_code} · Anahtarların hesabında hazır.`,
+        "/hesabim",
+      );
+    }
+    return { ok: true, licenseKey: res.licenseKey, activationToken: res.activationToken };
   });
+
+/* ============ ADMIN: ANAHTAR / ÜRÜN / BANKA ============ */
 
 const importKeysInput = z.object({
   productId: z.string().uuid(),
@@ -794,54 +918,44 @@ const importKeysInput = z.object({
 });
 
 export const importLicenseKeys = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => importKeysInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Yetkisiz.");
-
-    // Shared key mode: her key için sharedCount adet kopya (aynı key_value, is_shared=true).
-    const shared = Math.max(0, Math.floor(data.sharedCount ?? 0));
-    if (shared > 0) {
-      const uniqueKeys = [...new Set(data.keys.map((k) => k.trim()).filter(Boolean))];
-      const rows: Array<{ product_id: string; key_value: string; is_shared: boolean }> = [];
-      for (const key_value of uniqueKeys) {
-        for (let i = 0; i < shared; i++) {
-          rows.push({ product_id: data.productId, key_value, is_shared: true });
-        }
-      }
-      const { error, count } = await supabase
-        .from("license_keys")
-        .insert(rows, { count: "exact" });
-      if (error) throw new Error(error.message);
-      return { inserted: count ?? rows.length, submitted: rows.length };
-    }
-
+  .middleware([requireAdmin])
+  .validator((d: unknown) => importKeysInput.parse(d))
+  .handler(async ({ data }) => {
     const uniqueKeys = [...new Set(data.keys.map((k) => k.trim()).filter(Boolean))];
     if (uniqueKeys.length === 0) return { inserted: 0, submitted: 0 };
 
-    // Partial unique index (WHERE is_shared IS NOT TRUE) — ON CONFLICT cannot
-    // target it via PostgREST, so dedupe against existing rows manually.
-    const { data: existing, error: existErr } = await supabase
-      .from("license_keys")
-      .select("key_value")
-      .eq("product_id", data.productId)
-      .neq("is_shared", true)
-      .in("key_value", uniqueKeys);
-    if (existErr) throw new Error(existErr.message);
-    const already = new Set((existing ?? []).map((r: { key_value: string }) => r.key_value));
-    const rows = uniqueKeys
-      .filter((k) => !already.has(k))
-      .map((key_value) => ({ product_id: data.productId, key_value }));
-    if (rows.length === 0) return { inserted: 0, submitted: uniqueKeys.length };
-    const { error, count } = await supabase
-      .from("license_keys")
-      .insert(rows, { count: "exact" });
-    if (error) throw new Error(error.message);
-    return { inserted: count ?? rows.length, submitted: uniqueKeys.length };
-  });
+    const shared = Math.max(0, Math.floor(data.sharedCount ?? 0));
+    if (shared > 0) {
+      let inserted = 0;
+      for (const key_value of uniqueKeys) {
+        for (let i = 0; i < shared; i++) {
+          await mysqlQuery(
+            `INSERT INTO license_keys (id,product_id,key_value,status,is_shared,created_at) VALUES (?,?,?,'available',1,?)`,
+            [uid(), data.productId, key_value, ts()],
+          );
+          inserted++;
+        }
+      }
+      return { inserted, submitted: uniqueKeys.length * shared };
+    }
 
+    const ph = uniqueKeys.map(() => "?").join(",");
+    const existing = await mysqlQuery<{ key_value: string }>(
+      `SELECT key_value FROM license_keys WHERE product_id=? AND (is_shared IS NULL OR is_shared=0) AND key_value IN (${ph})`,
+      [data.productId, ...uniqueKeys],
+    );
+    const already = new Set(existing.map((r) => r.key_value));
+    let inserted = 0;
+    for (const key_value of uniqueKeys) {
+      if (already.has(key_value)) continue;
+      await mysqlQuery(
+        `INSERT INTO license_keys (id,product_id,key_value,status,created_at) VALUES (?,?,?,'available',?)`,
+        [uid(), data.productId, key_value, ts()],
+      );
+      inserted++;
+    }
+    return { inserted, submitted: uniqueKeys.length };
+  });
 
 const productInput = z.object({
   id: z.string().uuid().optional(),
@@ -861,7 +975,10 @@ const productInput = z.object({
   unlimited_stock: z.boolean().optional(),
   sort_order: z.number().int().min(-9999).max(9999).optional(),
   tier: z.enum(["standard", "epic"]).optional(),
-  image_url: z.union([z.string().url().max(500), z.string().max(0), z.string().regex(/^\/[\w\-\/.]+$/)]).optional().nullable(),
+  image_url: z
+    .union([z.string().url().max(500), z.string().max(0), z.string().regex(/^\/[\w\-\/.]+$/)])
+    .optional()
+    .nullable(),
   shopier_url: z.union([z.string().url().max(500), z.string().max(0)]).optional().nullable(),
   requires_email: z.boolean().optional(),
   demo_video_url: z.union([z.string().url().max(500), z.string().max(0)]).optional().nullable(),
@@ -869,33 +986,53 @@ const productInput = z.object({
   grants_app_days: z.union([z.number().int().min(0).max(36500), z.null()]).optional(),
 });
 
+type SqlVal = string | number | boolean | null;
+
+function toSqlValue(v: unknown): SqlVal {
+  if (v === undefined || v === null) return null;
+  if (typeof v === "boolean") return v ? 1 : 0;
+  if (typeof v === "number" || typeof v === "string") return v;
+  return JSON.stringify(v);
+}
+
 export const upsertProduct = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => productInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Yetkisiz.");
+  .middleware([requireAdmin])
+  .validator((d: unknown) => productInput.parse(d))
+  .handler(async ({ data }) => {
     const isNew = !data.id;
-    if (data.id) {
-      const { error } = await supabase.from("products").update(data).eq("id", data.id);
-      if (error) throw new Error(error.message);
+    const { id, ...fields } = data;
+    const cols = Object.keys(fields).filter((k) => fields[k as keyof typeof fields] !== undefined);
+    const vals = cols.map((k) => toSqlValue(fields[k as keyof typeof fields]));
+
+    if (id) {
+      await mysqlQuery(
+        `UPDATE products SET ${cols.map((c) => `${c}=?`).join(",")}, updated_at=? WHERE id=?`,
+        [...vals, ts(), id],
+      );
     } else {
-      const { error } = await supabase.from("products").insert(data);
-      if (error) throw new Error(error.message);
+      await mysqlQuery(
+        `INSERT INTO products (id,${cols.join(",")},created_at,updated_at)
+         VALUES (?,${cols.map(() => "?").join(",")},?,?)`,
+        [uid(), ...vals, ts(), ts()],
+      );
     }
+
     if (isNew && data.active) {
       try {
         const tg = await import("@/lib/telegram.server");
-        await tg.postToChannel(tg.productAnnouncement({
-          name: data.name,
-          slug: data.slug,
-          priceTry: Number(data.price_try),
-          description: data.description ?? null,
-          category: data.category ?? null,
-          imageUrl: data.image_url ?? null,
-        }));
-      } catch (e) { console.error("[notify] newProduct", (e as Error).message); }
+        await tg.postToChannel(
+          tg.productAnnouncement({
+            name: data.name,
+            slug: data.slug,
+            priceTry: Number(data.price_try),
+            description: data.description ?? null,
+            category: data.category ?? null,
+            imageUrl: data.image_url ?? null,
+          }),
+        );
+      } catch (e) {
+        console.error("[notify] newProduct", (e as Error).message);
+      }
     }
     return { ok: true };
   });
@@ -903,14 +1040,10 @@ export const upsertProduct = createServerFn({ method: "POST" })
 const deleteProductInput = z.object({ id: z.string().uuid() });
 
 export const deleteProduct = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => deleteProductInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Yetkisiz.");
-    const { error } = await supabase.from("products").delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
+  .middleware([requireAdmin])
+  .validator((d: unknown) => deleteProductInput.parse(d))
+  .handler(async ({ data }) => {
+    await mysqlQuery("DELETE FROM products WHERE id=?", [data.id]);
     return { ok: true };
   });
 
@@ -923,23 +1056,85 @@ const bankInput = z.object({
 });
 
 export const upsertBankAccount = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => bankInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Yetkisiz.");
+  .middleware([requireAdmin])
+  .validator((d: unknown) => bankInput.parse(d))
+  .handler(async ({ data }) => {
     if (data.id) {
-      const { error } = await supabase.from("bank_accounts").update(data).eq("id", data.id);
-      if (error) throw new Error(error.message);
+      await mysqlQuery(
+        "UPDATE bank_accounts SET bank_name=?, iban=?, holder_name=?, active=? WHERE id=?",
+        [data.bank_name, data.iban, data.holder_name, data.active ? 1 : 0, data.id],
+      );
     } else {
-      const { error } = await supabase.from("bank_accounts").insert(data);
-      if (error) throw new Error(error.message);
+      await mysqlQuery(
+        "INSERT INTO bank_accounts (id,bank_name,iban,holder_name,active,created_at) VALUES (?,?,?,?,?,?)",
+        [uid(), data.bank_name, data.iban, data.holder_name, data.active ? 1 : 0, ts()],
+      );
     }
     return { ok: true };
   });
 
-/* ============ PROMO CODES ============ */
+/* ============ KUPONLAR ============ */
+
+async function applyPromoToOrder(orderId: string, rawCode: string) {
+  const code = rawCode.trim().toUpperCase();
+  const ord = await getOrder(orderId);
+  if (!ord) throw new Error("Sipariş bulunamadı.");
+  if (ord.status === "approved") throw new Error("Onaylanmış siparişe kupon uygulanamaz.");
+
+  const promo = await mysqlOne<{
+    id: string;
+    code: string;
+    discount_type: string;
+    discount_value: string | null;
+    active: number | null;
+    max_uses: number | null;
+    used_count: number | null;
+    expires_at: string | null;
+    product_id: string | null;
+    min_amount: string | null;
+  }>(
+    `SELECT id,code,discount_type,discount_value,active,max_uses,used_count,expires_at,product_id,min_amount
+       FROM promo_codes WHERE UPPER(code)=? LIMIT 1`,
+    [code],
+  );
+  if (!promo || !bool(promo.active)) throw new Error("Kupon geçersiz.");
+  if (promo.expires_at && new Date(promo.expires_at).getTime() < Date.now()) {
+    throw new Error("Kuponun süresi dolmuş.");
+  }
+  if (promo.max_uses != null && Number(promo.used_count ?? 0) >= Number(promo.max_uses)) {
+    throw new Error("Kupon kullanım limiti dolmuş.");
+  }
+
+  const total = num(ord.price_try) ?? 0;
+  if (promo.min_amount && total < (num(promo.min_amount) ?? 0)) {
+    throw new Error(`Bu kupon için minimum tutar ₺${num(promo.min_amount)}.`);
+  }
+  if (promo.product_id) {
+    const lines = await orderLines(orderId);
+    if (!lines.some((l) => l.productId === promo.product_id)) {
+      throw new Error("Kupon bu ürün için geçerli değil.");
+    }
+  }
+
+  const value = num(promo.discount_value) ?? 0;
+  const raw = promo.discount_type === "percent" ? (total * value) / 100 : value;
+  const discount = Math.round(Math.max(0, Math.min(total, raw)) * 100) / 100;
+  if (discount <= 0) throw new Error("Kupon indirim sağlamıyor.");
+
+  await mysqlQuery("DELETE FROM order_discounts WHERE order_id=? AND promo_code_id IS NOT NULL", [orderId]);
+  await mysqlQuery(
+    "INSERT INTO order_discounts (id,order_id,promo_code_id,code_snapshot,discount_try,created_at) VALUES (?,?,?,?,?,?)",
+    [uid(), orderId, promo.id, promo.code, discount, ts()],
+  );
+  await mysqlQuery("UPDATE promo_codes SET used_count=COALESCE(used_count,0)+1 WHERE id=?", [promo.id]);
+
+  const sum = await mysqlOne<{ d: string | null }>(
+    "SELECT SUM(discount_try) d FROM order_discounts WHERE order_id=?",
+    [orderId],
+  );
+  const finalPrice = Math.max(0, Math.round((total - (num(sum?.d) ?? 0)) * 100) / 100);
+  return { discountTry: discount, finalPrice, code: promo.code };
+}
 
 const applyPromoInput = z.object({
   orderId: z.string().uuid(),
@@ -947,31 +1142,37 @@ const applyPromoInput = z.object({
 });
 
 export const applyPromoCode = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => applyPromoInput.parse(d))
+  .middleware([requireAuth])
+  .validator((d: unknown) => applyPromoInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
-    const { data: rows, error } = await supabase.rpc("apply_promo_code", {
-      _order_id: data.orderId,
-      _code: data.code,
-    });
-    if (error) throw new Error(error.message);
-    const row = Array.isArray(rows) ? rows[0] : rows;
-    return {
-      discountTry: Number(row?.discount_try ?? 0),
-      finalPrice: Number(row?.final_price ?? 0),
-      code: (row?.code as string) ?? data.code,
-    };
+    const ord = await getOrder(data.orderId);
+    if (!ord || (ord.user_id !== context.userId && !context.isAdmin)) throw new Error("Yetkisiz.");
+    return applyPromoToOrder(data.orderId, data.code);
   });
 
 const removePromoInput = z.object({ orderId: z.string().uuid() });
 
 export const removePromoCode = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => removePromoInput.parse(d))
+  .middleware([requireAuth])
+  .validator((d: unknown) => removePromoInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.rpc("remove_promo_code", { _order_id: data.orderId });
-    if (error) throw new Error(error.message);
+    const ord = await getOrder(data.orderId);
+    if (!ord || (ord.user_id !== context.userId && !context.isAdmin)) throw new Error("Yetkisiz.");
+    const rows = await mysqlQuery<{ promo_code_id: string | null }>(
+      "SELECT promo_code_id FROM order_discounts WHERE order_id=? AND promo_code_id IS NOT NULL",
+      [data.orderId],
+    );
+    await mysqlQuery("DELETE FROM order_discounts WHERE order_id=? AND promo_code_id IS NOT NULL", [
+      data.orderId,
+    ]);
+    for (const r of rows) {
+      if (r.promo_code_id) {
+        await mysqlQuery(
+          "UPDATE promo_codes SET used_count=GREATEST(COALESCE(used_count,1)-1,0) WHERE id=?",
+          [r.promo_code_id],
+        );
+      }
+    }
     return { ok: true };
   });
 
@@ -989,42 +1190,79 @@ const promoUpsertInput = z.object({
 });
 
 export const upsertPromoCode = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => promoUpsertInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Yetkisiz.");
-    const payload = { ...data, code: data.code.toUpperCase().trim() };
+  .middleware([requireAdmin])
+  .validator((d: unknown) => promoUpsertInput.parse(d))
+  .handler(async ({ data }) => {
+    const code = data.code.toUpperCase().trim();
     const isNew = !data.id;
+    const expires = data.expires_at ? ts(new Date(data.expires_at)) : null;
     if (data.id) {
-      const { error } = await supabase.from("promo_codes").update(payload).eq("id", data.id);
-      if (error) throw new Error(error.message);
+      await mysqlQuery(
+        `UPDATE promo_codes SET code=?, discount_type=?, discount_value=?, active=?, max_uses=?, expires_at=?,
+                product_id=?, min_amount=?, note=?, updated_at=? WHERE id=?`,
+        [
+          code,
+          data.discount_type,
+          data.discount_value,
+          data.active ? 1 : 0,
+          data.max_uses ?? null,
+          expires,
+          data.product_id ?? null,
+          data.min_amount ?? 0,
+          data.note ?? null,
+          ts(),
+          data.id,
+        ],
+      );
     } else {
-      const { error } = await supabase.from("promo_codes").insert(payload);
-      if (error) throw new Error(error.message);
+      await mysqlQuery(
+        `INSERT INTO promo_codes (id,code,discount_type,discount_value,active,max_uses,used_count,expires_at,product_id,min_amount,note,created_at,updated_at)
+         VALUES (?,?,?,?,?,?,0,?,?,?,?,?,?)`,
+        [
+          uid(),
+          code,
+          data.discount_type,
+          data.discount_value,
+          data.active ? 1 : 0,
+          data.max_uses ?? null,
+          expires,
+          data.product_id ?? null,
+          data.min_amount ?? 0,
+          data.note ?? null,
+          ts(),
+          ts(),
+        ],
+      );
     }
+
     if (isNew && data.active) {
       try {
         let productName: string | null = null;
         let productSlug: string | null = null;
         if (data.product_id) {
-          const { data: p } = await supabase.from("products").select("name,slug").eq("id", data.product_id).single();
+          const p = await mysqlOne<{ name: string; slug: string }>(
+            "SELECT name,slug FROM products WHERE id=?",
+            [data.product_id],
+          );
           productName = p?.name ?? null;
           productSlug = p?.slug ?? null;
         }
         const tg = await import("@/lib/telegram.server");
-        await tg.postToChannel(tg.promoAnnouncement({
-          code: payload.code,
-          discountType: data.discount_type,
-          discountValue: Number(data.discount_value),
-          productName,
-          productSlug,
-          minAmount: data.min_amount ?? 0,
-          expiresAt: data.expires_at ?? null,
-          maxUses: data.max_uses ?? null,
-        }));
-      } catch (e) { console.error("[notify] newPromo", (e as Error).message); }
+        await tg.postToChannel(
+          tg.promoAnnouncement({
+            code,
+            discountType: data.discount_type,
+            discountValue: Number(data.discount_value),
+            productName,
+            productSlug,
+            minAmount: data.min_amount ?? 0,
+            expiresAt: data.expires_at ?? null,
+            maxUses: data.max_uses ?? null,
+          }),
+        );
+      } catch (e) {
+        console.error("[notify] newPromo", (e as Error).message);
+      }
     }
     return { ok: true };
   });
@@ -1032,66 +1270,56 @@ export const upsertPromoCode = createServerFn({ method: "POST" })
 const promoDeleteInput = z.object({ id: z.string().uuid() });
 
 export const deletePromoCode = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => promoDeleteInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Yetkisiz.");
-    const { error } = await supabase.from("promo_codes").delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
+  .middleware([requireAdmin])
+  .validator((d: unknown) => promoDeleteInput.parse(d))
+  .handler(async ({ data }) => {
+    await mysqlQuery("DELETE FROM promo_codes WHERE id=?", [data.id]);
     return { ok: true };
   });
 
+/* ============ FLASH İNDİRİM ============ */
 
-/**
- * Sipariş için aktif flash indirimlerini order_discounts tablosuna yazar.
- * Kupon akışıyla uyumlu (SUM(discount_try) final fiyattan düşülüyor).
- */
 async function applyFlashDiscountToOrder(
-  supabase: import("@supabase/supabase-js").SupabaseClient,
   orderId: string,
   items: Array<{ productId: string; quantity: number; unitPriceTry: number }>,
 ): Promise<void> {
   if (items.length === 0) return;
-  const nowIso = new Date().toISOString();
-  const { data: sales } = await supabase
-    // biome-ignore lint/suspicious/noExplicitAny: table not in generated types
-    .from("flash_sales" as any)
-    .select("id, product_id, discount_type, discount_value, ends_at")
-    .in("product_id", items.map((i) => i.productId))
-    .eq("is_active", true)
-    .lte("starts_at", nowIso)
-    .gt("ends_at", nowIso);
-  const rows = (sales ?? []) as Array<{
-    id: string; product_id: string; discount_type: "percent" | "amount"; discount_value: number;
-  }>;
-  if (rows.length === 0) return;
+  const ids = items.map((i) => i.productId);
+  const ph = ids.map(() => "?").join(",");
+  const sales = await mysqlQuery<{
+    id: string;
+    product_id: string;
+    discount_type: string;
+    discount_value: string | null;
+  }>(
+    `SELECT id,product_id,discount_type,discount_value FROM flash_sales
+      WHERE product_id IN (${ph}) AND is_active=1 AND starts_at <= NOW() AND ends_at > NOW()`,
+    ids,
+  );
+  if (sales.length === 0) return;
+
   const bestByProduct = new Map<string, { saleId: string; saved: number }>();
   for (const it of items) {
-    const applicable = rows.filter((r) => r.product_id === it.productId);
-    if (applicable.length === 0) continue;
+    const applicable = sales.filter((r) => r.product_id === it.productId);
     let best: { saleId: string; saved: number } | null = null;
     for (const r of applicable) {
-      const raw = r.discount_type === "percent"
-        ? it.unitPriceTry * (Number(r.discount_value) / 100)
-        : Number(r.discount_value);
+      const value = num(r.discount_value) ?? 0;
+      const raw = r.discount_type === "percent" ? it.unitPriceTry * (value / 100) : value;
       const perUnit = Math.max(0, Math.min(it.unitPriceTry, raw));
       const saved = Math.round(perUnit * it.quantity * 100) / 100;
       if (saved > 0 && (!best || saved > best.saved)) best = { saleId: r.id, saved };
     }
     if (best) bestByProduct.set(it.productId, best);
   }
-  const inserts = Array.from(bestByProduct.values()).map((v) => ({
-    order_id: orderId,
-    code_snapshot: `FLASH-${v.saleId.slice(0, 8)}`,
-    discount_try: v.saved,
-  }));
-  if (inserts.length === 0) return;
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  await supabaseAdmin.from("order_discounts").insert(inserts);
+  for (const [productId, v] of bestByProduct) {
+    await mysqlQuery(
+      "INSERT INTO order_discounts (id,order_id,product_id,code_snapshot,discount_try,created_at) VALUES (?,?,?,?,?,?)",
+      [uid(), orderId, productId, `FLASH-${v.saleId.slice(0, 8)}`, v.saved, ts()],
+    );
+  }
 }
 
+/* ============ SİPARİŞ SATIRLARI ============ */
 
 const addItemInput = z.object({
   orderId: z.string().uuid(),
@@ -1100,19 +1328,56 @@ const addItemInput = z.object({
 });
 
 export const addItemToOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => addItemInput.parse(d))
+  .middleware([requireAuth])
+  .validator((d: unknown) => addItemInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
-    const { data: rows, error } = await supabase.rpc("add_item_to_order", {
-      _order_id: data.orderId,
-      _product_id: data.productId,
-      _quantity: data.quantity,
-    // biome-ignore lint/suspicious/noExplicitAny: rpc typing
-    } as any);
-    if (error) throw new Error(error.message);
-    const row = Array.isArray(rows) ? rows[0] : rows;
-    return { orderId: row?.out_order_id as string, totalTry: Number(row?.out_total_try ?? 0) };
+    const ord = await getOrder(data.orderId);
+    if (!ord || (ord.user_id !== context.userId && !context.isAdmin)) throw new Error("Yetkisiz.");
+    if (ord.status !== "pending" && ord.status !== "reviewing") {
+      throw new Error("Bu sipariş artık düzenlenemez.");
+    }
+    const p = await mysqlOne<{ id: string; name: string; price_try: string | null; active: number | null }>(
+      "SELECT id,name,price_try,active FROM products WHERE id=?",
+      [data.productId],
+    );
+    if (!p || !bool(p.active)) throw new Error("Ürün bulunamadı.");
+
+    // Tekil sipariş ise önce mevcut ürünü satıra taşı
+    const existingItems = await mysqlQuery<{ c: number }>(
+      "SELECT COUNT(*) c FROM order_items WHERE order_id=?",
+      [data.orderId],
+    );
+    if (Number(existingItems[0]?.c ?? 0) === 0 && ord.product_id) {
+      const base = await mysqlOne<{ name: string; price_try: string | null }>(
+        "SELECT name,price_try FROM products WHERE id=?",
+        [ord.product_id],
+      );
+      await mysqlQuery(
+        `INSERT INTO order_items (id,order_id,product_id,quantity,unit_price_try,product_name_snapshot,created_at)
+         VALUES (?,?,?,1,?,?,?)`,
+        [uid(), data.orderId, ord.product_id, num(ord.price_try) ?? num(base?.price_try) ?? 0, base?.name ?? null, ts()],
+      );
+    }
+
+    const same = await mysqlOne<{ id: string; quantity: number }>(
+      "SELECT id,quantity FROM order_items WHERE order_id=? AND product_id=? LIMIT 1",
+      [data.orderId, data.productId],
+    );
+    if (same) {
+      await mysqlQuery("UPDATE order_items SET quantity=quantity+? WHERE id=?", [
+        data.quantity,
+        same.id,
+      ]);
+    } else {
+      await mysqlQuery(
+        `INSERT INTO order_items (id,order_id,product_id,quantity,unit_price_try,product_name_snapshot,created_at)
+         VALUES (?,?,?,?,?,?,?)`,
+        [uid(), data.orderId, p.id, data.quantity, num(p.price_try) ?? 0, p.name, ts()],
+      );
+    }
+
+    const { total } = await recalcOrderTotal(data.orderId);
+    return { orderId: data.orderId, totalTry: total };
   });
 
 const removeItemInput = z.object({
@@ -1121,36 +1386,34 @@ const removeItemInput = z.object({
 });
 
 export const removeItemFromOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => removeItemInput.parse(d))
+  .middleware([requireAuth])
+  .validator((d: unknown) => removeItemInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
-    const { data: rows, error } = await supabase.rpc("remove_item_from_order", {
-      _order_id: data.orderId,
-      _item_id: data.itemId,
-    // biome-ignore lint/suspicious/noExplicitAny: rpc typing
-    } as any);
-    if (error) throw new Error(error.message);
-    const row = Array.isArray(rows) ? rows[0] : rows;
-    return {
-      orderId: row?.order_id as string,
-      totalTry: Number(row?.total_try ?? 0),
-      itemsLeft: Number(row?.items_left ?? 0),
-    };
+    const ord = await getOrder(data.orderId);
+    if (!ord || (ord.user_id !== context.userId && !context.isAdmin)) throw new Error("Yetkisiz.");
+    if (ord.status !== "pending" && ord.status !== "reviewing") {
+      throw new Error("Bu sipariş artık düzenlenemez.");
+    }
+    await mysqlQuery("DELETE FROM order_items WHERE id=? AND order_id=?", [data.itemId, data.orderId]);
+    const { total, count } = await recalcOrderTotal(data.orderId);
+    return { orderId: data.orderId, totalTry: total, itemsLeft: count };
   });
 
 const cancelOrderInput = z.object({ orderId: z.string().uuid() });
 
 export const cancelPendingOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => cancelOrderInput.parse(d))
+  .middleware([requireAuth])
+  .validator((d: unknown) => cancelOrderInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase } = context;
-    const { error } = await supabase.rpc("cancel_pending_order", {
-      _order_id: data.orderId,
-    // biome-ignore lint/suspicious/noExplicitAny: rpc typing
-    } as any);
-    if (error) throw new Error(error.message);
+    const ord = await getOrder(data.orderId);
+    if (!ord || (ord.user_id !== context.userId && !context.isAdmin)) throw new Error("Yetkisiz.");
+    if (ord.status !== "pending" && ord.status !== "reviewing") {
+      throw new Error("Sadece bekleyen siparişler iptal edilebilir.");
+    }
+    await mysqlQuery("UPDATE orders SET status='cancelled', updated_at=? WHERE id=?", [
+      ts(),
+      data.orderId,
+    ]);
     return { ok: true };
   });
 
@@ -1160,22 +1423,43 @@ const adminCancelInput = z.object({
 });
 
 export const adminCancelOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => adminCancelInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", {
-      _user_id: userId,
-      _role: "admin",
-    });
-    if (!isAdmin) throw new Error("Yetkisiz.");
-    const { data: res, error } = await supabase.rpc("admin_cancel_order", {
-      _order_id: data.orderId,
-      _note: data.note ?? null,
-    // biome-ignore lint/suspicious/noExplicitAny: rpc typing
-    } as any);
-    if (error) throw new Error(error.message);
-    return res as { ok: boolean; refunded_try: number; released_keys: number };
+  .middleware([requireAdmin])
+  .validator((d: unknown) => adminCancelInput.parse(d))
+  .handler(async ({ data }) => {
+    const ord = await getOrder(data.orderId);
+    if (!ord) throw new Error("Sipariş bulunamadı.");
+    if (ord.status === "cancelled") return { ok: true, refunded_try: 0, released_keys: 0 };
+
+    let refunded = 0;
+    if (ord.paid_with === "wallet") {
+      refunded = await refundOrderToWallet(data.orderId);
+    }
+
+    const keys = await mysqlQuery<{ license_key_id: string }>(
+      "SELECT license_key_id FROM order_keys WHERE order_id=?",
+      [data.orderId],
+    );
+    for (const k of keys) {
+      await mysqlQuery(
+        `UPDATE license_keys SET status='available', assigned_order_id=NULL, assigned_at=NULL,
+                activation_token=NULL, expires_at=NULL WHERE id=?`,
+        [k.license_key_id],
+      );
+    }
+    await mysqlQuery("DELETE FROM order_keys WHERE order_id=?", [data.orderId]);
+    await mysqlQuery("UPDATE orders SET status='cancelled', admin_note=?, updated_at=? WHERE id=?", [
+      data.note ?? null,
+      ts(),
+      data.orderId,
+    ]);
+    if (ord.user_id) {
+      await pushNotification(
+        ord.user_id,
+        "order_cancelled",
+        "Siparişin iptal edildi",
+        `Ref: ${ord.reference_code}${refunded > 0 ? ` · ₺${refunded} bakiyene iade edildi.` : ""}`,
+        "/hesabim",
+      );
+    }
+    return { ok: true, refunded_try: refunded, released_keys: keys.length };
   });
-
-
