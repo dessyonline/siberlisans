@@ -68,7 +68,6 @@ const NAV_GROUPS: NavGroup[] = [
     label: "satış",
     items: [
       { to: "/admin/siparisler", label: "siparişler", icon: ShoppingCart },
-      { to: "/admin/faturalar", label: "faturalar", icon: Receipt },
       { to: "/admin/abonelikler", label: "abonelikler", icon: RefreshCw },
     ],
   },
