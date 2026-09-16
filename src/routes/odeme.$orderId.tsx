@@ -136,62 +136,27 @@ function Payment() {
   };
 
   const startWalletPay = async () => {
-    // 2FA aktifse önce doğrulama iste — ancak kullanıcı bu cihazı hatırla dediyse atla
-    const { isDeviceTrusted } = await import("@/lib/trusted-device");
-    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (
-      aal?.nextLevel === "aal2" &&
-      aal.currentLevel === "aal1" &&
-      !isDeviceTrusted(user?.id)
-    ) {
-      setMfaGateOpen(true);
-      return;
-    }
     await runWalletPay();
   };
 
-
+  const orderFn = useServerFn(getOrderDetail);
   const { data: order } = useQuery({
     queryKey: ["order", orderId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select(
-          "id, product_id, status, price_try, reference_code, receipt_path, user_note, checkout_fields, created_at, updated_at, approved_at, product:products(name, slug, duration, image_url, delivery_type, manual_fulfillment, unlimited_stock, tier, source, required_fields, shopier_url, requires_email, category), items:order_items(id, product_id, quantity, unit_price_try, product_name_snapshot, product:products(name, slug, image_url, duration, delivery_type, manual_fulfillment, unlimited_stock, shopier_url, requires_email, required_fields, category)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, delivery_type))), discount:order_discounts(product_id, discount_try, code_snapshot)"
-        )
-        .eq("id", orderId)
-        .single();
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => orderFn({ data: { orderId } }),
     refetchInterval: 4000,
   });
 
-
+  const bankFn = useServerFn(getActiveBankAccount);
   const { data: bank } = useQuery({
     queryKey: ["bank", "active"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("bank_accounts")
-        .select("*")
-        .eq("active", true)
-        .limit(1)
-        .maybeSingle();
-      return data;
-    },
+    queryFn: () => bankFn(),
   });
 
+  const balanceFn = useServerFn(getMyBalance);
   const { data: wallet } = useQuery({
     queryKey: ["wallet", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("wallets")
-        .select("balance_try")
-        .eq("user_id", user!.id)
-        .maybeSingle();
-      return data ?? { balance_try: 0 };
-    },
+    queryFn: () => balanceFn(),
     refetchInterval: 6000,
   });
 
