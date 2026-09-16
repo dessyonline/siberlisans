@@ -246,39 +246,25 @@ export function ThreadView({
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const listMsgs = useServerFn(listTicketMessages);
+  const sendMsg = useServerFn(sendTicketMessage);
+  const markRead = useServerFn(markTicketRead);
+  const setStatus = useServerFn(setTicketStatus);
+
   const { data: messages } = useQuery({
     queryKey: ["support-messages", ticket.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("support_messages" as never)
-        .select("id,ticket_id,sender_id,is_admin,body,created_at")
-        .eq("ticket_id", ticket.id)
-        .order("created_at", { ascending: true });
-      if (error) throw error;
-      return (data ?? []) as unknown as Message[];
-    },
+    refetchInterval: 15_000,
+    queryFn: async () =>
+      (await listMsgs({ data: { ticketId: ticket.id } })) as unknown as Message[],
   });
 
-  // Mark read on open
+  // Okundu işaretle
   useEffect(() => {
     if (!user) return;
-    supabase.rpc(isAdminView ? "support_mark_read_admin" : "support_mark_read_user", { _ticket_id: ticket.id } as never).then(() => {
-      onChanged?.();
-    });
-  }, [ticket.id, isAdminView, user, onChanged]);
-
-  // Realtime new messages
-  useEffect(() => {
-    const ch = supabase
-      .channel(`support-msgs-${ticket.id}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "support_messages", filter: `ticket_id=eq.${ticket.id}` }, () => {
-        qc.invalidateQueries({ queryKey: ["support-messages", ticket.id] });
-        // auto mark read if user is viewing
-        supabase.rpc(isAdminView ? "support_mark_read_admin" : "support_mark_read_user", { _ticket_id: ticket.id } as never);
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [ticket.id, qc, isAdminView]);
+    markRead({ data: { ticketId: ticket.id, asAdmin: isAdminView } })
+      .then(() => onChanged?.())
+      .catch(() => {});
+  }, [ticket.id, isAdminView, user, onChanged, markRead]);
 
   // Auto-scroll to bottom
   useEffect(() => {
