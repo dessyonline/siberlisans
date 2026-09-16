@@ -59,16 +59,9 @@ export const Route = createFileRoute("/blog/$slug")({
     };
   },
   loader: async ({ params }) => {
-    const { data, error } = await supabase
-      // biome-ignore lint/suspicious/noExplicitAny: new table
-      .from("blog_posts" as any)
-      .select("title, excerpt, cover_url, published_at")
-      .eq("slug", params.slug)
-      .not("published_at", "is", null)
-      .lte("published_at", new Date().toISOString())
-      .maybeSingle();
-    if (error || !data) throw notFound();
-    return data as unknown as { title: string; excerpt: string | null; cover_url: string | null; published_at: string };
+    const post = await getBlogPost({ data: { slug: params.slug } }).catch(() => null);
+    if (!post) throw notFound();
+    return post;
   },
 });
 
