@@ -25,7 +25,6 @@ import {
   Bitcoin,
   Megaphone,
   RefreshCw,
-  Receipt,
   Sparkles,
   Users,
   ShieldCheck,

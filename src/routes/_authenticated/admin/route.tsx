@@ -27,7 +27,6 @@ import {
   RefreshCw,
   TrendingUp,
   History,
-  Receipt,
   Shield,
   Menu,
   MessageCircleQuestion,
