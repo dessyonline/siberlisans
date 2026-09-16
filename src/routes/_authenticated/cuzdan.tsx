@@ -45,45 +45,17 @@ function WalletPage() {
   const createFn = useServerFn(createTopup);
   const [creating, setCreating] = useState<number | null>(null);
 
-  const { data: wallet } = useQuery({
+  const walletFn = useServerFn(getMyWallet);
+  const { data: walletData } = useQuery({
     queryKey: ["wallet", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase.from("wallets").select("balance_try, updated_at").eq("user_id", user!.id).maybeSingle();
-      return data ?? { balance_try: 0, updated_at: null };
-    },
+    queryFn: () => walletFn(),
     refetchInterval: 6000,
   });
 
-  const { data: topups } = useQuery({
-    queryKey: ["topups", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("wallet_topups")
-        .select("id, reference_code, amount_try, status, created_at, admin_note")
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false })
-        .limit(30);
-      return data ?? [];
-    },
-    refetchInterval: 6000,
-  });
-
-  const { data: txns } = useQuery({
-    queryKey: ["wallet-txns", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("wallet_transactions")
-        .select("id, kind, amount_try, balance_after, note, created_at")
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false })
-        .limit(30);
-      return data ?? [];
-    },
-    refetchInterval: 6000,
-  });
+  const wallet = { balance_try: walletData?.balance ?? 0, updated_at: walletData?.updatedAt ?? null };
+  const topups = walletData?.topups ?? [];
+  const txns = walletData?.txns ?? [];
 
   async function onCreate(amount: number) {
     setCreating(amount);
