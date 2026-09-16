@@ -59,30 +59,14 @@ function DestekPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
 
+  const listTickets = useServerFn(listMyTickets);
+
   const { data: tickets, isLoading } = useQuery({
     queryKey: ["support-tickets", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("support_tickets" as never)
-        .select("id,subject,status,priority,last_message_at,last_message_by_admin,unread_for_user,created_at")
-        .order("last_message_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as unknown as Ticket[];
-    },
+    refetchInterval: 30_000,
+    queryFn: async () => (await listTickets()) as unknown as Ticket[],
   });
-
-  // Realtime: refresh tickets list on any change
-  useEffect(() => {
-    if (!user) return;
-    const ch = supabase
-      .channel(`support-tickets-user-${user.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "support_tickets", filter: `user_id=eq.${user.id}` }, () => {
-        qc.invalidateQueries({ queryKey: ["support-tickets", user.id] });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [user, qc]);
 
   const active = useMemo(() => tickets?.find((t) => t.id === activeId) ?? null, [tickets, activeId]);
 
