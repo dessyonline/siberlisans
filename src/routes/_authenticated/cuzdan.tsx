@@ -1,10 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
 import { createTopup, TOPUP_PACKAGES } from "@/lib/wallet.functions";
+import { getMyWallet } from "@/lib/wallet-read.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Wallet, Plus, ArrowRight, Clock, CheckCircle2, XCircle, ArrowDownLeft, ArrowUpRight, Loader2, Bitcoin } from "lucide-react";
@@ -45,45 +45,17 @@ function WalletPage() {
   const createFn = useServerFn(createTopup);
   const [creating, setCreating] = useState<number | null>(null);
 
-  const { data: wallet } = useQuery({
+  const walletFn = useServerFn(getMyWallet);
+  const { data: walletData } = useQuery({
     queryKey: ["wallet", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase.from("wallets").select("balance_try, updated_at").eq("user_id", user!.id).maybeSingle();
-      return data ?? { balance_try: 0, updated_at: null };
-    },
+    queryFn: () => walletFn(),
     refetchInterval: 6000,
   });
 
-  const { data: topups } = useQuery({
-    queryKey: ["topups", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("wallet_topups")
-        .select("id, reference_code, amount_try, status, created_at, admin_note")
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false })
-        .limit(30);
-      return data ?? [];
-    },
-    refetchInterval: 6000,
-  });
-
-  const { data: txns } = useQuery({
-    queryKey: ["wallet-txns", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("wallet_transactions")
-        .select("id, kind, amount_try, balance_after, note, created_at")
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false })
-        .limit(30);
-      return data ?? [];
-    },
-    refetchInterval: 6000,
-  });
+  const wallet = { balance_try: walletData?.balance ?? 0, updated_at: walletData?.updatedAt ?? null };
+  const topups = walletData?.topups ?? [];
+  const txns = walletData?.txns ?? [];
 
   async function onCreate(amount: number) {
     setCreating(amount);
@@ -239,7 +211,7 @@ function WalletPage() {
                   <div className="min-w-0 flex-1">
                     <div className="text-sm">{info.l}</div>
                     <div className="text-[11px] text-muted-foreground font-mono truncate">
-                      {new Date(tx.created_at).toLocaleString("tr-TR")}{tx.note ? ` — ${tx.note}` : ""}
+                      {new Date(tx.created_at ?? Date.now()).toLocaleString("tr-TR")}{tx.note ? ` — ${tx.note}` : ""}
                     </div>
                   </div>
                   <div className="text-right shrink-0">

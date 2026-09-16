@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { approveTopup, rejectTopup, adminAdjustWallet } from "@/lib/wallet.functions";
+import { adminListTopups, adminListWallets } from "@/lib/wallet-read.functions";
 import { listUsers } from "@/lib/admin-users.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,29 +27,17 @@ function AdminWallet() {
   const rejectFn = useServerFn(rejectTopup);
   const adjustFn = useServerFn(adminAdjustWallet);
 
+  const topupsFn = useServerFn(adminListTopups);
   const { data: topups } = useQuery({
     queryKey: ["admin-topups"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("wallet_topups")
-        .select("id, user_id, amount_try, reference_code, status, admin_note, created_at, client_ip, user_agent, is_vpn, ip_country")
-        .order("created_at", { ascending: false })
-        .limit(200);
-      return data ?? [];
-    },
+    queryFn: () => topupsFn(),
     refetchInterval: 5000,
   });
 
+  const walletsFn = useServerFn(adminListWallets);
   const { data: wallets } = useQuery({
     queryKey: ["admin-wallets"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("wallets")
-        .select("user_id, balance_try, updated_at")
-        .order("balance_try", { ascending: false })
-        .limit(100);
-      return data ?? [];
-    },
+    queryFn: () => walletsFn(),
     refetchInterval: 8000,
   });
 
@@ -114,7 +102,7 @@ function AdminWallet() {
                   <div className="font-mono text-xs text-primary">{t.reference_code}</div>
                   <div className="text-sm">{emails?.[t.user_id] ?? t.user_id.slice(0, 8)}</div>
                   <div className="text-[11px] text-muted-foreground font-mono">
-                    {new Date(t.created_at).toLocaleString("tr-TR")} · {t.status}
+                    {new Date(t.created_at ?? Date.now()).toLocaleString("tr-TR")} · {t.status}
                     {t.client_ip ? (
                       <span className="ml-2 text-primary/80">IP: {String(t.client_ip)}{t.ip_country ? ` · ${String(t.ip_country)}` : ""}</span>
                     ) : null}
@@ -150,7 +138,7 @@ function AdminWallet() {
               <div className="min-w-0">
                 <div className="text-sm truncate">{emails?.[w.user_id] ?? w.user_id.slice(0, 8)}</div>
                 <div className="text-[10px] font-mono text-muted-foreground">
-                  güncellendi: {new Date(w.updated_at).toLocaleString("tr-TR")}
+                  güncellendi: {new Date(w.updated_at ?? Date.now()).toLocaleString("tr-TR")}
                 </div>
               </div>
               <div className="font-mono font-bold text-primary">{fmt(Number(w.balance_try))} TL</div>

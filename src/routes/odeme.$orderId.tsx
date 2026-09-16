@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { getOrderDetail, getActiveBankAccount, getMyBalance, getCrossSellOffer } from "@/lib/order-detail.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { markOrderPaid, setOrderUserNote, applyPromoCode, removePromoCode, finalizeFreeOrder, setOrderCheckoutFields, addItemToOrder, removeItemFromOrder, cancelPendingOrder } from "@/lib/orders.functions";
 import { payOrderWithWallet } from "@/lib/wallet.functions";
@@ -136,62 +136,27 @@ function Payment() {
   };
 
   const startWalletPay = async () => {
-    // 2FA aktifse önce doğrulama iste — ancak kullanıcı bu cihazı hatırla dediyse atla
-    const { isDeviceTrusted } = await import("@/lib/trusted-device");
-    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (
-      aal?.nextLevel === "aal2" &&
-      aal.currentLevel === "aal1" &&
-      !isDeviceTrusted(user?.id)
-    ) {
-      setMfaGateOpen(true);
-      return;
-    }
     await runWalletPay();
   };
 
-
+  const orderFn = useServerFn(getOrderDetail);
   const { data: order } = useQuery({
     queryKey: ["order", orderId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select(
-          "id, product_id, status, price_try, reference_code, receipt_path, user_note, checkout_fields, created_at, updated_at, approved_at, product:products(name, slug, duration, image_url, delivery_type, manual_fulfillment, unlimited_stock, tier, source, required_fields, shopier_url, requires_email, category), items:order_items(id, product_id, quantity, unit_price_try, product_name_snapshot, product:products(name, slug, image_url, duration, delivery_type, manual_fulfillment, unlimited_stock, shopier_url, requires_email, required_fields, category)), keys:order_keys(license_key:license_keys(key_value, activation_token, product:products(name, delivery_type))), discount:order_discounts(product_id, discount_try, code_snapshot)"
-        )
-        .eq("id", orderId)
-        .single();
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => orderFn({ data: { orderId } }),
     refetchInterval: 4000,
   });
 
-
+  const bankFn = useServerFn(getActiveBankAccount);
   const { data: bank } = useQuery({
     queryKey: ["bank", "active"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("bank_accounts")
-        .select("*")
-        .eq("active", true)
-        .limit(1)
-        .maybeSingle();
-      return data;
-    },
+    queryFn: () => bankFn(),
   });
 
+  const balanceFn = useServerFn(getMyBalance);
   const { data: wallet } = useQuery({
     queryKey: ["wallet", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("wallets")
-        .select("balance_try")
-        .eq("user_id", user!.id)
-        .maybeSingle();
-      return data ?? { balance_try: 0 };
-    },
+    queryFn: () => balanceFn(),
     refetchInterval: 6000,
   });
 
@@ -226,11 +191,6 @@ function Payment() {
       const ext = dot >= 0 ? file.name.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 6) : "bin";
       const safeExt = ext || "bin";
       const path = `${user.id}/${orderId}-${Date.now()}.${safeExt}`;
-      const { error } = await supabase.storage.from("receipts").upload(path, file, {
-        upsert: true,
-        contentType: file.type || "application/octet-stream",
-      });
-      if (error) throw error;
       await markPaidFn({ data: { orderId, receiptPath: path } });
       toast.success("Dekont alındı · doğrulama başlatıldı");
       qc.invalidateQueries({ queryKey: ["order", orderId] });
@@ -497,7 +457,7 @@ function Payment() {
                     {isCartOrder && order.status === "pending" && (
                       <button
                         type="button"
-                        onClick={() => handleRemoveItem(it.id)}
+                        onClick={() => handleRemoveItem(String(it.id ?? ""))}
                         disabled={removingItemId === it.id}
                         className="ml-1 shrink-0 rounded border border-destructive/40 bg-destructive/5 p-1.5 text-destructive/80 hover:bg-destructive/10 hover:text-destructive disabled:opacity-40"
                         aria-label="ürünü çıkar"
@@ -1757,40 +1717,11 @@ function CrossSellOffer({ orderId, orderStatus, categories, excludeSlugs }: { or
   const addToOrderFn = useServerFn(addItemToOrder);
   const [adding, setAdding] = useState(false);
   const canAddToOrder = orderStatus === "pending";
+  const offerFn = useServerFn(getCrossSellOffer);
   const { data: offer } = useQuery({
     queryKey: ["cross-sell-offer", categories.sort().join("|")],
     enabled: categories.length > 0,
-    queryFn: async () => {
-      const { data: rules } = await supabase
-        .from("cross_sell_rules" as never)
-        .select("from_category, to_category, discount_percent, promo_code, note")
-        .in("from_category", categories)
-        .eq("active", true);
-      const list = (rules ?? []) as Array<{
-        from_category: string;
-        to_category: string;
-        discount_percent: number;
-        promo_code: string | null;
-        note: string | null;
-      }>;
-      if (list.length === 0) return null;
-      // Pick the highest-discount rule
-      const rule = list.sort((a, b) => b.discount_percent - a.discount_percent)[0];
-      // Fetch a suggested product from to_category (skip already-in-cart slugs)
-      const { data: products } = await supabase
-        .from("products")
-        .select("id, name, slug, price_try, image_url, tier, duration")
-        .eq("active", true)
-        .eq("category", rule.to_category)
-        .not("slug", "in", `(${excludeSlugs.length ? excludeSlugs.map((s) => `"${s}"`).join(",") : '""'})`)
-        .order("sort_order", { ascending: false })
-        .limit(1);
-      const product = products?.[0];
-      if (!product) return null;
-      const original = Number(product.price_try);
-      const discounted = Math.round(original * (1 - rule.discount_percent / 100));
-      return { rule, product, original, discounted };
-    },
+    queryFn: () => offerFn({ data: { categories, excludeSlugs } }),
   });
 
   if (!offer) return null;
