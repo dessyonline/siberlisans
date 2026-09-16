@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { useServerFn } from "@tanstack/react-start";
 import { signIn as signInFn, signUp as signUpFn } from "@/lib/auth.functions";
+import { requestPasswordReset as requestPasswordResetFn } from "@/lib/password-reset.functions";
+
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
