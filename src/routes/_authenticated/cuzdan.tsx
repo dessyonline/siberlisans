@@ -1,10 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
 import { createTopup, TOPUP_PACKAGES } from "@/lib/wallet.functions";
+import { getMyWallet } from "@/lib/wallet-read.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Wallet, Plus, ArrowRight, Clock, CheckCircle2, XCircle, ArrowDownLeft, ArrowUpRight, Loader2, Bitcoin } from "lucide-react";
