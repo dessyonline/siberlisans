@@ -5,11 +5,13 @@ import { requireAuth } from "./auth-middleware.server";
 const PRODUCT_COLS =
   "id, name, slug, duration, image_url, delivery_type, manual_fulfillment, unlimited_stock, tier, source, required_fields, shopier_url, requires_email, category";
 
-function parseJson<T>(v: unknown): T | null {
+type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
+
+function parseJson(v: unknown): Json {
   if (v == null) return null;
-  if (typeof v === "object") return v as T;
+  if (typeof v === "object") return v as Json;
   try {
-    return JSON.parse(String(v)) as T;
+    return JSON.parse(String(v)) as Json;
   } catch {
     return null;
   }
