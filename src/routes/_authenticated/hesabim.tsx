@@ -203,16 +203,6 @@ function MyAccount() {
               </div>
             </Link>
             <Link
-              to="/faturalar"
-              className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
-            >
-              <Download className="h-4 w-4 text-primary shrink-0" />
-              <div className="min-w-0">
-                <div className="text-muted-foreground text-[10px] uppercase tracking-wider">faturalar</div>
-                <div className="text-primary text-sm truncate">$ pdf indir →</div>
-              </div>
-            </Link>
-            <Link
               to="/davet"
               className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
             >
