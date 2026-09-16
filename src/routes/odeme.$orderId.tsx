@@ -1717,40 +1717,11 @@ function CrossSellOffer({ orderId, orderStatus, categories, excludeSlugs }: { or
   const addToOrderFn = useServerFn(addItemToOrder);
   const [adding, setAdding] = useState(false);
   const canAddToOrder = orderStatus === "pending";
+  const offerFn = useServerFn(getCrossSellOffer);
   const { data: offer } = useQuery({
     queryKey: ["cross-sell-offer", categories.sort().join("|")],
     enabled: categories.length > 0,
-    queryFn: async () => {
-      const { data: rules } = await supabase
-        .from("cross_sell_rules" as never)
-        .select("from_category, to_category, discount_percent, promo_code, note")
-        .in("from_category", categories)
-        .eq("active", true);
-      const list = (rules ?? []) as Array<{
-        from_category: string;
-        to_category: string;
-        discount_percent: number;
-        promo_code: string | null;
-        note: string | null;
-      }>;
-      if (list.length === 0) return null;
-      // Pick the highest-discount rule
-      const rule = list.sort((a, b) => b.discount_percent - a.discount_percent)[0];
-      // Fetch a suggested product from to_category (skip already-in-cart slugs)
-      const { data: products } = await supabase
-        .from("products")
-        .select("id, name, slug, price_try, image_url, tier, duration")
-        .eq("active", true)
-        .eq("category", rule.to_category)
-        .not("slug", "in", `(${excludeSlugs.length ? excludeSlugs.map((s) => `"${s}"`).join(",") : '""'})`)
-        .order("sort_order", { ascending: false })
-        .limit(1);
-      const product = products?.[0];
-      if (!product) return null;
-      const original = Number(product.price_try);
-      const discounted = Math.round(original * (1 - rule.discount_percent / 100));
-      return { rule, product, original, discounted };
-    },
+    queryFn: () => offerFn({ data: { categories, excludeSlugs } }),
   });
 
   if (!offer) return null;
