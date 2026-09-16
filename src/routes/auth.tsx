@@ -57,6 +57,9 @@ function AuthPage() {
   const { user, refresh, signOut: ctxSignOut } = useAuth();
   const doSignIn = useServerFn(signInFn);
   const doSignUp = useServerFn(signUpFn);
+  const doReset = useServerFn(requestPasswordResetFn);
+  const [resetInfo, setResetInfo] = useState<{ message: string; link: string | null } | null>(null);
+
   const search = useSearch({ from: "/auth" });
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
