@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { listBlogPosts } from "@/lib/blog-public.functions";
 import { BookOpen, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/blog/")({
