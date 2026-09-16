@@ -1,8 +1,9 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { supabase } from "@/integrations/supabase/client";
+import { getBlogPost } from "@/lib/blog-public.functions";
 import { ArrowLeft, Calendar } from "lucide-react";
 
 export const Route = createFileRoute("/blog/$slug")({
