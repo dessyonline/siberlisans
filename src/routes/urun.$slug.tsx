@@ -131,12 +131,13 @@ export const Route = createFileRoute("/urun/$slug")({
                 },
                 {
                   "@type": "Question",
-                  name: "Faturamı nasıl alabilirim?",
+                  name: "Teslimat ne kadar sürer?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "Ödeme sonrası destek ekibimize yazın, e-fatura veya e-arşiv olarak iletilir.",
+                    text: "Ödeme onaylandıktan sonra lisans bilgileri çoğunlukla saniyeler içinde iletilir.",
                   },
                 },
+
               ],
             }),
           },
