@@ -156,24 +156,31 @@ export async function logSupplierCheck(entry: {
   error?: string | null;
 }): Promise<void> {
   try {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("supplier_check_logs").insert({
-      source: "uniquelisans",
-      user_id: entry.user_id ?? null,
-      product_id: entry.product_id ?? null,
-      product_name: entry.product_name ?? null,
-      external_id: entry.external_id != null ? String(entry.external_id) : null,
-      stock_ok: entry.stock_ok ?? null,
-      stock_count: entry.stock_count ?? null,
-      is_stock: entry.is_stock ?? null,
-      supplier_amount: entry.supplier_amount ?? null,
-      balance: entry.balance ?? null,
-      balance_ok: entry.balance_ok ?? null,
-      blocked: entry.blocked,
-      block_reason: entry.block_reason ?? null,
-      context: entry.context,
-      error: entry.error ?? null,
-    });
+    const { mysqlQuery } = await import("@/lib/mysql.server");
+    await mysqlQuery(
+      `INSERT INTO supplier_check_logs
+         (id,created_at,source,user_id,product_id,product_name,external_id,stock_ok,stock_count,is_stock,
+          supplier_amount,balance,balance_ok,blocked,block_reason,context,error)
+       VALUES (?,?,'uniquelisans',?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
+      [
+        crypto.randomUUID(),
+        new Date().toISOString().slice(0, 19).replace("T", " "),
+        entry.user_id ?? null,
+        entry.product_id ?? null,
+        entry.product_name ?? null,
+        entry.external_id != null ? String(entry.external_id) : null,
+        entry.stock_ok == null ? null : entry.stock_ok ? 1 : 0,
+        entry.stock_count ?? null,
+        entry.is_stock == null ? null : entry.is_stock ? 1 : 0,
+        entry.supplier_amount ?? null,
+        entry.balance ?? null,
+        entry.balance_ok == null ? null : entry.balance_ok ? 1 : 0,
+        entry.blocked ? 1 : 0,
+        entry.block_reason ?? null,
+        entry.context,
+        entry.error ?? null,
+      ],
+    );
   } catch (e) {
     console.error("[supplier_check_log]", (e as Error).message);
   }
