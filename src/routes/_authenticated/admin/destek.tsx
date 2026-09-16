@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { adminListTickets } from "@/lib/support.functions";
 import { Loader2, MessageCircle, Circle, ArrowLeft } from "lucide-react";
 import { ThreadView } from "@/routes/_authenticated/destek";
 
