@@ -168,6 +168,7 @@ function NewTicketForm({ onCancel, onCreated }: { onCancel: () => void; onCreate
   const [body, setBody] = useState("");
   const [priority, setPriority] = useState<Ticket["priority"]>("normal");
   const [loading, setLoading] = useState(false);
+  const create = useServerFn(createTicket);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
