@@ -25,22 +25,13 @@ type Product = {
 };
 
 function FavoritesPage() {
-  const listFn = useServerFn(listMyFavoriteIds);
-  const { data: favData } = useQuery({ queryKey: ["my-favorites"], queryFn: () => listFn() });
-  const ids = favData?.productIds ?? [];
+  const listFn = useServerFn(listMyFavoriteProducts);
 
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ["fav-products", ids.join(",")],
-    enabled: ids.length > 0,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("id, slug, name, price_try, image_url, active")
-        .in("id", ids);
-      if (error) throw error;
-      return (data ?? []) as Product[];
-    },
+    queryKey: ["fav-products"],
+    queryFn: async () => (await listFn()) as Product[],
   });
+  const ids = products.map((p) => p.id);
 
   return (
     <main className="max-w-5xl mx-auto px-4 py-8">
