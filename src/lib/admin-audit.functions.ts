@@ -4,12 +4,14 @@ import { requireAdmin } from "./auth-middleware.server";
 import { mysqlQuery, num } from "./mysql.server";
 
 export async function writeAuditLog(
-  actor: { userId: string; email?: string | null },
+  actor: unknown,
   input: { action: string; entity_type: string; entity_id?: string | null; before?: unknown; after?: unknown; metadata?: Record<string, unknown> },
 ) {
   try {
+    if (!actor || typeof actor !== "object" || !("userId" in actor)) return;
+    const identity = actor as { userId: string; email?: string | null };
     await mysqlQuery(`INSERT INTO admin_audit_log (id,actor_id,actor_email,action,entity_type,entity_id,before_data,after_data,metadata,created_at) VALUES (?,?,?,?,?,?,?,?,?,NOW())`, [
-      crypto.randomUUID(), actor.userId, actor.email ?? null, input.action, input.entity_type, input.entity_id ?? null,
+      crypto.randomUUID(), identity.userId, identity.email ?? null, input.action, input.entity_type, input.entity_id ?? null,
       input.before == null ? null : JSON.stringify(input.before), input.after == null ? null : JSON.stringify(input.after),
       input.metadata == null ? null : JSON.stringify(input.metadata),
     ]);
@@ -23,7 +25,15 @@ export const listAuditLog = createServerFn({ method:"POST" }).middleware([requir
   if(data.actor_id){where.push("actor_id=?");params.push(data.actor_id)}
   if(data.before){where.push("created_at<?");params.push(data.before)}
   if(data.search){where.push("(action LIKE ? OR entity_id LIKE ? OR actor_email LIKE ?)"); for(let i=0;i<3;i++)params.push(`%${data.search}%`)}
-  return mysqlQuery(`SELECT id,actor_id,actor_email,action,entity_type,entity_id,before_data,after_data,metadata,created_at FROM admin_audit_log WHERE ${where.join(" AND ")} ORDER BY created_at DESC LIMIT ?`, [...params,data.limit]);
+  const rows = await mysqlQuery<Record<string, unknown>>(`SELECT id,actor_id,actor_email,action,entity_type,entity_id,before_data,after_data,metadata,created_at FROM admin_audit_log WHERE ${where.join(" AND ")} ORDER BY created_at DESC LIMIT ?`, [...params,data.limit]);
+  return rows.map((row) => ({
+    id: String(row.id), actor_id: row.actor_id ? String(row.actor_id) : null,
+    actor_email: row.actor_email ? String(row.actor_email) : null, action: String(row.action),
+    entity_type: String(row.entity_type), entity_id: row.entity_id ? String(row.entity_id) : null,
+    before_data: row.before_data ? String(row.before_data) : null,
+    after_data: row.after_data ? String(row.after_data) : null,
+    metadata: row.metadata ? String(row.metadata) : null, created_at: String(row.created_at),
+  }));
 });
 
 const reportInput=z.object({from:z.string().datetime(),to:z.string().datetime(),granularity:z.enum(["day","week","month"]).default("day")});
