@@ -1,6 +1,56 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAdmin } from "./auth-middleware.server";
+import { mysqlOne, mysqlQuery } from "./mysql.server";
+
+export type AdminBlogPost = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  content: string;
+  cover_url: string | null;
+  tags: string[];
+  published_at: string | null;
+  created_at: string;
+};
+
+function parseTags(value: unknown): string[] {
+  if (Array.isArray(value)) return value.map(String);
+  if (typeof value !== "string" || !value.trim()) return [];
+  try {
+    const parsed = JSON.parse(value);
+    if (Array.isArray(parsed)) return parsed.map(String);
+  } catch {
+    return value
+      .replace(/^[{[]|[\]}]$/g, "")
+      .split(",")
+      .map((tag) => tag.trim().replace(/^"|"$/g, ""))
+      .filter(Boolean);
+  }
+  return [];
+}
+
+export const listAdminBlogPosts = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async (): Promise<AdminBlogPost[]> => {
+    const rows = await mysqlQuery<Record<string, unknown>>(
+      `SELECT id, slug, title, excerpt, content, cover_url, tags, published_at, created_at
+         FROM blog_posts
+        ORDER BY created_at DESC`,
+    );
+    return rows.map((row) => ({
+      id: String(row.id),
+      slug: String(row.slug ?? ""),
+      title: String(row.title ?? ""),
+      excerpt: (row.excerpt as string | null) ?? null,
+      content: String(row.content ?? ""),
+      cover_url: (row.cover_url as string | null) ?? null,
+      tags: parseTags(row.tags),
+      published_at: row.published_at ? String(row.published_at) : null,
+      created_at: String(row.created_at ?? ""),
+    }));
+  });
 
 const upsertInput = z.object({
   id: z.string().uuid().optional(),
@@ -14,36 +64,33 @@ const upsertInput = z.object({
 });
 
 export const adminUpsertBlogPost = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => upsertInput.parse(d))
+  .middleware([requireAdmin])
+  .validator((d: unknown) => upsertInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Yetkisiz");
-    // biome-ignore lint/suspicious/noExplicitAny: new table not in generated types
-    const table = supabase.from("blog_posts" as any);
     if (data.id) {
-      const { id, ...rest } = data;
-      const { error } = await table.update({ ...rest, updated_at: new Date().toISOString() }).eq("id", id);
-      if (error) throw new Error(error.message);
+      await mysqlQuery(
+        `UPDATE blog_posts
+            SET slug = ?, title = ?, excerpt = ?, content = ?, cover_url = ?, tags = ?, published_at = ?, updated_at = NOW()
+          WHERE id = ?`,
+        [data.slug, data.title, data.excerpt ?? null, data.content, data.cover_url ?? null, JSON.stringify(data.tags), data.published_at ?? null, data.id],
+      );
     } else {
-      const { error } = await table.insert({ ...data, author_id: userId });
-      if (error) throw new Error(error.message);
+      await mysqlQuery(
+        `INSERT INTO blog_posts
+          (id, slug, title, excerpt, content, cover_url, tags, author_id, published_at, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [crypto.randomUUID(), data.slug, data.title, data.excerpt ?? null, data.content, data.cover_url ?? null, JSON.stringify(data.tags), context.userId, data.published_at ?? null],
+      );
     }
     return { ok: true };
   });
 
 const deleteInput = z.object({ id: z.string().uuid() });
 export const adminDeleteBlogPost = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => deleteInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Yetkisiz");
-    // biome-ignore lint/suspicious/noExplicitAny: new table
-    const { error } = await supabase.from("blog_posts" as any).delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
+  .middleware([requireAdmin])
+  .validator((d: unknown) => deleteInput.parse(d))
+  .handler(async ({ data }) => {
+    await mysqlQuery("DELETE FROM blog_posts WHERE id = ?", [data.id]);
     return { ok: true };
   });
 
@@ -53,7 +100,7 @@ const GATEWAY = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODEL = "openai/gpt-5.5";
 
 async function callGateway(system: string, user: string) {
-  const key = process.env.LOVABLE_API_KEY;
+  const key = process.env["LOVABLE_API_KEY"];
   if (!key) throw new Error("AI anahtarı tanımlı değil");
   const res = await fetch(GATEWAY, {
     method: "POST",
@@ -91,36 +138,18 @@ function slugify(s: string) {
     .slice(0, 100);
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: shared supabase client type
-async function assertAdmin(supabase: any, userId: string) {
-  const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-  if (!data) throw new Error("Yetkisiz");
-}
-
 export const adminSuggestBlogTopics = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
-
-    const { data: products } = await supabase
-      .from("products")
-      .select("name, slug, category, price_try")
-      .eq("active", true)
-      .order("orders_count", { ascending: false })
-      .limit(25);
-
-    const { data: posts } = await supabase
-      // biome-ignore lint/suspicious/noExplicitAny: new table
-      .from("blog_posts" as any)
-      .select("title")
-      .order("created_at", { ascending: false })
-      .limit(30);
+  .middleware([requireAdmin])
+  .handler(async () => {
+    const [products, posts] = await Promise.all([
+      mysqlQuery("SELECT name, slug, category, price_try FROM products WHERE active = 1 ORDER BY orders_count DESC LIMIT 25"),
+      mysqlQuery<{ title: string }>("SELECT title FROM blog_posts ORDER BY created_at DESC LIMIT 30"),
+    ]);
 
     const out = await callGateway(
       "Türkçe SEO editörüsün. Dijital lisans/yazılım satan bir e-ticaret sitesi için arama hacmi yüksek, satın alma niyetli blog konuları üretirsin. Sadece JSON döndür.",
       `Katalog: ${JSON.stringify(products ?? [])}
-Mevcut yazı başlıkları (tekrarlama): ${JSON.stringify(((posts ?? []) as unknown as Array<{ title?: string }>).map((p) => p.title))}
+Mevcut yazı başlıkları (tekrarlama): ${JSON.stringify(posts.map((p) => p.title))}
 
 Şu formatta JSON döndür:
 {"topics":[{"title":"...","keyword":"ana anahtar kelime","angle":"yazının açısı, 1 cümle"}]}
@@ -137,18 +166,12 @@ const genInput = z.object({
 });
 
 export const adminGenerateBlogPost = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => genInput.parse(d))
+  .middleware([requireAdmin])
+  .validator((d: unknown) => genInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
-
-    const { data: products } = await supabase
-      .from("products")
-      .select("name, slug, category, price_try")
-      .eq("active", true)
-      .order("orders_count", { ascending: false })
-      .limit(20);
+    const products = await mysqlQuery(
+      "SELECT name, slug, category, price_try FROM products WHERE active = 1 ORDER BY orders_count DESC LIMIT 20",
+    );
 
     const out = await callGateway(
       "Türkçe SEO içerik yazarısın. Markdown formatında, özgün, aşırı reklamsız ama satın almaya yönlendiren blog yazıları üretirsin. Marka: SiberPHP (siberlisans.com), dijital lisans ve yazılım abonelikleri satar. Sadece JSON döndür.",
@@ -180,31 +203,23 @@ JSON formatı:
       .slice(0, 8);
 
     // slug çakışmasını çöz
-    const { data: existing } = await supabase
-      // biome-ignore lint/suspicious/noExplicitAny: new table
-      .from("blog_posts" as any)
-      .select("slug")
-      .like("slug", `${slug}%`);
-    const existingSlugs = ((existing ?? []) as unknown as Array<{ slug: string }>).map((p) => p.slug);
+    const existing = await mysqlQuery<{ slug: string }>("SELECT slug FROM blog_posts WHERE slug LIKE ?", [`${slug}%`]);
+    const existingSlugs = existing.map((p) => p.slug);
     if (existingSlugs.includes(slug)) {
       slug = `${slug}-${existingSlugs.length + 1}`.slice(0, 140);
     }
 
-    const { data: inserted, error } = await supabase
-      // biome-ignore lint/suspicious/noExplicitAny: new table
-      .from("blog_posts" as any)
-      .insert({
-        slug,
-        title,
-        excerpt,
-        content,
-        tags,
-        author_id: userId,
-        published_at: data.publish ? new Date().toISOString() : null,
-      })
-      .select("id, slug, title")
-      .single();
-    if (error) throw new Error(error.message);
-
-    return inserted as unknown as { id: string; slug: string; title: string };
+    const id = crypto.randomUUID();
+    await mysqlQuery(
+      `INSERT INTO blog_posts
+        (id, slug, title, excerpt, content, tags, author_id, published_at, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+      [id, slug, title, excerpt, content, JSON.stringify(tags), context.userId, data.publish ? new Date().toISOString() : null],
+    );
+    const inserted = await mysqlOne<{ id: string; slug: string; title: string }>(
+      "SELECT id, slug, title FROM blog_posts WHERE id = ? LIMIT 1",
+      [id],
+    );
+    if (!inserted) throw new Error("Blog yazısı kaydedilemedi");
+    return inserted;
   });

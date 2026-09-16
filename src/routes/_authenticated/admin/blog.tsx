@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { adminUpsertBlogPost, adminDeleteBlogPost } from "@/lib/blog.functions";
+import { adminUpsertBlogPost, adminDeleteBlogPost, listAdminBlogPosts } from "@/lib/blog.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,20 +34,13 @@ function AdminBlogPage() {
   const qc = useQueryClient();
   const upsertFn = useServerFn(adminUpsertBlogPost);
   const deleteFn = useServerFn(adminDeleteBlogPost);
+  const listFn = useServerFn(listAdminBlogPosts);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Post | null>(null);
 
   const { data: posts = [] } = useQuery({
     queryKey: ["admin-blog-posts"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        // biome-ignore lint/suspicious/noExplicitAny: new table
-        .from("blog_posts" as any)
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as unknown as Post[];
-    },
+    queryFn: () => listFn(),
   });
 
   const remove = async (id: string) => {
