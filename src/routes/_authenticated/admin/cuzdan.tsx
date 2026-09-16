@@ -138,7 +138,7 @@ function AdminWallet() {
               <div className="min-w-0">
                 <div className="text-sm truncate">{emails?.[w.user_id] ?? w.user_id.slice(0, 8)}</div>
                 <div className="text-[10px] font-mono text-muted-foreground">
-                  güncellendi: {new Date(w.updated_at).toLocaleString("tr-TR")}
+                  güncellendi: {new Date(w.updated_at ?? Date.now()).toLocaleString("tr-TR")}
                 </div>
               </div>
               <div className="font-mono font-bold text-primary">{fmt(Number(w.balance_try))} TL</div>
