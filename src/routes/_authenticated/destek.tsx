@@ -277,15 +277,7 @@ export function ThreadView({
     if (ticket.status === "closed" && !isAdminView) return toast.error("Bilet kapalı.");
     setSending(true);
     try {
-      const { error } = await supabase
-        .from("support_messages" as never)
-        .insert({
-          ticket_id: ticket.id,
-          sender_id: user.id,
-          is_admin: isAdminView,
-          body: body.trim(),
-        } as never);
-      if (error) throw error;
+      await sendMsg({ data: { ticketId: ticket.id, body: body.trim(), asAdmin: isAdminView } });
       setBody("");
       qc.invalidateQueries({ queryKey: ["support-messages", ticket.id] });
       onChanged?.();
@@ -298,11 +290,11 @@ export function ThreadView({
 
   const toggleClose = async () => {
     const newStatus = ticket.status === "closed" ? "open" : "closed";
-    const { error } = await supabase
-      .from("support_tickets" as never)
-      .update({ status: newStatus } as never)
-      .eq("id", ticket.id);
-    if (error) return toast.error(error.message);
+    try {
+      await setStatus({ data: { ticketId: ticket.id, status: newStatus } });
+    } catch (err) {
+      return toast.error((err as Error).message);
+    }
     toast.success(newStatus === "closed" ? "Bilet kapatıldı." : "Bilet açıldı.");
     onChanged?.();
     qc.invalidateQueries({ queryKey: ["support-messages", ticket.id] });
