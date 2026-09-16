@@ -1,7 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  listMyTickets,
+  createTicket,
+  listTicketMessages,
+  sendTicketMessage,
+  markTicketRead,
+  setTicketStatus,
+} from "@/lib/support.functions";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,30 +59,14 @@ function DestekPage() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [newOpen, setNewOpen] = useState(false);
 
+  const listTickets = useServerFn(listMyTickets);
+
   const { data: tickets, isLoading } = useQuery({
     queryKey: ["support-tickets", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("support_tickets" as never)
-        .select("id,subject,status,priority,last_message_at,last_message_by_admin,unread_for_user,created_at")
-        .order("last_message_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as unknown as Ticket[];
-    },
+    refetchInterval: 30_000,
+    queryFn: async () => (await listTickets()) as unknown as Ticket[],
   });
-
-  // Realtime: refresh tickets list on any change
-  useEffect(() => {
-    if (!user) return;
-    const ch = supabase
-      .channel(`support-tickets-user-${user.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "support_tickets", filter: `user_id=eq.${user.id}` }, () => {
-        qc.invalidateQueries({ queryKey: ["support-tickets", user.id] });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [user, qc]);
 
   const active = useMemo(() => tickets?.find((t) => t.id === activeId) ?? null, [tickets, activeId]);
 
@@ -176,6 +168,7 @@ function NewTicketForm({ onCancel, onCreated }: { onCancel: () => void; onCreate
   const [body, setBody] = useState("");
   const [priority, setPriority] = useState<Ticket["priority"]>("normal");
   const [loading, setLoading] = useState(false);
+  const create = useServerFn(createTicket);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,19 +177,9 @@ function NewTicketForm({ onCancel, onCreated }: { onCancel: () => void; onCreate
     if (body.trim().length < 1) return toast.error("Mesaj boş olamaz.");
     setLoading(true);
     try {
-      const { data: t, error } = await supabase
-        .from("support_tickets" as never)
-        .insert({ user_id: user.id, subject: subject.trim(), priority } as never)
-        .select("id")
-        .single();
-      if (error) throw error;
-      const ticketId = (t as unknown as { id: string }).id;
-      const { error: mErr } = await supabase
-        .from("support_messages" as never)
-        .insert({ ticket_id: ticketId, sender_id: user.id, is_admin: false, body: body.trim() } as never);
-      if (mErr) throw mErr;
+      const res = await create({ data: { subject: subject.trim(), body: body.trim(), priority } });
       toast.success("Bilet açıldı.");
-      onCreated(ticketId);
+      onCreated(res.id);
     } catch (err) {
       toast.error((err as Error).message || "Bilet açılamadı.");
     } finally {
@@ -263,39 +246,25 @@ export function ThreadView({
   const [sending, setSending] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const listMsgs = useServerFn(listTicketMessages);
+  const sendMsg = useServerFn(sendTicketMessage);
+  const markRead = useServerFn(markTicketRead);
+  const setStatus = useServerFn(setTicketStatus);
+
   const { data: messages } = useQuery({
     queryKey: ["support-messages", ticket.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("support_messages" as never)
-        .select("id,ticket_id,sender_id,is_admin,body,created_at")
-        .eq("ticket_id", ticket.id)
-        .order("created_at", { ascending: true });
-      if (error) throw error;
-      return (data ?? []) as unknown as Message[];
-    },
+    refetchInterval: 15_000,
+    queryFn: async () =>
+      (await listMsgs({ data: { ticketId: ticket.id } })) as unknown as Message[],
   });
 
-  // Mark read on open
+  // Okundu işaretle
   useEffect(() => {
     if (!user) return;
-    supabase.rpc(isAdminView ? "support_mark_read_admin" : "support_mark_read_user", { _ticket_id: ticket.id } as never).then(() => {
-      onChanged?.();
-    });
-  }, [ticket.id, isAdminView, user, onChanged]);
-
-  // Realtime new messages
-  useEffect(() => {
-    const ch = supabase
-      .channel(`support-msgs-${ticket.id}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "support_messages", filter: `ticket_id=eq.${ticket.id}` }, () => {
-        qc.invalidateQueries({ queryKey: ["support-messages", ticket.id] });
-        // auto mark read if user is viewing
-        supabase.rpc(isAdminView ? "support_mark_read_admin" : "support_mark_read_user", { _ticket_id: ticket.id } as never);
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [ticket.id, qc, isAdminView]);
+    markRead({ data: { ticketId: ticket.id, asAdmin: isAdminView } })
+      .then(() => onChanged?.())
+      .catch(() => {});
+  }, [ticket.id, isAdminView, user, onChanged, markRead]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -308,15 +277,7 @@ export function ThreadView({
     if (ticket.status === "closed" && !isAdminView) return toast.error("Bilet kapalı.");
     setSending(true);
     try {
-      const { error } = await supabase
-        .from("support_messages" as never)
-        .insert({
-          ticket_id: ticket.id,
-          sender_id: user.id,
-          is_admin: isAdminView,
-          body: body.trim(),
-        } as never);
-      if (error) throw error;
+      await sendMsg({ data: { ticketId: ticket.id, body: body.trim(), asAdmin: isAdminView } });
       setBody("");
       qc.invalidateQueries({ queryKey: ["support-messages", ticket.id] });
       onChanged?.();
@@ -329,11 +290,11 @@ export function ThreadView({
 
   const toggleClose = async () => {
     const newStatus = ticket.status === "closed" ? "open" : "closed";
-    const { error } = await supabase
-      .from("support_tickets" as never)
-      .update({ status: newStatus } as never)
-      .eq("id", ticket.id);
-    if (error) return toast.error(error.message);
+    try {
+      await setStatus({ data: { ticketId: ticket.id, status: newStatus } });
+    } catch (err) {
+      return toast.error((err as Error).message);
+    }
     toast.success(newStatus === "closed" ? "Bilet kapatıldı." : "Bilet açıldı.");
     onChanged?.();
     qc.invalidateQueries({ queryKey: ["support-messages", ticket.id] });

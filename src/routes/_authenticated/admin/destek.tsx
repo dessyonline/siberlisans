@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { adminListTickets } from "@/lib/support.functions";
 import { Loader2, MessageCircle, Circle, ArrowLeft } from "lucide-react";
 import { ThreadView } from "@/routes/_authenticated/destek";
 
@@ -35,50 +36,22 @@ function AdminDestek() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [filter, setFilter] = useState<"all" | "open" | "pending" | "closed">("all");
 
+  const listFn = useServerFn(adminListTickets);
+
   const { data: tickets, isLoading } = useQuery({
     queryKey: ["admin-support-tickets", filter],
-    queryFn: async () => {
-      let q = supabase
-        .from("support_tickets" as never)
-        .select("id,user_id,subject,status,priority,last_message_at,unread_for_admin,created_at")
-        .order("last_message_at", { ascending: false });
-      if (filter !== "all") q = q.eq("status", filter);
-      const { data, error } = await q;
-      if (error) throw error;
-      return (data ?? []) as unknown as AdminTicket[];
-    },
+    refetchInterval: 30_000,
+    queryFn: async () =>
+      (await listFn({ data: { status: filter } })) as unknown as Array<
+        AdminTicket & { user_email?: string | null }
+      >,
   });
 
-  // Also fetch user emails for display
-  const userIds = useMemo(() => Array.from(new Set((tickets ?? []).map((t) => t.user_id))), [tickets]);
-  const { data: profiles } = useQuery({
-    queryKey: ["admin-support-profiles", userIds.join(",")],
-    enabled: userIds.length > 0,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id,email")
-        .in("id", userIds);
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
   const emailMap = useMemo(() => {
     const m = new Map<string, string>();
-    (profiles ?? []).forEach((p) => m.set(p.id, (p as { email?: string }).email ?? ""));
+    (tickets ?? []).forEach((t) => m.set(t.user_id, t.user_email ?? ""));
     return m;
-  }, [profiles]);
-
-  // Realtime updates
-  useEffect(() => {
-    const ch = supabase
-      .channel("admin-support-tickets")
-      .on("postgres_changes", { event: "*", schema: "public", table: "support_tickets" }, () => {
-        qc.invalidateQueries({ queryKey: ["admin-support-tickets"] });
-      })
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [qc]);
+  }, [tickets]);
 
   const sorted = useMemo(() => {
     return [...(tickets ?? [])].sort((a, b) => {

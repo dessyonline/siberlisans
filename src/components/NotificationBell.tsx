@@ -1,86 +1,81 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Bell, Check, Trash2, X } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  listMyNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  deleteNotification,
+  deleteAllNotifications,
+  type AppNotification,
+} from "@/lib/notifications.functions";
 
-type Notification = {
-  id: string;
-  type: string;
-  title: string;
-  body: string | null;
-  link: string | null;
-  read_at: string | null;
-  created_at: string;
-};
+type Notification = AppNotification;
 
 export function NotificationBell() {
   const { user } = useAuth();
   const [items, setItems] = useState<Notification[]>([]);
   const [open, setOpen] = useState(false);
 
+  const listFn = useServerFn(listMyNotifications);
+  const readFn = useServerFn(markNotificationRead);
+  const readAllFn = useServerFn(markAllNotificationsRead);
+  const delFn = useServerFn(deleteNotification);
+  const delAllFn = useServerFn(deleteAllNotifications);
+
+  const load = useCallback(async () => {
+    try {
+      const rows = await listFn();
+      setItems((rows ?? []) as Notification[]);
+    } catch {
+      /* sessiz */
+    }
+  }, [listFn]);
+
   useEffect(() => {
     if (!user) return;
     let cancelled = false;
-    const load = async () => {
-      const { data } = await supabase
-        // biome-ignore lint/suspicious/noExplicitAny: new table not in generated types
-        .from("notifications" as any)
-        .select("id, type, title, body, link, read_at, created_at")
-        .order("created_at", { ascending: false })
-        .limit(30);
-      if (!cancelled) setItems((data ?? []) as unknown as Notification[]);
+    const tick = async () => {
+      if (cancelled) return;
+      await load();
     };
-    load();
-    const channel = supabase
-      .channel(`notifications-${user.id}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
-        (payload) => {
-          setItems((prev) => [payload.new as Notification, ...prev].slice(0, 30));
-        },
-      )
-      .subscribe();
+    void tick();
+    const id = setInterval(tick, 45_000);
     return () => {
       cancelled = true;
-      supabase.removeChannel(channel);
+      clearInterval(id);
     };
-  }, [user]);
+  }, [user, load]);
 
   if (!user) return null;
   const unread = items.filter((n) => !n.read_at).length;
 
   const markAllRead = async () => {
-    const ids = items.filter((n) => !n.read_at).map((n) => n.id);
-    if (!ids.length) return;
-    // biome-ignore lint/suspicious/noExplicitAny: new table
-    await supabase.from("notifications" as any).update({ read_at: new Date().toISOString() }).in("id", ids);
+    if (!unread) return;
     setItems((prev) => prev.map((n) => ({ ...n, read_at: n.read_at ?? new Date().toISOString() })));
+    await readAllFn({ data: undefined as never }).catch(() => {});
   };
 
   const markOne = async (id: string) => {
-    // biome-ignore lint/suspicious/noExplicitAny: new table
-    await supabase.from("notifications" as any).update({ read_at: new Date().toISOString() }).eq("id", id);
-    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)));
+    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read_at: n.read_at ?? new Date().toISOString() } : n)));
+    await readFn({ data: { id } }).catch(() => {});
   };
 
   const clearAll = async () => {
     if (!items.length) return;
-    const ids = items.map((n) => n.id);
     setItems([]);
-    // biome-ignore lint/suspicious/noExplicitAny: new table
-    await supabase.from("notifications" as any).delete().in("id", ids);
+    await delAllFn({ data: undefined as never }).catch(() => {});
   };
 
   const deleteOne = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setItems((prev) => prev.filter((n) => n.id !== id));
-    // biome-ignore lint/suspicious/noExplicitAny: new table
-    await supabase.from("notifications" as any).delete().eq("id", id);
+    await delFn({ data: { id } }).catch(() => {});
   };
 
   return (
