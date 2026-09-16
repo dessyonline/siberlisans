@@ -2,9 +2,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { upsertProduct, deleteProduct } from "@/lib/orders.functions";
+import { listAdminProducts, bulkUpdateProducts, bulkPriceProducts, bulkDeleteProducts, updateProductFields } from "@/lib/admin-products.functions";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,17 +89,14 @@ function slugify(s: string) {
 
 function ProductsAdmin() {
   const qc = useQueryClient();
+  const listFn = useServerFn(listAdminProducts);
+  const bulkUpdateFn = useServerFn(bulkUpdateProducts);
+  const bulkPriceFn = useServerFn(bulkPriceProducts);
+  const bulkDeleteFn = useServerFn(bulkDeleteProducts);
+  const updateFieldsFn = useServerFn(updateProductFields);
   const { data: products } = useQuery({
     queryKey: ["admin-products"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*, license_keys(id, status)")
-        .order("sort_order", { ascending: false })
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data;
-    },
+    queryFn: () => listFn(),
   });
 
   const [editing, setEditing] = useState<Partial<Product> | null>(null);
@@ -284,8 +281,10 @@ function ProductsAdmin() {
     if (ids.length === 0) return;
     setBulkBusy(true);
     try {
-      const { error } = await supabase.from("products").update(patch).in("id", ids);
-      if (error) throw error;
+      await bulkUpdateFn({ data: { ids, patch: {
+        active: patch.active, manual_fulfillment: patch.manual_fulfillment, featured: patch.featured,
+        unlimited_stock: patch.unlimited_stock, tier: patch.tier, category: patch.category,
+      } } });
       toast.success(`${ids.length} ürün: ${label}`);
       clearSel();
       qc.invalidateQueries({ queryKey: ["admin-products"] });
@@ -302,14 +301,8 @@ function ProductsAdmin() {
     const ids = Array.from(selected);
     setBulkBusy(true);
     try {
-      const list = (products ?? []) as Product[];
-      let ok = 0, fail = 0;
-      for (const p of list.filter((p) => ids.includes(p.id))) {
-        const next = Math.max(1, Math.round(Number(p.price_try) * (1 + pct / 100)));
-        const { error } = await supabase.from("products").update({ price_try: next }).eq("id", p.id);
-        if (error) fail++; else ok++;
-      }
-      toast.success(`${ok} ürün güncellendi${fail ? `, ${fail} atlandı (min kar kuralı olabilir)` : ""}`);
+      const result = await bulkPriceFn({ data: { ids, percent: pct } });
+      toast.success(`${result.updated} ürün güncellendi`);
       clearSel();
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       qc.invalidateQueries({ queryKey: ["products"] });
@@ -329,8 +322,7 @@ function ProductsAdmin() {
     if (!confirm(`${ids.length} ürünü ve bağlı tüm keyleri silmek istediğine emin misin?`)) return;
     setBulkBusy(true);
     try {
-      const { error } = await supabase.from("products").delete().in("id", ids);
-      if (error) throw error;
+      await bulkDeleteFn({ data: { ids } });
       toast.success(`${ids.length} ürün silindi`);
       clearSel();
       qc.invalidateQueries({ queryKey: ["admin-products"] });
@@ -346,13 +338,12 @@ function ProductsAdmin() {
     if (!editing?.id) { toast.error("Önce ürünü kaydet."); return; }
     setAiBusy(true);
     try {
-      const { error } = await supabase.from("products").update({
+      await updateFieldsFn({ data: {
+        id: editing.id,
         retail_price_try: editing.retail_price_try ?? null,
         retail_price_source_url: editing.retail_price_source_url ?? null,
         duration_label: editing.duration_label ?? null,
-        retail_price_updated_at: new Date().toISOString(),
-      }).eq("id", editing.id);
-      if (error) throw error;
+      } });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       qc.invalidateQueries({ queryKey: ["products"] });
       toast.success("Orijinal fiyat kaydedildi.");
@@ -391,8 +382,8 @@ function ProductsAdmin() {
               for (const p of missing) {
                   const url = resolveLogoUrl(p.name);
                 if (!url) continue;
-                const { error } = await supabase.from("products").update({ image_url: url }).eq("id", p.id);
-                if (!error) filled++;
+                await updateFieldsFn({ data: { id: p.id, image_url: url } });
+                filled++;
               }
               await qc.invalidateQueries({ queryKey: ["admin-products"] });
               toast.success(`${filled}/${missing.length} ürüne logo eklendi.`);
