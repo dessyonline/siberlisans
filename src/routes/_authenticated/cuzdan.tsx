@@ -211,7 +211,7 @@ function WalletPage() {
                   <div className="min-w-0 flex-1">
                     <div className="text-sm">{info.l}</div>
                     <div className="text-[11px] text-muted-foreground font-mono truncate">
-                      {new Date(tx.created_at).toLocaleString("tr-TR")}{tx.note ? ` — ${tx.note}` : ""}
+                      {new Date(tx.created_at ?? Date.now()).toLocaleString("tr-TR")}{tx.note ? ` — ${tx.note}` : ""}
                     </div>
                   </div>
                   <div className="text-right shrink-0">
