@@ -27,29 +27,17 @@ function AdminWallet() {
   const rejectFn = useServerFn(rejectTopup);
   const adjustFn = useServerFn(adminAdjustWallet);
 
+  const topupsFn = useServerFn(adminListTopups);
   const { data: topups } = useQuery({
     queryKey: ["admin-topups"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("wallet_topups")
-        .select("id, user_id, amount_try, reference_code, status, admin_note, created_at, client_ip, user_agent, is_vpn, ip_country")
-        .order("created_at", { ascending: false })
-        .limit(200);
-      return data ?? [];
-    },
+    queryFn: () => topupsFn(),
     refetchInterval: 5000,
   });
 
+  const walletsFn = useServerFn(adminListWallets);
   const { data: wallets } = useQuery({
     queryKey: ["admin-wallets"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("wallets")
-        .select("user_id, balance_try, updated_at")
-        .order("balance_try", { ascending: false })
-        .limit(100);
-      return data ?? [];
-    },
+    queryFn: () => walletsFn(),
     refetchInterval: 8000,
   });
 
