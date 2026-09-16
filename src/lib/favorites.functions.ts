@@ -3,8 +3,8 @@ import { z } from "zod";
 import { requireAuth } from "./auth-middleware.server";
 
 export const toggleFavorite = createServerFn({ method: "POST" })
-  .validator((d: unknown) => z.object({ productId: z.string() }).parse(d))
   .middleware([requireAuth])
+  .validator((d: unknown) => z.object({ productId: z.string() }).parse(d))
   .handler(async ({ data, context }) => {
     const { mysqlQuery, mysqlOne } = await import("./mysql.server");
     const existing = await mysqlOne<{ id: string }>(
