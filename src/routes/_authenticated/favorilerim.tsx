@@ -1,8 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
-import { listMyFavoriteIds } from "@/lib/favorites.functions";
+import { listMyFavoriteProducts } from "@/lib/favorites.functions";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { Heart, Package } from "lucide-react";
 
