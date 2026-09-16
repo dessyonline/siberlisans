@@ -14,14 +14,14 @@
 - [ ] Etiket ve satış akışı alt bileşenleri
 - [x] Blog ve paketler okuma sayfaları MySQL üzerinden
 - [ ] Çekiliş, bayilik (okuma sayfaları)
-- [ ] Sepet / sipariş / ödeme
+- [x] Sepet / sipariş / ödeme
 - [ ] Cüzdan, kupon, referans/partner, görev & puan
 - [x] Bildirimler (zil + tercihler) ve destek biletleri MySQL üzerinden
-- [ ] Admin paneli (ürün, key, sipariş, rapor)
+- [ ] Admin paneli (sipariş yönetimi ve blog tamam; ürün, key, rapor kaldı)
 - [ ] Postgres fonksiyon/trigger mantığının TypeScript'e taşınması (~200)
 - [ ] 2FA ve Google girişi (eski sistemde Supabase'e bağlıydı, yeniden kurulacak)
 
 - [x] Cüzdan (bakiye, yükleme talebi, admin onay/ret, bakiye ile ödeme) MySQL'e taşındı
 - [x] Ödeme sayfası (sipariş detayı, banka bilgisi, bakiye, çapraz satış) MySQL'e taşındı
 - [x] Sipariş oluşturma/sepet/onay/red/iptal + kupon + flash indirim (orders.functions.ts) MySQL'e taşındı
-- [ ] Admin paneli, blog yönetimi
+- [x] Admin sipariş yönetimi ve blog yönetimi
