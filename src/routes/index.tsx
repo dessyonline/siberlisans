@@ -835,7 +835,7 @@ function ProductCard({
     name: string;
     slug: string;
     description: string | null;
-    duration: string;
+    duration: string | null;
     price_try: number;
     image_url?: string | null;
     category?: string | null;
