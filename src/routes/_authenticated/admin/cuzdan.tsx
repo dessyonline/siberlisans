@@ -102,7 +102,7 @@ function AdminWallet() {
                   <div className="font-mono text-xs text-primary">{t.reference_code}</div>
                   <div className="text-sm">{emails?.[t.user_id] ?? t.user_id.slice(0, 8)}</div>
                   <div className="text-[11px] text-muted-foreground font-mono">
-                    {new Date(t.created_at).toLocaleString("tr-TR")} · {t.status}
+                    {new Date(t.created_at ?? Date.now()).toLocaleString("tr-TR")} · {t.status}
                     {t.client_ip ? (
                       <span className="ml-2 text-primary/80">IP: {String(t.client_ip)}{t.ip_country ? ` · ${String(t.ip_country)}` : ""}</span>
                     ) : null}
