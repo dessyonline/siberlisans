@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { importLicenseKeys } from "@/lib/orders.functions";
+import { getAdminKeyData, purgeAvailableKeys } from "@/lib/admin-keys.functions";
+import { updateProductFields } from "@/lib/admin-products.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,6 +47,9 @@ function splitLines(raw: string): string[] {
 function KeysAdmin() {
   const qc = useQueryClient();
   const importFn = useServerFn(importLicenseKeys);
+  const dataFn = useServerFn(getAdminKeyData);
+  const purgeFn = useServerFn(purgeAvailableKeys);
+  const updateProductFn = useServerFn(updateProductFields);
   const [productId, setProductId] = useState("");
   const [raw, setRaw] = useState("");
   const [busy, setBusy] = useState(false);
@@ -55,30 +59,14 @@ function KeysAdmin() {
   const [sharedCount, setSharedCount] = useState<number>(10);
 
 
-  const { data: products } = useQuery({
-    queryKey: ["products", "for-keys"],
-    queryFn: async () => {
-      const { data } = await supabase.from("products").select("id, name, delivery_type").order("name");
-      return data;
-    },
-  });
+  const { data: keyData } = useQuery({ queryKey: ["admin-key-data"], queryFn: () => dataFn(), refetchInterval: 15000 });
+  const products = keyData?.products;
 
   const currentProduct = (products ?? []).find((p) => p.id === productId);
   const currentDT = (currentProduct?.delivery_type ?? "key") as DeliveryType;
   const hint = DELIVERY_HINTS[currentDT];
 
-  const { data: pool } = useQuery({
-    queryKey: ["admin-pool"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("id, name, slug, active, price_try, delivery_type, unlimited_stock, license_keys(status)")
-        .order("name");
-      if (error) throw error;
-      return data as PoolRow[];
-    },
-    refetchInterval: 15000,
-  });
+  const pool = keyData?.products as PoolRow[] | undefined;
 
   const totals = useMemo(() => {
     let avail = 0, assigned = 0, total = 0;
@@ -110,26 +98,14 @@ function KeysAdmin() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "available" | "assigned" | "revoked">("all");
 
-  const { data: keys } = useQuery({
-    queryKey: ["license-keys-recent"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("license_keys")
-        .select("id, key_value, status, created_at, product_id, product:products(name, slug)")
-        .order("created_at", { ascending: false })
-        .limit(500);
-      if (error) throw error;
-      return data as Array<{
+  const keys = keyData?.keys as Array<{
         id: string;
         key_value: string;
         status: string;
         created_at: string;
         product_id: string;
         product: { name: string; slug: string } | null;
-      }>;
-    },
-    refetchInterval: 15000,
-  });
+      }> | undefined;
 
   const filteredKeys = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -145,12 +121,7 @@ function KeysAdmin() {
     });
   }, [keys, search, statusFilter, productId]);
 
-  const { data: assignedKeys } = useQuery({
-    queryKey: ["admin-assigned-keys"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("admin_list_assigned_keys", { _limit: 200 });
-      if (error) throw error;
-      return (data ?? []) as Array<{
+  const assignedKeys = keyData?.assigned as Array<{
         key_id: string;
         key_value: string;
         product_id: string;
@@ -163,10 +134,7 @@ function KeysAdmin() {
         activated_at: string | null;
         expires_at: string | null;
         revoked: boolean;
-      }>;
-    },
-    refetchInterval: 30000,
-  });
+      }> | undefined;
 
   const [assignedSearch, setAssignedSearch] = useState("");
   const filteredAssigned = useMemo(() => {
@@ -211,6 +179,7 @@ function KeysAdmin() {
       }
       qc.invalidateQueries({ queryKey: ["license-keys-recent"] });
       qc.invalidateQueries({ queryKey: ["admin-pool"] });
+      qc.invalidateQueries({ queryKey: ["admin-key-data"] });
     } catch (e) { toast.error((e as Error).message); }
     finally { setBusy(false); }
   };
@@ -218,9 +187,9 @@ function KeysAdmin() {
 
   const purge = async (pid: string, name: string, avail: number) => {
     if (!confirm(`${name}: ${avail} adet müsait (satılmamış) key silinecek. Emin misin?`)) return;
-    const { data, error } = await supabase.rpc("admin_purge_available_keys", { _product_id: pid });
-    if (error) return toast.error(error.message);
-    toast.success(`${data ?? 0} key silindi`);
+    const result = await purgeFn({ data: { productId: pid } });
+    toast.success(`${result.deleted} key silindi`);
+    qc.invalidateQueries({ queryKey: ["admin-key-data"] });
     qc.invalidateQueries({ queryKey: ["admin-pool"] });
     qc.invalidateQueries({ queryKey: ["license-keys-recent"] });
   };
@@ -282,14 +251,11 @@ function KeysAdmin() {
                   disabled={!productId}
                   onChange={async (e) => {
                     const newDT = e.target.value as DeliveryType;
-                    const { error } = await supabase
-                      .from("products")
-                      .update({ delivery_type: newDT })
-                      .eq("id", productId);
-                    if (error) return toast.error(error.message);
+                    await updateProductFn({ data: { id: productId, delivery_type: newDT } });
                     toast.success(`teslim tipi: ${newDT}`);
                     qc.invalidateQueries({ queryKey: ["products", "for-keys"] });
                     qc.invalidateQueries({ queryKey: ["admin-pool"] });
+                    qc.invalidateQueries({ queryKey: ["admin-key-data"] });
                   }}
                   className="mt-1 w-full rounded border border-border bg-input px-3 py-2 font-mono text-sm focus:border-primary/60 focus:outline-none disabled:opacity-50"
                 >
