@@ -34,7 +34,7 @@ export const getOrderDetail = createServerFn({ method: "GET" })
     const isAdmin = context.isAdmin === true;
     if (order.user_id !== context.userId && !isAdmin) throw new Error("Yetkisiz.");
 
-    const s = (v: unknown): string | null => (v == null ? null : String(v));
+    const s = (v: unknown): string | undefined => (v == null ? undefined : String(v));
     const mapProduct = (p: Record<string, unknown> | null) =>
       p
         ? {
