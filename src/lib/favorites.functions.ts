@@ -37,3 +37,41 @@ export const listMyFavoriteIds = createServerFn({ method: "GET" })
     );
     return { productIds: rows.map((r) => r.product_id) };
   });
+
+export type FavoriteProduct = {
+  id: string;
+  slug: string;
+  name: string;
+  price_try: number;
+  image_url: string | null;
+  active: boolean;
+};
+
+export const listMyFavoriteProducts = createServerFn({ method: "GET" })
+  .middleware([requireAuth])
+  .handler(async ({ context }): Promise<FavoriteProduct[]> => {
+    const { mysqlQuery, num, bool } = await import("./mysql.server");
+    const rows = await mysqlQuery<{
+      id: string;
+      slug: string;
+      name: string;
+      price_try: unknown;
+      image_url: string | null;
+      active: unknown;
+    }>(
+      `SELECT p.id, p.slug, p.name, p.price_try, p.image_url, p.active
+         FROM favorites f
+         JOIN products p ON p.id = f.product_id
+        WHERE f.user_id = ?
+        ORDER BY f.created_at DESC`,
+      [context.userId],
+    );
+    return rows.map((r) => ({
+      id: r.id,
+      slug: r.slug,
+      name: r.name,
+      price_try: num(r.price_try) ?? 0,
+      image_url: r.image_url,
+      active: bool(r.active),
+    }));
+  });
