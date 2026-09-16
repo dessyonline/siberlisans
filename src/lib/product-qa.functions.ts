@@ -1,98 +1,113 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAuth, requireAdmin } from "./auth-middleware.server";
 
 const askInput = z.object({
-  productId: z.string().uuid(),
+  productId: z.string(),
   question: z.string().trim().min(5).max(600),
 });
 
+function now() {
+  return new Date().toISOString().slice(0, 19).replace("T", " ");
+}
+
+export type QuestionRow = {
+  id: string;
+  question: string;
+  answer: string | null;
+  created_at: string;
+  answered_at: string | null;
+  user_id: string;
+};
+
+/** Ürün soruları (herkese açık liste). */
+export const listProductQuestions = createServerFn({ method: "GET" })
+  .validator((d: unknown) => z.object({ productId: z.string() }).parse(d))
+  .handler(async ({ data }): Promise<QuestionRow[]> => {
+    const { mysqlQuery } = await import("./mysql.server");
+    return mysqlQuery<QuestionRow>(
+      `SELECT id, question, answer, created_at, answered_at, user_id
+         FROM product_questions
+        WHERE product_id = ?
+        ORDER BY created_at DESC
+        LIMIT 30`,
+      [data.productId],
+    );
+  });
+
 export const askProductQuestion = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => askInput.parse(d))
+  .middleware([requireAuth])
+  .validator((d: unknown) => askInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
+    const { mysqlQuery, mysqlOne } = await import("./mysql.server");
 
-    // Spam koruması: son 1 saatte en fazla 5 soru.
-    const since = new Date(Date.now() - 3600_000).toISOString();
-    const { count } = await supabase
-      // biome-ignore lint/suspicious/noExplicitAny: table not yet in generated types
-      .from("product_questions" as any)
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", userId)
-      .gte("created_at", since);
-    if ((count ?? 0) >= 5) throw new Error("Çok fazla soru gönderdin, biraz sonra tekrar dene.");
+    const recent = await mysqlOne<{ c: number }>(
+      "SELECT COUNT(*) AS c FROM product_questions WHERE user_id=? AND created_at >= (NOW() - INTERVAL 1 HOUR)",
+      [context.userId],
+    );
+    if (Number(recent?.c ?? 0) >= 5) {
+      throw new Error("Çok fazla soru gönderdin, biraz sonra tekrar dene.");
+    }
 
-    const { error } = await supabase
-      // biome-ignore lint/suspicious/noExplicitAny: table not yet in generated types
-      .from("product_questions" as any)
-      .insert({ product_id: data.productId, user_id: userId, question: data.question });
-    if (error) throw new Error(error.message);
+    await mysqlQuery(
+      `INSERT INTO product_questions (id,product_id,user_id,question,is_public,created_at,updated_at)
+       VALUES (?,?,?,?,?,?,?)`,
+      [crypto.randomUUID(), data.productId, context.userId, data.question, 1, now(), now()],
+    );
     return { ok: true };
   });
 
 const answerInput = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   answer: z.string().trim().min(1).max(2000),
   isPublic: z.boolean().optional(),
 });
 
 export const answerProductQuestion = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => answerInput.parse(d))
+  .middleware([requireAdmin])
+  .validator((d: unknown) => answerInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Yetkisiz.");
+    const { mysqlQuery, mysqlOne } = await import("./mysql.server");
+    const ts = now();
 
-    const { data: row, error } = await supabase
-      // biome-ignore lint/suspicious/noExplicitAny: table not yet in generated types
-      .from("product_questions" as any)
-      .update({
-        answer: data.answer,
-        answered_by: userId,
-        answered_at: new Date().toISOString(),
-        is_public: data.isPublic ?? true,
-      })
-      .eq("id", data.id)
-      .select("user_id, product_id, question")
-      .maybeSingle();
-    if (error) throw new Error(error.message);
+    await mysqlQuery(
+      "UPDATE product_questions SET answer=?, answered_by=?, answered_at=?, is_public=?, updated_at=? WHERE id=?",
+      [data.answer, context.userId, ts, data.isPublic === false ? 0 : 1, ts, data.id],
+    );
 
-    // Soruyu soran kullanıcıya bildirim
-    const r = row as { user_id?: string; product_id?: string } | null;
-    if (r?.user_id) {
-      const { data: product } = await supabase
-        .from("products")
-        .select("name, slug")
-        .eq("id", r.product_id!)
-        .maybeSingle();
-      await supabase
-        // biome-ignore lint/suspicious/noExplicitAny: notifications insert via RLS-permitted admin
-        .from("notifications" as any)
-        .insert({
-          user_id: r.user_id,
-          type: "product_question",
-          title: "Sorun cevaplandı",
-          body: `${product?.name ?? "Ürün"} hakkındaki sorunu yanıtladık.`,
-          link: product?.slug ? `/urun/${product.slug}` : null,
-        });
+    const row = await mysqlOne<{ user_id: string | null; product_id: string | null }>(
+      "SELECT user_id, product_id FROM product_questions WHERE id=?",
+      [data.id],
+    );
+    if (row?.user_id) {
+      const product = row.product_id
+        ? await mysqlOne<{ name: string; slug: string }>(
+            "SELECT name, slug FROM products WHERE id=? LIMIT 1",
+            [row.product_id],
+          )
+        : null;
+      await mysqlQuery(
+        `INSERT INTO notifications (id,user_id,type,title,body,link,created_at)
+         VALUES (?,?,?,?,?,?,?)`,
+        [
+          crypto.randomUUID(),
+          row.user_id,
+          "product_question",
+          "Sorun cevaplandı",
+          `${product?.name ?? "Ürün"} hakkındaki sorunu yanıtladık.`,
+          product?.slug ? `/urun/${product.slug}` : null,
+          ts,
+        ],
+      ).catch(() => undefined);
     }
     return { ok: true };
   });
 
 export const deleteProductQuestion = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Yetkisiz.");
-    const { error } = await supabase
-      // biome-ignore lint/suspicious/noExplicitAny: table not yet in generated types
-      .from("product_questions" as any)
-      .delete()
-      .eq("id", data.id);
-    if (error) throw new Error(error.message);
+  .middleware([requireAdmin])
+  .validator((d: unknown) => z.object({ id: z.string() }).parse(d))
+  .handler(async ({ data }) => {
+    const { mysqlQuery } = await import("./mysql.server");
+    await mysqlQuery("DELETE FROM product_questions WHERE id=?", [data.id]);
     return { ok: true };
   });
