@@ -72,9 +72,10 @@ const HOME_FAQ = [
     a: "Davet ettiğin kişi alışveriş yaptığında sana nakit komisyon, ona da indirim kuponu tanımlanır. Detayları davet panelinden takip edebilirsin.",
   },
   {
-    q: "Faturamı alabilir miyim?",
-    a: "Evet, kurumsal müşteriler için e-arşiv fatura düzenlenir ve panelinden PDF olarak indirebilirsin.",
+    q: "Siparişim ne kadar sürede teslim edilir?",
+    a: "Ödeme onaylandıktan sonra lisans bilgilerin çoğunlukla saniyeler içinde hesabına ve e-postana iletilir.",
   },
+
 ];
 
 const homeProductsQuery = { queryKey: ["mysql-products", "active"], queryFn: () => listProducts() };

@@ -544,7 +544,7 @@ function SiteFooter() {
               <li>🔒 SSL/TLS 1.3</li>
               <li>🛡️ AES-256 şifreleme</li>
               <li>✅ KVKK uyumlu</li>
-              <li>🧾 Yasal fatura</li>
+              <li>⚡ Anında teslimat</li>
             </ul>
           </div>
         </div>

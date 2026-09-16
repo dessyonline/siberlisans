@@ -5,7 +5,7 @@ const FAQS = [
   { q: "Kredi kartı ile ödeme yapabilir miyim?", a: "Hayır. SiberPHP güvenlik politikası gereği yalnızca banka havalesi / EFT kabul eder." },
   { q: "Ödeme sonrası anahtarı ne kadar sürede alırım?", a: "Dekont onayından sonra saniyeler içinde. Ortalama onay 5-15 dakika." },
   { q: "Anahtarım çalışmazsa?", a: "24 saat içinde destek ile iletişime geçerseniz yeni bir key ile değiştiririz." },
-  { q: "Faturamı alabilir miyim?", a: "Evet, kurumsal müşteriler için e-arşiv fatura düzenlenir." },
+  { q: "Siparişimi nereden takip ederim?", a: "Hesabım sayfasındaki siparişler bölümünden durumunu anlık görebilirsiniz." },
   { q: "Kişisel verilerim güvende mi?", a: "Tüm veriler AES-256 ile şifrelenir; KVKK uyumluluğu sağlanır." },
 ];
 
@@ -29,7 +29,7 @@ export const Route = createFileRoute("/sss")({
       { title: "Sık Sorulan Sorular — SiberPHP" },
       {
         name: "description",
-        content: "Ödeme, teslim süresi, key değişimi, fatura, KVKK — SiberPHP hakkında en çok sorulan soruların yanıtları.",
+        content: "Ödeme, teslim süresi, key değişimi, sipariş takibi, KVKK — SiberPHP hakkında en çok sorulan soruların yanıtları.",
       },
       { property: "og:title", content: "SSS — SiberPHP" },
       { property: "og:description", content: "SiberPHP hakkında en çok sorulan sorular ve yanıtları." },

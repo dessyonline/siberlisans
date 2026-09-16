@@ -203,16 +203,6 @@ function MyAccount() {
               </div>
             </Link>
             <Link
-              to="/faturalar"
-              className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
-            >
-              <Download className="h-4 w-4 text-primary shrink-0" />
-              <div className="min-w-0">
-                <div className="text-muted-foreground text-[10px] uppercase tracking-wider">faturalar</div>
-                <div className="text-primary text-sm truncate">$ pdf indir →</div>
-              </div>
-            </Link>
-            <Link
               to="/davet"
               className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
             >
@@ -405,17 +395,10 @@ function OrdersTab({ orders, isLoading }: { orders: Order[]; isLoading: boolean 
                   <div className="flex items-center gap-2">
                     {o.status === "approved" && (
                       <>
-                        <Link
-                          to="/fatura/$orderId"
-                          params={{ orderId: o.id }}
-                          className="text-[11px] text-muted-foreground hover:text-primary font-mono"
-                          target="_blank"
-                        >
-                          fatura
-                        </Link>
                         <TransferButton orderId={o.id} />
                       </>
                     )}
+
                     <Button asChild size="sm" variant="outline" className="font-mono h-8 text-xs">
                       <Link to="/odeme/$orderId" params={{ orderId: o.id }}>
                         detay →

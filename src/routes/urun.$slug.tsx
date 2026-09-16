@@ -131,12 +131,13 @@ export const Route = createFileRoute("/urun/$slug")({
                 },
                 {
                   "@type": "Question",
-                  name: "Faturamı nasıl alabilirim?",
+                  name: "Teslimat ne kadar sürer?",
                   acceptedAnswer: {
                     "@type": "Answer",
-                    text: "Ödeme sonrası destek ekibimize yazın, e-fatura veya e-arşiv olarak iletilir.",
+                    text: "Ödeme onaylandıktan sonra lisans bilgileri çoğunlukla saniyeler içinde iletilir.",
                   },
                 },
+
               ],
             }),
           },
@@ -625,9 +626,10 @@ function ProductDetail() {
                 a: "Lisans key'i çalışmıyorsa 24 saat içinde bize ulaşın, ücretsiz olarak yeni bir key ile değiştirilir. Aktive edilmiş ve kullanılmış lisanslar iade kapsamı dışındadır.",
               },
               {
-                q: "Faturamı nasıl alabilirim?",
-                a: "Kurumsal fatura talepleriniz için ödeme sonrası destek ekibimizle iletişime geçin. E-fatura veya e-arşiv olarak iletilir.",
+                q: "Teslimat ne kadar sürer?",
+                a: "Ödeme onaylandıktan sonra lisans bilgileri çoğunlukla saniyeler içinde hesabınıza ve e-postanıza iletilir.",
               },
+
               {
                 q: "Lisans süresi ne kadar?",
                 a: `Bu ürünün lisans türü: ${DUR[product.duration ?? "lifetime"] ?? "belirtilmemiş"}. Ürün açıklamasında detaylı süre bilgisi yer alır.`,
