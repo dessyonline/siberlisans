@@ -87,7 +87,7 @@ export const getOrderDetail = createServerFn({ method: "GET" })
       reference_code: (order.reference_code as string) ?? null,
       receipt_path: (order.receipt_path as string) ?? null,
       user_note: (order.user_note as string) ?? null,
-      checkout_fields: parseJson<Record<string, unknown>>(order.checkout_fields),
+      checkout_fields: parseJson(order.checkout_fields),
       created_at: (order.created_at as string) ?? null,
       updated_at: (order.updated_at as string) ?? null,
       approved_at: (order.approved_at as string) ?? null,
