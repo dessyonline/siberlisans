@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { approveTopup, rejectTopup, adminAdjustWallet } from "@/lib/wallet.functions";
+import { adminListTopups, adminListWallets } from "@/lib/wallet-read.functions";
 import { listUsers } from "@/lib/admin-users.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
