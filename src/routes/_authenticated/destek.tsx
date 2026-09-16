@@ -176,19 +176,9 @@ function NewTicketForm({ onCancel, onCreated }: { onCancel: () => void; onCreate
     if (body.trim().length < 1) return toast.error("Mesaj boş olamaz.");
     setLoading(true);
     try {
-      const { data: t, error } = await supabase
-        .from("support_tickets" as never)
-        .insert({ user_id: user.id, subject: subject.trim(), priority } as never)
-        .select("id")
-        .single();
-      if (error) throw error;
-      const ticketId = (t as unknown as { id: string }).id;
-      const { error: mErr } = await supabase
-        .from("support_messages" as never)
-        .insert({ ticket_id: ticketId, sender_id: user.id, is_admin: false, body: body.trim() } as never);
-      if (mErr) throw mErr;
+      const res = await create({ data: { subject: subject.trim(), body: body.trim(), priority } });
       toast.success("Bilet açıldı.");
-      onCreated(ticketId);
+      onCreated(res.id);
     } catch (err) {
       toast.error((err as Error).message || "Bilet açılamadı.");
     } finally {
