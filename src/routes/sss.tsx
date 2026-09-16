@@ -29,7 +29,7 @@ export const Route = createFileRoute("/sss")({
       { title: "Sık Sorulan Sorular — SiberPHP" },
       {
         name: "description",
-        content: "Ödeme, teslim süresi, key değişimi, fatura, KVKK — SiberPHP hakkında en çok sorulan soruların yanıtları.",
+        content: "Ödeme, teslim süresi, key değişimi, sipariş takibi, KVKK — SiberPHP hakkında en çok sorulan soruların yanıtları.",
       },
       { property: "og:title", content: "SSS — SiberPHP" },
       { property: "og:description", content: "SiberPHP hakkında en çok sorulan sorular ve yanıtları." },
