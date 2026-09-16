@@ -1,8 +1,9 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { supabase } from "@/integrations/supabase/client";
+import { getBlogPost } from "@/lib/blog-public.functions";
 import { ArrowLeft, Calendar } from "lucide-react";
 
 export const Route = createFileRoute("/blog/$slug")({
@@ -58,16 +59,9 @@ export const Route = createFileRoute("/blog/$slug")({
     };
   },
   loader: async ({ params }) => {
-    const { data, error } = await supabase
-      // biome-ignore lint/suspicious/noExplicitAny: new table
-      .from("blog_posts" as any)
-      .select("title, excerpt, cover_url, published_at")
-      .eq("slug", params.slug)
-      .not("published_at", "is", null)
-      .lte("published_at", new Date().toISOString())
-      .maybeSingle();
-    if (error || !data) throw notFound();
-    return data as unknown as { title: string; excerpt: string | null; cover_url: string | null; published_at: string };
+    const post = await getBlogPost({ data: { slug: params.slug } }).catch(() => null);
+    if (!post) throw notFound();
+    return post;
   },
 });
 
@@ -85,20 +79,10 @@ type Post = {
 
 function BlogPost() {
   const { slug } = Route.useParams();
+  const fetchPost = useServerFn(getBlogPost);
   const { data: post, isLoading } = useQuery({
     queryKey: ["blog-post", slug],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        // biome-ignore lint/suspicious/noExplicitAny: new table
-        .from("blog_posts" as any)
-        .select("*")
-        .eq("slug", slug)
-        .not("published_at", "is", null)
-        .lte("published_at", new Date().toISOString())
-        .maybeSingle();
-      if (error) throw error;
-      return (data as unknown as Post) ?? null;
-    },
+    queryFn: async () => ((await fetchPost({ data: { slug } })) as unknown as Post) ?? null,
   });
 
   if (isLoading) {

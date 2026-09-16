@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { listBlogPosts } from "@/lib/blog-public.functions";
 import { BookOpen, ArrowRight } from "lucide-react";
 
 export const Route = createFileRoute("/blog/")({
@@ -28,20 +29,10 @@ type Post = {
 };
 
 function BlogList() {
+  const fetchPosts = useServerFn(listBlogPosts);
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["blog-posts-public"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        // biome-ignore lint/suspicious/noExplicitAny: new table
-        .from("blog_posts" as any)
-        .select("id, slug, title, excerpt, cover_url, tags, published_at")
-        .not("published_at", "is", null)
-        .lte("published_at", new Date().toISOString())
-        .order("published_at", { ascending: false })
-        .limit(50);
-      if (error) throw error;
-      return (data ?? []) as unknown as Post[];
-    },
+    queryFn: async () => (await fetchPosts()) as unknown as Post[],
   });
 
   return (

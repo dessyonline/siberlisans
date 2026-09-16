@@ -3,7 +3,7 @@ import { getBundleBySlug } from "@/lib/bundles.functions";
 import { Package, Check, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/paketler/$slug")({
   component: BundleDetail,
@@ -56,10 +56,10 @@ function BundleDetail() {
   const items = b.items ?? [];
   const originalSum = items.reduce((s, i) => s + (Number(i.product?.price_try) || 0) * i.quantity, 0);
   const saved = originalSum - Number(b.price_try);
+  const { user } = useAuth();
 
   async function buyBundle() {
-    const { data: session } = await supabase.auth.getSession();
-    if (!session.session) {
+    if (!user) {
       toast.error("Önce giriş yap");
       return;
     }
