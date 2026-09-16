@@ -95,6 +95,23 @@ function AuthPage() {
     }
   };
 
+  const forgotPassword = async () => {
+    const em = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) return toast.error("[!] önce e-posta adresini gir");
+    setLoading(true);
+    try {
+      const res = await doReset({ data: { email: em } });
+      setResetInfo({ message: res.message, link: res.link ?? null });
+      toast.success("[✓] talebin alındı");
+    } catch {
+      toast.error("İşlem tamamlanamadı, tekrar deneyin.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
 
   const signUp = async () => {
     const em = email.trim().toLowerCase();
