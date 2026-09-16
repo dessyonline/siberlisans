@@ -149,3 +149,49 @@ export const getMyBalance = createServerFn({ method: "GET" })
     );
     return { balance_try: num(w?.balance_try) ?? 0 };
   });
+
+export const getCrossSellOffer = createServerFn({ method: "GET" })
+  .validator((d: unknown) =>
+    z.object({ categories: z.array(z.string()), excludeSlugs: z.array(z.string()) }).parse(d),
+  )
+  .handler(async ({ data }) => {
+    if (data.categories.length === 0) return null;
+    const { mysqlQuery, mysqlOne, num } = await import("./mysql.server");
+    const ph = data.categories.map(() => "?").join(",");
+    const rules = await mysqlQuery<{
+      from_category: string;
+      to_category: string;
+      discount_percent: number;
+      promo_code: string | null;
+      note: string | null;
+    }>(
+      `SELECT from_category, to_category, discount_percent, promo_code, note
+         FROM cross_sell_rules
+        WHERE active=1 AND from_category IN (${ph})
+        ORDER BY discount_percent DESC LIMIT 1`,
+      data.categories,
+    );
+    const rule = rules[0];
+    if (!rule) return null;
+
+    const exPh = data.excludeSlugs.length ? data.excludeSlugs.map(() => "?").join(",") : null;
+    const product = await mysqlOne<{
+      id: string;
+      name: string;
+      slug: string;
+      price_try: unknown;
+      image_url: string | null;
+      tier: string | null;
+      duration: string | null;
+    }>(
+      `SELECT id, name, slug, price_try, image_url, tier, duration
+         FROM products
+        WHERE active=1 AND category=? ${exPh ? `AND slug NOT IN (${exPh})` : ""}
+        ORDER BY sort_order DESC LIMIT 1`,
+      exPh ? [rule.to_category, ...data.excludeSlugs] : [rule.to_category],
+    );
+    if (!product) return null;
+    const original = num(product.price_try) ?? 0;
+    const discounted = Math.round(original * (1 - Number(rule.discount_percent ?? 0) / 100));
+    return { rule, product: { ...product, price_try: original }, original, discounted };
+  });
