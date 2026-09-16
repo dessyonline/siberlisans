@@ -34,20 +34,20 @@ export const getOrderDetail = createServerFn({ method: "GET" })
     const isAdmin = context.isAdmin === true;
     if (order.user_id !== context.userId && !isAdmin) throw new Error("Yetkisiz.");
 
-    const mapProduct = (p: Record<string, unknown> | null) =>
+    const mapProduct = (p: Record<string, unknown> | null): Record<string, Json> | null =>
       p
         ? {
-            ...p,
+            ...(p as Record<string, Json>),
             manual_fulfillment: bool(p.manual_fulfillment),
             unlimited_stock: bool(p.unlimited_stock),
             requires_email: bool(p.requires_email),
-            required_fields: parseJson<unknown>(p.required_fields),
+            required_fields: parseJson(p.required_fields),
           }
         : null;
 
     const product = order.product_id
       ? await mysqlOne<Record<string, unknown>>(`SELECT ${PRODUCT_COLS} FROM products WHERE id=? LIMIT 1`, [
-          order.product_id,
+          String(order.product_id),
         ])
       : null;
 
