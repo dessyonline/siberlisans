@@ -10,7 +10,8 @@
 - [x] Anasayfa ürünleri + ürün detay/benzer ürün okumaları (HTTP 200 ve fiyat görüntüsü doğrulandı)
 - [x] Ortak flash indirim okuması MySQL üzerinden
 - [ ] Anasayfa bakiye okuması taşındı; oturumlu doğrulama bekliyor
-- [ ] Yorum, soru-cevap, etiket, satış akışı, favori gibi alt bileşenler
+- [x] Yorumlar, soru-cevap, favoriler MySQL üzerinden
+- [ ] Etiket ve satış akışı alt bileşenleri
 - [x] Blog ve paketler okuma sayfaları MySQL üzerinden
 - [ ] Çekiliş, bayilik (okuma sayfaları)
 - [ ] Sepet / sipariş / ödeme

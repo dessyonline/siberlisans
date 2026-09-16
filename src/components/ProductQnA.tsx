@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { askProductQuestion } from "@/lib/product-qa.functions";
+import { askProductQuestion, listProductQuestions } from "@/lib/product-qa.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -22,21 +21,13 @@ export function ProductQnA({ productId }: { productId: string }) {
   const { user } = useAuth();
   const qc = useQueryClient();
   const askFn = useServerFn(askProductQuestion);
+  const listFn = useServerFn(listProductQuestions);
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
 
   const { data: rows } = useQuery({
     queryKey: ["product-questions", productId, user?.id ?? "anon"],
-    queryFn: async () => {
-      const { data } = await supabase
-        // biome-ignore lint/suspicious/noExplicitAny: table not yet in generated types
-        .from("product_questions" as any)
-        .select("id, question, answer, created_at, answered_at, user_id")
-        .eq("product_id", productId)
-        .order("created_at", { ascending: false })
-        .limit(30);
-      return (data ?? []) as unknown as QRow[];
-    },
+    queryFn: async () => (await listFn({ data: { productId } })) as QRow[],
   });
 
   const submit = async () => {
