@@ -2,9 +2,9 @@
 
 ## Onaylanan giriş düzeltmesi
 - [ ] Şifre belirleme bağlantısını yalnızca doğrulanmış hesap sahibine ulaştırma (e-posta gönderimi/hesap doğrulama kanalı gerekli).
-- [ ] Herkese açık şifre bağlantısını kapatma ve teslim hatalarını doğru bildirme.
-- [ ] Bildirilen use-mobile.tsx TS2686 satırını kaynakta kontrol etme; görünümü değiştirmeme.
-- [ ] Şifre belirleme ve giriş akışının testleri.
+- [x] Herkese açık şifre bağlantısı kapatıldı; Telegram teslim hataları artık başarı olarak gösterilmiyor.
+- [x] use-mobile.tsx kaynak kontrolü: belirtilen satır boş, React içe aktarımı mevcut; giriş sayfası tarayıcıda açıldı.
+- [ ] Gerçek hesapla şifre belirleme ve giriş testi: hesap sahibine doğrulanmış teslim kanalı bekliyor; giriş ekranı ve kaynak güvenlik kontrolleri geçti.
 
 ## MySQL (Hostinger) geçişi
 - [x] PHP köprü + gizli anahtarlar
