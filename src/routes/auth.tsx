@@ -107,6 +107,7 @@ function AuthPage() {
     try {
       const res = await doReset({ data: { email: em } });
       setResetInfo({ message: res.message, link: res.link ?? null });
+      if (!res.ok) return toast.error(res.message);
       toast.success("[✓] talebin alındı");
     } catch {
       toast.error("İşlem tamamlanamadı, tekrar deneyin.");

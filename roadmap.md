@@ -1,5 +1,11 @@
 # Roadmap
 
+## Onaylanan giriş düzeltmesi
+- [ ] Şifre belirleme bağlantısını yalnızca doğrulanmış hesap sahibine ulaştırma (e-posta gönderimi/hesap doğrulama kanalı gerekli).
+- [x] Herkese açık şifre bağlantısı kapatıldı; Telegram teslim hataları artık başarı olarak gösterilmiyor.
+- [x] use-mobile.tsx kaynak kontrolü: belirtilen satır boş, React içe aktarımı mevcut; giriş sayfası tarayıcıda açıldı.
+- [ ] Gerçek hesapla şifre belirleme ve giriş testi: hesap sahibine doğrulanmış teslim kanalı bekliyor; giriş ekranı ve kaynak güvenlik kontrolleri geçti.
+
 ## MySQL (Hostinger) geçişi
 - [x] PHP köprü + gizli anahtarlar
 - [x] Şema + veri aktarımı (76 tablo, 1.561 kayıt)
