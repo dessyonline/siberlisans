@@ -33,14 +33,19 @@ function originFromRequest(): string {
 
 /**
  * Şifre belirleme / sıfırlama talebi.
- * - Şifresi olmayan (taşınan) normal hesaplar: bağlantı ekranda gösterilir.
- * - Yönetici hesapları ve şifresi olan hesaplar: bağlantı sadece yönetici Telegram'ına gider.
+ * Bağlantı yalnızca destek ekibine iletilir; hesap sahipliği doğrulanmadan
+ * istekte bulunana asla döndürülmez.
  */
 export const requestPasswordReset = createServerFn({ method: "POST" })
   .validator((d: unknown) => requestSchema.parse(d))
   .handler(async ({ data }): Promise<{ ok: boolean; link?: string; message: string }> => {
     const { mysqlQuery, mysqlOne } = await import("./mysql.server");
-    const { notifyTelegram } = await import("./telegram.server");
+    const { sendTelegram } = await import("./telegram.server");
+
+    const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
+    if (!chatId || !process.env.TELEGRAM_BOT_TOKEN) {
+      return { ok: false, message: "Şifre belirleme bildirimi şu anda gönderilemiyor. Lütfen destek ekibiyle iletişime geçin." };
+    }
 
     const email = data.email.trim().toLowerCase();
     const user = await mysqlOne<{ id: string; password_hash: string | null }>(
@@ -49,7 +54,7 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
     );
     const generic = {
       ok: true,
-      message: "Talebin alındı. Hesap mevcutsa şifre belirleme bağlantısı hazırlandı.",
+      message: "Talebin alındı. Hesabın mevcutsa destek ekibi, hesap sahipliğini doğruladıktan sonra şifre belirlemene yardımcı olacak.",
     };
     if (!user) return generic;
 
@@ -59,7 +64,12 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
     );
     const isAdmin = !!roleRow;
 
-    // Çok sık talebi engelle (son 5 dakikada kullanılmamış token varsa onu yeniden üretme)
+    const recent = await mysqlOne<{ token: string }>(
+      "SELECT token FROM auth_password_tokens WHERE user_id=? AND used=0 AND expires_at > DATE_ADD(NOW(), INTERVAL 55 MINUTE) LIMIT 1",
+      [user.id],
+    );
+    if (recent) return generic;
+
     const token = randomHex(32);
     const expires = mysqlDate(new Date(Date.now() + 60 * 60 * 1000));
     await mysqlQuery(
@@ -68,24 +78,16 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
     );
 
     const link = `${originFromRequest()}/sifre-belirle?token=${token}`;
-    await notifyTelegram(
-      `🔑 Şifre belirleme talebi\nE-posta: ${email}${isAdmin ? " (YÖNETİCİ)" : ""}\n${link}\n(1 saat geçerli)`,
-    );
-
-    const selfServe = !user.password_hash && !isAdmin;
-    if (selfServe) {
-      return {
-        ok: true,
-        link,
-        message: "Hesabında henüz şifre yok. Aşağıdaki bağlantıdan yeni şifreni belirleyebilirsin.",
-      };
+    const escapeHtml = (value: string) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const delivered = await sendTelegram({
+      chatId,
+      text: `🔑 Şifre belirleme talebi\nE-posta: ${escapeHtml(email)}${isAdmin ? " (YÖNETİCİ)" : ""}\n${escapeHtml(link)}\n(1 saat geçerli)\nHesap sahipliğini doğrulamadan bağlantıyı paylaşmayın.`,
+    });
+    if (!delivered.ok) {
+      await mysqlQuery("DELETE FROM auth_password_tokens WHERE token=?", [token]);
+      return { ok: false, message: "Şifre belirleme bildirimi gönderilemedi. Lütfen destek ekibiyle iletişime geçin." };
     }
-    return {
-      ok: true,
-      message: isAdmin
-        ? "Yönetici hesabı: bağlantı Telegram bildirimine gönderildi."
-        : "Bağlantı oluşturuldu ve destek ekibine iletildi. Telegram destek üzerinden talep edebilirsin.",
-    };
+    return generic;
   });
 
 /** Tek kullanımlık bağlantı ile şifre belirleme. */

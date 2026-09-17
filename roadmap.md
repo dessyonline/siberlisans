@@ -1,5 +1,11 @@
 # Roadmap
 
+## Onaylanan giriş düzeltmesi
+- [ ] Şifre belirleme bağlantısını yalnızca doğrulanmış hesap sahibine ulaştırma (e-posta gönderimi/hesap doğrulama kanalı gerekli).
+- [ ] Herkese açık şifre bağlantısını kapatma ve teslim hatalarını doğru bildirme.
+- [ ] Bildirilen use-mobile.tsx TS2686 satırını kaynakta kontrol etme; görünümü değiştirmeme.
+- [ ] Şifre belirleme ve giriş akışının testleri.
+
 ## MySQL (Hostinger) geçişi
 - [x] PHP köprü + gizli anahtarlar
 - [x] Şema + veri aktarımı (76 tablo, 1.561 kayıt)
