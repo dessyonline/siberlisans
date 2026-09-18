@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 const schema = z.object({
@@ -19,16 +18,6 @@ function randomHex(bytes: number) {
 
 function mysqlDate(d: Date) {
   return d.toISOString().slice(0, 19).replace("T", " ");
-}
-
-function originFromRequest(): string {
-  try {
-    const req = getRequest();
-    const u = new URL(req.url);
-    return u.origin;
-  } catch {
-    return "https://siberlisans.com";
-  }
 }
 
 /**
