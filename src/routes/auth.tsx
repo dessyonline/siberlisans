@@ -161,27 +161,12 @@ function AuthPage() {
     }
   };
 
-  const finishOAuth = useServerFn(completeOAuthSignIn);
-
-  const signInGoogle = async () => {
+  const signInGoogle = () => {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      setLoading(false);
-      return toast.error(result.error.message ?? "Google girişi başarısız");
-    }
-    if (result.redirected) return; // Tarayıcı yönleniyor
-    const localResult = await finishOAuth({ data: { accessToken: result.tokens.access_token } });
-    if (!localResult.ok) {
-      setLoading(false);
-      return toast.error(localResult.error);
-    }
-    await refresh();
-    setLoading(false);
-    navigate({ to: "/hesabim" });
+    // Kendi Google OAuth istemcimiz üzerinden sunucu taraflı akış.
+    window.location.href = "/api/public/auth/google/start";
   };
+
 
   return (
     <div className="mx-auto max-w-md px-4 py-16">
