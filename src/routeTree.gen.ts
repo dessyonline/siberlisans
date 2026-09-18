@@ -155,6 +155,7 @@ import { Route as ApiPublicCyberlabVerifyRouteImport } from './routes/api/public
 import { Route as ApiPublicCyberlabProxyRouteImport } from './routes/api/public/cyberlab/proxy'
 import { Route as ApiPublicV1AuthVerifyRouteImport } from './routes/api/public/v1/auth/verify'
 import { Route as ApiPublicAuthGoogleStartRouteImport } from './routes/api/public/auth/google/start'
+import { Route as ApiPublicAuthGoogleCallbackRouteImport } from './routes/api/public/auth/google/callback'
 
 const UrunlerRoute = UrunlerRouteImport.update({
   id: '/urunler',
@@ -955,6 +956,12 @@ const ApiPublicAuthGoogleStartRoute =
     path: '/api/public/auth/google/start',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAuthGoogleCallbackRoute =
+  ApiPublicAuthGoogleCallbackRouteImport.update({
+    id: '/api/public/auth/google/callback',
+    path: '/api/public/auth/google/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -1100,6 +1107,7 @@ export interface FileRoutesByFullPath {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/api/public/auth/google/callback': typeof ApiPublicAuthGoogleCallbackRoute
   '/api/public/auth/google/start': typeof ApiPublicAuthGoogleStartRoute
   '/api/public/v1/auth/verify': typeof ApiPublicV1AuthVerifyRoute
 }
@@ -1245,6 +1253,7 @@ export interface FileRoutesByTo {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/api/public/auth/google/callback': typeof ApiPublicAuthGoogleCallbackRoute
   '/api/public/auth/google/start': typeof ApiPublicAuthGoogleStartRoute
   '/api/public/v1/auth/verify': typeof ApiPublicV1AuthVerifyRoute
 }
@@ -1394,6 +1403,7 @@ export interface FileRoutesById {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/api/public/auth/google/callback': typeof ApiPublicAuthGoogleCallbackRoute
   '/api/public/auth/google/start': typeof ApiPublicAuthGoogleStartRoute
   '/api/public/v1/auth/verify': typeof ApiPublicV1AuthVerifyRoute
 }
@@ -1543,6 +1553,7 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/api/public/auth/google/callback'
     | '/api/public/auth/google/start'
     | '/api/public/v1/auth/verify'
   fileRoutesByTo: FileRoutesByTo
@@ -1688,6 +1699,7 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/api/public/auth/google/callback'
     | '/api/public/auth/google/start'
     | '/api/public/v1/auth/verify'
   id:
@@ -1836,6 +1848,7 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/api/public/auth/google/callback'
     | '/api/public/auth/google/start'
     | '/api/public/v1/auth/verify'
   fileRoutesById: FileRoutesById
@@ -1908,6 +1921,7 @@ export interface RootRouteChildren {
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  ApiPublicAuthGoogleCallbackRoute: typeof ApiPublicAuthGoogleCallbackRoute
   ApiPublicAuthGoogleStartRoute: typeof ApiPublicAuthGoogleStartRoute
   ApiPublicV1AuthVerifyRoute: typeof ApiPublicV1AuthVerifyRoute
 }
@@ -2936,6 +2950,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAuthGoogleStartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/auth/google/callback': {
+      id: '/api/public/auth/google/callback'
+      path: '/api/public/auth/google/callback'
+      fullPath: '/api/public/auth/google/callback'
+      preLoaderRoute: typeof ApiPublicAuthGoogleCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -3219,6 +3240,7 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  ApiPublicAuthGoogleCallbackRoute: ApiPublicAuthGoogleCallbackRoute,
   ApiPublicAuthGoogleStartRoute: ApiPublicAuthGoogleStartRoute,
   ApiPublicV1AuthVerifyRoute: ApiPublicV1AuthVerifyRoute,
 }
