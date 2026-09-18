@@ -54,3 +54,25 @@ export function num(v: unknown): number | null {
 export function bool(v: unknown): boolean {
   return v === 1 || v === "1" || v === true;
 }
+
+/** INSERT/UPDATE/DELETE için etkilenen satır sayısını döndürür. */
+export async function mysqlExec(sql: string, params: Params = []): Promise<number> {
+  const url = process.env["MYSQL_BRIDGE_URL"];
+  const token = process.env["MYSQL_BRIDGE_TOKEN"];
+  if (!url || !token) throw new Error("MySQL köprü ayarları eksik");
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Bridge-Token": token },
+    body: JSON.stringify({ sql, params }),
+  });
+  const text = await res.text();
+  let json: any;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    throw new Error(`Köprü geçersiz yanıt verdi (${res.status})`);
+  }
+  if (!res.ok || json?.error) throw new Error(json?.error ?? `Köprü hatası (${res.status})`);
+  return Number(json.rowCount ?? 0);
+}
