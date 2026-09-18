@@ -1,5 +1,14 @@
 # Roadmap
 
+## Güvenlik ve yalnızca MySQL (18 Eylül 2026)
+- [ ] Ortam dosyası koruması: .gitignore platform tarafından salt okunur; değişiklik engellendi.
+- [ ] PHP köprüsünü işleme özel yetkilerle sınırlama; Hostinger dağıtım erişimi gerekli.
+- [ ] Şifre/token/oturum değişikliğini atomik yapma ve otomatik test ekleme.
+- [ ] Şifre bağlantılarını e-posta kanalından gönderme; gönderici bağlantısı gerekli.
+- [ ] Gerçek ödeme/lisans teslimi testi; yetkili test hesabı ve ödeme test ortamı gerekli.
+- [ ] Gereksiz herkese açık yedekleri kaldırma; kullanılan eklenti paketini koruma.
+- [ ] Kalan eski veri erişimlerini MySQL'e taşıma; yetki politikalarını koruma.
+
 ## Onaylanan giriş düzeltmesi
 - [ ] Şifre belirleme bağlantısını yalnızca doğrulanmış hesap sahibine ulaştırma (e-posta gönderimi/hesap doğrulama kanalı gerekli).
 - [x] Herkese açık şifre bağlantısı kapatıldı; Telegram teslim hataları artık başarı olarak gösterilmiyor.
