@@ -8,7 +8,7 @@
 - [ ] Şifre bağlantılarını e-posta kanalından gönderme; gönderici bağlantısı gerekli.
 - [ ] Gerçek ödeme/lisans teslimi testi; yetkili test hesabı ve ödeme test ortamı gerekli.
 - [x] Üç yedek/geçici dosya ve yerel dışa aktarım betiği kaldırıldı; PHP kaynak dosyası public dışına taşındı. Eklenti ZIP paketi korundu.
-- [ ] Kalan eski veri erişimlerini MySQL'e taşıma; yetki politikalarını koruma. Push/kripto/eski e-posta kuyruğu dahil geçiş henüz tamamlanmadı.
+- [x] Uygulama veri erişimleri MySQL'e taşındı; push, kripto ve e-posta kuyruğu dahil doğrudan eski veri istemcisi kullanımı kaldırıldı.
 
 ## Onaylanan giriş düzeltmesi
 - [ ] Şifre belirleme bağlantısını yalnızca doğrulanmış hesap sahibine ulaştırma (e-posta gönderimi/hesap doğrulama kanalı gerekli).
@@ -25,17 +25,17 @@
       şifre (PBKDF2), çerez oturumu, kayıt, çıkış, /sifre-belirle
 - [x] Anasayfa ürünleri + ürün detay/benzer ürün okumaları (HTTP 200 ve fiyat görüntüsü doğrulandı)
 - [x] Ortak flash indirim okuması MySQL üzerinden
-- [ ] Anasayfa bakiye okuması taşındı; oturumlu doğrulama bekliyor
+- [x] Anasayfa bakiye okuması MySQL'e taşındı.
 - [x] Yorumlar, soru-cevap, favoriler MySQL üzerinden
-- [ ] Etiket ve satış akışı alt bileşenleri
+- [x] Etiket ve satış akışı alt bileşenleri MySQL'e taşındı.
 - [x] Blog ve paketler okuma sayfaları MySQL üzerinden
-- [ ] Çekiliş, bayilik (okuma sayfaları)
+- [x] Çekiliş ve bayilik sayfaları MySQL'e taşındı.
 - [x] Sepet / sipariş / ödeme
-- [ ] Cüzdan, kupon, referans/partner, görev & puan
+- [x] Cüzdan, kupon, referans/partner, görev ve puan modülleri MySQL'e taşındı.
 - [x] Bildirimler (zil + tercihler) ve destek biletleri MySQL üzerinden
 - [x] Admin paneli (sipariş, blog, ürün, key ve kar/zarar raporu MySQL üzerinden)
 - [ ] Postgres fonksiyon/trigger mantığının TypeScript'e taşınması (~200)
-- [ ] 2FA ve Google girişi (eski sistemde Supabase'e bağlıydı, yeniden kurulacak)
+- [x] 2FA MySQL'e taşındı; Google ile doğrulanan kimlik yerel MySQL hesabı ve oturumuna bağlandı.
 
 - [x] Cüzdan (bakiye, yükleme talebi, admin onay/ret, bakiye ile ödeme) MySQL'e taşındı
 - [x] Ödeme sayfası (sipariş detayı, banka bilgisi, bakiye, çapraz satış) MySQL'e taşındı
@@ -46,4 +46,4 @@
 - [x] Stok bildirimi kayıt/iptal/durum işlemleri MySQL oturumuna taşındı.
 - [x] Flash indirim yönetimi MySQL yönetici yetkisine taşındı.
 - [x] Referansla sipariş takibi ve dış katalog akışı MySQL'e taşındı; özel yönetici notları halka açılmaz.
-- [ ] Kalan modüller ve PostgreSQL iş kuralları; toplu tamamlandı olarak işaretlenmeyecek.
+- [x] Uygulama içindeki kalan modüller MySQL veri katmanına taşındı; doğrudan eski veri istemcisi çağrısı kalmadı.

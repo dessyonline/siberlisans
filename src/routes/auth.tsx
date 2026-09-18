@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router"
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { useServerFn } from "@tanstack/react-start";
-import { signIn as signInFn, signUp as signUpFn } from "@/lib/auth.functions";
+import { completeOAuthSignIn, signIn as signInFn, signUp as signUpFn } from "@/lib/auth.functions";
 import { requestPasswordReset as requestPasswordResetFn } from "@/lib/password-reset.functions";
 
 import { lovable } from "@/integrations/lovable/index";
@@ -161,6 +161,8 @@ function AuthPage() {
     }
   };
 
+  const finishOAuth = useServerFn(completeOAuthSignIn);
+
   const signInGoogle = async () => {
     setLoading(true);
     const result = await lovable.auth.signInWithOAuth("google", {
@@ -171,6 +173,12 @@ function AuthPage() {
       return toast.error(result.error.message ?? "Google girişi başarısız");
     }
     if (result.redirected) return; // Tarayıcı yönleniyor
+    const localResult = await finishOAuth({ data: { accessToken: result.tokens.access_token } });
+    if (!localResult.ok) {
+      setLoading(false);
+      return toast.error(localResult.error);
+    }
+    await refresh();
     setLoading(false);
     navigate({ to: "/hesabim" });
   };
