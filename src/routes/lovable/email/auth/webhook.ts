@@ -2,8 +2,8 @@ import * as React from 'react'
 import { render } from '@react-email/render'
 import { parseEmailWebhookPayload } from '@lovable.dev/email-js'
 import { WebhookError, verifyWebhookRequest } from '@lovable.dev/webhooks-js'
-import { createClient } from '@supabase/supabase-js'
 import { createFileRoute } from '@tanstack/react-router'
+import { enqueueEmail, logEmailAttempt } from '@/lib/email-queue.server'
 import { SignupEmail } from '@/lib/email-templates/signup'
 import { InviteEmail } from '@/lib/email-templates/invite'
 import { MagicLinkEmail } from '@/lib/email-templates/magic-link'
@@ -149,32 +149,19 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
         const html = await render(element)
         const text = await render(element, { plainText: true })
 
-        // Enqueue email for async processing by the dispatcher (process-email-queue).
-        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-        if (!supabaseUrl || !supabaseServiceKey) {
-          console.error('Missing Supabase environment variables')
-          return Response.json(
-            { error: 'Server configuration error' },
-            { status: 500 }
-          )
-        }
-
-        const supabase = createClient(supabaseUrl, supabaseServiceKey)
+        // Enqueue email for async processing by the MySQL-backed dispatcher.
         const messageId = crypto.randomUUID()
 
         // Log pending BEFORE enqueue so we have a record even if enqueue crashes
-        await supabase.from('email_send_log').insert({
-          message_id: messageId,
-          template_name: emailType,
-          recipient_email: payload.data.email,
+        await logEmailAttempt({
+          messageId,
+          templateName: emailType,
+          recipientEmail: payload.data.email,
           status: 'pending',
         })
 
-        const { error: enqueueError } = await supabase.rpc('enqueue_email', {
-          queue_name: 'auth_emails',
-          payload: {
+        try {
+          await enqueueEmail('auth_emails', {
             run_id,
             message_id: messageId,
             to: payload.data.email,
@@ -186,18 +173,16 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
             purpose: 'transactional',
             label: emailType,
             queued_at: new Date().toISOString(),
-          },
-        })
-
-        if (enqueueError) {
-          console.error('Failed to enqueue auth email', { error: enqueueError, run_id, emailType })
-          await supabase.from('email_send_log').insert({
-            message_id: messageId,
-            template_name: emailType,
-            recipient_email: payload.data.email,
-            status: 'failed',
-            error_message: 'Failed to enqueue email',
           })
+        } catch (enqueueError) {
+          console.error('Failed to enqueue auth email', { error: enqueueError, run_id, emailType })
+          await logEmailAttempt({
+            messageId,
+            templateName: emailType,
+            recipientEmail: payload.data.email,
+            status: 'failed',
+            errorMessage: 'Failed to enqueue email',
+          }).catch(() => {})
           return Response.json(
             { error: 'Failed to enqueue email' },
             { status: 500 }
