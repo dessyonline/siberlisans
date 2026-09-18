@@ -8,7 +8,7 @@ import {
   readJsonBody,
   verifyLicense,
 } from "@/lib/license-feature.server";
-import { logEvent } from "@/lib/license-api.server";
+import { logEventMysql } from "@/lib/license-mysql.server";
 
 // POST /api/chat
 // Body: { licenseKey, message, history? }
@@ -58,8 +58,7 @@ export const Route = createFileRoute("/api/chat")({
 
         const verified = await verifyLicense(licenseKey);
         if (!verified.ok) {
-          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          await logEvent(supabaseAdmin as never, {
+          await logEventMysql({
             license_key: licenseKey,
             event: "fail",
             hwid: null,

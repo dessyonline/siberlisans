@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { upsertProduct } from "@/lib/orders.functions";
+import { listAdminProducts } from "@/lib/admin-products.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -24,8 +24,8 @@ type Product = {
   name: string;
   slug: string;
   description: string | null;
-  duration: "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "lifetime";
-  delivery_type: "key" | "account" | "link" | "link_token";
+  duration: "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "lifetime" | string;
+  delivery_type: "key" | "account" | "link" | "link_token" | string;
   price_try: number;
   active: boolean;
   category: string | null;
@@ -34,7 +34,7 @@ type Product = {
   featured: boolean;
   unlimited_stock: boolean;
   sort_order: number;
-  tier: "standard" | "epic";
+  tier: "standard" | "epic" | string;
   image_url: string | null;
 };
 
@@ -44,17 +44,14 @@ function PopulerAdmin() {
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
 
+  const listProductsFn = useServerFn(listAdminProducts);
   const { data: products, isLoading } = useQuery({
     queryKey: ["admin-populer-products"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("active", true)
-        .order("sort_order", { ascending: false })
-        .order("name");
-      if (error) throw error;
-      return (data ?? []) as Product[];
+      const all = await listProductsFn();
+      return (all as unknown as Product[])
+        .filter((p) => p.active)
+        .sort((a, b) => (b.sort_order ?? 0) - (a.sort_order ?? 0) || a.name.localeCompare(b.name, "tr"));
     },
   });
 
@@ -94,8 +91,8 @@ function PopulerAdmin() {
           name: p.name,
           slug: p.slug,
           description: p.description ?? undefined,
-          duration: p.duration,
-          delivery_type: p.delivery_type,
+          duration: p.duration as "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "lifetime",
+          delivery_type: p.delivery_type as "key" | "account" | "link" | "link_token",
           price_try: Number(p.price_try),
           active: p.active,
           category: p.category,
@@ -104,7 +101,7 @@ function PopulerAdmin() {
           featured: overrides.featured ?? p.featured,
           unlimited_stock: p.unlimited_stock,
           sort_order: overrides.sort_order ?? p.sort_order,
-          tier: p.tier,
+          tier: p.tier as "standard" | "epic",
           image_url: p.image_url,
         },
       });
@@ -143,23 +140,23 @@ function PopulerAdmin() {
         upsert({
           data: {
             id: a.id, name: a.name, slug: a.slug,
-            description: a.description ?? undefined, duration: a.duration,
-            delivery_type: a.delivery_type, price_try: Number(a.price_try),
+            description: a.description ?? undefined, duration: a.duration as "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "lifetime",
+            delivery_type: a.delivery_type as "key" | "account" | "link" | "link_token", price_try: Number(a.price_try),
             active: a.active, category: a.category,
             manual_fulfillment: a.manual_fulfillment, stock_hint: a.stock_hint,
             featured: a.featured, unlimited_stock: a.unlimited_stock,
-            sort_order: newA, tier: a.tier, image_url: a.image_url,
+            sort_order: newA, tier: a.tier as "standard" | "epic", image_url: a.image_url,
           },
         }),
         upsert({
           data: {
             id: b.id, name: b.name, slug: b.slug,
-            description: b.description ?? undefined, duration: b.duration,
-            delivery_type: b.delivery_type, price_try: Number(b.price_try),
+            description: b.description ?? undefined, duration: b.duration as "hourly" | "daily" | "weekly" | "monthly" | "yearly" | "lifetime",
+            delivery_type: b.delivery_type as "key" | "account" | "link" | "link_token", price_try: Number(b.price_try),
             active: b.active, category: b.category,
             manual_fulfillment: b.manual_fulfillment, stock_hint: b.stock_hint,
             featured: b.featured, unlimited_stock: b.unlimited_stock,
-            sort_order: newB, tier: b.tier, image_url: b.image_url,
+            sort_order: newB, tier: b.tier as "standard" | "epic", image_url: b.image_url,
           },
         }),
       ]);

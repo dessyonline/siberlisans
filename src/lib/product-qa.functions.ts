@@ -111,3 +111,44 @@ export const deleteProductQuestion = createServerFn({ method: "POST" })
     await mysqlQuery("DELETE FROM product_questions WHERE id=?", [data.id]);
     return { ok: true };
   });
+
+export type AdminQuestionRow = {
+  id: string;
+  product_id: string;
+  user_id: string;
+  question: string;
+  answer: string | null;
+  created_at: string;
+  products: { name: string; slug: string } | null;
+};
+
+const adminListInput = z.object({ tab: z.enum(["pending", "answered"]) });
+
+export const listAllProductQuestions = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .validator((d: unknown) => adminListInput.parse(d))
+  .handler(async ({ data }): Promise<AdminQuestionRow[]> => {
+    const { mysqlQuery } = await import("./mysql.server");
+    const cond = data.tab === "pending" ? "q.answer IS NULL" : "q.answer IS NOT NULL";
+    const rows = await mysqlQuery<{
+      id: string; product_id: string; user_id: string; question: string; answer: string | null;
+      created_at: string; product_name: string | null; product_slug: string | null;
+    }>(
+      `SELECT q.id, q.product_id, q.user_id, q.question, q.answer, q.created_at,
+              p.name product_name, p.slug product_slug
+         FROM product_questions q
+         LEFT JOIN products p ON p.id = q.product_id
+        WHERE ${cond}
+        ORDER BY q.created_at DESC
+        LIMIT 100`,
+    );
+    return rows.map((r) => ({
+      id: r.id,
+      product_id: r.product_id,
+      user_id: r.user_id,
+      question: r.question,
+      answer: r.answer,
+      created_at: r.created_at,
+      products: r.product_name ? { name: r.product_name, slug: r.product_slug ?? "" } : null,
+    }));
+  });

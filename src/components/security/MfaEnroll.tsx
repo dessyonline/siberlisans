@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { mfaEnrollStart, mfaEnrollVerify } from "@/lib/mfa.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ShieldCheck, Copy, QrCode, KeyRound } from "lucide-react";
 
 type EnrollState = {
-  factorId: string;
   qrSvg: string;
   secret: string;
   uri: string;
 };
 
 export function MfaEnroll({ onDone }: { onDone?: () => void }) {
+  const enrollStart = useServerFn(mfaEnrollStart);
+  const enrollVerify = useServerFn(mfaEnrollVerify);
   const [state, setState] = useState<EnrollState | null>(null);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,24 +23,14 @@ export function MfaEnroll({ onDone }: { onDone?: () => void }) {
   useEffect(() => {
     (async () => {
       setStarting(true);
-      // Aynı isimli 'unverified' factor kalmışsın temizle
-      const { data: list } = await supabase.auth.mfa.listFactors();
-      const stale = (list?.all ?? []).filter((f) => f.status === "unverified" && f.factor_type === "totp");
-      for (const s of stale) {
-        await supabase.auth.mfa.unenroll({ factorId: s.id });
+      try {
+        const data = await enrollStart();
+        setState({ qrSvg: data.qrSvg, secret: data.secret, uri: data.uri });
+      } catch (e) {
+        toast.error(`[!] ${(e as Error).message ?? "enroll hatası"}`);
+      } finally {
+        setStarting(false);
       }
-      const { data, error } = await supabase.auth.mfa.enroll({
-        factorType: "totp",
-        friendlyName: `siberlisans-${Date.now()}`,
-      });
-      setStarting(false);
-      if (error || !data) return toast.error(`[!] ${error?.message ?? "enroll hatası"}`);
-      setState({
-        factorId: data.id,
-        qrSvg: data.totp.qr_code,
-        secret: data.totp.secret,
-        uri: data.totp.uri,
-      });
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -48,20 +40,15 @@ export function MfaEnroll({ onDone }: { onDone?: () => void }) {
     const cleaned = code.replace(/\s/g, "");
     if (cleaned.length !== 6) return toast.error("[!] 6 haneli kod gir");
     setLoading(true);
-    const { data: chal, error: chalErr } = await supabase.auth.mfa.challenge({ factorId: state.factorId });
-    if (chalErr || !chal) {
+    try {
+      await enrollVerify({ data: { code: cleaned } });
+      toast.success("[✓] 2FA aktifleştirildi");
+      onDone?.();
+    } catch (e) {
+      toast.error(`[!] ${(e as Error).message}`);
+    } finally {
       setLoading(false);
-      return toast.error(`[!] challenge: ${chalErr?.message ?? "hata"}`);
     }
-    const { error } = await supabase.auth.mfa.verify({
-      factorId: state.factorId,
-      challengeId: chal.id,
-      code: cleaned,
-    });
-    setLoading(false);
-    if (error) return toast.error(`[!] ${error.message}`);
-    toast.success("[✓] 2FA aktifleştirildi");
-    onDone?.();
   };
 
   const copy = (text: string, label: string) => {
@@ -96,7 +83,7 @@ export function MfaEnroll({ onDone }: { onDone?: () => void }) {
         </div>
         <div
           className="mt-3 mx-auto w-fit rounded bg-white p-3"
-          // Supabase güvenli SVG döndürür (kendi ürettiği)
+          // Sunucuda kendi ürettiğimiz güvenli SVG
           dangerouslySetInnerHTML={{ __html: state.qrSvg }}
         />
         <div className="mt-3 flex items-center gap-2">

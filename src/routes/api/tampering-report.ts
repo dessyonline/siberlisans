@@ -3,8 +3,13 @@ import {
   CORS,
   clientIp,
   json,
-  logEvent,
 } from "@/lib/license-api.server";
+import { logEventMysql } from "@/lib/license-mysql-log.server";
+import { mysqlQuery } from "@/lib/mysql.server";
+
+function ts(d: Date = new Date()) {
+  return d.toISOString().slice(0, 19).replace("T", " ");
+}
 
 export const Route = createFileRoute("/api/tampering-report")({
   server: {
@@ -32,12 +37,11 @@ export const Route = createFileRoute("/api/tampering-report")({
           return json({ ok: false, error: "license_key gerekli." }, 400);
         }
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const ip = clientIp(request);
         const ua = request.headers.get("user-agent") ?? "";
 
         // Log the report
-        await logEvent(supabaseAdmin as never, {
+        await logEventMysql({
           license_key,
           event: "tampering",
           hwid: hwid || null,
@@ -57,20 +61,12 @@ export const Route = createFileRoute("/api/tampering-report")({
 
         if (autoRevoke) {
           try {
-            await (
-              supabaseAdmin as unknown as {
-                from: (t: string) => {
-                  update: (r: unknown) => {
-                    eq: (c: string, v: unknown) => Promise<unknown>;
-                  };
-                };
-              }
-            )
-              .from("license_keys")
-              .update({ revoked: true, revoked_at: new Date().toISOString() })
-              .eq("key_value", license_key);
+            await mysqlQuery(
+              "UPDATE license_keys SET revoked=1, revoked_at=? WHERE UPPER(key_value)=?",
+              [ts(), license_key],
+            );
 
-            await logEvent(supabaseAdmin as never, {
+            await logEventMysql({
               license_key,
               event: "revoke",
               hwid: hwid || null,

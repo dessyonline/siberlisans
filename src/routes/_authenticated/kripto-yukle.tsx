@@ -166,7 +166,7 @@ function CryptoTopupPage() {
         {deposits && deposits.length > 0 ? (
           <div className="space-y-2">
             {deposits.map((d) => {
-              const s = STATUS[d.status] ?? STATUS.pending;
+              const s = STATUS[d.status ?? ""] ?? STATUS.pending;
               const Icon = s.icon;
               return (
                 <div key={d.id} className="glass-card rounded-lg p-3 flex items-center justify-between gap-3">
@@ -183,7 +183,7 @@ function CryptoTopupPage() {
                       rel="noreferrer"
                       className="inline-flex items-center gap-1 font-mono text-[11px] text-muted-foreground hover:text-primary truncate"
                     >
-                      {d.tx_hash.slice(0, 12)}…{d.tx_hash.slice(-8)}
+                      {(d.tx_hash ?? "").slice(0, 12)}…{(d.tx_hash ?? "").slice(-8)}
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   </div>

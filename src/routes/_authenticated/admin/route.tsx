@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, Outlet, redirect, Link, useLocation } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { getMe } from "@/lib/auth.functions";
+import { getMfaStatus } from "@/lib/mfa.functions";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { AdminCommandPalette } from "@/components/admin/CommandPalette";
@@ -38,12 +39,11 @@ import {
 export const Route = createFileRoute("/_authenticated/admin")({
   ssr: false,
   beforeLoad: async () => {
-    const { data: userData } = await supabase.auth.getUser();
-    if (!userData.user) throw redirect({ to: "/auth" });
-    const { data } = await supabase.rpc("has_role", { _user_id: userData.user.id, _role: "admin" });
-    if (!data) throw redirect({ to: "/hesabim" });
-    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (aalData?.currentLevel !== "aal2") {
+    const user = await getMe().catch(() => null);
+    if (!user) throw redirect({ to: "/auth" });
+    if (!user.roles.includes("admin")) throw redirect({ to: "/hesabim" });
+    const status = await getMfaStatus().catch(() => null);
+    if (status?.aal !== "aal2") {
       throw redirect({ to: "/guvenlik" });
     }
   },

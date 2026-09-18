@@ -1,8 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
 import { recentUserActivity } from "@/lib/admin-users.functions";
+import {
+  getAdminDashboardStats,
+  getCostRevenueChart14d,
+  getProfitabilityPanel,
+} from "@/lib/admin-dashboard.functions";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, LineChart, Line } from "recharts";
 import {
   TrendingUp,
@@ -25,135 +29,13 @@ export const Route = createFileRoute("/_authenticated/admin/")({
 });
 
 function Dashboard() {
+  const dashboardFn = useServerFn(getAdminDashboardStats);
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
-    queryFn: async () => {
-      // Adminlerin test siparişlerini ciro/sipariş sayımından hariç tut
-      const { data: adminRoleRows } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "admin");
-      const adminIds = (adminRoleRows ?? []).map((r) => r.user_id as string);
-      const excludeFilter = adminIds.length > 0 ? `(${adminIds.join(",")})` : null;
-
-      const buildOrders = () => {
-        const q = supabase.from("orders").select("id, price_try, status, created_at, user_id");
-        if (excludeFilter) q.not("user_id", "in", excludeFilter);
-        return q;
-      };
-      const buildPending = () => {
-        const q = supabase
-          .from("orders")
-          .select("id", { count: "exact", head: true })
-          .in("status", ["pending", "reviewing"]);
-        if (excludeFilter) q.not("user_id", "in", excludeFilter);
-        return q;
-      };
-      const buildRecent = () => {
-        const q = supabase
-          .from("orders")
-          .select("id, status, price_try, reference_code, created_at, user_id, product:products(name)")
-          .order("created_at", { ascending: false })
-          .limit(6);
-        if (excludeFilter) q.not("user_id", "in", excludeFilter);
-        return q;
-      };
-      const buildTop = () => {
-        const q = supabase
-          .from("orders")
-          .select("price_try, user_id, product:products(name)")
-          .eq("status", "approved");
-        if (excludeFilter) q.not("user_id", "in", excludeFilter);
-        return q;
-      };
-
-      const [ordersRes, pendingRes, keysRes, lowStockRes, messagesRes, recentRes, topProductsRes, financialRes] =
-        await Promise.all([
-          buildOrders(),
-          buildPending(),
-          supabase
-            .from("license_keys")
-            .select("id", { count: "exact", head: true })
-            .eq("status", "available"),
-          supabase
-            .from("products")
-            .select("id, name, slug, stock_hint, unlimited_stock, manual_fulfillment, low_stock_threshold, license_keys(id, status)")
-            .eq("active", true),
-          supabase
-            .from("orders")
-            .select("id, reference_code, created_at, user_note, product:products(name)")
-            .not("user_note", "is", null)
-            .neq("status", "rejected")
-            .order("created_at", { ascending: false })
-            .limit(5),
-          buildRecent(),
-          buildTop(),
-          supabase.rpc("admin_dashboard_financials" as never, { _days: 14 } as never),
-        ]);
-
-      const all = ordersRes.data ?? [];
-      const approved = all.filter((o) => o.status === "approved");
-      if (financialRes.error) throw financialRes.error;
-      const financial = (financialRes.data as unknown as Array<{
-        total_revenue: number;
-        today_revenue: number;
-        total_cost: number;
-        total_profit: number;
-        discount_total: number;
-        approved_orders: number;
-        chart: Array<{ date: string; revenue: number; cost: number; profit: number }>;
-      }> | null)?.[0];
-
-      const lowStock = (lowStockRes.data ?? [])
-        .map((p) => {
-          const avail = (p.license_keys ?? []).filter(
-            (k: { status: string }) => k.status === "available"
-          ).length;
-          return {
-            id: p.id,
-            name: p.name,
-            slug: p.slug,
-            avail,
-            unlimited: !!p.unlimited_stock,
-            manual: !!p.manual_fulfillment,
-            hint: p.stock_hint,
-            threshold: (p as { low_stock_threshold?: number }).low_stock_threshold ?? 5,
-          };
-        })
-        .filter((p) => !p.unlimited && !p.manual && p.avail < p.threshold)
-        .sort((a, b) => a.avail - b.avail);
-
-      const productAgg = new Map<string, { name: string; revenue: number; count: number }>();
-      for (const row of (topProductsRes.data ?? []) as { price_try: number; product: { name: string } | null }[]) {
-        const name = row.product?.name ?? "—";
-        const cur = productAgg.get(name) ?? { name, revenue: 0, count: 0 };
-        cur.revenue += Number(row.price_try);
-        cur.count += 1;
-        productAgg.set(name, cur);
-      }
-      const topProducts = Array.from(productAgg.values())
-        .sort((a, b) => b.revenue - a.revenue)
-        .slice(0, 6)
-        .map((p) => ({ ...p, name: p.name.length > 18 ? p.name.slice(0, 17) + "…" : p.name }));
-
-      return {
-        totalRev: Number(financial?.total_revenue ?? 0),
-        todayRev: Number(financial?.today_revenue ?? 0),
-        totalCost: Number(financial?.total_cost ?? 0),
-        totalProfit: Number(financial?.total_profit ?? 0),
-        discountTotal: Number(financial?.discount_total ?? 0),
-        totalOrders: Number(financial?.approved_orders ?? approved.length),
-        pendingCount: pendingRes.count ?? 0,
-        availableKeys: keysRes.count ?? 0,
-        chart: financial?.chart ?? [],
-        lowStock,
-        messages: messagesRes.data ?? [],
-        recent: recentRes.data ?? [],
-        topProducts,
-      };
-    },
+    queryFn: () => dashboardFn(),
     refetchInterval: 15000,
   });
+
 
   return (
     <div className="space-y-8">
@@ -425,62 +307,13 @@ function Dashboard() {
 }
 
 function CostRevenueChart() {
+  const costRevenueFn = useServerFn(getCostRevenueChart14d);
   const { data } = useQuery({
     queryKey: ["admin-cost-revenue-14d"],
-    queryFn: async () => {
-      const since = new Date();
-      since.setDate(since.getDate() - 13);
-      since.setHours(0, 0, 0, 0);
-      const { data: rows, error } = await supabase
-        .from("orders")
-        .select(
-          "created_at, price_try, product:products(cost_try), items:order_items(quantity, product:products(cost_try))",
-        )
-        .eq("status", "approved")
-        .gte("created_at", since.toISOString());
-      if (error) throw error;
-
-      const days: Record<string, { date: string; revenue: number; cost: number; profit: number }> = {};
-      for (let i = 13; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const k = d.toISOString().slice(0, 10);
-        days[k] = { date: k.slice(5), revenue: 0, cost: 0, profit: 0 };
-      }
-      type Row = {
-        created_at: string;
-        price_try: number;
-        product: { cost_try: number | null } | null;
-        items: { quantity: number; product: { cost_try: number | null } | null }[] | null;
-      };
-      let totalRevenue = 0, totalCost = 0;
-      for (const r of (rows ?? []) as Row[]) {
-        const k = new Date(r.created_at).toISOString().slice(0, 10);
-        if (!(k in days)) continue;
-        const revenue = Number(r.price_try) || 0;
-        let cost = 0;
-        if (r.items && r.items.length > 0) {
-          for (const it of r.items) {
-            cost += (Number(it.product?.cost_try) || 0) * (Number(it.quantity) || 0);
-          }
-        } else if (r.product) {
-          cost += Number(r.product.cost_try) || 0;
-        }
-        days[k].revenue += revenue;
-        days[k].cost += cost;
-        days[k].profit += revenue - cost;
-        totalRevenue += revenue;
-        totalCost += cost;
-      }
-      return {
-        chart: Object.values(days),
-        totalRevenue,
-        totalCost,
-        totalProfit: totalRevenue - totalCost,
-      };
-    },
+    queryFn: () => costRevenueFn(),
     refetchInterval: 30000,
   });
+
 
   const totalRevenue = data?.totalRevenue ?? 0;
   const totalCost = data?.totalCost ?? 0;
@@ -627,29 +460,13 @@ function UserActivityPanel() {
 }
 
 function ProfitabilityPanel() {
+  const profitabilityFn = useServerFn(getProfitabilityPanel);
   const { data } = useQuery({
     queryKey: ["admin-profitability"],
-    queryFn: async () => {
-      const [sumRes, profRes] = await Promise.all([
-        supabase.rpc("admin_dashboard_summary" as never),
-        supabase.rpc("admin_product_profitability" as never, { _days: 30 } as never),
-      ]);
-      const s = Array.isArray(sumRes.data) ? sumRes.data[0] : sumRes.data;
-      return {
-        summary: s as {
-          today_revenue: number; today_orders: number;
-          week_revenue: number; week_orders: number;
-          month_revenue: number; month_orders: number;
-          avg_basket: number; users_count: number;
-        } | null,
-        products: (profRes.data ?? []) as {
-          product_id: string; name: string; sold: number;
-          revenue: number; cost: number; profit: number;
-        }[],
-      };
-    },
+    queryFn: () => profitabilityFn(),
     refetchInterval: 30000,
   });
+
 
   const s = data?.summary;
   const products = (data?.products ?? []).slice(0, 8);

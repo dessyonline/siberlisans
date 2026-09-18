@@ -18,11 +18,10 @@ export const Route = createFileRoute("/api/public/hooks/sync-uniquelisans")({
         }
 
         try {
-          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { reconcileAllPendingUniquelisans } = await import(
             "@/lib/uniquelisans-sync.server"
           );
-          const res = await reconcileAllPendingUniquelisans(supabaseAdmin, 100);
+          const res = await reconcileAllPendingUniquelisans(100);
           const delivered = res.outcomes.filter((o) => o.result === "delivered").length;
           const pending = res.outcomes.filter((o) => o.result === "still_pending").length;
           const errors = res.outcomes.filter((o) => o.result === "error").length;

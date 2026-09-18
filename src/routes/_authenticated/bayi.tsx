@@ -1,7 +1,26 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  getDealerStats,
+  getDealerPriceList,
+  dealerPurchaseProduct,
+  getDealerOrders,
+  getDealerCustomers,
+  listDealerApiKeys,
+  issueDealerApiKey,
+  revokeDealerApiKey,
+  listDealerWebhooks,
+  addDealerWebhook,
+  removeDealerWebhook,
+  type DealerStatsResult,
+  type DealerPriceListItem,
+  type DealerOrderRow as DealerOrderRowType,
+  type DealerCustomerRow,
+  type DealerApiKeyRow,
+  type DealerWebhookRow,
+} from "@/lib/dealer.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -45,23 +64,7 @@ export const Route = createFileRoute("/_authenticated/bayi")({
   component: DealerPanel,
 });
 
-type Stats = {
-  code: string;
-  company_name: string | null;
-  active: boolean;
-  tier_slug: string;
-  tier_name: string;
-  commission_percent: number;
-  discount_percent: number;
-  total_volume_try: number;
-  total_commission_try: number;
-  paid_commission_try: number;
-  pending_commission_try: number;
-  customer_count: number;
-  order_count: number;
-  next_tier: { name: string; min_volume_try: number; commission_percent: number; discount_percent: number } | null;
-  monthly: { month: string; volume: number; commission: number; orders: number }[];
-};
+type Stats = NonNullable<DealerStatsResult>;
 
 const try_ = (n: number | string | null | undefined) => `₺${Number(n ?? 0).toLocaleString("tr-TR")}`;
 
@@ -69,13 +72,10 @@ function DealerPanel() {
   const qc = useQueryClient();
   const [tab, setTab] = useState<"ozet" | "fiyat" | "siparis" | "musteri" | "api">("ozet");
 
+  const statsFn = useServerFn(getDealerStats);
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dealer-stats"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("dealer_stats");
-      if (error) throw error;
-      return data as unknown as Stats | null;
-    },
+    queryFn: () => statsFn(),
   });
 
   if (isLoading) {
@@ -310,13 +310,10 @@ function PriceList({ onOrdered }: { onOrdered: () => void }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
 
-  const { data, isLoading } = useQuery({
+  const priceListFn = useServerFn(getDealerPriceList);
+  const { data, isLoading } = useQuery<DealerPriceListItem[]>({
     queryKey: ["dealer-price-list"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("dealer_price_list");
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () => priceListFn(),
   });
 
   const rows = useMemo(
@@ -334,17 +331,10 @@ function PriceList({ onOrdered }: { onOrdered: () => void }) {
   );
   const cartQty = selected.reduce((s, p) => s + Math.max(1, Math.min(50, qty[p.id] || 1)), 0);
 
+  const purchaseFn = useServerFn(dealerPurchaseProduct);
   const purchase = async (productId: string) => {
     const n = Math.max(1, Math.min(50, qty[productId] || 1));
-    const { data: created, error } = await supabase.rpc("dealer_create_order", {
-      _product_id: productId,
-      _quantity: n,
-    });
-    if (error || !created?.[0]) throw new Error(error?.message ?? "Sipariş oluşturulamadı");
-    const order = created[0];
-    const { error: payErr } = await supabase.rpc("pay_order_with_wallet", { _order_id: order.order_id });
-    if (payErr) throw new Error(payErr.message);
-    return order;
+    return purchaseFn({ data: { productId, quantity: n } });
   };
 
   const buy = async (productId: string, name: string) => {
@@ -518,34 +508,15 @@ function PriceList({ onOrdered }: { onOrdered: () => void }) {
   );
 }
 
-type DealerOrderRow = {
-  id: string;
-  reference_code: string;
-  status: string;
-  price_try: number;
-  item_count: number;
-  created_at: string;
-  product: { name: string } | null;
-  items: { quantity: number; product_name_snapshot: string }[];
-  keys: { license_key: { key_value: string; activation_token: string | null } | null }[];
-};
+type DealerOrderRow = DealerOrderRowType;
 
 function DealerOrders() {
   const [q, setQ] = useState("");
 
-  const { data, isLoading } = useQuery({
+  const ordersFn = useServerFn(getDealerOrders);
+  const { data, isLoading } = useQuery<DealerOrderRow[]>({
     queryKey: ["dealer-orders"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select(
-          "id, reference_code, status, price_try, item_count, created_at, product:products(name), items:order_items(quantity, product_name_snapshot), keys:order_keys(license_key:license_keys(key_value, activation_token))",
-        )
-        .order("created_at", { ascending: false })
-        .limit(200);
-      if (error) throw error;
-      return (data ?? []) as unknown as DealerOrderRow[];
-    },
+    queryFn: () => ordersFn(),
   });
 
   const rows = useMemo(() => {
@@ -554,19 +525,18 @@ function DealerOrders() {
     return (data ?? []).filter(
       (o) =>
         o.reference_code.toLowerCase().includes(term) ||
-        (o.product?.name ?? "").toLowerCase().includes(term) ||
+        (o.product_name ?? "").toLowerCase().includes(term) ||
         o.items.some((i) => i.product_name_snapshot.toLowerCase().includes(term)),
     );
   }, [data, q]);
 
-  const allKeys = (o: DealerOrderRow) =>
-    o.keys.map((k) => k.license_key?.key_value).filter(Boolean) as string[];
+  const allKeys = (o: DealerOrderRow) => o.keys;
 
   const exportCsv = () => {
     const head = "referans;tarih;durum;tutar;urun;anahtarlar\n";
     const body = rows
       .map((o) => {
-        const name = o.product?.name ?? o.items.map((i) => `${i.quantity}x ${i.product_name_snapshot}`).join(" | ");
+        const name = o.product_name ?? o.items.map((i) => `${i.quantity}x ${i.product_name_snapshot}`).join(" | ");
         return `${o.reference_code};${new Date(o.created_at).toLocaleString("tr-TR")};${o.status};${Number(
           o.price_try,
         )};"${name.replace(/"/g, "'")}";"${allKeys(o).join(" | ")}"`;
@@ -612,7 +582,7 @@ function DealerOrders() {
                   <Receipt className="h-4 w-4" /> {o.reference_code}
                 </div>
                 <div className="mt-1 text-sm">
-                  {o.product?.name ??
+                  {o.product_name ??
                     o.items.map((i) => `${i.quantity}x ${i.product_name_snapshot}`).join(", ") ??
                     "—"}
                 </div>
@@ -677,13 +647,10 @@ function DealerOrders() {
 
 
 function Customers() {
-  const { data, isLoading } = useQuery({
+  const customersFn = useServerFn(getDealerCustomers);
+  const { data, isLoading } = useQuery<DealerCustomerRow[]>({
     queryKey: ["dealer-customers"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("dealer_customers");
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () => customersFn(),
   });
 
   if (isLoading) return <p className="font-mono text-sm text-muted-foreground">yükleniyor…</p>;
@@ -727,37 +694,40 @@ function ApiAccess() {
   const [fresh, setFresh] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const { data: keys } = useQuery({
+  const listKeysFn = useServerFn(listDealerApiKeys);
+  const issueKeyFn = useServerFn(issueDealerApiKey);
+  const revokeKeyFn = useServerFn(revokeDealerApiKey);
+
+  const { data: keys } = useQuery<DealerApiKeyRow[]>({
     queryKey: ["dealer-api-keys"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("dealer_api_keys")
-        .select("id, label, key_prefix, revoked, call_count, last_used_at, created_at")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () => listKeysFn(),
   });
 
   const base = typeof window !== "undefined" ? window.location.origin : "https://siberlisans.com";
 
   const issue = async () => {
     setBusy(true);
-    const { data, error } = await supabase.rpc("dealer_issue_api_key", { _label: label || "API anahtarı" });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    const row = Array.isArray(data) ? data[0] : data;
-    setFresh(row?.api_key ?? null);
-    setLabel("");
-    qc.invalidateQueries({ queryKey: ["dealer-api-keys"] });
-    toast.success("Anahtar oluşturuldu — sadece bir kez gösterilir!");
+    try {
+      const row = await issueKeyFn({ data: { label: label || "API anahtarı" } });
+      setFresh(row.api_key);
+      setLabel("");
+      qc.invalidateQueries({ queryKey: ["dealer-api-keys"] });
+      toast.success("Anahtar oluşturuldu — sadece bir kez gösterilir!");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const revoke = async (id: string) => {
-    const { error } = await supabase.rpc("dealer_revoke_api_key", { _id: id });
-    if (error) return toast.error(error.message);
-    qc.invalidateQueries({ queryKey: ["dealer-api-keys"] });
-    toast.success("Anahtar iptal edildi");
+    try {
+      await revokeKeyFn({ data: { id } });
+      qc.invalidateQueries({ queryKey: ["dealer-api-keys"] });
+      toast.success("Anahtar iptal edildi");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   };
 
   return (
@@ -920,39 +890,39 @@ function Webhooks() {
   const [url, setUrl] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const { data: hooks } = useQuery({
+  const listHooksFn = useServerFn(listDealerWebhooks);
+  const addHookFn = useServerFn(addDealerWebhook);
+  const removeHookFn = useServerFn(removeDealerWebhook);
+
+  const { data: hooks } = useQuery<DealerWebhookRow[]>({
     queryKey: ["dealer-webhooks"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("dealer_webhooks")
-        .select("id, url, secret, active, last_status, last_sent_at, fail_count, created_at")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () => listHooksFn(),
   });
 
   const add = async () => {
     if (!/^https:\/\/.+/i.test(url)) return toast.error("https:// ile başlayan bir adres gir");
     if ((hooks ?? []).length >= 3) return toast.error("En fazla 3 webhook ekleyebilirsin");
     setBusy(true);
-    const { error } = await supabase.from("dealer_webhooks").insert({
-      url: url.trim(),
-      user_id: (await supabase.auth.getUser()).data.user?.id as string,
-      events: ["product.created", "product.price_changed", "product.stock_changed"],
-    });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    setUrl("");
-    qc.invalidateQueries({ queryKey: ["dealer-webhooks"] });
-    toast.success("Webhook eklendi");
+    try {
+      await addHookFn({ data: { url: url.trim() } });
+      setUrl("");
+      qc.invalidateQueries({ queryKey: ["dealer-webhooks"] });
+      toast.success("Webhook eklendi");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
   };
 
   const remove = async (id: string) => {
-    const { error } = await supabase.from("dealer_webhooks").delete().eq("id", id);
-    if (error) return toast.error(error.message);
-    qc.invalidateQueries({ queryKey: ["dealer-webhooks"] });
-    toast.success("Silindi");
+    try {
+      await removeHookFn({ data: { id } });
+      qc.invalidateQueries({ queryKey: ["dealer-webhooks"] });
+      toast.success("Silindi");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   };
 
   return (

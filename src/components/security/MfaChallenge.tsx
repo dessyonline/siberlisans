@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { mfaVerifyCode, getMfaStatus } from "@/lib/mfa.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -9,12 +10,11 @@ import { trustDevice, TRUSTED_DEVICE_TTL_DAYS } from "@/lib/trusted-device";
 
 /**
  * MfaChallenge — hesabında totp factor olan kullanıcı için 6 haneli kod doğrulaması.
- * onSuccess çağrıldıktan sonra `supabase.auth.getUser()` aal2 döner.
+ * onSuccess çağrıldıktan sonra bu oturum aal2 olur.
  * userId verilirse "bu cihazı hatırla" seçeneği gösterilir; işaretlenirse
  * bu tarayıcıda 30 gün boyunca step-up 2FA modalları atlanır.
  */
 export function MfaChallenge({
-  factorId,
   userId,
   onSuccess,
   onCancel,
@@ -28,49 +28,28 @@ export function MfaChallenge({
   title?: string;
   showRememberDevice?: boolean;
 }) {
-  const [id, setId] = useState<string | null>(factorId ?? null);
+  const verifyCode = useServerFn(mfaVerifyCode);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [remember, setRemember] = useState(false);
 
-  useEffect(() => {
-    if (id) return;
-    (async () => {
-      const { data } = await supabase.auth.mfa.listFactors();
-      const totp = (data?.totp ?? []).find((f) => f.status === "verified");
-      if (totp) setId(totp.id);
-    })();
-  }, [id]);
-
   const submit = async () => {
-    if (!id) return toast.error("[!] doğrulanmış factor bulunamadı");
     const cleaned = code.replace(/\s/g, "");
     if (cleaned.length !== 6) return toast.error("[!] 6 haneli kod gir");
     setLoading(true);
-    const { data: chal, error: chalErr } = await supabase.auth.mfa.challenge({ factorId: id });
-    if (chalErr || !chal) {
+    try {
+      await verifyCode({ data: { code: cleaned } });
+    } catch (e) {
       setLoading(false);
-      return toast.error(`[!] ${chalErr?.message ?? "hata"}`);
-    }
-    const { error } = await supabase.auth.mfa.verify({
-      factorId: id,
-      challengeId: chal.id,
-      code: cleaned,
-    });
-    setLoading(false);
-    if (error) {
       setCode("");
-      return toast.error(`[!] ${error.message}`);
+      return toast.error(`[!] ${(e as Error).message}`);
     }
+    setLoading(false);
+
     // Kullanıcı bu cihazı hatırlamamızı istediyse kaydet
-    let effectiveUserId = userId ?? null;
-    if (remember && !effectiveUserId) {
-      const { data: u } = await supabase.auth.getUser();
-      effectiveUserId = u.user?.id ?? null;
-    }
-    if (remember && effectiveUserId) {
+    if (remember && userId) {
       const { trustDeviceRemote } = await import("@/lib/trusted-device");
-      await trustDeviceRemote(effectiveUserId);
+      await trustDeviceRemote(userId);
       toast.success(`[✓] bu cihaz ${TRUSTED_DEVICE_TTL_DAYS} gün hatırlanacak (en fazla 2 cihaz)`);
     }
     onSuccess();
@@ -123,15 +102,22 @@ export function MfaChallenge({
   );
 }
 
-
 /** Kullanıcının mevcut AAL seviyesini oku. aal2 => doğrulanmış 2FA oturumu. */
 export async function getCurrentAal(): Promise<"aal1" | "aal2" | null> {
-  const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-  return (data?.currentLevel as "aal1" | "aal2" | null) ?? null;
+  try {
+    const status = await getMfaStatus();
+    return status.aal;
+  } catch {
+    return null;
+  }
 }
 
 /** Kullanıcının doğrulanmış totp factor'ı var mı? */
 export async function hasVerifiedTotp(): Promise<boolean> {
-  const { data } = await supabase.auth.mfa.listFactors();
-  return (data?.totp ?? []).some((f) => f.status === "verified");
+  try {
+    const status = await getMfaStatus();
+    return status.enrolled;
+  } catch {
+    return false;
+  }
 }

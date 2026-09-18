@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { useAuth } from "@/lib/auth-context";
 import { listAiPlans, purchaseAiSubscription, getMyAiSubscription } from "@/lib/ai-subscriptions.functions";
+import { getMyWallet } from "@/lib/wallet-read.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Sparkles, Check, Zap, Crown, Rocket, Wallet, Info } from "lucide-react";
@@ -37,29 +39,29 @@ function Page() {
   const [balance, setBalance] = useState<number | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const nav = useNavigate();
+  const { user } = useAuth();
+  const fetchWallet = useServerFn(getMyWallet);
 
   useEffect(() => {
     (async () => {
       const list = (await listAiPlans()) as unknown as Plan[];
       setPlans(list);
-      const { data: user } = await supabase.auth.getUser();
-      if (user.user) {
+      if (user) {
         const [sub, w] = await Promise.all([
           getMyAiSubscription().catch(() => null),
-          supabase.from("wallets").select("balance_try").eq("user_id", user.user.id).maybeSingle(),
+          fetchWallet({ data: undefined as never }).catch(() => null),
         ]);
         setCurrent(sub as typeof current);
-        setBalance(Number(w.data?.balance_try ?? 0));
+        setBalance(w ? w.balance : 0);
       }
     })();
-  }, []);
+  }, [user]);
 
   const buy = async (slug: "starter" | "pro" | "studio") => {
     const plan = plans.find((p) => p.slug === slug);
     if (!plan) return;
     const price = billing === "yearly" ? plan.yearly_price_try ?? plan.price_try * 12 : plan.price_try;
-    const { data: user } = await supabase.auth.getUser();
-    if (!user.user) {
+    if (!user) {
       toast.error("Önce giriş yapmalısın");
       nav({ to: "/auth" });
       return;

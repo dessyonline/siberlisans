@@ -1,5 +1,68 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createHmac, timingSafeEqual } from "crypto";
+import { mysqlQuery, mysqlOne, num } from "@/lib/mysql.server";
+import { assignKeyToOrder } from "@/lib/license-mysql.server";
+
+function ts(d: Date = new Date()): string {
+  return d.toISOString().slice(0, 19).replace("T", " ");
+}
+function uid(): string {
+  return crypto.randomUUID();
+}
+
+type ApproveResult = { order_id: string | null; matched: boolean; already: boolean };
+
+/** Ports `approve_shopier_order` (Postgres RPC, incl. tax-optimization invoice split) to MySQL. */
+async function approveShopierOrder(shopierOrderId: string, buyerEmail: string, amount: number): Promise<ApproveResult> {
+  const existing = await mysqlOne<{ id: string }>("SELECT id FROM orders WHERE shopier_order_id=? LIMIT 1", [shopierOrderId]);
+  if (existing) {
+    return { order_id: existing.id, matched: true, already: true };
+  }
+
+  const profile = await mysqlOne<{ id: string }>("SELECT id FROM profiles WHERE LOWER(email)=LOWER(?) LIMIT 1", [buyerEmail]);
+  if (!profile) {
+    return { order_id: null, matched: false, already: false };
+  }
+
+  const candidates = await mysqlQuery<{ id: string; price_try: string | number }>(
+    `SELECT o.id,
+            GREATEST(0, o.price_try - COALESCE((SELECT SUM(discount_try) FROM order_discounts WHERE order_id = o.id), 0)) AS price_try
+       FROM orders o
+      WHERE o.user_id = ?
+        AND o.status IN ('pending','reviewing')
+        AND o.created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)
+      ORDER BY o.created_at DESC`,
+    [profile.id],
+  );
+
+  for (const c of candidates) {
+    const finalPrice = num(c.price_try) ?? 0;
+    if (Math.abs(finalPrice - amount) < 0.05) {
+      await mysqlQuery(
+        "UPDATE orders SET status='approved', approved_at=?, paid_with='shopier', shopier_order_id=?, updated_at=? WHERE id=?",
+        [ts(), shopierOrderId, ts(), c.id],
+      );
+
+      const subtotal = finalPrice / 1.2;
+      const vat = finalPrice - subtotal;
+      const invoiceNumber =
+        "SP-" + new Date().toISOString().slice(0, 7).replace("-", "") + "-" + String(Math.floor(Math.random() * 999999)).padStart(6, "0");
+      try {
+        await mysqlQuery(
+          "INSERT INTO invoices (id,order_id,total_try,vat_amount_try,subtotal_try,vat_rate,invoice_number,created_at) VALUES (?,?,?,?,?,?,?,?)",
+          [uid(), c.id, finalPrice, vat, subtotal, 20, invoiceNumber, ts()],
+        );
+      } catch {
+        // ON CONFLICT DO NOTHING equivalent — ignore duplicate invoice errors
+      }
+
+      await assignKeyToOrder(c.id);
+      return { order_id: c.id, matched: true, already: false };
+    }
+  }
+
+  return { order_id: null, matched: false, already: false };
+}
 
 /**
  * Shopier webhook receiver
@@ -56,23 +119,17 @@ export const Route = createFileRoute("/api/public/hooks/shopier")({
           );
         }
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: res, error } = await supabaseAdmin.rpc("approve_shopier_order", {
-          _shopier_order_id: shopierOrderId,
-          _buyer_email: buyerEmail,
-          _amount: amount,
-        });
-
-        if (error) {
-          console.error("[shopier-webhook] rpc error", error);
-          return new Response(JSON.stringify({ ok: false, error: error.message }), {
+        try {
+          const res = await approveShopierOrder(shopierOrderId, buyerEmail, amount);
+          return new Response(JSON.stringify({ ok: true, result: res }), {
+            status: 200, headers: { "content-type": "application/json" },
+          });
+        } catch (e) {
+          console.error("[shopier-webhook] rpc error", e);
+          return new Response(JSON.stringify({ ok: false, error: (e as Error).message }), {
             status: 200, headers: { "content-type": "application/json" },
           });
         }
-
-        return new Response(JSON.stringify({ ok: true, result: res }), {
-          status: 200, headers: { "content-type": "application/json" },
-        });
       },
     },
   },

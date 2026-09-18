@@ -1,7 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  listCrossSellRules,
+  listProductCategories,
+  createCrossSellRule,
+  toggleCrossSellRule,
+  deleteCrossSellRule,
+  type CrossSellRule,
+} from "@/lib/cross-sell.functions";
 import { toast } from "sonner";
 import { Sparkles, Trash2, Plus, ArrowRight } from "lucide-react";
 
@@ -10,42 +18,24 @@ export const Route = createFileRoute("/_authenticated/admin/capraz-satis")({
   head: () => ({ meta: [{ title: "Çapraz Satış — Admin" }] }),
 });
 
-type Rule = {
-  id: string;
-  from_category: string;
-  to_category: string;
-  discount_percent: number;
-  promo_code: string | null;
-  note: string | null;
-  active: boolean;
-};
+type Rule = CrossSellRule;
 
 function CrossSellAdmin() {
   const qc = useQueryClient();
+  const listRulesFn = useServerFn(listCrossSellRules);
+  const listCategoriesFn = useServerFn(listProductCategories);
+  const createFn = useServerFn(createCrossSellRule);
+  const toggleFn = useServerFn(toggleCrossSellRule);
+  const deleteFn = useServerFn(deleteCrossSellRule);
+
   const { data: rules } = useQuery({
     queryKey: ["admin-cross-sell-rules"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("cross_sell_rules" as never)
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as Rule[];
-    },
+    queryFn: async (): Promise<Rule[]> => listRulesFn(),
   });
 
   const { data: categories } = useQuery({
     queryKey: ["admin-product-categories"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("category")
-        .not("category", "is", null)
-        .eq("active", true);
-      if (error) throw error;
-      const uniq = Array.from(new Set((data ?? []).map((r) => r.category).filter(Boolean))) as string[];
-      return uniq.sort();
-    },
+    queryFn: async (): Promise<string[]> => listCategoriesFn(),
   });
 
   const [draft, setDraft] = useState<Partial<Rule>>({
@@ -62,36 +52,43 @@ function CrossSellAdmin() {
       toast.error("Aynı kategori seçilemez");
       return;
     }
-    const payload = {
-      from_category: draft.from_category,
-      to_category: draft.to_category,
-      discount_percent: Number(draft.discount_percent ?? 10),
-      promo_code: draft.promo_code?.trim() || null,
-      note: draft.note?.trim() || null,
-      active: draft.active ?? true,
-    };
-    const { error } = await supabase.from("cross_sell_rules" as never).insert(payload as never);
-    if (error) return toast.error(error.message);
-    toast.success("Kural eklendi");
-    setDraft({ discount_percent: 10, active: true });
-    qc.invalidateQueries({ queryKey: ["admin-cross-sell-rules"] });
+    try {
+      await createFn({
+        data: {
+          from_category: draft.from_category,
+          to_category: draft.to_category,
+          discount_percent: Number(draft.discount_percent ?? 10),
+          promo_code: draft.promo_code?.trim() || null,
+          note: draft.note?.trim() || null,
+          active: draft.active ?? true,
+        },
+      });
+      toast.success("Kural eklendi");
+      setDraft({ discount_percent: 10, active: true });
+      qc.invalidateQueries({ queryKey: ["admin-cross-sell-rules"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   };
 
   const toggleActive = async (r: Rule) => {
-    const { error } = await supabase
-      .from("cross_sell_rules" as never)
-      .update({ active: !r.active } as never)
-      .eq("id", r.id);
-    if (error) return toast.error(error.message);
-    qc.invalidateQueries({ queryKey: ["admin-cross-sell-rules"] });
+    try {
+      await toggleFn({ data: { id: r.id, active: !r.active } });
+      qc.invalidateQueries({ queryKey: ["admin-cross-sell-rules"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   };
 
   const remove = async (id: string) => {
     if (!confirm("Kuralı silmek istediğinden emin misin?")) return;
-    const { error } = await supabase.from("cross_sell_rules" as never).delete().eq("id", id);
-    if (error) return toast.error(error.message);
-    toast.success("Silindi");
-    qc.invalidateQueries({ queryKey: ["admin-cross-sell-rules"] });
+    try {
+      await deleteFn({ data: { id } });
+      toast.success("Silindi");
+      qc.invalidateQueries({ queryKey: ["admin-cross-sell-rules"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   };
 
   const cats = categories ?? [];

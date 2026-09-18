@@ -2,8 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
-import { supabase } from "@/integrations/supabase/client";
-import { getPartnerStats, updatePartnerSlug } from "@/lib/partner.functions";
+import { getPartnerStats, updatePartnerSlug, getReferralInfo } from "@/lib/partner.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -34,38 +33,12 @@ function DavetPage() {
   const qc = useQueryClient();
   const statsFn = useServerFn(getPartnerStats);
   const slugFn = useServerFn(updatePartnerSlug);
+  const referralFn = useServerFn(getReferralInfo);
 
   const { data: profile } = useQuery({
     queryKey: ["referral-info", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const [profileRes, invitedRes, bonusRes] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("referral_code, referred_by, partner_slug, display_name")
-          .eq("id", user!.id)
-          .single(),
-        supabase.rpc("list_my_referred"),
-        supabase
-          .from("wallet_transactions")
-          .select("amount_try")
-          .eq("user_id", user!.id)
-          .eq("kind", "referral_bonus"),
-      ]);
-      const totalBonus = (bonusRes.data ?? []).reduce((s, r) => s + Number(r.amount_try), 0);
-      const p = profileRes.data as {
-        referral_code: string | null;
-        partner_slug: string | null;
-        display_name: string | null;
-      } | null;
-      return {
-        code: p?.referral_code ?? null,
-        slug: p?.partner_slug ?? null,
-        displayName: p?.display_name ?? null,
-        invited: invitedRes.data ?? [],
-        totalBonus,
-      };
-    },
+    queryFn: () => referralFn(),
   });
 
   const { data: stats } = useQuery({

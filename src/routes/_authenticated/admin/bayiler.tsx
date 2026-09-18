@@ -1,7 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  adminListDealerApplications,
+  adminReviewDealerApplication,
+  adminListDealers,
+  adminUpdateDealer,
+} from "@/lib/dealer.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -66,30 +72,28 @@ function AdminDealers() {
 }
 
 function Applications({ qc }: { qc: ReturnType<typeof useQueryClient> }) {
+  const listFn = useServerFn(adminListDealerApplications);
+  const reviewFn = useServerFn(adminReviewDealerApplication);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-dealer-apps"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("admin_list_dealer_applications");
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () => listFn(),
   });
 
   const review = async (id: string, approve: boolean) => {
     setBusy(id);
-    const { error } = await supabase.rpc("admin_review_dealer_application", {
-      _application_id: id,
-      _approve: approve,
-      _admin_note: notes[id]?.trim() || undefined,
-    });
-    setBusy(null);
-    if (error) return toast.error(error.message);
-    toast.success(approve ? "Bayilik onaylandı" : "Başvuru reddedildi");
-    qc.invalidateQueries({ queryKey: ["admin-dealer-apps"] });
-    qc.invalidateQueries({ queryKey: ["admin-dealers"] });
+    try {
+      await reviewFn({ data: { applicationId: id, approve, adminNote: notes[id]?.trim() || undefined } });
+      toast.success(approve ? "Bayilik onaylandı" : "Başvuru reddedildi");
+      qc.invalidateQueries({ queryKey: ["admin-dealer-apps"] });
+      qc.invalidateQueries({ queryKey: ["admin-dealers"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Bir hata oluştu");
+    } finally {
+      setBusy(null);
+    }
   };
 
   if (isLoading) return <p className="font-mono text-sm text-muted-foreground">yükleniyor…</p>;
@@ -159,16 +163,14 @@ function Applications({ qc }: { qc: ReturnType<typeof useQueryClient> }) {
 }
 
 function Dealers({ qc }: { qc: ReturnType<typeof useQueryClient> }) {
+  const listFn = useServerFn(adminListDealers);
+  const updateFn = useServerFn(adminUpdateDealer);
   const [edit, setEdit] = useState<Record<string, { c: string; d: string }>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-dealers"],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("admin_list_dealers");
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () => listFn(),
   });
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["admin-dealers"] });
@@ -176,20 +178,24 @@ function Dealers({ qc }: { qc: ReturnType<typeof useQueryClient> }) {
   const save = async (userId: string) => {
     const e = edit[userId];
     setBusy(userId);
-    const { error } = await supabase.rpc("admin_update_dealer", {
-      _user_id: userId,
-      _discount_percent: e?.d === "" ? -1 : Number(e?.d),
-    });
-    setBusy(null);
-    if (error) return toast.error(error.message);
-    toast.success("Oranlar güncellendi");
-    refresh();
+    try {
+      await updateFn({ data: { userId, discountPercent: e?.d === "" ? -1 : Number(e?.d) } });
+      toast.success("Oranlar güncellendi");
+      refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Bir hata oluştu");
+    } finally {
+      setBusy(null);
+    }
   };
 
   const toggle = async (userId: string, active: boolean) => {
-    const { error } = await supabase.rpc("admin_update_dealer", { _user_id: userId, _active: !active });
-    if (error) return toast.error(error.message);
-    refresh();
+    try {
+      await updateFn({ data: { userId, active: !active } });
+      refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Bir hata oluştu");
+    }
   };
 
   if (isLoading) return <p className="font-mono text-sm text-muted-foreground">yükleniyor…</p>;

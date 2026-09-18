@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 import { touchSessionIp } from "@/lib/session-guard.functions";
+import { getMfaStatus } from "@/lib/mfa.functions";
 import { MfaGateDialog } from "@/components/security/MfaGateDialog";
 import {
   Dialog,
@@ -19,23 +20,21 @@ import { isDeviceTrusted, getDeviceId } from "@/lib/trusted-device";
  * Girişten sonra kullanıcının IP'sini kontrol eder.
  * - MFA yok  → siber temalı uyarı ekranı + /guvenlik yönlendirme CTA
  * - MFA var  → step-up 2FA modalı (güvenilir cihazsa atlanır)
- * Her tab başına en fazla bir kere kontrol eder (SIGNED_IN olayında yeniden çalışır).
+ * Her tab başına en fazla bir kere kontrol eder (kullanıcı oturum açınca yeniden çalışır).
  */
 export function IpChangeGuard() {
+  const { user, signOut } = useAuth();
   const touchFn = useServerFn(touchSessionIp);
+  const mfaStatusFn = useServerFn(getMfaStatus);
   const navigate = useNavigate();
   const [gateOpen, setGateOpen] = useState(false);
   const [warnOpen, setWarnOpen] = useState(false);
   const [prevIp, setPrevIp] = useState<string | null>(null);
   const [currIp, setCurrIp] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
-  const checked = useRef(false);
+  const checked = useRef<string | null>(null);
 
-  const runCheck = async () => {
+  const runCheck = async (userId: string) => {
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) return;
-      setUserId(userData.user.id);
       const res = await touchFn({ data: { deviceId: getDeviceId() } });
       // Sunucuda kayıtlı güvenilir cihazlardan biriyse (en fazla 2) hiç sorma —
       // ikinci cihazdan giriş yapmak birincisini düşürmesin.
@@ -45,21 +44,18 @@ export function IpChangeGuard() {
       setPrevIp(res.previousIp ?? null);
       setCurrIp(res.currentIp ?? null);
 
-
       // MFA kurulu mu?
-      const { data: factors } = await supabase.auth.mfa.listFactors();
-      const hasTotp = (factors?.totp ?? []).some((f) => f.status === "verified");
-      if (!hasTotp) {
+      const status = await mfaStatusFn();
+      if (!status.enrolled) {
         // 2FA yok → siber temalı tam ekran uyarı
         setWarnOpen(true);
         return;
       }
 
-      const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (aal?.currentLevel === "aal2") return; // Bu oturumda zaten doğrulandı
+      if (status.aal === "aal2") return; // Bu oturumda zaten doğrulandı
 
       // Güvenilir cihaz mı?
-      if (isDeviceTrusted(userData.user.id)) {
+      if (isDeviceTrusted(userId)) {
         toast.info("[·] farklı IP algılandı — güvenilir cihaz, doğrulama atlandı", {
           duration: 5000,
         });
@@ -78,18 +74,12 @@ export function IpChangeGuard() {
   };
 
   useEffect(() => {
-    if (!checked.current) {
-      checked.current = true;
-      runCheck();
+    if (user && checked.current !== user.id) {
+      checked.current = user.id;
+      runCheck(user.id);
     }
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_IN") {
-        runCheck();
-      }
-    });
-    return () => sub.subscription.unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user?.id]);
 
   const mask = (ip: string | null) => {
     if (!ip) return "—.—.—.—";
@@ -110,7 +100,7 @@ export function IpChangeGuard() {
       <MfaGateDialog
         open={gateOpen}
         onOpenChange={setGateOpen}
-        userId={userId}
+        userId={user?.id ?? null}
         title="IP değişikliği doğrulaması"
         description="Farklı bir IP adresinden bağlanıyorsun. Devam etmek için authenticator kodunu gir."
         onSuccess={() => {
@@ -189,7 +179,7 @@ export function IpChangeGuard() {
               Bu bağlantı sensen bu uyarıyı yok sayabilirsin. Değilsen{" "}
               <button
                 onClick={async () => {
-                  await supabase.auth.signOut();
+                  await signOut();
                   setWarnOpen(false);
                   navigate({ to: "/auth" });
                 }}

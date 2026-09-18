@@ -119,3 +119,53 @@ export const deleteMyReview = createServerFn({ method: "POST" })
     ]);
     return { ok: true };
   });
+
+export type PendingReviewProduct = {
+  product_id: string;
+  name: string;
+  slug: string;
+  image_url: string | null;
+  purchased_at: string | null;
+};
+
+/** Kullanıcının satın alıp henüz yorum yapmadığı ürünler. */
+export const getPendingReviewProducts = createServerFn({ method: "GET" })
+  .middleware([requireAuth])
+  .handler(async ({ context }): Promise<PendingReviewProduct[]> => {
+    const { mysqlQuery } = await import("./mysql.server");
+    const rows = await mysqlQuery<{
+      product_id: string;
+      name: string;
+      slug: string;
+      image_url: string | null;
+      purchased_at: string | null;
+    }>(
+      `SELECT product_id, name, slug, image_url, MAX(purchased_at) AS purchased_at
+         FROM (
+           SELECT p.id AS product_id, p.name, p.slug, p.image_url, o.created_at AS purchased_at
+             FROM orders o
+             JOIN products p ON p.id = o.product_id
+            WHERE o.user_id=? AND o.status='approved'
+           UNION ALL
+           SELECT p.id AS product_id, p.name, p.slug, p.image_url, o.created_at AS purchased_at
+             FROM orders o
+             JOIN order_items oi ON oi.order_id = o.id
+             JOIN products p ON p.id = oi.product_id
+            WHERE o.user_id=? AND o.status='approved'
+         ) purchased
+        WHERE NOT EXISTS (
+          SELECT 1 FROM product_reviews r WHERE r.product_id = purchased.product_id AND r.user_id=?
+        )
+        GROUP BY product_id, name, slug, image_url
+        ORDER BY purchased_at DESC
+        LIMIT 20`,
+      [context.userId, context.userId, context.userId],
+    );
+    return rows.map((r) => ({
+      product_id: r.product_id,
+      name: r.name,
+      slug: r.slug,
+      image_url: r.image_url,
+      purchased_at: r.purchased_at,
+    }));
+  });

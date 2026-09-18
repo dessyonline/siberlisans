@@ -1,5 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { sendPushToUser } from "@/lib/web-push.server";
+import { mysqlQuery } from "@/lib/mysql.server";
+
+function ts(d: Date = new Date()): string {
+  return d.toISOString().slice(0, 19).replace("T", " ");
+}
 
 /**
  * Tick: her dakika çağrılır, son 10 dakikada oluşturulmuş
@@ -10,16 +15,20 @@ export const Route = createFileRoute("/api/public/hooks/push-tick")({
   server: {
     handlers: {
       POST: async () => {
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data: rows, error } = await supabaseAdmin
-          .from("notifications")
-          .select("id, user_id, title, body, link")
-          .is("pushed_at", null)
-          .gte("created_at", new Date(Date.now() - 10 * 60 * 1000).toISOString())
-          .limit(100);
+        let rows: Array<{ id: string; user_id: string; title: string | null; body: string | null; link: string | null }>;
+        try {
+          rows = await mysqlQuery(
+            `SELECT id, user_id, title, body, link FROM notifications
+              WHERE pushed_at IS NULL
+                AND created_at >= ?
+              LIMIT 100`,
+            [ts(new Date(Date.now() - 10 * 60 * 1000))],
+          );
+        } catch (e) {
+          return Response.json({ error: (e as Error).message }, { status: 500 });
+        }
 
-        if (error) return Response.json({ error: error.message }, { status: 500 });
-        if (!rows || rows.length === 0) return Response.json({ processed: 0 });
+        if (rows.length === 0) return Response.json({ processed: 0 });
 
         let sent = 0;
         for (const n of rows) {
@@ -30,10 +39,7 @@ export const Route = createFileRoute("/api/public/hooks/push-tick")({
             tag: n.id,
           });
           if (r.sent > 0) sent += r.sent;
-          await supabaseAdmin
-            .from("notifications")
-            .update({ pushed_at: new Date().toISOString() })
-            .eq("id", n.id);
+          await mysqlQuery("UPDATE notifications SET pushed_at=? WHERE id=?", [ts(), n.id]);
         }
         return Response.json({ processed: rows.length, sent });
       },

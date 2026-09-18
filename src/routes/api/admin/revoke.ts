@@ -1,6 +1,8 @@
 // Bearer ADMIN_TOKEN korumalı: bir lisansı iptal eder.
 import { createFileRoute } from "@tanstack/react-router";
-import { CORS, json, logEvent, clientIp } from "@/lib/license-api.server";
+import { CORS, json, clientIp } from "@/lib/license-api.server";
+import { mysqlQuery } from "@/lib/mysql.server";
+import { logEventMysql } from "@/lib/license-mysql-log.server";
 
 export const Route = createFileRoute("/api/admin/revoke")({
   server: {
@@ -27,21 +29,27 @@ export const Route = createFileRoute("/api/admin/revoke")({
           return json({ ok: false, error: "license_key gerekli." }, 400);
         }
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data, error } = await supabaseAdmin.rpc("admin_revoke_license_key", {
-          _key_value: license_key,
-        });
-        if (error) return json({ ok: false, error: error.message }, 500);
+        let revoked_count = 0;
+        try {
+          const before = await mysqlQuery<{ id: string }>(
+            "SELECT id FROM license_keys WHERE UPPER(key_value)=? AND revoked=0",
+            [license_key],
+          );
+          await mysqlQuery("UPDATE license_keys SET revoked=1 WHERE UPPER(key_value)=?", [license_key]);
+          revoked_count = before.length;
+        } catch (e) {
+          return json({ ok: false, error: (e as Error).message }, 500);
+        }
 
-        await logEvent(supabaseAdmin as never, {
+        await logEventMysql({
           license_key,
           event: "admin_revoke",
           ip: clientIp(request),
           user_agent: request.headers.get("user-agent") ?? "",
-          detail: `count=${data ?? 0}`,
+          detail: `count=${revoked_count}`,
         });
 
-        return json({ ok: true, revoked_count: Number(data ?? 0) });
+        return json({ ok: true, revoked_count });
       },
     },
   },

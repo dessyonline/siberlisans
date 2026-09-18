@@ -12,8 +12,9 @@ import {
   raffleAnalytics,
   adminRaffleWinners,
   listRaffleParticipants,
+  listActiveProductOptionsForRaffle,
+  searchProfilesForRaffle,
 } from "@/lib/raffles.functions";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Trophy, Trash2, Play, Plus, BarChart3, Megaphone, Users, Ban, X, Star, RefreshCw, Repeat, UserCheck } from "lucide-react";
 import { LiveDrawReel, type ReelParticipant, type ReelWinner } from "@/components/LiveDrawReel";
@@ -69,12 +70,10 @@ const emptyForm: Form = {
 function AdminRafflesPage() {
   const qc = useQueryClient();
   const list = useQuery({ queryKey: ["admin-raffles"], queryFn: () => adminListRaffles() });
+  const productsFn = useServerFn(listActiveProductOptionsForRaffle);
   const products = useQuery({
     queryKey: ["admin-raffles-products"],
-    queryFn: async () => {
-      const { data } = await supabase.from("products").select("id,name").eq("active", true).order("name");
-      return data ?? [];
-    },
+    queryFn: () => productsFn(),
   });
   const [form, setForm] = useState<Form>(emptyForm);
   const [show, setShow] = useState(false);
@@ -548,15 +547,7 @@ function ManualWinnerPicker({
   const search = useQuery({
     queryKey: ["raffle-pick-users", q],
     enabled: q.trim().length >= 2,
-    queryFn: async () => {
-      const term = `%${q.trim()}%`;
-      const { data } = await supabase
-        .from("profiles")
-        .select("id, display_name, email")
-        .or(`display_name.ilike.${term},email.ilike.${term}`)
-        .limit(20);
-      return (data ?? []).map((p: any) => ({ user_id: p.id, display_name: p.display_name, email: p.email })) as PickRow[];
-    },
+    queryFn: () => searchProfilesForRaffle({ data: { q: q.trim() } }),
   });
 
   const rows: PickRow[] =

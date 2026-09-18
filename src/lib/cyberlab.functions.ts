@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAuth } from "./auth-middleware.server";
+import { mysqlOne } from "./mysql.server";
 
 export const APP_SLUG = "cyberlab";
 
@@ -11,56 +12,45 @@ export type CyberlabAccess = {
   launchUrl: string | null;
 };
 
-/** Kullanıcının CyberLab erişim durumunu döner ve varsa tek-tık giriş linki üretir. */
 export const getCyberlabAccess = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .handler(async ({ context }): Promise<CyberlabAccess> => {
-    const { supabase, userId, claims } = context;
     const { cyberlabBaseUrl, createSsoToken } = await import("@/lib/cyberlab.server");
 
-    const { data } = await supabase
-      .from("app_access")
-      .select("expires_at")
-      .eq("user_id", userId)
-      .eq("app_slug", APP_SLUG)
-      .maybeSingle();
+    const row = await mysqlOne<{ expires_at: string | null }>(
+      "SELECT expires_at FROM app_access WHERE user_id=? AND app_slug=?",
+      [context.userId, APP_SLUG],
+    );
 
     const base = cyberlabBaseUrl();
-    if (!data) {
+    if (!row) {
       return { active: false, lifetime: false, expiresAt: null, configured: !!base, launchUrl: null };
     }
 
-    const lifetime = !data.expires_at;
-    const active = lifetime || new Date(data.expires_at as string).getTime() > Date.now();
+    const lifetime = !row.expires_at;
+    const active = lifetime || new Date(row.expires_at as string).getTime() > Date.now();
     if (!active || !base) {
-      return {
-        active,
-        lifetime,
-        expiresAt: (data.expires_at as string | null) ?? null,
-        configured: !!base,
-        launchUrl: null,
-      };
+      return { active, lifetime, expiresAt: row.expires_at ?? null, configured: !!base, launchUrl: null };
     }
 
-    const email = (claims as { email?: string } | null)?.email ?? "";
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("display_name")
-      .eq("id", userId)
-      .maybeSingle();
+    const email = context.user?.email ?? "";
+    const profile = await mysqlOne<{ display_name: string | null }>(
+      "SELECT display_name FROM profiles WHERE id=?",
+      [context.userId],
+    );
 
     const token = await createSsoToken({
-      sub: userId,
+      sub: context.userId,
       email,
-      name: (profile?.display_name as string | null) ?? email.split("@")[0] ?? "kullanici",
+      name: profile?.display_name ?? email.split("@")[0] ?? "kullanici",
       plan: lifetime ? "lifetime" : "subscription",
-      access_expires_at: (data.expires_at as string | null) ?? null,
+      access_expires_at: row.expires_at ?? null,
     });
 
     return {
       active: true,
       lifetime,
-      expiresAt: (data.expires_at as string | null) ?? null,
+      expiresAt: row.expires_at ?? null,
       configured: true,
       launchUrl: `/cyberlab/sso?token=${encodeURIComponent(token)}`,
     };

@@ -1,5 +1,13 @@
 // Terkedilmiş siparişler için hatırlatma. pg_cron ile 15 dakikada bir çağrılır.
 import { createFileRoute } from "@tanstack/react-router";
+import { mysqlQuery, mysqlOne, num, bool } from "@/lib/mysql.server";
+
+function ts(d: Date = new Date()): string {
+  return d.toISOString().slice(0, 19).replace("T", " ");
+}
+function uid(): string {
+  return crypto.randomUUID();
+}
 
 export const Route = createFileRoute("/api/public/hooks/abandonment-reminder")({
   server: {
@@ -16,47 +24,53 @@ export const Route = createFileRoute("/api/public/hooks/abandonment-reminder")({
         }
 
         try {
-          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          const { data: rows, error } = await supabaseAdmin.rpc(
-            "list_abandoned_orders" as never,
-            { _minutes: 15 } as never,
-          );
-          if (error) throw new Error(error.message);
-          const list = (rows ?? []) as Array<{
+          const list = await mysqlQuery<{
             order_id: string;
             user_id: string;
-            price_try: number;
+            price_try: string | number;
             reference_code: string;
             created_at: string;
-          }>;
+          }>(
+            `SELECT o.id AS order_id, o.user_id, o.price_try, o.reference_code, o.created_at
+               FROM orders o
+              WHERE o.status = 'pending'
+                AND o.abandonment_notified_at IS NULL
+                AND o.created_at < DATE_SUB(NOW(), INTERVAL 15 MINUTE)
+                AND o.created_at > DATE_SUB(NOW(), INTERVAL 24 HOUR)
+                AND o.user_id IS NOT NULL
+              ORDER BY o.created_at DESC
+              LIMIT 200`,
+          );
 
           let sent = 0;
           let skipped = 0;
 
           for (const o of list) {
-            // Tercih kontrolü
-            const { data: pref } = await supabaseAdmin
-              .from("notification_preferences" as never)
-              .select("abandonment")
-              .eq("user_id", o.user_id)
-              .maybeSingle();
-            const allow = pref ? (pref as { abandonment: boolean }).abandonment !== false : true;
+            const pref = await mysqlOne<{ abandonment: number | null }>(
+              "SELECT abandonment FROM notification_preferences WHERE user_id=?",
+              [o.user_id],
+            );
+            const allow = pref ? bool(pref.abandonment ?? 1) : true;
             if (!allow) {
-              await supabaseAdmin.rpc("mark_abandonment_notified" as never, { _order_id: o.order_id } as never);
+              await mysqlQuery("UPDATE orders SET abandonment_notified_at=? WHERE id=?", [ts(), o.order_id]);
               skipped++;
               continue;
             }
 
-            await supabaseAdmin.from("notifications").insert({
-              user_id: o.user_id,
-              type: "abandonment",
-              title: "Siparişini tamamlamayı unutma",
-              body: `#${o.reference_code} · ₺${Number(o.price_try).toLocaleString(
-                "tr-TR",
-              )} — havale bekliyoruz. Kısa süreliğine %5 ekstra indirim: KOD5`,
-              link: `/odeme/${o.order_id}`,
-            });
-            await supabaseAdmin.rpc("mark_abandonment_notified" as never, { _order_id: o.order_id } as never);
+            const price = num(o.price_try) ?? 0;
+            await mysqlQuery(
+              "INSERT INTO notifications (id,user_id,type,title,body,link,created_at) VALUES (?,?,?,?,?,?,?)",
+              [
+                uid(),
+                o.user_id,
+                "abandonment",
+                "Siparişini tamamlamayı unutma",
+                `#${o.reference_code} · ₺${price.toLocaleString("tr-TR")} — havale bekliyoruz. Kısa süreliğine %5 ekstra indirim: KOD5`,
+                `/odeme/${o.order_id}`,
+                ts(),
+              ],
+            );
+            await mysqlQuery("UPDATE orders SET abandonment_notified_at=? WHERE id=?", [ts(), o.order_id]);
             sent++;
           }
 

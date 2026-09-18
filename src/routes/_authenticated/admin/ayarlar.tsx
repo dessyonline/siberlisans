@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { upsertBankAccount } from "@/lib/orders.functions";
+import { upsertBankAccount, listBankAccounts, type BankAccountRow } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,15 +20,12 @@ type Bank = { id?: string; bank_name: string; iban: string; holder_name: string;
 function SettingsAdmin() {
   const qc = useQueryClient();
   const upsertFn = useServerFn(upsertBankAccount);
+  const listFn = useServerFn(listBankAccounts);
   const [editing, setEditing] = useState<Bank | null>(null);
 
   const { data: banks } = useQuery({
     queryKey: ["banks-admin"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("bank_accounts").select("*").order("created_at");
-      if (error) throw error;
-      return data as Bank[];
-    },
+    queryFn: async (): Promise<BankAccountRow[]> => listFn(),
   });
 
   const save = async () => {

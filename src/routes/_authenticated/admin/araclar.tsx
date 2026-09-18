@@ -2,11 +2,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { listAdminAiJobs, getAdminAiStats, getFalBalance } from "@/lib/admin-ai.functions";
+import { listAdminAiJobs, getAdminAiStats, getFalBalance, adminCompleteAiJob, adminFailAiJob } from "@/lib/admin-ai-jobs.functions";
 
 export const Route = createFileRoute("/_authenticated/admin/araclar")({
   component: Page,
@@ -19,6 +18,8 @@ function Page() {
   const listFn = useServerFn(listAdminAiJobs);
   const statsFn = useServerFn(getAdminAiStats);
   const falFn = useServerFn(getFalBalance);
+  const completeFn = useServerFn(adminCompleteAiJob);
+  const failFn = useServerFn(adminFailAiJob);
 
   const [status, setStatus] = useState<StatusFilter>("all");
   const [search, setSearch] = useState("");
@@ -51,22 +52,30 @@ function Page() {
     const url = urls[id]?.trim();
     if (!url) return toast.error("URL girmelisin");
     setBusy(id);
-    const { error } = await supabase.rpc("admin_complete_ai_job", { _job: id, _url: url });
-    setBusy(null);
-    if (error) return toast.error(error.message);
-    toast.success("Tamamlandı");
-    refetch();
+    try {
+      await completeFn({ data: { jobId: id, url } });
+      toast.success("Tamamlandı");
+      refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Bir hata oluştu");
+    } finally {
+      setBusy(null);
+    }
   };
 
   const fail = async (id: string, refund: boolean) => {
     const reason = prompt("Başarısızlık nedeni?") ?? "";
     if (!reason) return;
     setBusy(id);
-    const { error } = await supabase.rpc("admin_fail_ai_job", { _job: id, _reason: reason, _refund: refund });
-    setBusy(null);
-    if (error) return toast.error(error.message);
-    toast.success(refund ? "İade edildi" : "Başarısız işaretlendi");
-    refetch();
+    try {
+      await failFn({ data: { jobId: id, reason, refund } });
+      toast.success(refund ? "İade edildi" : "Başarısız işaretlendi");
+      refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Bir hata oluştu");
+    } finally {
+      setBusy(null);
+    }
   };
 
   const filters: { key: StatusFilter; label: string }[] = [

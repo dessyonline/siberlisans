@@ -1,12 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth-context";
 import {
   createAiVideoJob,
   listMyAiJobs,
   getAiVideoPrices,
 } from "@/lib/ai-tools.functions";
 import { getMyAiSubscription } from "@/lib/ai-subscriptions.functions";
+import { getMyBalance } from "@/lib/order-detail.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -95,22 +98,54 @@ async function triggerDownload(url: string, filename: string) {
 }
 
 function Page() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const createJobFn = useServerFn(createAiVideoJob);
+  const listJobsFn = useServerFn(listMyAiJobs);
+  const getPricesFn = useServerFn(getAiVideoPrices);
+  const getSubFn = useServerFn(getMyAiSubscription);
+  const getBalanceFn = useServerFn(getMyBalance);
+
   const [prompt, setPrompt] = useState("");
   const [duration, setDuration] = useState<Dur>(5);
   const [aspect, setAspect] = useState<"16:9" | "9:16" | "1:1">("16:9");
   const [quality, setQuality] = useState<Quality>("fast");
   const [busy, setBusy] = useState(false);
-  const [balance, setBalance] = useState<number | null>(null);
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [prices, setPrices] = useState<Record<Quality, Record<number, number>>>(DEFAULT_PRICES);
-  const [sub, setSub] = useState<{ plan_slug: string; credits_remaining: number; expires_at: string } | null>(null);
   const autoDownloaded = useRef<Set<string>>(new Set());
 
-  const refresh = async () => {
-    const data = await listMyAiJobs();
-    const list = data as unknown as Job[];
-    setJobs(list);
-    for (const j of list) {
+  const { data: pricesData } = useQuery({
+    queryKey: ["ai-video-prices"],
+    enabled: !!user,
+    queryFn: () => getPricesFn(),
+  });
+  const prices = (pricesData as Record<Quality, Record<number, number>> | undefined) ?? DEFAULT_PRICES;
+
+  const { data: sub } = useQuery({
+    queryKey: ["ai-subscription"],
+    enabled: !!user,
+    queryFn: () => getSubFn(),
+  });
+
+  const { data: balanceData } = useQuery({
+    queryKey: ["my-balance"],
+    enabled: !!user,
+    queryFn: () => getBalanceFn(),
+  });
+  const balance = balanceData?.balance_try ?? null;
+
+  const { data: jobsData } = useQuery({
+    queryKey: ["ai-video-jobs"],
+    enabled: !!user,
+    queryFn: () => listJobsFn(),
+    refetchInterval: (query) => {
+      const list = (query.state.data as Job[] | undefined) ?? [];
+      return list.some((j) => j.status === "queued" || j.status === "processing") ? 15000 : false;
+    },
+  });
+  const jobs = (jobsData as unknown as Job[] | undefined) ?? [];
+
+  useEffect(() => {
+    for (const j of jobs) {
       if (j.status === "done" && j.result_url && !autoDownloaded.current.has(j.id)) {
         autoDownloaded.current.add(j.id);
         const age = Date.now() - new Date(j.updated_at ?? j.created_at).getTime();
@@ -120,55 +155,21 @@ function Page() {
         }
       }
     }
-  };
-
-  useEffect(() => {
-    (async () => {
-      const [{ data: user }, priceMap, s] = await Promise.all([
-        supabase.auth.getUser(),
-        getAiVideoPrices().catch(() => DEFAULT_PRICES),
-        getMyAiSubscription().catch(() => null),
-      ]);
-      setPrices(priceMap as Record<Quality, Record<number, number>>);
-      setSub(s as typeof sub);
-      if (!user.user) return;
-      const { data: w } = await supabase
-        .from("wallets")
-        .select("balance_try")
-        .eq("user_id", user.user.id)
-        .maybeSingle();
-      setBalance(Number(w?.balance_try ?? 0));
-    })();
-    refresh();
-    const channel = supabase
-      .channel("ai_jobs_watch")
-      .on("postgres_changes", { event: "*", schema: "public", table: "ai_jobs" }, () => {
-        refresh();
-      })
-      .subscribe();
-    const iv = setInterval(() => {
-      if (jobs.some((j) => j.status === "queued" || j.status === "processing")) {
-        refresh();
-      }
-    }, 15000);
-    return () => {
-      supabase.removeChannel(channel);
-      clearInterval(iv);
-    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [jobs]);
 
   const submit = async () => {
     if (prompt.trim().length < 3) return toast.error("Prompt en az 3 karakter olmalı");
     setBusy(true);
     try {
-      await createAiVideoJob({ data: { prompt: prompt.trim(), duration, aspect, quality } });
+      await createJobFn({ data: { prompt: prompt.trim(), duration, aspect, quality } });
       toast.success("Video kuyruğa alındı — 1-5 dakika içinde hazır olacak");
       setPrompt("");
-      await refresh();
+      await qc.invalidateQueries({ queryKey: ["ai-video-jobs"] });
+      await qc.invalidateQueries({ queryKey: ["my-balance"] });
     } catch (e) {
       const msg = (e as Error).message;
-      if (msg.includes("insufficient_balance")) toast.error("Cüzdan bakiyen yetersiz");
+      if (msg.includes("insufficient_balance") || msg.includes("Yetersiz")) toast.error("Cüzdan bakiyen yetersiz");
       else toast.error(msg);
     } finally {
       setBusy(false);

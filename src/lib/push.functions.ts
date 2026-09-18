@@ -1,12 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
+import { requireAuth } from "./auth-middleware.server";
 
 export const VAPID_PUBLIC_KEY =
   "BLKCmrJMAWj-STyLNRj-K7gJGqCFaHjeVw-ULRCLUzua_A5Ptd0mIXSb0n8vr3cXzHbTzLRy46J80cSFBBe2NYg";
 
 export const savePushSubscription = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .inputValidator((input: unknown) =>
     z
       .object({
@@ -18,37 +18,30 @@ export const savePushSubscription = createServerFn({ method: "POST" })
       .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { error } = await supabase.from("push_subscriptions").upsert(
-      {
-        user_id: userId,
-        endpoint: data.endpoint,
-        p256dh: data.p256dh,
-        auth: data.auth,
-        user_agent: data.userAgent ?? null,
-        fail_count: 0,
-      },
-      { onConflict: "user_id,endpoint" },
+    const { mysqlQuery } = await import("./mysql.server");
+    await mysqlQuery(
+      `INSERT INTO push_subscriptions (id,user_id,endpoint,p256dh,auth,user_agent,fail_count,created_at)
+       VALUES (?,?,?,?,?,?,0,NOW())
+       ON DUPLICATE KEY UPDATE p256dh=VALUES(p256dh), auth=VALUES(auth), user_agent=VALUES(user_agent), fail_count=0`,
+      [crypto.randomUUID(), context.userId, data.endpoint, data.p256dh, data.auth, data.userAgent ?? null],
     );
-    if (error) throw new Error(error.message);
     return { ok: true };
   });
 
 export const deletePushSubscription = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .inputValidator((input: unknown) => z.object({ endpoint: z.string().url() }).parse(input))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase
-      .from("push_subscriptions")
-      .delete()
-      .eq("user_id", context.userId)
-      .eq("endpoint", data.endpoint);
-    if (error) throw new Error(error.message);
+    const { mysqlQuery } = await import("./mysql.server");
+    await mysqlQuery("DELETE FROM push_subscriptions WHERE user_id=? AND endpoint=?", [
+      context.userId,
+      data.endpoint,
+    ]);
     return { ok: true };
   });
 
 export const sendTestPush = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .handler(async ({ context }) => {
     const { sendPushToUser } = await import("./web-push.server");
     const r = await sendPushToUser(context.userId, {

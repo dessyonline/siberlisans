@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { getAlsoBoughtProducts } from "@/lib/storefront.functions";
 import { Users, ArrowRight } from "lucide-react";
 import { ProductLogo } from "@/components/ProductLogo";
 
@@ -15,16 +16,11 @@ type AlsoBought = {
 };
 
 export function AlsoBoughtSection({ productId }: { productId: string }) {
+  const fetchAlsoBought = useServerFn(getAlsoBoughtProducts);
   const { data: items = [] } = useQuery({
     queryKey: ["also-bought", productId],
     staleTime: 5 * 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        // biome-ignore lint/suspicious/noExplicitAny: function not in generated types
-        .rpc("also_bought_products" as any, { _product_id: productId, _limit: 6 });
-      if (error) throw error;
-      return (data ?? []) as unknown as AlsoBought[];
-    },
+    queryFn: async () => (await fetchAlsoBought({ data: { productId, limit: 6 } })) as AlsoBought[],
   });
 
   if (items.length === 0) return null;

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { listSupplierCheckLogs } from "@/lib/supplier-log.functions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
@@ -48,19 +49,10 @@ function reasonLabel(r: string | null) {
 }
 
 function SupplierLogPage() {
+  const listFn = useServerFn(listSupplierCheckLogs);
   const { data, isLoading, error } = useQuery({
     queryKey: ["supplier-check-logs"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("supplier_check_logs")
-        .select(
-          "id, created_at, source, product_name, external_id, stock_ok, stock_count, is_stock, supplier_amount, balance, balance_ok, blocked, block_reason, context, error",
-        )
-        .order("created_at", { ascending: false })
-        .limit(200);
-      if (error) throw error;
-      return (data ?? []) as Row[];
-    },
+    queryFn: () => listFn(),
     refetchInterval: 30_000,
   });
 

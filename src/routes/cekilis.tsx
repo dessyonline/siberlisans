@@ -12,9 +12,10 @@ import {
   getMyRaffleWins,
   listRaffleParticipants,
 } from "@/lib/raffles.functions";
-import { supabase } from "@/integrations/supabase/client";
 import { Ticket, Trophy, Clock, Users, Sparkles, Gift, Share2, Lock, Shield, Star, Copy, PartyPopper, Play } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
+import { useAuth } from "@/lib/auth-context";
+import { getMyPointsProfile } from "@/lib/points.functions";
 import { LiveDrawReel, type ReelParticipant, type ReelWinner } from "@/components/LiveDrawReel";
 import { toast } from "sonner";
 
@@ -102,16 +103,17 @@ function RafflesPage() {
   }
 
 
+  const { user } = useAuth();
+  const pointsProfileFn = useServerFn(getMyPointsProfile);
+  const pointsProfile = useQuery({
+    queryKey: ["my-points-profile", user?.id],
+    enabled: !!user,
+    queryFn: () => pointsProfileFn(),
+  });
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data }) => {
-      const u = data.user;
-      setAuthed(!!u);
-      if (u) {
-        const { data: p } = await supabase.from("profiles").select("tier").eq("id", u.id).maybeSingle();
-        setMyTier((p as any)?.tier ?? null);
-      }
-    });
-  }, []);
+    setAuthed(!!user);
+    setMyTier(pointsProfile.data?.tier ?? null);
+  }, [user, pointsProfile.data]);
 
   const list = useQuery({ queryKey: ["raffles"], queryFn: () => listActiveRaffles(), refetchInterval: 30_000 });
   const past = useQuery({ queryKey: ["past-winners"], queryFn: () => listPastWinners() });

@@ -1,7 +1,7 @@
 // Kullanıcının bu tarayıcıyı "güvenilir cihaz" olarak işaretlemesini yönetir.
 // Süre boyunca (varsayılan 30 gün) 2FA step-up modalları atlanır.
 // Not: Bu sadece UX kolaylığı için istemci-tarafı bir hatırlama; sunucu tarafında
-// gerçek AAL kontrolü hâlâ Supabase MFA üzerinden yapılır. Bu yüzden
+// gerçek doğrulama seviyesi MySQL tabanlı TOTP üzerinden yapılır. Bu yüzden
 // güvenilir cihaz sadece "aynı tarayıcıda ek kod isteme" davranışını azaltır,
 // server-side aal2 zorunlu olan yerlerde (admin paneli) bir etkisi yoktur.
 
@@ -95,12 +95,8 @@ export async function trustDeviceRemote(
   const deviceId = getDeviceId();
   if (!deviceId) return;
   try {
-    const { supabase } = await import("@/integrations/supabase/client");
-    await supabase.rpc("trust_current_device" as never, {
-      _device_id: deviceId,
-      _label: getDeviceLabel(),
-      _days: days,
-    } as never);
+    const { trustCurrentDevice } = await import("@/lib/trusted-device.functions");
+    await trustCurrentDevice({ data: { deviceId, label: getDeviceLabel(), days } });
   } catch {
     /* noop */
   }
@@ -117,20 +113,16 @@ export type TrustedDeviceRow = {
 
 export async function listTrustedDevices(): Promise<TrustedDeviceRow[]> {
   try {
-    const { supabase } = await import("@/integrations/supabase/client");
-    const { data } = await supabase
-      .from("user_trusted_devices" as never)
-      .select("id, device_id, label, last_ip, trusted_until, last_seen_at")
-      .order("last_seen_at", { ascending: false });
-    return (data ?? []) as unknown as TrustedDeviceRow[];
+    const { listMyTrustedDevices } = await import("@/lib/trusted-device.functions");
+    return await listMyTrustedDevices();
   } catch {
     return [];
   }
 }
 
 export async function removeTrustedDevice(id: string): Promise<void> {
-  const { supabase } = await import("@/integrations/supabase/client");
-  await supabase.from("user_trusted_devices" as never).delete().eq("id", id);
+  const { removeMyTrustedDevice } = await import("@/lib/trusted-device.functions");
+  await removeMyTrustedDevice({ data: { id } });
 }
 
 export function untrustDevice(userId: string | null | undefined): void {

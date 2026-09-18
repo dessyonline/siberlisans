@@ -1,21 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { Handshake } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { isDealer as isDealerFn } from "@/lib/dealer.functions";
 
 export function useIsDealer(userId?: string | null) {
+  const fn = useServerFn(isDealerFn);
   const { data } = useQuery({
     queryKey: ["is-dealer", userId],
     enabled: !!userId,
     staleTime: 60_000,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("dealers")
-        .select("code, active")
-        .eq("user_id", userId!)
-        .maybeSingle();
-      return data ?? null;
-    },
+    queryFn: () => fn(),
   });
   return !!data?.active;
 }

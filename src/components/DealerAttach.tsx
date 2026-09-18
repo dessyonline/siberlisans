@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { attachDealerCode } from "@/lib/dealer.functions";
 import { useAuth } from "@/lib/auth-context";
 
 export const DEALER_CODE_KEY = "sp_dealer_code";
@@ -7,6 +8,7 @@ export const DEALER_CODE_KEY = "sp_dealer_code";
 /** Kullanıcı giriş yaptığında localStorage'daki bayi kodunu hesabına bağlar. */
 export function DealerAttach() {
   const { user } = useAuth();
+  const attach = useServerFn(attachDealerCode);
 
   useEffect(() => {
     if (!user) return;
@@ -17,16 +19,14 @@ export function DealerAttach() {
       return;
     }
     if (!code) return;
-    supabase
-      .rpc("attach_dealer_code", { _code: code })
-      .then(() => {
-        try {
-          localStorage.removeItem(DEALER_CODE_KEY);
-        } catch {
-          /* ignore */
-        }
-      });
-  }, [user]);
+    attach({ data: { code } }).then(() => {
+      try {
+        localStorage.removeItem(DEALER_CODE_KEY);
+      } catch {
+        /* ignore */
+      }
+    });
+  }, [user, attach]);
 
   return null;
 }

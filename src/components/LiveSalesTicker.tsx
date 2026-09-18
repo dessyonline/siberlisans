@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { getRecentPublicSales } from "@/lib/storefront.functions";
 import { Activity, ShoppingBag } from "lucide-react";
 
 type Sale = {
@@ -21,16 +22,11 @@ function timeAgo(iso: string) {
 }
 
 export function LiveSalesTicker() {
+  const fetchSales = useServerFn(getRecentPublicSales);
   const { data: sales = [] } = useQuery({
     queryKey: ["recent-public-sales"],
     refetchInterval: 60_000,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        // biome-ignore lint/suspicious/noExplicitAny: function not in generated types
-        .rpc("recent_public_sales" as any, { _limit: 12 });
-      if (error) throw error;
-      return (data ?? []) as unknown as Sale[];
-    },
+    queryFn: async () => (await fetchSales({ data: { limit: 12 } })) as Sale[],
   });
 
   if (sales.length === 0) return null;

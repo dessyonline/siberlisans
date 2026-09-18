@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { adminUpsertFlashSale, adminDeleteFlashSale } from "@/lib/flash-sales.functions";
+import { adminUpsertFlashSale, adminDeleteFlashSale, listAdminFlashSales, listMinimalProducts, type FlashSaleRow, type MinimalProduct } from "@/lib/flash-sales.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,44 +17,25 @@ export const Route = createFileRoute("/_authenticated/admin/flash")({
   head: () => ({ meta: [{ title: "Flash İndirim — Admin" }, { name: "robots", content: "noindex" }] }),
 });
 
-type FlashSale = {
-  id: string;
-  product_id: string;
-  discount_type: "percent" | "amount";
-  discount_value: number;
-  starts_at: string;
-  ends_at: string;
-  is_active: boolean;
-  label: string | null;
-  product?: { name: string; slug: string } | null;
-};
+type FlashSale = FlashSaleRow;
 
 function AdminFlashPage() {
   const qc = useQueryClient();
   const upsertFn = useServerFn(adminUpsertFlashSale);
   const deleteFn = useServerFn(adminDeleteFlashSale);
+  const listSalesFn = useServerFn(listAdminFlashSales);
+  const listProductsFn = useServerFn(listMinimalProducts);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<FlashSale | null>(null);
 
   const { data: sales = [] } = useQuery({
     queryKey: ["admin-flash-sales"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        // biome-ignore lint/suspicious/noExplicitAny: new table
-        .from("flash_sales" as any)
-        .select("*, product:products(name, slug)")
-        .order("ends_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as unknown as FlashSale[];
-    },
+    queryFn: async (): Promise<FlashSale[]> => listSalesFn(),
   });
 
   const { data: products = [] } = useQuery({
     queryKey: ["admin-products-list-min"],
-    queryFn: async () => {
-      const { data } = await supabase.from("products").select("id, name").order("name");
-      return data ?? [];
-    },
+    queryFn: async (): Promise<MinimalProduct[]> => listProductsFn(),
   });
 
   const remove = async (id: string) => {

@@ -184,22 +184,23 @@ export async function sendWebPush(sub: WebPushSubscription, payload: WebPushPayl
 
 /** Send push to all subscriptions of a user; auto-clean expired. */
 export async function sendPushToUser(userId: string, payload: WebPushPayload): Promise<{ sent: number; removed: number }> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data: prefs } = await supabaseAdmin
-    .from("notification_preferences")
-    .select("web_push")
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (prefs && prefs.web_push === false) return { sent: 0, removed: 0 };
+  const { mysqlQuery, mysqlOne, bool } = await import("./mysql.server");
 
-  const { data: subs } = await supabaseAdmin
-    .from("push_subscriptions")
-    .select("id, endpoint, p256dh, auth")
-    .eq("user_id", userId);
-  if (!subs || subs.length === 0) return { sent: 0, removed: 0 };
+  const prefs = await mysqlOne<{ web_push: unknown }>(
+    "SELECT web_push FROM notification_preferences WHERE user_id=? LIMIT 1",
+    [userId],
+  );
+  if (prefs && !bool(prefs.web_push)) return { sent: 0, removed: 0 };
+
+  const subs = await mysqlQuery<{ id: string; endpoint: string; p256dh: string; auth: string }>(
+    "SELECT id, endpoint, p256dh, auth FROM push_subscriptions WHERE user_id=?",
+    [userId],
+  );
+  if (subs.length === 0) return { sent: 0, removed: 0 };
 
   let sent = 0;
   let removed = 0;
+  const now = () => new Date().toISOString().slice(0, 19).replace("T", " ");
   await Promise.all(
     subs.map(async (s) => {
       const r = await sendWebPush(
@@ -208,18 +209,15 @@ export async function sendPushToUser(userId: string, payload: WebPushPayload): P
       );
       if (r.ok) {
         sent++;
-        await supabaseAdmin
-          .from("push_subscriptions")
-          .update({ last_success_at: new Date().toISOString(), fail_count: 0 })
-          .eq("id", s.id);
+        await mysqlQuery("UPDATE push_subscriptions SET last_success_at=?, fail_count=0 WHERE id=?", [
+          now(),
+          s.id,
+        ]);
       } else if (r.expired) {
         removed++;
-        await supabaseAdmin.from("push_subscriptions").delete().eq("id", s.id);
+        await mysqlQuery("DELETE FROM push_subscriptions WHERE id=?", [s.id]);
       } else {
-        await supabaseAdmin
-          .from("push_subscriptions")
-          .update({ fail_count: (0 as number) + 1 })
-          .eq("id", s.id);
+        await mysqlQuery("UPDATE push_subscriptions SET fail_count=fail_count+1 WHERE id=?", [s.id]);
       }
     }),
   );

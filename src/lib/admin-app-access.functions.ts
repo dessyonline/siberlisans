@@ -1,15 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAdmin } from "@/lib/auth-middleware.server";
+import { mysqlQuery, mysqlOne } from "@/lib/mysql.server";
 
 const APP_SLUG = "cyberlab";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function assertAdmin(supabase: any, userId: string) {
-  const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-  if (error) throw new Error("Yetki kontrol edilemedi");
-  if (!data) throw new Error("Yetkisiz");
-}
 
 export type AppAccessRow = {
   userId: string;
@@ -22,34 +16,24 @@ export type AppAccessRow = {
   sourceOrderId: string | null;
 };
 
-/** CyberLab erişimi olan tüm kullanıcıları listeler. */
 export const listAppAccess = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }): Promise<AppAccessRow[]> => {
-    await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const { data: rows, error } = await supabaseAdmin
-      .from("app_access")
-      .select("user_id, expires_at, created_at, source_order_id")
-      .eq("app_slug", APP_SLUG)
-      .order("created_at", { ascending: false });
-    if (error) throw new Error(error.message);
-
-    const ids = (rows ?? []).map((r) => r.user_id);
+  .middleware([requireAdmin])
+  .handler(async (): Promise<AppAccessRow[]> => {
+    const rows = await mysqlQuery<{ user_id: string; expires_at: string | null; created_at: string; source_order_id: string | null }>(
+      "SELECT user_id, expires_at, created_at, source_order_id FROM app_access WHERE app_slug=? ORDER BY created_at DESC",
+      [APP_SLUG],
+    );
+    const ids = rows.map((r) => r.user_id);
     const nameMap = new Map<string, { email: string | null; display_name: string | null }>();
     if (ids.length > 0) {
-      const { data: profiles } = await supabaseAdmin
-        .from("profiles")
-        .select("id, email, display_name")
-        .in("id", ids);
-      (profiles ?? []).forEach((p) =>
-        nameMap.set(p.id, { email: p.email, display_name: p.display_name }),
+      const profiles = await mysqlQuery<{ id: string; email: string | null; display_name: string | null }>(
+        `SELECT id, email, display_name FROM profiles WHERE id IN (${ids.map(() => "?").join(",")})`,
+        ids,
       );
+      profiles.forEach((p) => nameMap.set(p.id, { email: p.email, display_name: p.display_name }));
     }
-
     const now = Date.now();
-    return (rows ?? []).map((r) => {
+    return rows.map((r) => {
       const lifetime = !r.expires_at;
       return {
         userId: r.user_id,
@@ -64,25 +48,16 @@ export const listAppAccess = createServerFn({ method: "GET" })
     });
   });
 
-/** Admin kullanıcı arama (e-posta / isim). */
 export const searchUsersForAccess = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ q: z.string().min(2).max(120) }).parse(d))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const q = data.q.trim();
-    const { data: profiles, error } = await supabaseAdmin
-      .from("profiles")
-      .select("id, email, display_name")
-      .or(`email.ilike.%${q}%,display_name.ilike.%${q}%`)
-      .limit(10);
-    if (error) throw new Error(error.message);
-    return (profiles ?? []).map((p) => ({
-      id: p.id,
-      email: p.email,
-      displayName: p.display_name,
-    }));
+  .handler(async ({ data }): Promise<{ id: string; email: string | null; displayName: string | null }[]> => {
+    const q = `%${data.q.trim()}%`;
+    const profiles = await mysqlQuery<{ id: string; email: string | null; display_name: string | null }>(
+      "SELECT id, email, display_name FROM profiles WHERE email LIKE ? OR display_name LIKE ? LIMIT 10",
+      [q, q],
+    );
+    return profiles.map((p) => ({ id: p.id, email: p.email, displayName: p.display_name }));
   });
 
 const grantInput = z.object({
@@ -93,20 +68,14 @@ const grantInput = z.object({
   extend: z.boolean().optional(),
 });
 
-/** Kullanıcıya CyberLab erişimi verir / süresini günceller. */
 export const grantAppAccess = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .inputValidator((d: unknown) => grantInput.parse(d))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    const { data: existing } = await supabaseAdmin
-      .from("app_access")
-      .select("id, expires_at")
-      .eq("user_id", data.userId)
-      .eq("app_slug", APP_SLUG)
-      .maybeSingle();
+  .handler(async ({ data, context }): Promise<{ ok: true; expiresAt: string | null }> => {
+    const existing = await mysqlOne<{ id: string; expires_at: string | null }>(
+      "SELECT id, expires_at FROM app_access WHERE user_id=? AND app_slug=?",
+      [data.userId, APP_SLUG],
+    );
 
     let expiresAt: string | null = null;
     if (data.mode === "days") {
@@ -115,46 +84,50 @@ export const grantAppAccess = createServerFn({ method: "POST" })
         data.extend && existing?.expires_at && new Date(existing.expires_at).getTime() > Date.now()
           ? new Date(existing.expires_at).getTime()
           : Date.now();
-      expiresAt = new Date(base + data.days * 86400000).toISOString();
+      expiresAt = new Date(base + data.days * 86400000).toISOString().slice(0, 19).replace("T", " ");
     } else if (data.mode === "until") {
       if (!data.until) throw new Error("Bitiş tarihi gerekli");
       const t = new Date(data.until);
       if (Number.isNaN(t.getTime())) throw new Error("Geçersiz tarih");
       if (t.getTime() < Date.now()) throw new Error("Bitiş tarihi geçmişte olamaz");
-      expiresAt = t.toISOString();
+      expiresAt = t.toISOString().slice(0, 19).replace("T", " ");
     }
 
     if (existing) {
-      const { error } = await supabaseAdmin
-        .from("app_access")
-        .update({ expires_at: expiresAt, updated_at: new Date().toISOString() })
-        .eq("id", existing.id);
-      if (error) throw new Error(error.message);
+      await mysqlQuery("UPDATE app_access SET expires_at=?, updated_at=NOW() WHERE id=?", [expiresAt, existing.id]);
     } else {
-      const { error } = await supabaseAdmin
-        .from("app_access")
-        .insert({ user_id: data.userId, app_slug: APP_SLUG, expires_at: expiresAt });
-      if (error) throw new Error(error.message);
+      await mysqlQuery(
+        "INSERT INTO app_access (id, user_id, app_slug, expires_at, created_at, updated_at) VALUES (?,?,?,?,NOW(),NOW())",
+        [crypto.randomUUID(), data.userId, APP_SLUG, expiresAt],
+      );
     }
 
-    await supabaseAdmin.from("admin_audit_log").insert({
-      actor_id: context.userId,
-      action: existing ? "app_access_update" : "app_access_grant",
-      entity_type: "app_access",
-      entity_id: data.userId,
-      metadata: { app_slug: APP_SLUG, expires_at: expiresAt, mode: data.mode },
-    });
+    await mysqlQuery(
+      "INSERT INTO admin_audit_log (id,actor_id,action,entity_type,entity_id,metadata,created_at) VALUES (?,?,?,?,?,?,NOW())",
+      [
+        crypto.randomUUID(),
+        context.userId,
+        existing ? "app_access_update" : "app_access_grant",
+        "app_access",
+        data.userId,
+        JSON.stringify({ app_slug: APP_SLUG, expires_at: expiresAt, mode: data.mode }),
+      ],
+    );
 
     try {
-      await supabaseAdmin.from("notifications").insert({
-        user_id: data.userId,
-        title: "CyberLab erişimin aktif",
-        body: expiresAt
-          ? `CyberLab erişimin ${new Date(expiresAt).toLocaleDateString("tr-TR")} tarihine kadar açıldı.`
-          : "CyberLab erişimin süresiz olarak açıldı.",
-        type: "info",
-        link: "/cyberlab",
-      });
+      await mysqlQuery(
+        "INSERT INTO notifications (id,user_id,type,title,body,link,created_at) VALUES (?,?,?,?,?,?,NOW())",
+        [
+          crypto.randomUUID(),
+          data.userId,
+          "info",
+          "CyberLab erişimin aktif",
+          expiresAt
+            ? `CyberLab erişimin ${new Date(expiresAt).toLocaleDateString("tr-TR")} tarihine kadar açıldı.`
+            : "CyberLab erişimin süresiz olarak açıldı.",
+          "/cyberlab",
+        ],
+      );
     } catch {
       // bildirim opsiyonel
     }
@@ -162,26 +135,14 @@ export const grantAppAccess = createServerFn({ method: "POST" })
     return { ok: true, expiresAt };
   });
 
-/** Erişimi kaldırır. */
 export const revokeAppAccess = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .inputValidator((d: unknown) => z.object({ userId: z.string().uuid() }).parse(d))
-  .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin
-      .from("app_access")
-      .delete()
-      .eq("user_id", data.userId)
-      .eq("app_slug", APP_SLUG);
-    if (error) throw new Error(error.message);
-
-    await supabaseAdmin.from("admin_audit_log").insert({
-      actor_id: context.userId,
-      action: "app_access_revoke",
-      entity_type: "app_access",
-      entity_id: data.userId,
-      metadata: { app_slug: APP_SLUG },
-    });
+  .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    await mysqlQuery("DELETE FROM app_access WHERE user_id=? AND app_slug=?", [data.userId, APP_SLUG]);
+    await mysqlQuery(
+      "INSERT INTO admin_audit_log (id,actor_id,action,entity_type,entity_id,metadata,created_at) VALUES (?,?,?,?,?,?,NOW())",
+      [crypto.randomUUID(), context.userId, "app_access_revoke", "app_access", data.userId, JSON.stringify({ app_slug: APP_SLUG })],
+    );
     return { ok: true };
   });

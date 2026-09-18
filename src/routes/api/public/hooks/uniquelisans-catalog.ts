@@ -18,9 +18,8 @@ export const Route = createFileRoute("/api/public/hooks/uniquelisans-catalog")({
         }
 
         try {
-          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { runUniquelisansCatalogSync } = await import("@/lib/uniquelisans-catalog.server");
-          const res = await runUniquelisansCatalogSync(supabaseAdmin as never, {
+          const res = await runUniquelisansCatalogSync({
             markup_percent: 20,
             import_new: true,
             reactivate: true,

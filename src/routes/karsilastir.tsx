@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { getProductsForCompare } from "@/lib/storefront.functions";
 import { useCompare } from "@/lib/compare-store";
 import { Button } from "@/components/ui/button";
 import { Check, Minus, X, GitCompare } from "lucide-react";
@@ -46,18 +47,11 @@ function ComparePage() {
   const remove = useCompare((s) => s.remove);
   const clear = useCompare((s) => s.clear);
 
+  const fetchProducts = useServerFn(getProductsForCompare);
   const { data, isLoading } = useQuery({
     queryKey: ["compare-page", ids.join(",")],
     enabled: ids.length > 0,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("products")
-        .select(
-          "id, name, slug, price_try, retail_price_try, duration, duration_label, delivery_type, category, image_url, unlimited_stock, manual_fulfillment, stock_hint, avg_rating, review_count, orders_count, active, requires_email",
-        )
-        .in("id", ids);
-      return data ?? [];
-    },
+    queryFn: async () => (await fetchProducts({ data: { ids } })),
   });
 
   const products = (data ?? []).slice().sort((a, b) => ids.indexOf(a.id) - ids.indexOf(b.id));
@@ -83,8 +77,8 @@ function ComparePage() {
           <Minus className="h-3 w-3 text-muted-foreground" />
         ),
     },
-    { label: "Süre", render: (p) => p.duration_label || DURATION_LABEL[p.duration] || p.duration },
-    { label: "Teslimat", render: (p) => DELIVERY_LABEL[p.delivery_type] ?? p.delivery_type },
+    { label: "Süre", render: (p) => p.duration_label || DURATION_LABEL[p.duration ?? ""] || p.duration },
+    { label: "Teslimat", render: (p) => DELIVERY_LABEL[p.delivery_type ?? ""] ?? p.delivery_type },
     { label: "Kategori", render: (p) => p.category || "—" },
     {
       label: "Stok",

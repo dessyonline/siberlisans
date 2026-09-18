@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { adminGlobalSearch } from "@/lib/admin-search.functions";
 import {
   Search,
   ShoppingCart,
@@ -107,6 +108,8 @@ export function AdminCommandPalette() {
     return NAV_CMDS.filter((n) => n.label.includes(s) || n.to.includes(s)).slice(0, 8);
   }, [q]);
 
+  const searchFn = useServerFn(adminGlobalSearch);
+
   // Live search (debounced)
   useEffect(() => {
     const s = q.trim();
@@ -117,55 +120,35 @@ export function AdminCommandPalette() {
     const t = setTimeout(async () => {
       setLoading(true);
       try {
-        const like = `%${s}%`;
-        const [ordersRes, usersRes, productsRes] = await Promise.all([
-          supabase
-            .from("orders")
-            .select("id, reference_code, status, price_try, created_at, user_id, buyer:profiles!orders_user_id_fkey(email)")
-            .ilike("reference_code", like)
-            .order("created_at", { ascending: false })
-            .limit(6),
-          supabase
-            .from("profiles")
-            .select("id, email, display_name, created_at")
-            .or(`email.ilike.${like},display_name.ilike.${like}`)
-            .order("created_at", { ascending: false })
-            .limit(6),
-          supabase
-            .from("products")
-            .select("id, name, slug, active")
-            .or(`name.ilike.${like},slug.ilike.${like}`)
-            .limit(6),
-        ]);
+        const res = await searchFn({ data: { q: s } });
         const out: ResultRow[] = [];
-        (ordersRes.data ?? []).forEach((o) => {
-          const buyer = (o as { buyer?: { email?: string | null } | null }).buyer;
+        res.orders.forEach((o) => {
           out.push({
             kind: "order",
-            id: o.id as string,
-            ref: o.reference_code as string,
-            status: o.status as string,
-            price: Number(o.price_try),
-            email: buyer?.email ?? null,
-            created_at: o.created_at as string,
+            id: o.id,
+            ref: o.ref,
+            status: o.status,
+            price: o.price,
+            email: o.email,
+            created_at: o.created_at,
           });
         });
-        (usersRes.data ?? []).forEach((u) =>
+        res.users.forEach((u) =>
           out.push({
             kind: "user",
-            id: u.id as string,
-            email: u.email as string | null,
-            display_name: u.display_name as string | null,
-            created_at: u.created_at as string,
+            id: u.id,
+            email: u.email,
+            display_name: u.display_name,
+            created_at: u.created_at,
           }),
         );
-        (productsRes.data ?? []).forEach((p) =>
+        res.products.forEach((p) =>
           out.push({
             kind: "product",
-            id: p.id as string,
-            name: p.name as string,
-            slug: p.slug as string,
-            active: !!p.active,
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            active: p.active,
           }),
         );
         setRows(out);
@@ -175,7 +158,7 @@ export function AdminCommandPalette() {
       }
     }, 180);
     return () => clearTimeout(t);
-  }, [q]);
+  }, [q, searchFn]);
 
   const flat: ResultRow[] = useMemo(() => [...navMatches, ...rows], [navMatches, rows]);
 

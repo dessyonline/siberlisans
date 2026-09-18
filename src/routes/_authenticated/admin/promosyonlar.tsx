@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { upsertPromoCode, deletePromoCode } from "@/lib/orders.functions";
+import { upsertPromoCode, deletePromoCode, listPromoCodesAdmin, listProductOptionsForPromo } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,24 +50,17 @@ function PromoAdmin() {
   const deleteFn = useServerFn(deletePromoCode);
   const [draft, setDraft] = useState<Draft | null>(null);
 
+  const listPromosFn = useServerFn(listPromoCodesAdmin);
+  const listProductsFn = useServerFn(listProductOptionsForPromo);
+
   const { data: promos } = useQuery({
     queryKey: ["admin-promos"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("promo_codes")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as Promo[];
-    },
+    queryFn: async () => listPromosFn(),
   });
 
   const { data: products } = useQuery({
     queryKey: ["admin-promos-products"],
-    queryFn: async () => {
-      const { data } = await supabase.from("products").select("id, name").order("name");
-      return data ?? [];
-    },
+    queryFn: async () => listProductsFn(),
   });
 
   const save = async () => {
