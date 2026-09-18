@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
+import { getTierCard } from "@/lib/points.functions";
 import { Trophy, Sparkles } from "lucide-react";
 
 type Tier = "bronze" | "silver" | "gold" | "platinum";
@@ -38,34 +39,19 @@ const TIER_INFO: Record<
   },
 };
 
-type LedgerRow = {
-  id: string;
-  delta: number;
-  reason: string;
-  balance_after: number;
-  created_at: string;
-};
-
 export function TierCard() {
   const { user } = useAuth();
+  const tierCardFn = useServerFn(getTierCard);
 
   const { data } = useQuery({
     queryKey: ["tier-card", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const [profRes, ledgerRes] = await Promise.all([
-        supabase.from("profiles").select("total_points, tier").eq("id", user!.id).single(),
-        supabase
-          .from("user_points_ledger")
-          .select("id, delta, reason, balance_after, created_at")
-          .eq("user_id", user!.id)
-          .order("created_at", { ascending: false })
-          .limit(10),
-      ]);
+      const res = await tierCardFn();
       return {
-        points: (profRes.data?.total_points as number | undefined) ?? 0,
-        tier: ((profRes.data?.tier as Tier | undefined) ?? "bronze") as Tier,
-        ledger: (ledgerRes.data ?? []) as LedgerRow[],
+        points: res.points,
+        tier: (res.tier as Tier) ?? "bronze",
+        ledger: res.ledger,
       };
     },
   });
