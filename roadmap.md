@@ -47,3 +47,5 @@
 - [x] Flash indirim yönetimi MySQL yönetici yetkisine taşındı.
 - [x] Referansla sipariş takibi ve dış katalog akışı MySQL'e taşındı; özel yönetici notları halka açılmaz.
 - [x] Uygulama içindeki kalan modüller MySQL veri katmanına taşındı; doğrudan eski veri istemcisi çağrısı kalmadı.
+
+- [ ] Google girişi: kendi OAuth istemcimizle (GOOGLE_OAUTH_CLIENT_ID/SECRET bekleniyor)

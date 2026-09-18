@@ -2,10 +2,9 @@ import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router"
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { useServerFn } from "@tanstack/react-start";
-import { completeOAuthSignIn, signIn as signInFn, signUp as signUpFn } from "@/lib/auth.functions";
+import { signIn as signInFn, signUp as signUpFn } from "@/lib/auth.functions";
 import { requestPasswordReset as requestPasswordResetFn } from "@/lib/password-reset.functions";
 
-import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +14,10 @@ import { toast } from "sonner";
 import { Terminal, Gift, MailCheck, Send, Info } from "lucide-react";
 import { MfaChallenge } from "@/components/security/MfaChallenge";
 
-const authSearch = z.object({ ref: z.string().max(20).optional() });
+const authSearch = z.object({
+  ref: z.string().max(20).optional(),
+  google: z.enum(["unconfigured", "state", "identity", "account"]).optional(),
+});
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -75,6 +77,17 @@ function AuthPage() {
   const [manualRef, setManualRef] = useState("");
   const urlRef = search.ref?.toUpperCase() ?? "";
   const refCode = (urlRef || manualRef.trim().toUpperCase()).slice(0, 20);
+
+  useEffect(() => {
+    if (!search.google) return;
+    const messages: Record<string, string> = {
+      unconfigured: "Google girişi henüz yapılandırılmadı.",
+      state: "Google girişi doğrulanamadı, tekrar deneyin.",
+      identity: "Google hesabında doğrulanmış e-posta bulunamadı.",
+      account: "Hesap oluşturulamadı, tekrar deneyin.",
+    };
+    toast.error(messages[search.google] ?? "Google girişi başarısız");
+  }, [search.google]);
 
   useEffect(() => {
     if (user && !mfaMode) navigate({ to: "/hesabim" });
@@ -161,27 +174,12 @@ function AuthPage() {
     }
   };
 
-  const finishOAuth = useServerFn(completeOAuthSignIn);
-
-  const signInGoogle = async () => {
+  const signInGoogle = () => {
     setLoading(true);
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
-    });
-    if (result.error) {
-      setLoading(false);
-      return toast.error(result.error.message ?? "Google girişi başarısız");
-    }
-    if (result.redirected) return; // Tarayıcı yönleniyor
-    const localResult = await finishOAuth({ data: { accessToken: result.tokens.access_token } });
-    if (!localResult.ok) {
-      setLoading(false);
-      return toast.error(localResult.error);
-    }
-    await refresh();
-    setLoading(false);
-    navigate({ to: "/hesabim" });
+    // Kendi Google OAuth istemcimiz üzerinden sunucu taraflı akış.
+    window.location.href = "/api/public/auth/google/start";
   };
+
 
   return (
     <div className="mx-auto max-w-md px-4 py-16">
