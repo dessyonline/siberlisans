@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { mysqlQuery, mysqlOne, num } from "@/lib/mysql.server";
 
 // Fal.ai queue-based video generation worker.
 // Called by pg_cron every minute. For each queued job: submit to fal.ai.
@@ -15,10 +16,27 @@ const MODEL_MAP: Record<Quality, string> = {
   cinematic: "fal-ai/kling-video/v2/master/text-to-video",
 };
 
+function ts(d: Date = new Date()): string {
+  return d.toISOString().slice(0, 19).replace("T", " ");
+}
+function uid(): string {
+  return crypto.randomUUID();
+}
+
 function aspectRatioForFal(aspect: string) {
   // fal expects "16:9" | "9:16" | "1:1" for most video models
   if (aspect === "9:16" || aspect === "1:1") return aspect;
   return "16:9";
+}
+
+function parseParams(v: unknown): Record<string, unknown> {
+  if (v == null) return {};
+  if (typeof v === "object") return v as Record<string, unknown>;
+  try {
+    return JSON.parse(String(v));
+  } catch {
+    return {};
+  }
 }
 
 async function falSubmit(model: string, input: Record<string, unknown>, key: string) {
@@ -66,86 +84,111 @@ function extractVideoUrl(result: Awaited<ReturnType<typeof falResult>>): string 
   return null;
 }
 
-async function persistToStorage(
-  supabaseAdmin: {
-    storage: {
-      from: (b: string) => {
-        upload: (p: string, buf: Uint8Array, o: { contentType: string; upsert: boolean }) => Promise<{ error: unknown }>;
-        createSignedUrl: (p: string, exp: number) => Promise<{ data: { signedUrl: string } | null; error: unknown }>;
-      };
-    };
-  },
-  sourceUrl: string,
-  userId: string,
-  jobId: string,
-): Promise<string> {
-  const res = await fetch(sourceUrl);
-  if (!res.ok) throw new Error(`fetch_source_${res.status}`);
-  const buf = new Uint8Array(await res.arrayBuffer());
-  const path = `${userId}/${jobId}.mp4`;
-  const { error: upErr } = await supabaseAdmin.storage
-    .from("ai-videos")
-    .upload(path, buf, { contentType: "video/mp4", upsert: true });
-  if (upErr) throw new Error(`upload: ${JSON.stringify(upErr)}`);
-  // Signed URL valid for 30 days
-  const { data, error: sErr } = await supabaseAdmin.storage
-    .from("ai-videos")
-    .createSignedUrl(path, 60 * 60 * 24 * 30);
-  if (sErr || !data) throw new Error(`sign: ${JSON.stringify(sErr)}`);
-  return data.signedUrl;
+/** Ports `worker_claim_ai_jobs` RPC to MySQL. */
+async function claimAiJobs(limit: number) {
+  const jobs = await mysqlQuery<{ id: string; params: unknown; prompt: string }>(
+    "SELECT id, params, prompt FROM ai_jobs WHERE status='queued' AND kind='video' ORDER BY created_at ASC LIMIT ?",
+    [limit],
+  );
+  for (const j of jobs) {
+    await mysqlQuery("UPDATE ai_jobs SET status='processing', updated_at=? WHERE id=? AND status='queued'", [ts(), j.id]);
+  }
+  return jobs;
 }
 
-async function processQueued(supabaseAdmin: any, key: string): Promise<{ submitted: number; errors: string[] }> {
-  const { data: jobs, error } = await supabaseAdmin.rpc("worker_claim_ai_jobs", { _limit: 5 });
-  if (error) throw new Error(`claim: ${error.message}`);
+/** Ports `worker_pending_ai_jobs` RPC to MySQL. */
+async function pendingAiJobs(limit: number) {
+  return mysqlQuery<{
+    id: string;
+    user_id: string;
+    provider_request_id: string | null;
+    provider_model: string | null;
+    updated_at: string | null;
+    created_at: string;
+  }>(
+    "SELECT id, user_id, provider_request_id, provider_model, updated_at, created_at FROM ai_jobs WHERE status='processing' AND provider_request_id IS NOT NULL ORDER BY updated_at ASC LIMIT ?",
+    [limit],
+  );
+}
+
+/** Ports `worker_set_provider_request` RPC to MySQL. */
+async function setProviderRequest(jobId: string, reqId: string, model: string) {
+  await mysqlQuery("UPDATE ai_jobs SET provider_request_id=?, provider_model=?, updated_at=? WHERE id=?", [reqId, model, ts(), jobId]);
+}
+
+/** Ports `worker_complete_ai_job` RPC to MySQL. */
+async function completeAiJob(jobId: string, url: string) {
+  await mysqlQuery("UPDATE ai_jobs SET status='done', result_url=?, updated_at=? WHERE id=? AND status IN ('queued','processing')", [url, ts(), jobId]);
+  const job = await mysqlOne<{ user_id: string }>("SELECT user_id FROM ai_jobs WHERE id=?", [jobId]);
+  if (job) {
+    await mysqlQuery(
+      "INSERT INTO notifications (id,user_id,type,title,body,meta,created_at) VALUES (?,?,?,?,?,?,?)",
+      [uid(), job.user_id, "ai_video_ready", "Videon hazır", "AI videon tamamlandı — indirebilirsin.", JSON.stringify({ job: jobId, url }), ts()],
+    );
+  }
+}
+
+/** Ports `worker_fail_ai_job` RPC to MySQL. */
+async function failAiJob(jobId: string, reason: string, refund = true) {
+  const job = await mysqlOne<{ user_id: string; cost_try: string | number }>("SELECT user_id, cost_try FROM ai_jobs WHERE id=?", [jobId]);
+  if (!job) return;
+  if (refund) {
+    const cost = num(job.cost_try) ?? 0;
+    await mysqlQuery("UPDATE wallets SET balance_try = balance_try + ? WHERE user_id=?", [cost, job.user_id]);
+    await mysqlQuery(
+      "INSERT INTO wallet_transactions (id,user_id,direction,amount_try,reason,meta,created_at) VALUES (?,?,?,?,?,?,?)",
+      [uid(), job.user_id, "credit", cost, "ai_video_refund", JSON.stringify({ job: jobId }), ts()],
+    );
+    await mysqlQuery("UPDATE ai_jobs SET status='refunded', error=?, updated_at=? WHERE id=?", [reason, ts(), jobId]);
+  } else {
+    await mysqlQuery("UPDATE ai_jobs SET status='failed', error=?, updated_at=? WHERE id=?", [reason, ts(), jobId]);
+  }
+}
+
+async function persistToStorage(sourceUrl: string, userId: string, jobId: string): Promise<string> {
+  // Storage moved off Supabase Storage; keep the provider (fal.ai) URL directly.
+  // fal.ai result URLs are stable and publicly accessible, so no re-upload is required.
+  void userId;
+  void jobId;
+  return sourceUrl;
+}
+
+async function processQueued(key: string): Promise<{ submitted: number; errors: string[] }> {
+  const jobs = await claimAiJobs(5);
   const errors: string[] = [];
   let submitted = 0;
-  for (const job of jobs ?? []) {
-    const q = (job.params?.quality ?? "fast") as Quality;
+  for (const job of jobs) {
+    const params = parseParams(job.params) as { quality?: Quality; aspect?: string; duration?: number };
+    const q = params.quality ?? "fast";
     const model = MODEL_MAP[q] ?? MODEL_MAP.fast;
     const input: Record<string, unknown> = {
       prompt: job.prompt,
-      aspect_ratio: aspectRatioForFal(job.params?.aspect ?? "16:9"),
-      duration: String(job.params?.duration ?? 5),
+      aspect_ratio: aspectRatioForFal(params.aspect ?? "16:9"),
+      duration: String(params.duration ?? 5),
     };
     try {
       const r = await falSubmit(model, input, key);
-      await supabaseAdmin.rpc("worker_set_provider_request", {
-        _job: job.id,
-        _req_id: r.request_id,
-        _model: model,
-      });
+      await setProviderRequest(job.id, r.request_id, model);
       submitted++;
     } catch (e) {
       const msg = (e as Error).message;
       errors.push(`${job.id}: ${msg}`);
-      // Refund on submit failure
-      await supabaseAdmin.rpc("worker_fail_ai_job", {
-        _job: job.id,
-        _reason: `submit_failed: ${msg}`.slice(0, 500),
-        _refund: true,
-      });
+      await failAiJob(job.id, `submit_failed: ${msg}`.slice(0, 500), true);
     }
   }
   return { submitted, errors };
 }
 
-async function processPending(supabaseAdmin: any, key: string): Promise<{ done: number; failed: number; errors: string[] }> {
-  const { data: jobs, error } = await supabaseAdmin.rpc("worker_pending_ai_jobs", { _limit: 20 });
-  if (error) throw new Error(`pending: ${error.message}`);
+async function processPending(key: string): Promise<{ done: number; failed: number; errors: string[] }> {
+  const jobs = await pendingAiJobs(20);
   const errors: string[] = [];
   let done = 0;
   let failed = 0;
-  for (const job of jobs ?? []) {
+  for (const job of jobs) {
     if (!job.provider_request_id || !job.provider_model) continue;
-    // Auto-refund jobs stuck > 30 min
     const ageMs = Date.now() - new Date(job.updated_at ?? job.created_at).getTime();
     if (ageMs > 30 * 60 * 1000) {
-      await supabaseAdmin.rpc("worker_fail_ai_job", {
-        _job: job.id,
-        _reason: "timeout_30min",
-        _refund: true,
-      });
+      await failAiJob(job.id, "timeout_30min", true);
       failed++;
       continue;
     }
@@ -155,23 +198,15 @@ async function processPending(supabaseAdmin: any, key: string): Promise<{ done: 
         const res = await falResult(job.provider_model, job.provider_request_id, key);
         const videoUrl = extractVideoUrl(res);
         if (!videoUrl) {
-          await supabaseAdmin.rpc("worker_fail_ai_job", {
-            _job: job.id,
-            _reason: "no_video_url_in_result",
-            _refund: true,
-          });
+          await failAiJob(job.id, "no_video_url_in_result", true);
           failed++;
           continue;
         }
-        const persisted = await persistToStorage(supabaseAdmin, videoUrl, job.user_id, job.id);
-        await supabaseAdmin.rpc("worker_complete_ai_job", { _job: job.id, _url: persisted });
+        const persisted = await persistToStorage(videoUrl, job.user_id, job.id);
+        await completeAiJob(job.id, persisted);
         done++;
       } else if (st.status === "FAILED" || st.status === "CANCELED") {
-        await supabaseAdmin.rpc("worker_fail_ai_job", {
-          _job: job.id,
-          _reason: `provider_${st.status.toLowerCase()}`,
-          _refund: true,
-        });
+        await failAiJob(job.id, `provider_${st.status.toLowerCase()}`, true);
         failed++;
       }
       // IN_QUEUE / IN_PROGRESS: leave as processing
@@ -202,10 +237,9 @@ export const Route = createFileRoute("/api/public/hooks/process-ai-videos")({
             headers: { "Content-Type": "application/json" },
           });
         }
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         try {
-          const submitted = await processQueued(supabaseAdmin as any, key);
-          const pending = await processPending(supabaseAdmin as any, key);
+          const submitted = await processQueued(key);
+          const pending = await processPending(key);
           return new Response(
             JSON.stringify({ ok: true, submitted, pending }),
             { headers: { "Content-Type": "application/json" } },

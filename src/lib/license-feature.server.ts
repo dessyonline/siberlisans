@@ -1,7 +1,9 @@
 // Shared helpers for feature endpoints (/chat, /session, /source-code, etc.)
 // - License gating (403 if missing/inactive/expired/revoked)
 // - Simple in-memory per-license rate limiter
-import { CORS, clientIp, json, logEvent } from "@/lib/license-api.server";
+import { CORS, clientIp, json } from "@/lib/license-api.server";
+import { mysqlOne } from "@/lib/mysql.server";
+import { logEventMysql } from "@/lib/license-mysql.server";
 
 export { CORS, json, clientIp };
 
@@ -46,13 +48,15 @@ export async function verifyLicense(license_key: string): Promise<
   | { ok: false; status: number; error: string }
 > {
   if (!license_key) return { ok: false, status: 400, error: "licenseKey gerekli." };
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data, error } = await supabaseAdmin
-    .from("license_keys")
-    .select("id,status,expires_at,revoked,activated_at")
-    .eq("key_value", license_key)
-    .maybeSingle();
-  if (error) return { ok: false, status: 500, error: "Doğrulama hatası." };
+  let data: { id: string; status: string; expires_at: string | null; revoked: number | null; activated_at: string | null } | null;
+  try {
+    data = await mysqlOne(
+      "SELECT id,status,expires_at,revoked,activated_at FROM license_keys WHERE key_value=?",
+      [license_key],
+    );
+  } catch {
+    return { ok: false, status: 500, error: "Doğrulama hatası." };
+  }
   if (!data) return { ok: false, status: 403, error: "Geçersiz veya süresi dolmuş lisans." };
   // Aktif kabul: revoke edilmemiş + süresi dolmamış + aktive edilmiş (activated_at set)
   if (data.revoked || data.status === "revoked") {
@@ -64,7 +68,7 @@ export async function verifyLicense(license_key: string): Promise<
   if (data.expires_at && new Date(data.expires_at).getTime() < Date.now()) {
     return { ok: false, status: 403, error: "Lisansın süresi dolmuş." };
   }
-  return { ok: true, row: data as never };
+  return { ok: true, row: { ...data, revoked: !!data.revoked } };
 }
 
 
@@ -101,8 +105,7 @@ export async function gate(
   const verified = await verifyLicense(license_key);
   if (!verified.ok) {
     if (license_key) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-      await logEvent(supabaseAdmin as never, {
+      await logEventMysql({
         license_key,
         event: "fail",
         hwid: null,

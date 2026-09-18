@@ -1,22 +1,13 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { upsertReview } from "@/lib/reviews.functions";
+import { upsertReview, getPendingReviewProducts, type PendingReviewProduct } from "@/lib/reviews.functions";
 import { StarRating } from "@/components/StarRating";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Sparkles, MessageSquarePlus, X } from "lucide-react";
-
-type Pending = {
-  product_id: string;
-  name: string;
-  slug: string;
-  image_url: string | null;
-  purchased_at: string | null;
-};
 
 export const REVIEW_POINTS = 20;
 
@@ -29,6 +20,7 @@ export function ReviewPromptCard({ productId, limit = 3 }: { productId?: string;
   const { user } = useAuth();
   const qc = useQueryClient();
   const upsertFn = useServerFn(upsertReview);
+  const pendingFn = useServerFn(getPendingReviewProducts);
   const [dismissed, setDismissed] = useState<string[]>([]);
   const [active, setActive] = useState<string | null>(null);
   const [rating, setRating] = useState(5);
@@ -38,13 +30,7 @@ export function ReviewPromptCard({ productId, limit = 3 }: { productId?: string;
   const { data: pending = [] } = useQuery({
     queryKey: ["pending-reviews", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        // biome-ignore lint/suspicious/noExplicitAny: function not in generated types
-        .rpc("pending_review_products" as any);
-      if (error) throw error;
-      return (data ?? []) as unknown as Pending[];
-    },
+    queryFn: () => pendingFn(),
   });
 
   const list = pending

@@ -2,8 +2,16 @@
 // Route dosyalarından ve server function handler'larından DİNAMİK import ile çağrılır.
 import { resolveLogoUrl } from "@/lib/logo-resolver";
 import { notifyTelegram } from "@/lib/telegram.server";
+import { mysqlQuery, mysqlOne, num, bool } from "@/lib/mysql.server";
 
 const DEFAULT_URL = "https://bayi.uniquelisans.com/api";
+
+function ts(d: Date = new Date()) {
+  return d.toISOString().slice(0, 19).replace("T", " ");
+}
+function uid() {
+  return crypto.randomUUID();
+}
 
 function slugify(s: string) {
   return s
@@ -29,10 +37,6 @@ async function ul(path: string, params: Record<string, string | number> = {}) {
   return body as Record<string, unknown>;
 }
 
-type SB = {
-  from: (t: string) => any; // eslint-disable-line @typescript-eslint/no-explicit-any
-};
-
 export type CatalogSyncOpts = {
   markup_percent: number;
   import_new: boolean;
@@ -44,8 +48,13 @@ export type CatalogSyncResult = {
   price_changed: number; hidden: number; reactivated: number; failed: number;
 };
 
+type ExistingRow = {
+  id: string; active: boolean; image_url: string | null;
+  price_try: number; external_price: number | null; stock_hint: number | null;
+  supplier_out_of_stock: boolean | null; price_locked: boolean | null;
+};
+
 export async function runUniquelisansCatalogSync(
-  supabase: SB,
   opts: CatalogSyncOpts,
 ): Promise<CatalogSyncResult> {
   const catsBody = await ul("/categories");
@@ -54,23 +63,29 @@ export async function runUniquelisansCatalogSync(
     subcategories: Array<{ id: number; category_id: number; name: string }>;
   }>;
 
-  const { data: existingRows } = await supabase.from("products")
-    .select("id, external_id, active, image_url, price_try, external_price, stock_hint, supplier_out_of_stock, price_locked")
-    .eq("source", "uniquelisans");
+  const existingRows = await mysqlQuery<{
+    id: string; external_id: string | null; active: number | null; image_url: string | null;
+    price_try: string | number | null; external_price: string | number | null; stock_hint: number | null;
+    supplier_out_of_stock: number | null; price_locked: number | null;
+  }>(
+    "SELECT id, external_id, active, image_url, price_try, external_price, stock_hint, supplier_out_of_stock, price_locked FROM products WHERE source='uniquelisans'",
+  );
 
-  const existing = new Map<string, {
-    id: string; active: boolean; image_url: string | null;
-    price_try: number; external_price: number | null; stock_hint: number | null;
-    supplier_out_of_stock: boolean | null; price_locked: boolean | null;
-  }>();
-  for (const r of (existingRows ?? []) as Array<{
-    id: string; external_id: string | null; active: boolean; image_url: string | null;
-    price_try: number; external_price: number | null; stock_hint: number | null;
-    supplier_out_of_stock: boolean | null; price_locked: boolean | null;
-  }>) {
-    if (r.external_id) existing.set(String(r.external_id), r);
+  const existing = new Map<string, ExistingRow>();
+  for (const r of existingRows) {
+    if (r.external_id) {
+      existing.set(String(r.external_id), {
+        id: r.id,
+        active: bool(r.active),
+        image_url: r.image_url,
+        price_try: num(r.price_try) ?? 0,
+        external_price: r.external_price == null ? null : num(r.external_price),
+        stock_hint: r.stock_hint,
+        supplier_out_of_stock: bool(r.supplier_out_of_stock),
+        price_locked: bool(r.price_locked),
+      });
+    }
   }
-
 
   const res: CatalogSyncResult = {
     scanned: 0, inserted: 0, updated: 0, price_changed: 0, hidden: 0, reactivated: 0, failed: 0,
@@ -103,57 +118,68 @@ export async function runUniquelisansCatalogSync(
 
           const prev = existing.get(key);
           if (prev) {
-            const patch: Record<string, unknown> = {
-              external_price: p.amount,
-              stock_hint: p.stock_count ?? null,
-              unlimited_stock: !!p.is_automatic_delivery,
-            };
+            const sets: string[] = ["external_price=?", "stock_hint=?", "unlimited_stock=?"];
+            const vals: Array<string | number | null> = [p.amount, p.stock_count ?? null, p.is_automatic_delivery ? 1 : 0];
+            let priceChanged = false;
             if (Number(prev.external_price ?? 0) !== p.amount) {
-              // Admin manuel fiyat kilidini koru: price_locked = true ise satış fiyatını yeniden yazma.
-              if (!prev.price_locked) patch.price_try = finalPrice;
+              if (!prev.price_locked) { sets.push("price_try=?"); vals.push(finalPrice); }
+              priceChanged = true;
               res.price_changed++;
             }
-            // Ürünü pasifleştirmek yerine geçici "tedarikçi stok yok" bayrağı ile satışı engelle.
-            // Admin manuel active ayarına dokunmuyoruz — stok dönünce bayrağı temizliyoruz.
+            let stockFlagChanged: boolean | null = null;
             if (outOfStock && !prev.supplier_out_of_stock) {
-              patch.supplier_out_of_stock = true;
+              sets.push("supplier_out_of_stock=?"); vals.push(1);
+              stockFlagChanged = true;
               res.hidden++;
             } else if (!outOfStock && prev.supplier_out_of_stock) {
-              patch.supplier_out_of_stock = false;
+              sets.push("supplier_out_of_stock=?"); vals.push(0);
+              stockFlagChanged = false;
               res.reactivated++;
             }
-            const { error } = await supabase.from("products").update(patch).eq("id", prev.id);
-            if (error) { res.failed++; continue; }
+            void priceChanged;
+            sets.push("updated_at=?"); vals.push(ts());
+            vals.push(prev.id);
+            try {
+              await mysqlQuery(`UPDATE products SET ${sets.join(", ")} WHERE id=?`, vals);
+            } catch {
+              res.failed++; continue;
+            }
             res.updated++;
-            // Stok geri geldiğinde: adminlere Telegram + abone kullanıcılara bildirim
-            if (patch.supplier_out_of_stock === false) {
-              await notifyStockBack(supabase, prev.id, p.name, p.stock_count ?? null);
+            if (stockFlagChanged === false) {
+              await notifyStockBack(prev.id, p.name, p.stock_count ?? null);
             }
           } else if (opts.import_new) {
             const baseSlug = slugify(p.name) || `ul-${p.id}`;
             let slug = baseSlug;
             for (let i = 2; i < 20; i++) {
-              const { data: exists } = await supabase.from("products").select("id").eq("slug", slug).maybeSingle();
+              const exists = await mysqlOne<{ id: string }>("SELECT id FROM products WHERE slug=?", [slug]);
               if (!exists) break;
               slug = `${baseSlug}-${i}`;
             }
-            const { error } = await supabase.from("products").insert({
-              name: p.name,
-              description: p.description ?? "",
-              slug,
-              price_try: finalPrice,
-              external_price: p.amount,
-              category: cat.name || "Dijital Ürünler",
-              active: false,
-              manual_fulfillment: true,
-              unlimited_stock: !!p.is_automatic_delivery,
-              supplier_out_of_stock: outOfStock,
-              source: "uniquelisans",
-              external_id: key,
-              stock_hint: p.stock_count ?? null,
-              image_url: resolveLogoUrl(p.name),
-            });
-            if (error) { res.failed++; continue; }
+            try {
+              await mysqlQuery(
+                `INSERT INTO products (id,name,description,slug,price_try,external_price,category,active,manual_fulfillment,unlimited_stock,supplier_out_of_stock,source,external_id,stock_hint,image_url,created_at,updated_at)
+                 VALUES (?,?,?,?,?,?,?,0,1,?,?, 'uniquelisans',?,?,?,?,?)`,
+                [
+                  uid(),
+                  p.name,
+                  p.description ?? "",
+                  slug,
+                  finalPrice,
+                  p.amount,
+                  cat.name || "Dijital Ürünler",
+                  p.is_automatic_delivery ? 1 : 0,
+                  outOfStock ? 1 : 0,
+                  key,
+                  p.stock_count ?? null,
+                  resolveLogoUrl(p.name),
+                  ts(),
+                  ts(),
+                ],
+              );
+            } catch {
+              res.failed++; continue;
+            }
             res.inserted++;
           }
 
@@ -168,7 +194,6 @@ export async function runUniquelisansCatalogSync(
 }
 
 async function notifyStockBack(
-  supabase: SB,
   productId: string,
   productName: string,
   stockCount: number | null,
@@ -183,27 +208,24 @@ async function notifyStockBack(
 
   try {
     // Abone kullanıcılara bildirim
-    const { data: subs } = await supabase
-      .from("stock_notifications")
-      .select("id, user_id")
-      .eq("product_id", productId)
-      .is("notified_at", null);
+    const subs = await mysqlQuery<{ id: string; user_id: string }>(
+      "SELECT id, user_id FROM stock_notifications WHERE product_id=? AND notified_at IS NULL",
+      [productId],
+    );
+    if (subs.length === 0) return;
 
-    const rows = (subs ?? []) as Array<{ id: string; user_id: string }>;
-    if (rows.length === 0) return;
-
-    const notifRows = rows.map((r) => ({
-      user_id: r.user_id,
-      title: "Beklediğin ürün stokta!",
-      body: `${productName} tekrar satışta. Hemen sipariş verebilirsin.`,
-      type: "stock_back",
-      link: `/urun/${productId}`,
-    }));
-    await supabase.from("notifications").insert(notifRows);
-
-    await supabase
-      .from("stock_notifications")
-      .update({ notified_at: new Date().toISOString() })
-      .in("id", rows.map((r) => r.id));
+    for (const r of subs) {
+      await mysqlQuery(
+        "INSERT INTO notifications (id,user_id,type,title,body,link,created_at) VALUES (?,?,?,?,?,?,?)",
+        [uid(), r.user_id, "stock_back", "Beklediğin ürün stokta!", `${productName} tekrar satışta. Hemen sipariş verebilirsin.`, `/urun/${productId}`, ts()],
+      );
+    }
+    const ids = subs.map((r) => r.id);
+    if (ids.length > 0) {
+      await mysqlQuery(
+        `UPDATE stock_notifications SET notified_at=? WHERE id IN (${ids.map(() => "?").join(",")})`,
+        [ts(), ...ids],
+      );
+    }
   } catch { /* bildirim başarısız olsa dahi sync devam etsin */ }
 }

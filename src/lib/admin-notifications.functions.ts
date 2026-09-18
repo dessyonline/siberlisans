@@ -1,16 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function assertAdmin(supabase: any, userId: string) {
-  const { data, error } = await supabase.rpc("has_role", {
-    _user_id: userId,
-    _role: "admin",
-  });
-  if (error) throw new Error("Yetki kontrol edilemedi");
-  if (!data) throw new Error("Yetkisiz");
-}
+import { requireAdmin } from "@/lib/auth-middleware.server";
+import { mysqlQuery } from "@/lib/mysql.server";
 
 const sendSchema = z.object({
   target: z.enum(["all", "user", "email"]),
@@ -23,68 +14,53 @@ const sendSchema = z.object({
 });
 
 export const sendAdminNotification = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .inputValidator((d: unknown) => sendSchema.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
-
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
+  .handler(async ({ data }): Promise<{ ok: true; count: number }> => {
     let targetIds: string[] = [];
     if (data.target === "all") {
-      const { data: profs, error } = await supabaseAdmin
-        .from("profiles")
-        .select("id");
-      if (error) throw new Error(error.message);
-      targetIds = (profs ?? []).map((p) => p.id);
+      const profs = await mysqlQuery<{ id: string }>("SELECT id FROM profiles");
+      targetIds = profs.map((p) => p.id);
     } else if (data.target === "user") {
       if (!data.userId) throw new Error("Kullanıcı seçilmedi");
       targetIds = [data.userId];
     } else if (data.target === "email") {
       if (!data.email) throw new Error("E-posta boş");
-      const { data: profs, error } = await supabaseAdmin
-        .from("profiles")
-        .select("id")
-        .ilike("email", data.email.trim())
-        .limit(1);
-      if (error) throw new Error(error.message);
+      const profs = await mysqlQuery<{ id: string }>(
+        "SELECT id FROM profiles WHERE email LIKE ? LIMIT 1",
+        [data.email.trim()],
+      );
       if (!profs || profs.length === 0) throw new Error("Bu e-postaya ait kullanıcı yok");
       targetIds = profs.map((p) => p.id);
     }
 
     if (targetIds.length === 0) throw new Error("Hedef kullanıcı yok");
 
-    const rows = targetIds.map((uid) => ({
-      user_id: uid,
-      type: data.type,
-      title: data.title,
-      body: data.body || null,
-      link: data.link || null,
-    }));
-
-    // batch insert (chunk 500)
     let inserted = 0;
-    for (let i = 0; i < rows.length; i += 500) {
-      const chunk = rows.slice(i, i + 500);
-      const { error } = await supabaseAdmin.from("notifications").insert(chunk);
-      if (error) throw new Error(error.message);
-      inserted += chunk.length;
+    for (const uid of targetIds) {
+      await mysqlQuery(
+        "INSERT INTO notifications (id, user_id, type, title, body, link, created_at) VALUES (?,?,?,?,?,?,NOW())",
+        [crypto.randomUUID(), uid, data.type, data.title, data.body || null, data.link || null],
+      );
+      inserted += 1;
     }
     return { ok: true, count: inserted };
   });
 
+export type AdminNotificationRow = {
+  id: string;
+  user_id: string;
+  type: string;
+  title: string;
+  body: string | null;
+  link: string | null;
+  created_at: string;
+};
+
 export const listRecentAdminNotifications = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data, error } = await supabaseAdmin
-      .from("notifications")
-      .select("id, user_id, type, title, body, link, created_at")
-      .order("created_at", { ascending: false })
-      .limit(50);
-    if (error) throw new Error(error.message);
-    return data ?? [];
+  .middleware([requireAdmin])
+  .handler(async (): Promise<AdminNotificationRow[]> => {
+    return mysqlQuery<AdminNotificationRow>(
+      "SELECT id, user_id, type, title, body, link, created_at FROM notifications ORDER BY created_at DESC LIMIT 50",
+    );
   });

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { getAccountHero, updateDisplayName } from "@/lib/account.functions";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,32 +29,13 @@ export function AccountHero({
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState("");
   const [saving, setSaving] = useState(false);
+  const getHero = useServerFn(getAccountHero);
+  const updateName = useServerFn(updateDisplayName);
 
   const { data: profile } = useQuery({
     queryKey: ["account-hero", userId],
     enabled: !!userId,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("display_name, avatar_id, tier, total_points, created_at")
-        .eq("id", userId)
-        .maybeSingle();
-      return data ?? null;
-    },
-  });
-
-  const { data: wallet } = useQuery({
-    queryKey: ["wallet", userId],
-    enabled: !!userId,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("wallets")
-        .select("balance_try")
-        .eq("user_id", userId)
-        .maybeSingle();
-      return data ?? { balance_try: 0 };
-    },
-    refetchInterval: 8000,
+    queryFn: () => getHero(),
   });
 
   useEffect(() => {
@@ -64,16 +46,20 @@ export function AccountHero({
     const val = name.trim();
     if (val.length < 2) return toast.error("[!] en az 2 karakter");
     setSaving(true);
-    const { error } = await supabase.from("profiles").update({ display_name: val }).eq("id", userId);
+    try {
+      await updateName({ data: { displayName: val } });
+    } catch (e) {
+      setSaving(false);
+      return toast.error(`[!] ${e instanceof Error ? e.message : "hata"}`);
+    }
     setSaving(false);
-    if (error) return toast.error(`[!] ${error.message}`);
     toast.success("[✓] görünen ad güncellendi");
     setEditing(false);
     qc.invalidateQueries({ queryKey: ["account-hero", userId] });
   };
 
   const tier = TIER_LABEL[(profile?.tier as string) ?? "bronze"] ?? TIER_LABEL.bronze;
-  const balance = Number(wallet?.balance_try ?? 0);
+  const balance = Number(profile?.balance_try ?? 0);
   const points = Number(profile?.total_points ?? 0);
 
   return (

@@ -1,35 +1,19 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouterState, Link } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { getRecentActiveProducts } from "@/lib/storefront.functions";
 import { Sparkles, X, KeyRound } from "lucide-react";
-
-type Recent = {
-  id: string;
-  name: string;
-  slug: string;
-  price_try: number;
-  created_at: string;
-  category: string | null;
-};
 
 export function RecentAdditionsBubble() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const getRecent = useServerFn(getRecentActiveProducts);
 
   const { data } = useQuery({
     queryKey: ["recent-products-bubble"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("id, name, slug, price_try, created_at, category")
-        .eq("active", true)
-        .order("created_at", { ascending: false })
-        .limit(6);
-      if (error) throw error;
-      return data as Recent[];
-    },
+    queryFn: () => getRecent(),
     refetchInterval: 60000,
   });
 

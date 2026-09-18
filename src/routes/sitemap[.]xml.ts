@@ -1,7 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
 
 const BASE_URL = "https://siberlisans.lovable.app";
 
@@ -39,21 +37,18 @@ export const Route = createFileRoute("/sitemap.xml")({
         const entries: SitemapEntry[] = [...staticEntries];
 
         try {
-          const supabase = createClient<Database>(
-            process.env.SUPABASE_URL!,
-            process.env.SUPABASE_PUBLISHABLE_KEY!,
-            { auth: { storage: undefined, persistSession: false, autoRefreshToken: false } },
-          );
-          const [productsRes, blogsRes] = await Promise.all([
-            supabase.from("products").select("slug, created_at, category").eq("active", true),
-            supabase
-              // biome-ignore lint/suspicious/noExplicitAny: table types may lag
-              .from("blog_posts" as any)
-              .select("slug, published_at, updated_at")
-              .not("published_at", "is", null)
-              .lte("published_at", new Date().toISOString()),
+          const { mysqlQuery } = await import("@/lib/mysql.server");
+          const [products, blogs] = await Promise.all([
+            mysqlQuery<{ slug: string; created_at: string | null; category: string | null }>(
+              "SELECT slug, created_at, category FROM products WHERE active = 1",
+            ),
+            mysqlQuery<{ slug: string; published_at: string | null; updated_at: string | null }>(
+              `SELECT slug, published_at, updated_at FROM blog_posts
+                WHERE published_at IS NOT NULL AND published_at <= NOW()`,
+            ),
           ]);
-          for (const p of productsRes.data ?? []) {
+
+          for (const p of products) {
             entries.push({
               path: `/urun/${p.slug}`,
               lastmod: (p.created_at ?? "").slice(0, 10) || undefined,
@@ -62,7 +57,7 @@ export const Route = createFileRoute("/sitemap.xml")({
             });
           }
           const seenCat = new Set<string>();
-          for (const p of productsRes.data ?? []) {
+          for (const p of products) {
             if (p.category && !seenCat.has(p.category)) {
               seenCat.add(p.category);
               entries.push({
@@ -72,7 +67,7 @@ export const Route = createFileRoute("/sitemap.xml")({
               });
             }
           }
-          for (const b of ((blogsRes.data ?? []) as unknown) as Array<{ slug: string; published_at: string | null; updated_at: string | null }>) {
+          for (const b of blogs) {
             entries.push({
               path: `/blog/${b.slug}`,
               lastmod: ((b.updated_at ?? b.published_at) ?? "").slice(0, 10) || undefined,

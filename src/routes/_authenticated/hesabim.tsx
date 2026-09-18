@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +22,15 @@ import { TransferButton } from "@/components/TransferButton";
 import { getMyAiSubscription } from "@/lib/ai-subscriptions.functions";
 import { listMyAiJobs } from "@/lib/ai-tools.functions";
 import { ReviewPromptCard } from "@/components/ReviewPromptCard";
+import {
+  listMyOrders,
+  getMyAvatar,
+  updateMyAvatar,
+  updateMyTelegramHandle,
+  changeMyPassword,
+  getMyWalletBalance,
+  type MyOrder,
+} from "@/lib/hesabim.functions";
 
 export const Route = createFileRoute("/_authenticated/hesabim")({
   component: MyAccount,
@@ -41,49 +49,17 @@ const STATUS_LABEL: Record<string, { l: string; c: string; bg: string }> = {
   rejected: { l: "reddedildi", c: "text-destructive", bg: "bg-destructive/10 border-destructive/30" },
 };
 
-type Order = {
-  id: string;
-  status: string;
-  price_try: number;
-  reference_code: string;
-  created_at: string;
-  product: { name: string; slug: string; delivery_type: string } | null;
-  items:
-    | { quantity: number; product_name_snapshot: string; product: { slug: string; delivery_type: string } | null }[]
-    | null;
-  keys:
-    | {
-        license_key:
-          | {
-              key_value: string;
-              activation_token: string | null;
-              expires_at: string | null;
-              duration_days: number | null;
-              product: { name: string; slug: string; delivery_type: string } | null;
-            }
-          | null;
-      }[]
-    | null;
-};
+type Order = MyOrder;
 
 function MyAccount() {
   const { user, signOut } = useAuth();
   const subFn = useServerFn(getMyAiSubscription);
   const jobsFn = useServerFn(listMyAiJobs);
+  const ordersFn = useServerFn(listMyOrders);
   const { data: orders, isLoading } = useQuery({
     queryKey: ["my-orders", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("orders")
-        .select(
-          "id, status, price_try, reference_code, created_at, product:products(name, slug, delivery_type), items:order_items(quantity, product_name_snapshot, product:products(slug, delivery_type)), keys:order_keys(license_key:license_keys(key_value, activation_token, expires_at, duration_days, product:products(name, slug, delivery_type)))"
-        )
-        .eq("user_id", user!.id)
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as unknown as Order[];
-    },
+    queryFn: () => ordersFn(),
   });
 
   const { data: aiSub } = useQuery({
@@ -602,49 +578,57 @@ function ProfileTab({ userId, email, telegramHandle, onSignOut }: { userId: stri
   const [saving, setSaving] = useState(false);
   const [avatarSaving, setAvatarSaving] = useState(false);
 
+  const avatarFn = useServerFn(getMyAvatar);
+  const updateAvatarFn = useServerFn(updateMyAvatar);
+  const updateTelegramFn = useServerFn(updateMyTelegramHandle);
+  const changePasswordFn = useServerFn(changeMyPassword);
+
   const { data: profile, refetch: refetchProfile } = useQuery({
     queryKey: ["profile-avatar", userId],
     enabled: !!userId,
-    queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("avatar_id").eq("id", userId).maybeSingle();
-      return (data ?? { avatar_id: null }) as { avatar_id: string | null };
-    },
+    queryFn: () => avatarFn(),
   });
 
   const pickAvatar = async (id: string) => {
     if (!userId) return;
     setAvatarSaving(true);
-    const { error } = await supabase.from("profiles").update({ avatar_id: id }).eq("id", userId);
-    setAvatarSaving(false);
-    if (error) return toast.error(`[!] ${error.message}`);
-    toast.success("[✓] avatar güncellendi");
-    refetchProfile();
+    try {
+      await updateAvatarFn({ data: { avatarId: id } });
+      toast.success("[✓] avatar güncellendi");
+      refetchProfile();
+    } catch (e) {
+      toast.error(`[!] ${(e as Error).message}`);
+    } finally {
+      setAvatarSaving(false);
+    }
   };
 
   const changePw = async () => {
     if (pw.length < 6) return toast.error("[!] şifre en az 6 karakter olmalı");
     if (pw !== pw2) return toast.error("[!] şifreler eşleşmiyor");
-    // 2FA aktifse hassas işlem — aal2 zorunlu
-    const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (aalData?.nextLevel === "aal2" && aalData.currentLevel === "aal1") {
-      toast.error("[!] şifre değişikliği için önce 2FA doğrulaması gerekli");
-      window.location.href = "/guvenlik";
-      return;
-    }
     setSaving(true);
-    const { error } = await supabase.auth.updateUser({ password: pw });
-    setSaving(false);
-    if (error) return toast.error(`[!] ${error.message}`);
-    setPw("");
-    setPw2("");
-    toast.success("[✓] şifre güncellendi");
+    try {
+      await changePasswordFn({ data: { password: pw } });
+      setPw("");
+      setPw2("");
+      toast.success("[✓] şifre güncellendi");
+    } catch (e) {
+      const message = (e as Error).message;
+      if (message.includes("2FA")) {
+        toast.error("[!] şifre değişikliği için önce 2FA doğrulaması gerekli");
+        window.location.href = "/guvenlik";
+        return;
+      }
+      toast.error(`[!] ${message}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const updateTelegram = async () => {
     setTgSaving(true);
     try {
-      const { error } = await supabase.from("profiles").update({ telegram_handle: telegram } as any).eq("id", userId);
-      if (error) throw error;
+      await updateTelegramFn({ data: { telegramHandle: telegram } });
       toast.success("[✓] telegram güncellendi");
     } catch (e) {
       toast.error(`[!] ${(e as Error).message}`);
@@ -783,13 +767,11 @@ function ProfileTab({ userId, email, telegramHandle, onSignOut }: { userId: stri
 
 function WalletBalance() {
   const { user } = useAuth();
+  const walletFn = useServerFn(getMyWalletBalance);
   const { data } = useQuery({
     queryKey: ["wallet", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase.from("wallets").select("balance_try").eq("user_id", user!.id).maybeSingle();
-      return data ?? { balance_try: 0 };
-    },
+    queryFn: () => walletFn(),
     refetchInterval: 8000,
   });
   const n = Number(data?.balance_try ?? 0);

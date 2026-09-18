@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { mysqlOne, mysqlQuery } from "@/lib/mysql.server";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -32,20 +33,17 @@ export const Route = createFileRoute("/api/revoke")({
         }
 
         try {
-          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-          const { error, count } = await supabaseAdmin
-            .from("license_keys")
-            .update({ revoked: true }, { count: "exact" })
-            .eq("hwid", hwid);
-          if (error) {
-            console.error("[api/revoke] update failed", { reason, error: error.message });
-            return json({ ok: false, error: error.message }, 500);
-          }
+          const before = await mysqlOne<{ c: number }>(
+            "SELECT COUNT(*) c FROM license_keys WHERE hwid=?",
+            [hwid],
+          );
+          const count = Number(before?.c ?? 0);
+          await mysqlQuery("UPDATE license_keys SET revoked=1 WHERE hwid=?", [hwid]);
           console.log("[api/revoke] revoked licenses", { hwid, reason, count });
-          return json({ ok: true, revoked_count: count ?? 0 });
+          return json({ ok: true, revoked_count: count });
         } catch (e) {
           const msg = e instanceof Error ? e.message : "unknown";
-          console.error("[api/revoke] exception", msg);
+          console.error("[api/revoke] exception", { reason, error: msg });
           return json({ ok: false, error: msg }, 500);
         }
       },

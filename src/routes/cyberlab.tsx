@@ -16,9 +16,9 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { getCyberlabAccess } from "@/lib/cyberlab.functions";
+import { listCyberlabProducts } from "@/lib/cyberlab-products.functions";
 
 const SITE_URL = "https://siberlisans.com";
 
@@ -85,18 +85,10 @@ function CyberlabPage() {
     staleTime: 60_000,
   });
 
+  const fetchProducts = useServerFn(listCyberlabProducts);
   const { data: products } = useQuery({
     queryKey: ["cyberlab-products"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("id, name, slug, description, duration, price_try, image_url, grants_app_days")
-        .eq("active", true)
-        .eq("grants_app", "cyberlab")
-        .order("price_try");
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: () => fetchProducts(),
   });
 
   const hasAccess = !!user && access?.active;

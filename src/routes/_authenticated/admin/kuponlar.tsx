@@ -2,8 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { adminUpsertCoupon, adminDeleteCoupon } from "@/lib/coupons.functions";
+import { adminUpsertCoupon, adminDeleteCoupon, adminListCoupons } from "@/lib/coupons.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,20 +36,13 @@ function AdminCouponsPage() {
   const qc = useQueryClient();
   const upsertFn = useServerFn(adminUpsertCoupon);
   const deleteFn = useServerFn(adminDeleteCoupon);
+  const listFn = useServerFn(adminListCoupons);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Coupon | null>(null);
 
   const { data: coupons = [], isLoading } = useQuery({
     queryKey: ["admin-coupons"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        // biome-ignore lint/suspicious/noExplicitAny: table not in generated types
-        .from("coupons" as any)
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return (data ?? []) as unknown as Coupon[];
-    },
+    queryFn: () => listFn(),
   });
 
   function openNew() {

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Terminal, Package, ShoppingCart, ShieldCheck, ChevronRight, X, Check } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { getOnboardingStatus, markOnboarded } from "@/lib/storefront.functions";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 
@@ -37,6 +38,8 @@ export function OnboardingTour() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [busy, setBusy] = useState(false);
+  const getStatus = useServerFn(getOnboardingStatus);
+  const markOnboardedFn = useServerFn(markOnboarded);
 
   useEffect(() => {
     if (!user) return;
@@ -44,13 +47,9 @@ export function OnboardingTour() {
     (async () => {
       // Skip if session flag or profile already onboarded
       if (typeof window !== "undefined" && sessionStorage.getItem("onb-skip") === "1") return;
-      const { data } = await supabase
-        .from("profiles")
-        .select("onboarded_at")
-        .eq("id", user.id)
-        .maybeSingle();
+      const data = await getStatus();
       if (cancelled) return;
-      if (!data?.onboarded_at) {
+      if (!data?.onboarded) {
         // brief delay so user sees the page first
         setTimeout(() => setOpen(true), 800);
       }
@@ -63,8 +62,7 @@ export function OnboardingTour() {
   const finish = async () => {
     setBusy(true);
     try {
-      // biome-ignore lint/suspicious/noExplicitAny: rpc not in generated types yet
-      await supabase.rpc("mark_onboarded" as any);
+      await markOnboardedFn();
     } catch {
       // ignore
     }
@@ -77,8 +75,7 @@ export function OnboardingTour() {
     sessionStorage.setItem("onb-skip", "1");
     setOpen(false);
     // fire-and-forget mark so it doesn't re-appear next login
-    // biome-ignore lint/suspicious/noExplicitAny: rpc
-    supabase.rpc("mark_onboarded" as any).then(() => {});
+    markOnboardedFn().then(() => {});
   };
 
   if (!open || !user) return null;

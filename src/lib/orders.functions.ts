@@ -1055,6 +1055,33 @@ const bankInput = z.object({
   active: z.boolean(),
 });
 
+export type BankAccountRow = {
+  id: string;
+  bank_name: string;
+  iban: string;
+  holder_name: string;
+  active: boolean;
+};
+
+export const listBankAccounts = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async (): Promise<BankAccountRow[]> => {
+    const rows = await mysqlQuery<{
+      id: string;
+      bank_name: string;
+      iban: string;
+      holder_name: string;
+      active: number;
+    }>("SELECT id, bank_name, iban, holder_name, active FROM bank_accounts ORDER BY created_at");
+    return rows.map((r) => ({
+      id: r.id,
+      bank_name: r.bank_name,
+      iban: r.iban,
+      holder_name: r.holder_name,
+      active: bool(r.active),
+    }));
+  });
+
 export const upsertBankAccount = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .validator((d: unknown) => bankInput.parse(d))
@@ -1265,6 +1292,52 @@ export const upsertPromoCode = createServerFn({ method: "POST" })
       }
     }
     return { ok: true };
+  });
+
+export type AdminPromoRow = {
+  id: string;
+  code: string;
+  discount_type: "percent" | "fixed";
+  discount_value: number;
+  active: boolean;
+  max_uses: number | null;
+  used_count: number;
+  expires_at: string | null;
+  product_id: string | null;
+  min_amount: number;
+  note: string | null;
+};
+
+export const listPromoCodesAdmin = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async (): Promise<AdminPromoRow[]> => {
+    const rows = await mysqlQuery<Record<string, unknown>>(
+      "SELECT * FROM promo_codes ORDER BY created_at DESC",
+    );
+    return rows.map((r) => ({
+      id: String(r.id),
+      code: String(r.code),
+      discount_type: r.discount_type as "percent" | "fixed",
+      discount_value: num(r.discount_value) ?? 0,
+      active: bool(r.active),
+      max_uses: r.max_uses === null || r.max_uses === undefined ? null : Number(r.max_uses),
+      used_count: Number(r.used_count ?? 0),
+      expires_at: (r.expires_at as string | null) ?? null,
+      product_id: (r.product_id as string | null) ?? null,
+      min_amount: num(r.min_amount) ?? 0,
+      note: (r.note as string | null) ?? null,
+    }));
+  });
+
+export type ProductOptionForPromo = { id: string; name: string };
+
+export const listProductOptionsForPromo = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async (): Promise<ProductOptionForPromo[]> => {
+    const rows = await mysqlQuery<{ id: string; name: string }>(
+      "SELECT id, name FROM products ORDER BY name",
+    );
+    return rows.map((r) => ({ id: String(r.id), name: String(r.name) }));
   });
 
 const promoDeleteInput = z.object({ id: z.string().uuid() });

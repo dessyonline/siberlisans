@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAuth } from "@/lib/auth-middleware.server";
+import { mysqlQuery, mysqlOne, num, bool } from "@/lib/mysql.server";
 import { resolveLogoUrl } from "@/lib/logo-resolver";
 import { writeAuditLog } from "@/lib/admin-audit.functions";
 
@@ -9,6 +10,13 @@ const DEFAULT_URL = "https://bayi.uniquelisans.com/api";
 export const DEFAULT_MARKUP_PERCENT = 20;
 // Her ürünün üstünde minimum kar (TL) — DB trigger'i de bunu zorunlu tutar.
 export const MIN_PROFIT_TL = 200;
+
+function ts(d: Date = new Date()) {
+  return d.toISOString().slice(0, 19).replace("T", " ");
+}
+function uid() {
+  return crypto.randomUUID();
+}
 
 function priceWithFloor(cost: number, markupPercent: number): number {
   const marked = Math.round(cost * (1 + markupPercent / 100));
@@ -40,28 +48,33 @@ async function ul(path: string, params: Record<string, string | number> = {}) {
   return body as Record<string, unknown>;
 }
 
-type SB = { rpc: (...args: never[]) => { data: unknown } | Promise<{ data: unknown }> };
-async function assertAdmin(supabase: unknown, userId: string) {
-  const { data } = await (supabase as SB).rpc(
-    "has_role" as never,
-    { _user_id: userId, _role: "admin" } as never,
-  );
-  if (!data) throw new Error("Yetkisiz.");
+async function assertAdmin(isAdmin: boolean) {
+  if (!isAdmin) throw new Error("Yetkisiz.");
+}
+
+async function nextSlug(baseSlug: string) {
+  let slug = baseSlug;
+  for (let i = 2; i < 20; i++) {
+    const exists = await mysqlOne<{ id: string }>("SELECT id FROM products WHERE slug=?", [slug]);
+    if (!exists) break;
+    slug = `${baseSlug}-${i}`;
+  }
+  return slug;
 }
 
 // ------- Read passthrough (admin) -------
 export const ulBalance = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.isAdmin);
     const b = await ul("/balance");
     return { balance: Number((b as { balance?: number }).balance ?? 0) };
   });
 
 export const ulCategories = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .handler(async ({ context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.isAdmin);
     const b = await ul("/categories");
     return (b.categories ?? []) as Array<{
       id: number; name: string;
@@ -75,10 +88,10 @@ const listInput = z.object({
 });
 
 export const ulProducts = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .inputValidator((d: unknown) => listInput.parse(d))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.isAdmin);
     const params: Record<string, number> = { category_id: data.category_id };
     if (data.sub_category_id) params.sub_category_id = data.sub_category_id;
     const b = await ul("/products", params);
@@ -91,10 +104,10 @@ export const ulProducts = createServerFn({ method: "GET" })
 const detailInput = z.object({ external_id: z.number().int().positive() });
 
 export const ulProductDetail = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .inputValidator((d: unknown) => detailInput.parse(d))
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    await assertAdmin(context.isAdmin);
     const b = await ul(`/products/${data.external_id}`);
     return b.product_detail as {
       id: number; name: string; description: string; amount: number;
@@ -113,11 +126,10 @@ const importInput = z.object({
 });
 
 export const ulImportProduct = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .inputValidator((d: unknown) => importInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
+    await assertAdmin(context.isAdmin);
 
     const detail = (await ul(`/products/${data.external_id}`)).product_detail as {
       id: number; name: string; description: string; amount: number;
@@ -129,21 +141,11 @@ export const ulImportProduct = createServerFn({ method: "POST" })
 
     const finalPrice = priceWithFloor(detail.amount, data.markup_percent);
     const baseSlug = slugify(detail.name) || `ul-${detail.id}`;
-    let slug = baseSlug;
-    // slug çakışırsa suffix ekle
-    for (let i = 2; i < 20; i++) {
-      const { data: exists } = await supabase.from("products").select("id").eq("slug", slug).maybeSingle();
-      if (!exists) break;
-      slug = `${baseSlug}-${i}`;
-    }
 
-    // Var olan external kaydı upsert et
-    const { data: existing } = await supabase
-      .from("products")
-      .select("id")
-      .eq("source", "uniquelisans")
-      .eq("external_id", String(detail.id))
-      .maybeSingle();
+    const existing = await mysqlOne<{ id: string }>(
+      "SELECT id FROM products WHERE source='uniquelisans' AND external_id=?",
+      [String(detail.id)],
+    );
 
     // Stok kontrolü: SADECE sayısal stok takibi yapılan ürünlerde stock_count <= 0 ise
     // geçici olarak "tedarikçi stok yok" bayrağı yak. Ürün aktif kalır, sadece satış engellenir.
@@ -151,41 +153,60 @@ export const ulImportProduct = createServerFn({ method: "POST" })
       && typeof detail.stock_count === "number"
       && detail.stock_count <= 0;
 
-    const payload = {
-      name: detail.name,
-      description: detail.description ?? "",
-      price_try: finalPrice,
-      external_price: detail.amount,
-      category: data.category ?? "Dijital Ürünler",
-      active: data.active,
-      manual_fulfillment: true, // otomatik teslim kapalı — admin manuel siparişi Uniquelisans'ta açar
-      unlimited_stock: !!detail.is_automatic_delivery,
-      supplier_out_of_stock: outOfStock,
-      source: "uniquelisans",
-      external_id: String(detail.id),
-      required_fields: (detail.required_fields ?? []) as never,
-      stock_hint: detail.stock_count ?? null,
-      image_url: resolveLogoUrl(detail.name),
-    };
-
     if (existing) {
-      // Mevcut kayıtta admin manuel logo koyduysa üzerine yazma
-      const { data: cur } = await supabase.from("products").select("image_url, active").eq("id", existing.id).maybeSingle();
-      const updatePayload = { ...payload };
-      if (cur?.image_url) delete (updatePayload as Partial<typeof payload>).image_url;
-      // Admin'in active seçimini bozma — sadece supplier bayrağını güncelle
-      if (cur) updatePayload.active = cur.active;
-      const { error } = await supabase.from("products").update(updatePayload).eq("id", existing.id);
-      if (error) throw new Error(error.message);
+      const cur = await mysqlOne<{ image_url: string | null; active: number | null }>(
+        "SELECT image_url, active FROM products WHERE id=?",
+        [existing.id],
+      );
+      const imageUrl = cur?.image_url ? cur.image_url : resolveLogoUrl(detail.name);
+      const active = cur ? bool(cur.active) : data.active;
+      await mysqlQuery(
+        `UPDATE products SET name=?, description=?, price_try=?, external_price=?, category=?, active=?,
+           manual_fulfillment=1, unlimited_stock=?, supplier_out_of_stock=?, required_fields=?, stock_hint=?, image_url=?, updated_at=?
+         WHERE id=?`,
+        [
+          detail.name,
+          detail.description ?? "",
+          finalPrice,
+          detail.amount,
+          data.category ?? "Dijital Ürünler",
+          active ? 1 : 0,
+          detail.is_automatic_delivery ? 1 : 0,
+          outOfStock ? 1 : 0,
+          JSON.stringify(detail.required_fields ?? []),
+          detail.stock_count ?? null,
+          imageUrl,
+          ts(),
+          existing.id,
+        ],
+      );
       return { ok: true as const, productId: existing.id, updated: true, outOfStock };
     } else {
-      const { data: row, error } = await supabase
-        .from("products")
-        .insert({ ...payload, slug })
-        .select("id")
-        .single();
-      if (error) throw new Error(error.message);
-      return { ok: true as const, productId: row.id, updated: false, outOfStock };
+      const slug = await nextSlug(baseSlug);
+      const id = uid();
+      await mysqlQuery(
+        `INSERT INTO products (id,name,description,slug,price_try,external_price,category,active,manual_fulfillment,unlimited_stock,supplier_out_of_stock,source,external_id,required_fields,stock_hint,image_url,created_at,updated_at)
+         VALUES (?,?,?,?,?,?,?,?,1,?,?, 'uniquelisans',?,?,?,?,?,?)`,
+        [
+          id,
+          detail.name,
+          detail.description ?? "",
+          slug,
+          finalPrice,
+          detail.amount,
+          data.category ?? "Dijital Ürünler",
+          data.active ? 1 : 0,
+          detail.is_automatic_delivery ? 1 : 0,
+          outOfStock ? 1 : 0,
+          String(detail.id),
+          JSON.stringify(detail.required_fields ?? []),
+          detail.stock_count ?? null,
+          resolveLogoUrl(detail.name),
+          ts(),
+          ts(),
+        ],
+      );
+      return { ok: true as const, productId: id, updated: false, outOfStock };
     }
   });
 
@@ -196,21 +217,21 @@ export const ulImportProduct = createServerFn({ method: "POST" })
 const syncInput = z.object({ reactivate: z.boolean().default(false) }).default({ reactivate: false });
 
 export const ulSyncStock = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .inputValidator((d: unknown) => syncInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
+    await assertAdmin(context.isAdmin);
 
-    const { data: rows } = await supabase
-      .from("products")
-      .select("id, external_id, price_try, external_price, active, supplier_out_of_stock")
-      .eq("source", "uniquelisans");
+    const rows = await mysqlQuery<{
+      id: string; external_id: string | null; price_try: string | number | null;
+      external_price: string | number | null; active: number | null; supplier_out_of_stock: number | null;
+    }>(
+      "SELECT id, external_id, price_try, external_price, active, supplier_out_of_stock FROM products WHERE source='uniquelisans'",
+    );
 
-    const list = rows ?? [];
     let checked = 0, hidden = 0, reactivated = 0, updated = 0, failed = 0;
 
-    for (const p of list) {
+    for (const p of rows) {
       if (!p.external_id) continue;
       checked++;
       try {
@@ -224,20 +245,20 @@ export const ulSyncStock = createServerFn({ method: "POST" })
           && typeof d.stock_count === "number"
           && d.stock_count <= 0;
 
-        const patch: { external_price: number; stock_hint: number | null; unlimited_stock: boolean; supplier_out_of_stock?: boolean } = {
-          external_price: d.amount,
-          stock_hint: d.stock_count ?? null,
-          unlimited_stock: !!d.is_automatic_delivery,
-        };
-        if (outOfStock && !p.supplier_out_of_stock) {
-          patch.supplier_out_of_stock = true;
+        const supplierOos = bool(p.supplier_out_of_stock);
+        let nextFlag = supplierOos;
+        if (outOfStock && !supplierOos) {
+          nextFlag = true;
           hidden++;
-        } else if (!outOfStock && p.supplier_out_of_stock && data.reactivate) {
-          patch.supplier_out_of_stock = false;
+        } else if (!outOfStock && supplierOos && data.reactivate) {
+          nextFlag = false;
           reactivated++;
         }
-        const { error } = await supabase.from("products").update(patch).eq("id", p.id);
-        if (error) { failed++; continue; }
+
+        await mysqlQuery(
+          "UPDATE products SET external_price=?, stock_hint=?, unlimited_stock=?, supplier_out_of_stock=?, updated_at=? WHERE id=?",
+          [d.amount, d.stock_count ?? null, d.is_automatic_delivery ? 1 : 0, nextFlag ? 1 : 0, ts(), p.id],
+        );
         updated++;
       } catch {
         failed++;
@@ -249,17 +270,37 @@ export const ulSyncStock = createServerFn({ method: "POST" })
 
 
 export const ulImportedProducts = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .handler(async ({ context }) => {
-    const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
-    const { data } = await supabase
-      .from("products")
-      .select("id, name, slug, price_try, external_id, external_price, active, updated_at, stock_hint, unlimited_stock, supplier_out_of_stock, price_locked, retail_price_try, retail_price_source_url, duration_label")
-      .eq("source", "uniquelisans")
-      .order("updated_at", { ascending: false })
-      .limit(500);
-    return data ?? [];
+    await assertAdmin(context.isAdmin);
+    const rows = await mysqlQuery<{
+      id: string; name: string; slug: string; price_try: string | number | null;
+      external_id: string | null; external_price: string | number | null; active: number | null;
+      updated_at: string | null; stock_hint: number | null; unlimited_stock: number | null;
+      supplier_out_of_stock: number | null; price_locked: number | null;
+      retail_price_try: string | number | null; retail_price_source_url: string | null;
+      duration_label: string | null;
+    }>(
+      `SELECT id, name, slug, price_try, external_id, external_price, active, updated_at, stock_hint, unlimited_stock, supplier_out_of_stock, price_locked, retail_price_try, retail_price_source_url, duration_label
+         FROM products WHERE source='uniquelisans' ORDER BY updated_at DESC LIMIT 500`,
+    );
+    return rows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      slug: r.slug,
+      price_try: num(r.price_try) ?? 0,
+      external_id: r.external_id,
+      external_price: r.external_price == null ? null : num(r.external_price),
+      active: bool(r.active),
+      updated_at: r.updated_at,
+      stock_hint: r.stock_hint,
+      unlimited_stock: bool(r.unlimited_stock),
+      supplier_out_of_stock: bool(r.supplier_out_of_stock),
+      price_locked: bool(r.price_locked),
+      retail_price_try: r.retail_price_try == null ? null : num(r.retail_price_try),
+      retail_price_source_url: r.retail_price_source_url,
+      duration_label: r.duration_label,
+    }));
   });
 
 // Admin: içe aktarılmış Uniquelisans ürününü hızlı düzenle
@@ -279,63 +320,71 @@ const updateImportedInput = z.object({
 });
 
 export const ulUpdateImported = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .inputValidator((d: unknown) => updateImportedInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
+    await assertAdmin(context.isAdmin);
 
-    const { data: row, error: readErr } = await supabase
-      .from("products")
-      .select("id, external_price, source")
-      .eq("id", data.id)
-      .maybeSingle();
-    if (readErr) throw new Error(readErr.message);
+    const row = await mysqlOne<{ id: string; external_price: string | number | null; source: string | null }>(
+      "SELECT id, external_price, source FROM products WHERE id=?",
+      [data.id],
+    );
     if (!row) throw new Error("Ürün bulunamadı.");
 
-    const patch: {
-      active?: boolean;
-      price_try?: number;
-      price_locked?: boolean;
-      retail_price_try?: number | null;
-      retail_price_source_url?: string | null;
-      duration_label?: string | null;
-      retail_price_updated_at?: string;
-    } = {};
-    if (typeof data.active === "boolean") patch.active = data.active;
+    const sets: string[] = [];
+    const params: Array<string | number | null> = [];
+    const patchSummary: Record<string, unknown> = {};
 
-    if (typeof data.price_try === "number") {
-      patch.price_try = Math.round(data.price_try);
-      patch.price_locked = true;
-    } else if (typeof data.markup_percent === "number") {
-      const cost = Number(row.external_price ?? 0);
-      patch.price_try = priceWithFloor(cost, data.markup_percent);
-      patch.price_locked = true;
+    if (typeof data.active === "boolean") {
+      sets.push("active=?"); params.push(data.active ? 1 : 0);
+      patchSummary.active = data.active;
     }
 
-    if (typeof data.price_locked === "boolean") patch.price_locked = data.price_locked;
+    let priceTry: number | undefined;
+    if (typeof data.price_try === "number") {
+      priceTry = Math.round(data.price_try);
+    } else if (typeof data.markup_percent === "number") {
+      const cost = num(row.external_price) ?? 0;
+      priceTry = priceWithFloor(cost, data.markup_percent);
+    }
+    if (priceTry !== undefined) {
+      sets.push("price_try=?", "price_locked=1"); params.push(priceTry);
+      patchSummary.price_try = priceTry;
+      patchSummary.price_locked = true;
+    }
+
+    if (typeof data.price_locked === "boolean") {
+      sets.push("price_locked=?"); params.push(data.price_locked ? 1 : 0);
+      patchSummary.price_locked = data.price_locked;
+    }
 
     if (data.retail_price_try !== undefined) {
-      patch.retail_price_try = data.retail_price_try === null ? null : Math.round(data.retail_price_try);
-      patch.retail_price_updated_at = new Date().toISOString();
+      const v = data.retail_price_try === null ? null : Math.round(data.retail_price_try);
+      sets.push("retail_price_try=?", "retail_price_updated_at=?");
+      params.push(v, ts());
+      patchSummary.retail_price_try = v;
     }
     if (data.retail_price_source_url !== undefined) {
-      patch.retail_price_source_url = data.retail_price_source_url || null;
+      sets.push("retail_price_source_url=?"); params.push(data.retail_price_source_url || null);
+      patchSummary.retail_price_source_url = data.retail_price_source_url || null;
     }
     if (data.duration_label !== undefined) {
-      patch.duration_label = data.duration_label || null;
+      sets.push("duration_label=?"); params.push(data.duration_label || null);
+      patchSummary.duration_label = data.duration_label || null;
     }
 
-    if (Object.keys(patch).length === 0) return { ok: true as const, changed: false };
+    if (sets.length === 0) return { ok: true as const, changed: false };
 
-    const { error } = await supabase.from("products").update(patch).eq("id", data.id);
-    if (error) throw new Error(error.message);
-    await writeAuditLog(supabase, {
+    sets.push("updated_at=?"); params.push(ts());
+    params.push(data.id);
+    await mysqlQuery(`UPDATE products SET ${sets.join(", ")} WHERE id=?`, params);
+
+    await writeAuditLog(context, {
       action: "product.update",
       entity_type: "product",
       entity_id: data.id,
       before: { external_price: row.external_price },
-      after: patch,
+      after: patchSummary,
       metadata: { source: "uniquelisans" },
     });
     return { ok: true as const, changed: true };
@@ -352,11 +401,10 @@ const catalogSyncInput = z.object({
 }).default({ markup_percent: DEFAULT_MARKUP_PERCENT, import_new: true, reactivate: true });
 
 export const ulSyncCatalog = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAuth])
   .inputValidator((d: unknown) => catalogSyncInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
+    await assertAdmin(context.isAdmin);
     const { runUniquelisansCatalogSync } = await import("@/lib/uniquelisans-catalog.server");
-    return await runUniquelisansCatalogSync(supabase as never, data);
+    return await runUniquelisansCatalogSync(data);
   });

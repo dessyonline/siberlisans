@@ -14,6 +14,7 @@ export type AuthUser = {
   id: string;
   email: string | null;
   display_name: string | null;
+  telegram_handle: string | null;
   roles: string[];
 };
 

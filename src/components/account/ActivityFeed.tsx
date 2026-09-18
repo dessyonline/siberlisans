@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { getAccountActivity } from "@/lib/account.functions";
 import {
   Activity,
   ArrowDownLeft,
@@ -35,69 +36,44 @@ const ORDER_TONE: Record<string, Item["tone"]> = {
 };
 
 export function ActivityFeed({ userId }: { userId: string }) {
+  const getActivity = useServerFn(getAccountActivity);
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["account-activity", userId],
     enabled: !!userId,
     refetchInterval: 20000,
     queryFn: async (): Promise<Item[]> => {
-      const [orders, txns, notifs] = await Promise.all([
-        supabase
-          .from("orders")
-          .select("id, status, price_try, reference_code, created_at, product:products(name)")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false })
-          .limit(6),
-        supabase
-          .from("wallet_transactions")
-          .select("id, kind, amount_try, note, created_at")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false })
-          .limit(6),
-        supabase
-          .from("notifications")
-          .select("id, title, body, created_at")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false })
-          .limit(6),
-      ]);
-
-      const out: Item[] = [];
-
-      (orders.data ?? []).forEach((o) => {
-        out.push({
-          id: `o-${o.id}`,
-          ts: o.created_at,
-          icon: ShoppingCart,
-          title: (o.product as { name?: string } | null)?.name ?? "Sipariş",
-          detail: `${o.reference_code} · ₺${Number(o.price_try).toLocaleString("tr-TR")} · ${o.status}`,
-          tone: ORDER_TONE[o.status] ?? "muted",
-        });
-      });
-
-      (txns.data ?? []).forEach((t) => {
-        const amt = Number(t.amount_try);
-        out.push({
-          id: `t-${t.id}`,
-          ts: t.created_at,
-          icon: amt >= 0 ? ArrowDownLeft : ArrowUpRight,
-          title: t.kind === "topup" ? "Bakiye yükleme" : t.kind === "purchase" ? "Satın alma" : t.kind,
-          detail: `${amt >= 0 ? "+" : ""}${amt.toLocaleString("tr-TR")} ₺${t.note ? ` · ${t.note}` : ""}`,
-          tone: amt >= 0 ? "primary" : "destructive",
-        });
-      });
-
-      (notifs.data ?? []).forEach((n) => {
-        out.push({
-          id: `n-${n.id}`,
-          ts: n.created_at,
+      const rows = await getActivity();
+      return rows.map((r) => {
+        if (r.kind === "order") {
+          return {
+            id: r.id,
+            ts: r.ts,
+            icon: ShoppingCart,
+            title: r.title,
+            detail: r.detail,
+            tone: ORDER_TONE[r.status ?? ""] ?? "muted",
+          };
+        }
+        if (r.kind === "wallet") {
+          const amt = r.amount ?? 0;
+          return {
+            id: r.id,
+            ts: r.ts,
+            icon: amt >= 0 ? ArrowDownLeft : ArrowUpRight,
+            title: r.title,
+            detail: r.detail,
+            tone: amt >= 0 ? "primary" : "destructive",
+          };
+        }
+        return {
+          id: r.id,
+          ts: r.ts,
           icon: Bell,
-          title: n.title,
-          detail: n.body ?? "",
+          title: r.title,
+          detail: r.detail,
           tone: "muted",
-        });
+        };
       });
-
-      return out.sort((a, b) => b.ts.localeCompare(a.ts)).slice(0, 14);
     },
   });
 

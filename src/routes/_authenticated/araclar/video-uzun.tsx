@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  createAiVideoJob,
-  getAiVideoPrices,
-} from "@/lib/ai-tools.functions";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/lib/auth-context";
+import { createAiVideoJob, getAiVideoPrices, listMyAiJobs } from "@/lib/ai-tools.functions";
+import { getMyBalance } from "@/lib/order-detail.functions";
 import { getFFmpeg, downloadBlob } from "@/lib/ffmpeg-client";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -44,6 +44,13 @@ const QUALITY_META: Record<Quality, { label: string; desc: string; icon: typeof 
   cinematic: { label: "Sinematik", desc: "prodüksiyon", icon: Crown },
 };
 
+type Job = {
+  id: string;
+  status: string;
+  result_url: string | null;
+  error: string | null;
+};
+
 type Scene = {
   key: string;
   prompt: string;
@@ -58,6 +65,13 @@ function newScene(): Scene {
 }
 
 function Page() {
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const createJobFn = useServerFn(createAiVideoJob);
+  const getPricesFn = useServerFn(getAiVideoPrices);
+  const getBalanceFn = useServerFn(getMyBalance);
+  const listJobsFn = useServerFn(listMyAiJobs);
+
   const [scenes, setScenes] = useState<Scene[]>([newScene(), newScene()]);
   const [quality, setQuality] = useState<Quality>("fast");
   const [duration, setDuration] = useState<Dur>(5);
@@ -65,57 +79,48 @@ function Page() {
   const [busy, setBusy] = useState(false);
   const [merging, setMerging] = useState(false);
   const [mergeProgress, setMergeProgress] = useState(0);
-  const [balance, setBalance] = useState<number | null>(null);
-  const [prices, setPrices] = useState<Record<Quality, Record<number, number>>>(DEFAULT_PRICES);
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const trackedJobIds = useRef<Set<string>>(new Set());
+
+  const { data: pricesData } = useQuery({
+    queryKey: ["ai-video-prices"],
+    enabled: !!user,
+    queryFn: () => getPricesFn(),
+  });
+  const prices = (pricesData as Record<Quality, Record<number, number>> | undefined) ?? DEFAULT_PRICES;
+
+  const { data: balanceData, refetch: refetchBalance } = useQuery({
+    queryKey: ["my-balance"],
+    enabled: !!user,
+    queryFn: () => getBalanceFn(),
+  });
+  const balance = balanceData?.balance_try ?? null;
+
+  const hasActiveJobs = scenes.some((s) => s.jobId && (s.status === "queued" || s.status === "processing"));
+
+  const { data: jobsData } = useQuery({
+    queryKey: ["ai-video-jobs-multi"],
+    enabled: !!user && hasActiveJobs,
+    queryFn: () => listJobsFn(),
+    refetchInterval: hasActiveJobs ? 8000 : false,
+  });
 
   useEffect(() => {
-    (async () => {
-      const [{ data: user }, p] = await Promise.all([
-        supabase.auth.getUser(),
-        getAiVideoPrices().catch(() => DEFAULT_PRICES),
-      ]);
-      setPrices(p as Record<Quality, Record<number, number>>);
-      if (!user.user) return;
-      const { data: w } = await supabase
-        .from("wallets")
-        .select("balance_try")
-        .eq("user_id", user.user.id)
-        .maybeSingle();
-      setBalance(Number(w?.balance_try ?? 0));
-    })();
-    const ch = supabase
-      .channel("ai_jobs_multi")
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "ai_jobs" },
-        (payload) => {
-          const row = payload.new as {
-            id: string;
-            status: string;
-            result_url: string | null;
-            error: string | null;
-          };
-          setScenes((prev) =>
-            prev.map((s) =>
-              s.jobId === row.id
-                ? {
-                    ...s,
-                    status: row.status as Scene["status"],
-                    resultUrl: row.result_url ?? undefined,
-                    error: row.error ?? undefined,
-                  }
-                : s,
-            ),
-          );
-        },
-      )
-      .subscribe();
-    channelRef.current = ch;
-    return () => {
-      supabase.removeChannel(ch);
-    };
-  }, []);
+    const jobs = (jobsData as unknown as Job[] | undefined) ?? [];
+    if (jobs.length === 0) return;
+    setScenes((prev) =>
+      prev.map((s) => {
+        if (!s.jobId) return s;
+        const j = jobs.find((x) => x.id === s.jobId);
+        if (!j) return s;
+        return {
+          ...s,
+          status: j.status as Scene["status"],
+          resultUrl: j.result_url ?? undefined,
+          error: j.error ?? undefined,
+        };
+      }),
+    );
+  }, [jobsData]);
 
   const unitCost = prices[quality]?.[duration] ?? DEFAULT_PRICES[quality][duration];
   const validCount = scenes.filter((s) => s.prompt.trim().length >= 3).length;
@@ -146,17 +151,11 @@ function Page() {
 
     setBusy(true);
     try {
-      // Sıralı gönder — RPC her seferinde ayrı bakiye düşer
       const next: Scene[] = [];
       for (const s of scenes) {
         try {
-          const res = await createAiVideoJob({
-            data: {
-              prompt: s.prompt.trim(),
-              duration,
-              aspect,
-              quality,
-            },
+          const res = await createJobFn({
+            data: { prompt: s.prompt.trim(), duration, aspect, quality },
           });
           next.push({ ...s, jobId: res.jobId, status: "queued", error: undefined });
         } catch (e) {
@@ -165,16 +164,8 @@ function Page() {
       }
       setScenes(next);
       toast.success(`${next.filter((n) => n.jobId).length} sahne kuyruğa alındı — 2-10 dk sürebilir`);
-      // Bakiyeyi yenile
-      const { data: user } = await supabase.auth.getUser();
-      if (user.user) {
-        const { data: w } = await supabase
-          .from("wallets")
-          .select("balance_try")
-          .eq("user_id", user.user.id)
-          .maybeSingle();
-        setBalance(Number(w?.balance_try ?? 0));
-      }
+      await refetchBalance();
+      await qc.invalidateQueries({ queryKey: ["ai-video-jobs-multi"] });
     } finally {
       setBusy(false);
     }
@@ -198,7 +189,6 @@ function Page() {
       const listTxt = files.map((f) => `file '${f}'`).join("\n");
       await ff.writeFile("list.txt", new TextEncoder().encode(listTxt));
       setMergeProgress(80);
-      // Aynı kalite/oranda olduklarından `-c copy` yeterli. Sorun olursa re-encode fallback.
       try {
         await ff.exec(["-f", "concat", "-safe", "0", "-i", "list.txt", "-c", "copy", "out.mp4"]);
       } catch {
@@ -210,7 +200,6 @@ function Page() {
         ]);
       }
       const out = (await ff.readFile("out.mp4")) as Uint8Array;
-      // Temizle
       for (const f of files) await ff.deleteFile(f).catch(() => {});
       await ff.deleteFile("list.txt").catch(() => {});
       await ff.deleteFile("out.mp4").catch(() => {});
@@ -250,7 +239,6 @@ function Page() {
         </div>
       </div>
 
-      {/* Ortak ayarlar */}
       <div className="glass-card rounded-lg p-4 space-y-4">
         <div>
           <div className="text-[11px] font-mono text-muted-foreground mb-2">kalite (tüm sahneler için)</div>
@@ -320,7 +308,6 @@ function Page() {
         </div>
       </div>
 
-      {/* Sahneler */}
       <div className="glass-card rounded-lg p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="font-mono text-sm text-primary">$ sahneler ({scenes.length}/6)</div>
@@ -368,7 +355,6 @@ function Page() {
         ))}
       </div>
 
-      {/* Aksiyon */}
       <div className="glass-card rounded-lg p-4 space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="text-sm font-mono">

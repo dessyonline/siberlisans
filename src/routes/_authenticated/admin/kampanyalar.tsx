@@ -1,9 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { listCampaigns, upsertCampaign, deleteCampaign, sendCampaignNow, testTelegramChannel } from "@/lib/campaigns.functions";
+import { listCampaigns, upsertCampaign, deleteCampaign, sendCampaignNow, testTelegramChannel, listCampaignProductOptions, listCampaignPromoOptions } from "@/lib/campaigns.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,6 +50,8 @@ function CampaignsAdmin() {
   const deleteFn = useServerFn(deleteCampaign);
   const sendFn = useServerFn(sendCampaignNow);
   const testFn = useServerFn(testTelegramChannel);
+  const productsFn = useServerFn(listCampaignProductOptions);
+  const promosFn = useServerFn(listCampaignPromoOptions);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [testResult, setTestResult] = useState<Awaited<ReturnType<typeof testTelegramChannel>> | null>(null);
   const [testing, setTesting] = useState(false);
@@ -74,12 +75,12 @@ function CampaignsAdmin() {
 
   const { data: products } = useQuery({
     queryKey: ["admin-campaigns-products"],
-    queryFn: async () => (await supabase.from("products").select("id,name,slug").order("name")).data ?? [],
+    queryFn: () => productsFn(),
   });
 
   const { data: promos } = useQuery({
     queryKey: ["admin-campaigns-promos"],
-    queryFn: async () => (await supabase.from("promo_codes").select("id,code").eq("active", true).order("code")).data ?? [],
+    queryFn: () => promosFn(),
   });
 
   const save = async (opts: { sendNow?: boolean } = {}) => {

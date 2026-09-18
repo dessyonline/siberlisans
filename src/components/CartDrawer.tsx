@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Minus, Plus, Trash2, ShoppingCart, KeyRound, ArrowRight, Ticket, X, Package } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { getCartLivePricing } from "@/lib/storefront.functions";
 import { useCart } from "@/lib/cart-store";
 import { useAuth } from "@/lib/auth-context";
 import { createCartOrder } from "@/lib/orders.functions";
@@ -16,7 +16,7 @@ import { applyFlash, type FlashSaleLite } from "@/lib/flash-sales";
 
 type CartPricing = {
   priceTry: number;
-  sale: (FlashSaleLite & { product_id: string }) | null;
+  sale: FlashSaleLite | null;
 };
 
 export function CartDrawer() {
@@ -29,6 +29,7 @@ export function CartDrawer() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const createCartOrderFn = useServerFn(createCartOrder);
+  const fetchCartPricingFn = useServerFn(getCartLivePricing);
   const validateCouponFn = useServerFn(validateCoupon);
   const [submitting, setSubmitting] = useState(false);
   const [couponInput, setCouponInput] = useState("");
@@ -40,35 +41,9 @@ export function CartDrawer() {
     queryKey: ["cart-live-pricing", productIds.join("|")],
     enabled: productIds.length > 0,
     queryFn: async () => {
-      const nowIso = new Date().toISOString();
-      const [productsRes, salesRes] = await Promise.all([
-        supabase.from("products").select("id, price_try").in("id", productIds),
-        supabase
-          .from("flash_sales" as any)
-          .select("id, product_id, discount_type, discount_value, ends_at, label")
-          .in("product_id", productIds)
-          .eq("is_active", true)
-          .lte("starts_at", nowIso)
-          .gt("ends_at", nowIso)
-          .order("ends_at", { ascending: true }),
-      ]);
-
-      if (productsRes.error) throw productsRes.error;
-      if (salesRes.error) throw salesRes.error;
-
-      const firstSaleByProduct = new Map<string, FlashSaleLite & { product_id: string }>();
-      for (const sale of (salesRes.data ?? []) as unknown as Array<FlashSaleLite & { product_id: string }>) {
-        if (!firstSaleByProduct.has(sale.product_id)) firstSaleByProduct.set(sale.product_id, sale);
-      }
-
+      const map = await fetchCartPricingFn({ data: { ids: productIds } });
       return Object.fromEntries(
-        (productsRes.data ?? []).map((p) => [
-          p.id,
-          {
-            priceTry: Number(p.price_try),
-            sale: firstSaleByProduct.get(p.id) ?? null,
-          } satisfies CartPricing,
-        ]),
+        Object.entries(map).map(([id, v]) => [id, { priceTry: v.priceTry, sale: v.sale } satisfies CartPricing]),
       ) as Record<string, CartPricing>;
     },
   });

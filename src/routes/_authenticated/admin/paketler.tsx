@@ -1,6 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  listAdminBundles,
+  listBundleProductOptions,
+  createBundle,
+  updateBundle,
+  toggleBundleActive,
+  deleteBundle,
+  addBundleItem,
+  updateBundleItemQty,
+  removeBundleItem,
+  type AdminBundleRow,
+} from "@/lib/admin-bundles.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,45 +25,27 @@ export const Route = createFileRoute("/_authenticated/admin/paketler")({
   head: () => ({ meta: [{ title: "Paketler — Admin" }] }),
 });
 
-type BundleRow = {
-  id: string;
-  slug: string;
-  name: string;
-  description: string | null;
-  price_try: number;
-  discount_percent: number;
-  active: boolean;
-  items: {
-    product_id: string;
-    quantity: number;
-    product: { name: string; price_try: number; cost_try: number | null } | null;
-  }[];
-};
+type BundleRow = AdminBundleRow;
 
 function AdminBundles() {
   const qc = useQueryClient();
+  const listFn = useServerFn(listAdminBundles);
+  const optionsFn = useServerFn(listBundleProductOptions);
+  const createFn = useServerFn(createBundle);
+  const updateFn = useServerFn(updateBundle);
+  const toggleFn = useServerFn(toggleBundleActive);
+  const deleteFn = useServerFn(deleteBundle);
+  const addItemFn = useServerFn(addBundleItem);
+  const updateQtyFn = useServerFn(updateBundleItemQty);
+  const removeItemFn = useServerFn(removeBundleItem);
+
   const { data: bundles } = useQuery({
     queryKey: ["admin-bundles"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("product_bundles")
-        .select(
-          "*, items:product_bundle_items(product_id, quantity, product:products(name, price_try, cost_try))",
-        )
-        .order("created_at", { ascending: false });
-      return (data ?? []) as unknown as BundleRow[];
-    },
+    queryFn: async () => listFn(),
   });
   const { data: products } = useQuery({
     queryKey: ["admin-bundles-products"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("products")
-        .select("id, name, price_try, cost_try")
-        .eq("active", true)
-        .order("name");
-      return data ?? [];
-    },
+    queryFn: async () => optionsFn(),
   });
 
   const [form, setForm] = useState({
@@ -66,73 +60,72 @@ function AdminBundles() {
   async function create() {
     if (!form.slug || !form.name || form.price_try <= 0)
       return toast.error("Zorunlu alanlar");
-    const { error } = await supabase.from("product_bundles").insert(form);
-    if (error) return toast.error(error.message);
-    toast.success("Paket eklendi");
-    setForm({ slug: "", name: "", description: "", price_try: 0, discount_percent: 0 });
+    try {
+      await createFn({ data: form });
+      toast.success("Paket eklendi");
+      setForm({ slug: "", name: "", description: "", price_try: 0, discount_percent: 0 });
+      qc.invalidateQueries({ queryKey: ["admin-bundles"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+
+  async function toggleActive(id: string) {
+    await toggleFn({ data: { id } });
     qc.invalidateQueries({ queryKey: ["admin-bundles"] });
   }
 
-  async function toggleActive(id: string, active: boolean) {
-    await supabase.from("product_bundles").update({ active: !active }).eq("id", id);
-    qc.invalidateQueries({ queryKey: ["admin-bundles"] });
-  }
-
-  async function deleteBundle(id: string) {
+  async function deleteBundleRow(id: string) {
     if (!confirm("Sil?")) return;
-    await supabase.from("product_bundles").delete().eq("id", id);
+    await deleteFn({ data: { id } });
     qc.invalidateQueries({ queryKey: ["admin-bundles"] });
   }
 
   async function addItem(bundleId: string, productId: string) {
     if (!productId) return;
-    const { error } = await supabase
-      .from("product_bundle_items")
-      .insert({ bundle_id: bundleId, product_id: productId, quantity: 1 });
-    if (error) return toast.error(error.message);
-    qc.invalidateQueries({ queryKey: ["admin-bundles"] });
+    try {
+      await addItemFn({ data: { bundleId, productId } });
+      qc.invalidateQueries({ queryKey: ["admin-bundles"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   }
 
   async function updateItemQty(bundleId: string, productId: string, quantity: number) {
     if (quantity < 1) return;
-    await supabase
-      .from("product_bundle_items")
-      .update({ quantity })
-      .eq("bundle_id", bundleId)
-      .eq("product_id", productId);
+    await updateQtyFn({ data: { bundleId, productId, quantity } });
     qc.invalidateQueries({ queryKey: ["admin-bundles"] });
   }
 
   async function removeItem(bundleId: string, productId: string) {
-    await supabase
-      .from("product_bundle_items")
-      .delete()
-      .eq("bundle_id", bundleId)
-      .eq("product_id", productId);
+    await removeItemFn({ data: { bundleId, productId } });
     qc.invalidateQueries({ queryKey: ["admin-bundles"] });
   }
 
   async function saveEdit(id: string) {
     const patch = editing[id];
     if (!patch) return;
-    const { error } = await supabase
-      .from("product_bundles")
-      .update({
-        slug: patch.slug,
-        name: patch.name,
-        description: patch.description,
-        price_try: patch.price_try,
-        discount_percent: patch.discount_percent,
-      })
-      .eq("id", id);
-    if (error) return toast.error(error.message);
-    toast.success("Güncellendi");
-    setEditing((s) => {
-      const n = { ...s };
-      delete n[id];
-      return n;
-    });
-    qc.invalidateQueries({ queryKey: ["admin-bundles"] });
+    try {
+      await updateFn({
+        data: {
+          id,
+          slug: patch.slug ?? "",
+          name: patch.name ?? "",
+          description: patch.description ?? null,
+          price_try: patch.price_try ?? 0,
+          discount_percent: patch.discount_percent ?? 0,
+        },
+      });
+      toast.success("Güncellendi");
+      setEditing((s) => {
+        const n = { ...s };
+        delete n[id];
+        return n;
+      });
+      qc.invalidateQueries({ queryKey: ["admin-bundles"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   }
 
   function startEdit(b: BundleRow) {
@@ -347,14 +340,14 @@ function AdminBundles() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => toggleActive(bb.id, bb.active)}
+                        onClick={() => toggleActive(bb.id)}
                       >
                         {bb.active ? "pasifleştir" : "aktifleştir"}
                       </Button>
                       <Button
                         size="sm"
                         variant="destructive"
-                        onClick={() => deleteBundle(bb.id)}
+                        onClick={() => deleteBundleRow(bb.id)}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>

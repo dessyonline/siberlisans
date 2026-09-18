@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAdmin } from "@/lib/auth-middleware.server";
 
 const upsertInput = z.object({
   id: z.string().uuid().optional(),
@@ -158,4 +159,26 @@ export const testTelegramChannel = createServerFn({ method: "POST" })
       memberStatus,
       memberError,
     };
+  });
+
+/* ================= ADMIN PICKERS (MySQL) ================= */
+
+export const listCampaignProductOptions = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async (): Promise<{ id: string; name: string; slug: string }[]> => {
+    const { mysqlQuery } = await import("@/lib/mysql.server");
+    const rows = await mysqlQuery<{ id: string; name: string; slug: string }>(
+      "SELECT id, name, slug FROM products ORDER BY name",
+    );
+    return rows.map((r) => ({ id: String(r.id), name: String(r.name), slug: String(r.slug) }));
+  });
+
+export const listCampaignPromoOptions = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async (): Promise<{ id: string; code: string }[]> => {
+    const { mysqlQuery } = await import("@/lib/mysql.server");
+    const rows = await mysqlQuery<{ id: string; code: string }>(
+      "SELECT id, code FROM promo_codes WHERE active=1 ORDER BY code",
+    );
+    return rows.map((r) => ({ id: String(r.id), code: String(r.code) }));
   });

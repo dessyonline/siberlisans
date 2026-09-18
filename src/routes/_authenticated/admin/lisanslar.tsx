@@ -1,14 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import {
+  listLovableLicenses,
+  generateLovableLicenses,
+  setLicenseAction,
+  deleteLicense,
+  purgeUnusedLovableLicenses,
+  type AdminLicenseRow,
+} from "@/lib/admin-licenses.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, X, Ban, RotateCcw, ShieldCheck, Clock, Cpu, CheckCircle2, Sparkles, Download, Copy, Trash2, Eraser } from "lucide-react";
 import { toast } from "sonner";
-
-const LOVABLE_PRODUCT_ID = "4f6d86cf-6a89-4940-90af-953cc3d6ab5f";
 
 function genKey(): string {
   const abc = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -95,19 +101,7 @@ export const Route = createFileRoute("/_authenticated/admin/lisanslar")({
   component: LicensesAdmin,
 });
 
-type Row = {
-  id: string;
-  key_value: string;
-  status: string;
-  hwid: string | null;
-  activated_at: string | null;
-  expires_at: string | null;
-  duration_days: number | null;
-  duration_minutes: number | null;
-  revoked: boolean;
-  last_validated_at: string | null;
-  product: { name: string; slug: string } | null;
-};
+type Row = AdminLicenseRow;
 
 function fmt(d: string | null) {
   if (!d) return "—";
@@ -133,6 +127,12 @@ function daysLeft(exp: string | null): number | null {
 
 function LicensesAdmin() {
   const qc = useQueryClient();
+  const listFn = useServerFn(listLovableLicenses);
+  const generateFn = useServerFn(generateLovableLicenses);
+  const actionFn = useServerFn(setLicenseAction);
+  const deleteFn = useServerFn(deleteLicense);
+  const purgeFn = useServerFn(purgeUnusedLovableLicenses);
+
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "active" | "revoked" | "expired" | "unactivated">("all");
   const [qty, setQty] = useState(1);
@@ -150,16 +150,7 @@ function LicensesAdmin() {
 
   const { data: rows } = useQuery({
     queryKey: ["licenses-manage-lovable"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("license_keys")
-        .select("id, key_value, status, hwid, activated_at, expires_at, duration_days, duration_minutes, revoked, last_validated_at, product:products(name, slug)")
-        .eq("product_id", LOVABLE_PRODUCT_ID)
-        .order("created_at", { ascending: false })
-        .limit(500);
-      if (error) throw error;
-      return data as unknown as Row[];
-    },
+    queryFn: async () => listFn(),
     refetchInterval: 20000,
   });
 
@@ -169,17 +160,8 @@ function LicensesAdmin() {
     setBusy(true);
     try {
       const minutes = amount > 0 ? unitToMinutes(amount, unit) : null;
-      const keys = Array.from({ length: qty }, () => genKey());
-      const rows = keys.map((k) => ({
-        product_id: LOVABLE_PRODUCT_ID,
-        key_value: k,
-        duration_minutes: minutes,
-        duration_days: minutes ? Math.max(1, Math.round(minutes / 1440)) : null,
-        status: "available" as const,
-      }));
-      const { error } = await supabase.from("license_keys").insert(rows);
-      if (error) throw error;
-      setLastGenerated(keys);
+      const res = await generateFn({ data: { qty, minutes } });
+      setLastGenerated(res.keys);
       toast.success(`${qty} anahtar üretildi`);
       qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
     } catch (e) {
@@ -217,16 +199,14 @@ function LicensesAdmin() {
     });
   }, [rows, search, filter]);
 
-  const call = async (id: string, action: string, valueInt?: number | null) => {
-    const args: { _id: string; _action: string; _value_int?: number; _value_ts?: string } = {
-      _id: id,
-      _action: action,
-    };
-    if (valueInt !== null && valueInt !== undefined) args._value_int = valueInt;
-    const { error } = await supabase.rpc("admin_set_license", args);
-    if (error) return toast.error(error.message);
-    toast.success("Güncellendi");
-    qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
+  const call = async (id: string, action: "reset_hwid" | "set_duration" | "revoke" | "unrevoke", valueInt?: number | null) => {
+    try {
+      await actionFn({ data: { id, action, valueInt: valueInt ?? undefined } });
+      toast.success("Güncellendi");
+      qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   };
 
   const setDuration = (id: string) => {
@@ -239,31 +219,26 @@ function LicensesAdmin() {
 
   const deleteOne = async (id: string, key: string) => {
     if (!confirm(`"${key}" anahtarını kalıcı olarak sil? Siparişe bağlıysa bağlantı da kaldırılır. Geri alınamaz.`)) return;
-    const { error } = await supabase.from("license_keys").delete().eq("id", id);
-    if (error) {
-      const foreign = error.message.toLowerCase().includes("foreign") || error.code === "23503";
-      if (foreign) {
-        const { error: fErr } = await supabase.rpc("admin_force_delete_license", { _id: id });
-        if (fErr) return toast.error(fErr.message);
-        toast.success("Silindi (siparişten koparıldı)");
-        qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
-        return;
-      }
-      return toast.error(error.message);
+    try {
+      await deleteFn({ data: { id } });
+      toast.success("Silindi");
+      qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
+    } catch (e) {
+      toast.error((e as Error).message);
     }
-    toast.success("Silindi");
-    qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
   };
 
   const purgeUnused = async () => {
     const unused = (rows ?? []).filter((r) => r.status === "available" && !r.hwid);
     if (unused.length === 0) return toast.info("Silinecek kullanılmamış anahtar yok");
     if (!confirm(`${unused.length} kullanılmamış (havuzdaki) anahtarı sil?`)) return;
-    const ids = unused.map((r) => r.id);
-    const { error } = await supabase.from("license_keys").delete().in("id", ids);
-    if (error) return toast.error(error.message);
-    toast.success(`${ids.length} anahtar silindi`);
-    qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
+    try {
+      const res = await purgeFn();
+      toast.success(`${res.deleted} anahtar silindi`);
+      qc.invalidateQueries({ queryKey: ["licenses-manage-lovable"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   };
 
   return (

@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
+import { listDealerTiers, getMyDealerInfo, applyForDealership } from "@/lib/dealer.functions";
+import { getAccountSummary } from "@/lib/account-summary.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -36,67 +38,55 @@ function DealerLanding() {
   const [form, setForm] = useState({ company: "", phone: "", channel: "", volume: "", note: "" });
   const [sending, setSending] = useState(false);
 
+  const tiersFn = useServerFn(listDealerTiers);
+  const mineFn = useServerFn(getMyDealerInfo);
+  const applyFn = useServerFn(applyForDealership);
+  const summaryFn = useServerFn(getAccountSummary);
+
   const { data: tiers } = useQuery({
     queryKey: ["dealer-tiers"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("dealer_tiers")
-        .select("slug, name, min_volume_try, commission_percent, discount_percent, sort_order")
-        .order("sort_order");
-      return data ?? [];
-    },
+    queryFn: () => tiersFn(),
   });
 
   const { data: mine } = useQuery({
     queryKey: ["dealer-self", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const [dealer, app] = await Promise.all([
-        supabase.from("dealers").select("code, tier_slug, active").maybeSingle(),
-        supabase
-          .from("dealer_applications")
-          .select("id, status, admin_note, created_at")
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle(),
-      ]);
-      return { dealer: dealer.data, application: app.data };
-    },
+    queryFn: () => mineFn(),
+  });
+
+  const { data: summary } = useQuery({
+    queryKey: ["account-summary", user?.id],
+    enabled: !!user,
+    queryFn: () => summaryFn(),
   });
 
   const submit = async () => {
     if (!form.company.trim()) return toast.error("Firma / rumuz adı gerekli");
     setSending(true);
-    const { error } = await supabase.rpc("apply_for_dealership", {
-      _company_name: form.company.trim(),
-      _contact_phone: form.phone.trim(),
-      _channel: form.channel.trim(),
-      _monthly_volume: Number(form.volume) || 0,
-      _note: form.note.trim(),
-    });
-    setSending(false);
-    if (error) return toast.error(error.message);
-    toast.success("Başvurun alındı, en kısa sürede dönüş yapılacak");
-    setForm({ company: "", phone: "", channel: "", volume: "", note: "" });
-    qc.invalidateQueries({ queryKey: ["dealer-self"] });
+    try {
+      await applyFn({
+        data: {
+          companyName: form.company.trim(),
+          contactPhone: form.phone.trim(),
+          channel: form.channel.trim(),
+          monthlyVolume: Number(form.volume) || 0,
+          note: form.note.trim(),
+        },
+      });
+      toast.success("Başvurun alındı, en kısa sürede dönüş yapılacak");
+      setForm({ company: "", phone: "", channel: "", volume: "", note: "" });
+      qc.invalidateQueries({ queryKey: ["dealer-self"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSending(false);
+    }
   };
 
   const pending = mine?.application?.status === "pending";
   const rejected = mine?.application?.status === "rejected";
 
-  const { data: wallet } = useQuery({
-    queryKey: ["dealer-apply-wallet", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("wallets")
-        .select("balance_try")
-        .eq("user_id", user!.id)
-        .maybeSingle();
-      return Number(data?.balance_try ?? 0);
-    },
-  });
-  const balance = Number(wallet ?? 0);
+  const balance = summary?.balance_try ?? 0;
   const balanceOk = balance >= 1000;
 
   return (

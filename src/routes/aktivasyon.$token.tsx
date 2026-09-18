@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { claimLicenseByToken } from "@/lib/activation.functions";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ShieldCheck, XCircle, Terminal } from "lucide-react";
@@ -16,9 +16,7 @@ function ActivationPage() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["activation", token],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("claim_license_by_token", { _token: token });
-      if (error) throw error;
-      const row = Array.isArray(data) ? data[0] : data;
+      const row = await claimLicenseByToken({ data: { token } });
       return row ?? null;
     },
   });

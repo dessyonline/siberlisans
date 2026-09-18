@@ -2,8 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
-import { answerProductQuestion, deleteProductQuestion } from "@/lib/product-qa.functions";
+import { answerProductQuestion, deleteProductQuestion, listAllProductQuestions } from "@/lib/product-qa.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -37,22 +36,13 @@ function AdminQuestions() {
   const qc = useQueryClient();
   const answerFn = useServerFn(answerProductQuestion);
   const deleteFn = useServerFn(deleteProductQuestion);
+  const listFn = useServerFn(listAllProductQuestions);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [tab, setTab] = useState<"pending" | "answered">("pending");
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-questions", tab],
-    queryFn: async () => {
-      let q = supabase
-        // biome-ignore lint/suspicious/noExplicitAny: table not yet in generated types
-        .from("product_questions" as any)
-        .select("id, product_id, user_id, question, answer, created_at, products(name, slug)")
-        .order("created_at", { ascending: false })
-        .limit(100);
-      q = tab === "pending" ? q.is("answer", null) : q.not("answer", "is", null);
-      const { data } = await q;
-      return (data ?? []) as unknown as Row[];
-    },
+    queryFn: () => listFn({ data: { tab } }),
   });
 
   const send = async (id: string) => {

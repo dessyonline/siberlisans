@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { getTopup } from "@/lib/wallet-read.functions";
+import { getActiveBankAccount } from "@/lib/order-detail.functions";
 import { toast } from "sonner";
 import enparaQr from "@/assets/enpara-qr.png";
 import { Copy, CheckCircle2, Clock, XCircle, ShieldCheck, ArrowRight } from "lucide-react";
@@ -20,26 +22,18 @@ function copy(text: string, label = "kopyalandı") {
 function TopupPayment() {
   const { topupId } = Route.useParams();
 
+  const fetchTopup = useServerFn(getTopup);
+  const fetchBank = useServerFn(getActiveBankAccount);
+
   const { data: topup } = useQuery({
     queryKey: ["topup", topupId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("wallet_topups")
-        .select("id, user_id, reference_code, amount_try, status, admin_note, created_at, approved_at")
-        .eq("id", topupId)
-        .single();
-      if (error) throw error;
-      return data;
-    },
+    queryFn: async () => fetchTopup({ data: { topupId } }),
     refetchInterval: 4000,
   });
 
   const { data: bank } = useQuery({
     queryKey: ["bank", "active"],
-    queryFn: async () => {
-      const { data } = await supabase.from("bank_accounts").select("*").eq("active", true).limit(1).maybeSingle();
-      return data;
-    },
+    queryFn: async () => fetchBank(),
   });
 
   if (!topup) return <div className="p-8 text-center font-mono text-muted-foreground">yükleniyor…</div>;
@@ -63,7 +57,7 @@ function TopupPayment() {
           <div>
             <div className="font-mono text-[11px] text-muted-foreground">referans</div>
             <button className="flex items-center gap-2 font-mono text-sm text-primary hover:underline"
-              onClick={() => copy(topup.reference_code, "referans kopyalandı")}>
+              onClick={() => copy(topup.reference_code ?? "", "referans kopyalandı")}>
               {topup.reference_code} <Copy className="h-3 w-3" />
             </button>
           </div>
@@ -110,11 +104,11 @@ function TopupPayment() {
               </div>
               <div className="grid gap-3 md:grid-cols-[1fr,auto] items-start">
                 <div className="space-y-2">
-                  <Row label="banka" value={bank.bank_name} />
-                  <Row label="alıcı" value={bank.holder_name} />
-                  <Row label="iban" value={bank.iban} mono />
+                  <Row label="banka" value={bank.bank_name ?? ""} />
+                  <Row label="alıcı" value={bank.holder_name ?? ""} />
+                  <Row label="iban" value={bank.iban ?? ""} mono />
                   <Row label="tutar" value={`${amount} TL`} />
-                  <Row label="açıklama" value={topup.reference_code} mono highlight />
+                  <Row label="açıklama" value={topup.reference_code ?? ""} mono highlight />
                   <div className="text-[11px] text-warn font-mono mt-1">
                     ⚠︎ açıklamaya mutlaka referansı yaz — eşleşmezse onaylanmaz
                   </div>

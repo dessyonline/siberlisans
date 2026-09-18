@@ -1,7 +1,7 @@
 // Harici platform (CyberLab) kullanıcı doğrulama uç noktası için sunucu-only yardımcılar.
-import { createClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
 import { clientIp, rateLimit } from "@/lib/license-feature.server";
+import { mysqlQuery, mysqlOne } from "@/lib/mysql.server";
+import { findUserByEmail, verifyPassword } from "@/lib/auth.server";
 
 export const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -56,74 +56,47 @@ export async function handleExternalVerify(request: Request): Promise<Response> 
     return json(FAIL, 401);
   }
 
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
   // 4) identifier → e-posta çözümleme (e-posta veya görünen ad / kullanıcı adı).
   let email = isEmail(identifier) ? identifier.toLowerCase() : "";
   if (!email) {
-    const { data: byName } = await supabaseAdmin
-      .from("profiles")
-      .select("email")
-      .ilike("display_name", identifier)
-      .limit(2);
-    if (!byName || byName.length !== 1 || !byName[0]?.email) return json(FAIL, 401);
+    const byName = await mysqlQuery<{ email: string | null }>(
+      "SELECT email FROM profiles WHERE display_name LIKE ? LIMIT 2",
+      [identifier],
+    );
+    if (byName.length !== 1 || !byName[0]?.email) return json(FAIL, 401);
     email = byName[0].email.toLowerCase();
   }
 
-  // 5) Şifre doğrulama (publishable key ile, oturum saklanmaz).
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_PUBLISHABLE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY;
-  if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
-    return json({ success: false, error: "Sunucu yapılandırması eksik." }, 500);
-  }
-  const authClient = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-    auth: { persistSession: false, autoRefreshToken: false, storage: undefined },
-  });
-  const { data: signIn, error: signInError } = await authClient.auth.signInWithPassword({
-    email,
-    password,
-  });
-  const userId = signIn?.user?.id;
-  if (signInError || !userId) return json(FAIL, 401);
-  await authClient.auth.signOut().catch(() => undefined);
+  // 5) Şifre doğrulama (MySQL tabanlı auth_users tablosu üzerinden).
+  const authUser = await findUserByEmail(email);
+  const ok = authUser ? await verifyPassword(password, authUser.password_hash) : false;
+  if (!ok || !authUser) return json(FAIL, 401);
+  const userId = authUser.id;
 
   // 6) Aktif/geçerli lisans kontrolü: onaylı siparişlere teslim edilmiş, iptal edilmemiş,
   //    süresi dolmamış bir anahtar var mı?
-  const { data: orderRows } = await supabaseAdmin
-    .from("orders")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("status", "approved")
-    .limit(500);
-  const orderIds = (orderRows ?? []).map((o) => o.id);
-  if (orderIds.length === 0) return json(FAIL, 401);
-
-  const { data: keyRows } = await supabaseAdmin
-    .from("order_keys")
-    .select("license_key_id")
-    .in("order_id", orderIds)
-    .not("license_key_id", "is", null)
-    .limit(500);
-  const keyIds = (keyRows ?? []).map((k) => k.license_key_id).filter(Boolean) as string[];
-  if (keyIds.length === 0) return json(FAIL, 401);
-
-  const nowIso = new Date().toISOString();
-  const { data: activeKeys } = await supabaseAdmin
-    .from("license_keys")
-    .select("id")
-    .in("id", keyIds)
-    .eq("revoked", false)
-    .neq("status", "revoked")
-    .or(`expires_at.is.null,expires_at.gt.${nowIso}`)
-    .limit(1);
-  if (!activeKeys || activeKeys.length === 0) return json(FAIL, 401);
+  const activeKey = await mysqlOne<{ id: string }>(
+    `SELECT lk.id
+       FROM orders o
+       JOIN order_keys ok ON ok.order_id = o.id
+       JOIN license_keys lk ON lk.id = ok.license_key_id
+      WHERE o.user_id = ? AND o.status = 'approved'
+        AND (lk.revoked IS NULL OR lk.revoked = 0) AND lk.status <> 'revoked'
+        AND (lk.expires_at IS NULL OR lk.expires_at > NOW())
+      LIMIT 1`,
+    [userId],
+  );
+  if (!activeKey) return json(FAIL, 401);
 
   // 7) Profil + rol bilgisi.
-  const [{ data: profile }, { data: roles }] = await Promise.all([
-    supabaseAdmin.from("profiles").select("email,display_name").eq("id", userId).maybeSingle(),
-    supabaseAdmin.from("user_roles").select("role").eq("user_id", userId),
+  const [profile, roles] = await Promise.all([
+    mysqlOne<{ email: string | null; display_name: string | null }>(
+      "SELECT email, display_name FROM profiles WHERE id=?",
+      [userId],
+    ),
+    mysqlQuery<{ role: string }>("SELECT role FROM user_roles WHERE user_id=?", [userId]),
   ]);
-  const isAdmin = (roles ?? []).some((r) => r.role === "admin");
+  const isAdmin = roles.some((r) => r.role === "admin");
   const finalEmail = profile?.email ?? email;
   const displayName = profile?.display_name ?? finalEmail.split("@")[0];
 

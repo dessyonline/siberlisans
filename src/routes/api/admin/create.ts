@@ -1,6 +1,12 @@
 // Bearer ADMIN_TOKEN korumalı: yeni lisans anahtarı üretir.
 import { createFileRoute } from "@tanstack/react-router";
-import { CORS, json, logEvent, clientIp } from "@/lib/license-api.server";
+import { CORS, json, clientIp } from "@/lib/license-api.server";
+import { mysqlOne, mysqlQuery } from "@/lib/mysql.server";
+import { logEventMysql } from "@/lib/license-mysql-log.server";
+
+function ts(d: Date = new Date()) {
+  return d.toISOString().slice(0, 19).replace("T", " ");
+}
 
 export const Route = createFileRoute("/api/admin/create")({
   server: {
@@ -35,19 +41,40 @@ export const Route = createFileRoute("/api/admin/create")({
           return json({ success: false, error: "product_id gerekli." }, 400);
         }
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-        const { data, error } = await supabaseAdmin.rpc("admin_create_license_key", {
-          _product_id: product_id,
-          _duration_days: duration_days,
-          _key_value: payload?.key_value ?? undefined,
-          _email: payload?.email ?? undefined,
-        });
-        if (error) return json({ success: false, error: error.message }, 500);
-        const row = Array.isArray(data) ? data[0] : data;
-        const key_value = (row as { key_value?: string })?.key_value ?? "";
-        const expires_at = (row as { expires_at?: string })?.expires_at ?? null;
+        let key_value = (payload?.key_value ?? "").toString().trim();
+        if (!key_value) {
+          const rnd = () => crypto.randomUUID().replace(/-/g, "");
+          key_value = [
+            rnd().slice(0, 5),
+            rnd().slice(0, 4),
+            rnd().slice(0, 4),
+            rnd().slice(0, 5),
+          ]
+            .join("-")
+            .toUpperCase();
+        } else {
+          key_value = key_value.toUpperCase();
+        }
 
-        await logEvent(supabaseAdmin as never, {
+        const expires_at =
+          duration_days && duration_days > 0
+            ? ts(new Date(Date.now() + duration_days * 86400000))
+            : null;
+        const id = crypto.randomUUID();
+
+        try {
+          await mysqlQuery(
+            `INSERT INTO license_keys (id, product_id, key_value, status, duration_days, expires_at, created_at)
+             VALUES (?, ?, ?, 'available', ?, ?, ?)`,
+            [id, product_id, key_value, duration_days, expires_at, ts()],
+          );
+        } catch (e) {
+          return json({ success: false, error: (e as Error).message }, 500);
+        }
+
+        void payload?.email; // e-posta bilgisi bu adımda saklanmıyor (uyumluluk için kabul ediliyor)
+
+        await logEventMysql({
           license_key: key_value,
           event: "admin_create",
           ip: clientIp(request),

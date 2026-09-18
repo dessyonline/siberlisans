@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { mysqlOne, mysqlQuery } from "@/lib/mysql.server";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -27,43 +28,40 @@ export const Route = createFileRoute("/api/notifications")({
         }
         const licenseKey = (payload?.license_key ?? "").toString().trim().toUpperCase();
 
-        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
         // Resolve license -> user_id via license_keys -> order_keys -> orders
         let userId: string | null = null;
         if (licenseKey) {
-          const { data: lk } = await supabaseAdmin
-            .from("license_keys")
-            .select("id")
-            .eq("key_value", licenseKey)
-            .maybeSingle();
+          const lk = await mysqlOne<{ id: string }>(
+            "SELECT id FROM license_keys WHERE key_value=? LIMIT 1",
+            [licenseKey],
+          );
           if (lk?.id) {
-            const { data: ok } = await supabaseAdmin
-              .from("order_keys")
-              .select("order_id")
-              .eq("license_key_id", lk.id)
-              .limit(1)
-              .maybeSingle();
+            const ok = await mysqlOne<{ order_id: string }>(
+              "SELECT order_id FROM order_keys WHERE license_key_id=? LIMIT 1",
+              [lk.id],
+            );
             if (ok?.order_id) {
-              const { data: ord } = await supabaseAdmin
-                .from("orders")
-                .select("user_id")
-                .eq("id", ok.order_id)
-                .maybeSingle();
+              const ord = await mysqlOne<{ user_id: string | null }>(
+                "SELECT user_id FROM orders WHERE id=? LIMIT 1",
+                [ok.order_id],
+              );
               userId = ord?.user_id ?? null;
             }
           }
         }
 
         if (!userId) return json({ notifications: [] });
-        const { data: rows } = await supabaseAdmin
-          .from("notifications")
-          .select("title,body,link,created_at")
-          .eq("user_id", userId)
-          .order("created_at", { ascending: false })
-          .limit(30);
+        const rows = await mysqlQuery<{
+          title: string;
+          body: string;
+          link: string | null;
+          created_at: string;
+        }>(
+          "SELECT title, body, link, created_at FROM notifications WHERE user_id=? ORDER BY created_at DESC LIMIT 30",
+          [userId],
+        );
 
-        const notifications = (rows ?? []).map((r) => ({
+        const notifications = rows.map((r) => ({
           title: r.title,
           message: r.body,
           url: r.link ?? undefined,

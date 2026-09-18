@@ -1,7 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { getMyPointsProfile, spendPointsForOrder, refundPointsDiscount } from "@/lib/points.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sparkles, Trophy } from "lucide-react";
@@ -28,20 +29,14 @@ export function PointsBlock({
   const [amount, setAmount] = useState<string>("");
   const [busy, setBusy] = useState(false);
 
+  const profileFn = useServerFn(getMyPointsProfile);
+  const spendFn = useServerFn(spendPointsForOrder);
+  const refundFn = useServerFn(refundPointsDiscount);
+
   const { data: profile } = useQuery({
     queryKey: ["profile-points", user?.id],
     enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("total_points, tier")
-        .eq("id", user!.id)
-        .single();
-      return {
-        points: (data?.total_points as number | undefined) ?? 0,
-        tier: (data?.tier as string | undefined) ?? "bronze",
-      };
-    },
+    queryFn: () => profileFn(),
   });
 
   if (hasOtherDiscount && !appliedPointsAmount) return null;
@@ -63,14 +58,9 @@ export function PointsBlock({
     }
     setBusy(true);
     try {
-      const { data, error } = await supabase.rpc("spend_points" as never, {
-        _amount: parsed,
-        _order_id: orderId,
-      } as never);
-      if (error) throw new Error(error.message);
-      const disc = Array.isArray(data) ? data[0] : data;
+      const disc = await spendFn({ data: { orderId, amount: parsed } });
       toast.success(
-        `−₺${Number((disc as { discount_try: number })?.discount_try ?? 0).toLocaleString("tr-TR")} indirim uygulandı`,
+        `−₺${Number(disc.discount_try ?? 0).toLocaleString("tr-TR")} indirim uygulandı`,
       );
       setAmount("");
       qc.invalidateQueries({ queryKey: ["order", orderId] });
@@ -86,10 +76,7 @@ export function PointsBlock({
   const refund = async () => {
     setBusy(true);
     try {
-      const { error } = await supabase.rpc("refund_points_discount" as never, {
-        _order_id: orderId,
-      } as never);
-      if (error) throw new Error(error.message);
+      await refundFn({ data: { orderId } });
       toast.success("Puanların iade edildi");
       qc.invalidateQueries({ queryKey: ["order", orderId] });
       qc.invalidateQueries({ queryKey: ["profile-points"] });

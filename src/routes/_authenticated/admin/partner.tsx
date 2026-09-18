@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { adminListPayouts, adminSetPayoutStatus, type AdminPayoutRow } from "@/lib/partner.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -12,48 +13,23 @@ export const Route = createFileRoute("/_authenticated/admin/partner")({
 
 function AdminPartner() {
   const qc = useQueryClient();
+  const listFn = useServerFn(adminListPayouts);
+  const setStatusFn = useServerFn(adminSetPayoutStatus);
+
   const { data } = useQuery({
     queryKey: ["admin-payouts"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("affiliate_payouts")
-        .select("id, user_id, amount_try, status, method, destination, admin_note, created_at, processed_at, user:profiles!affiliate_payouts_user_id_fkey(display_name, email)")
-        .order("created_at", { ascending: false })
-        .limit(200);
-      if (error) throw error;
-      return data ?? [];
-    },
+    queryFn: async () => listFn(),
     refetchInterval: 15000,
   });
 
   async function setStatus(id: string, status: "approved" | "rejected" | "paid", note?: string) {
-    // if rejected, refund the amount to user's wallet first
-    if (status === "rejected") {
-      const row = (data ?? []).find((r) => r.id === id);
-      if (row && row.status === "requested") {
-        const { data: w } = await supabase
-          .from("wallets")
-          .select("balance_try")
-          .eq("user_id", row.user_id)
-          .maybeSingle();
-        const bal = Number(w?.balance_try ?? 0) + Number(row.amount_try);
-        await supabase.from("wallets").upsert({ user_id: row.user_id, balance_try: bal });
-        await supabase.from("wallet_transactions").insert({
-          user_id: row.user_id,
-          kind: "refund",
-          amount_try: Number(row.amount_try),
-          balance_after: bal,
-          note: "Partner ödeme talebi reddi - iade",
-        });
-      }
+    try {
+      await setStatusFn({ data: { id, status, note } });
+      toast.success("Güncellendi");
+      qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+    } catch (e) {
+      toast.error((e as Error).message);
     }
-    const { error } = await supabase
-      .from("affiliate_payouts")
-      .update({ status, admin_note: note, processed_at: new Date().toISOString() })
-      .eq("id", id);
-    if (error) return toast.error(error.message);
-    toast.success("Güncellendi");
-    qc.invalidateQueries({ queryKey: ["admin-payouts"] });
   }
 
   return (
@@ -76,9 +52,8 @@ function AdminPartner() {
             </tr>
           </thead>
           <tbody>
-            {(data ?? []).map((r) => {
-              type U = { display_name: string | null; email: string | null };
-              const u = (r as unknown as { user: U | null }).user;
+            {(data ?? []).map((r: AdminPayoutRow) => {
+              const u = r.user;
               return (
                 <tr key={r.id} className="border-t border-border/40">
                   <td className="p-3">

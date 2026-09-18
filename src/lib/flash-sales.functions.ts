@@ -42,3 +42,59 @@ export const adminDeleteFlashSale = createServerFn({ method: "POST" })
     await mysqlQuery("DELETE FROM flash_sales WHERE id=?", [data.id]);
     return { ok: true };
   });
+
+export type FlashSaleRow = {
+  id: string;
+  product_id: string;
+  discount_type: "percent" | "amount";
+  discount_value: number;
+  starts_at: string;
+  ends_at: string;
+  is_active: boolean;
+  label: string | null;
+  product: { name: string; slug: string } | null;
+};
+
+export const listAdminFlashSales = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async (): Promise<FlashSaleRow[]> => {
+    const { mysqlQuery, bool } = await import("./mysql.server");
+    const rows = await mysqlQuery<{
+      id: string;
+      product_id: string;
+      discount_type: "percent" | "amount";
+      discount_value: number;
+      starts_at: string;
+      ends_at: string;
+      is_active: number;
+      label: string | null;
+      product_name: string | null;
+      product_slug: string | null;
+    }>(
+      `SELECT f.id, f.product_id, f.discount_type, f.discount_value, f.starts_at, f.ends_at, f.is_active, f.label,
+              p.name product_name, p.slug product_slug
+         FROM flash_sales f
+         LEFT JOIN products p ON p.id = f.product_id
+        ORDER BY f.ends_at DESC`,
+    );
+    return rows.map((r) => ({
+      id: r.id,
+      product_id: r.product_id,
+      discount_type: r.discount_type,
+      discount_value: Number(r.discount_value),
+      starts_at: r.starts_at,
+      ends_at: r.ends_at,
+      is_active: bool(r.is_active),
+      label: r.label,
+      product: r.product_name ? { name: r.product_name, slug: r.product_slug ?? "" } : null,
+    }));
+  });
+
+export type MinimalProduct = { id: string; name: string };
+
+export const listMinimalProducts = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async (): Promise<MinimalProduct[]> => {
+    const { mysqlQuery } = await import("./mysql.server");
+    return mysqlQuery<MinimalProduct>("SELECT id, name FROM products ORDER BY name");
+  });

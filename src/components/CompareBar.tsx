@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { getProductsForCompare } from "@/lib/storefront.functions";
 import { useCompare, COMPARE_MAX } from "@/lib/compare-store";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -40,16 +41,11 @@ export function CompareBar() {
   const remove = useCompare((s) => s.remove);
   const clear = useCompare((s) => s.clear);
 
+  const fetchProducts = useServerFn(getProductsForCompare);
   const { data } = useQuery({
     queryKey: ["compare-bar", ids.join(",")],
     enabled: ids.length > 0,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("products")
-        .select("id, name, slug, price_try, image_url")
-        .in("id", ids);
-      return data ?? [];
-    },
+    queryFn: async () => (await fetchProducts({ data: { ids } })),
   });
 
   if (ids.length === 0) return null;

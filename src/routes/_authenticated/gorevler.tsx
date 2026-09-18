@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listMissions, claimMission, redeemPointsForCoupon } from "@/lib/missions.functions";
-import { supabase } from "@/integrations/supabase/client";
+import { getAccountHero } from "@/lib/account.functions";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Trophy, Sparkles, Copy, Gift, Target, ArrowLeft, Crown } from "lucide-react";
@@ -30,6 +30,7 @@ function MissionsPage() {
   const listFn = useServerFn(listMissions);
   const claimFn = useServerFn(claimMission);
   const redeemFn = useServerFn(redeemPointsForCoupon);
+  const heroFn = useServerFn(getAccountHero);
 
   const { data: missions, isLoading } = useQuery({
     queryKey: ["missions"],
@@ -40,10 +41,10 @@ function MissionsPage() {
     queryKey: ["profile-points-missions", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase.from("profiles").select("total_points, tier").eq("id", user!.id).single();
+      const hero = await heroFn();
       return {
-        points: (data?.total_points as number | undefined) ?? 0,
-        tier: (data?.tier as string | undefined) ?? "bronze",
+        points: hero.total_points ?? 0,
+        tier: hero.tier ?? "bronze",
       };
     },
   });

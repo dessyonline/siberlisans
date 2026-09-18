@@ -1,11 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { ShieldCheck, ShieldAlert, Trash2, ArrowLeft, Terminal, MonitorSmartphone, LogOut } from "lucide-react";
 import { MfaEnroll } from "@/components/security/MfaEnroll";
 import { MfaChallenge } from "@/components/security/MfaChallenge";
+import { getMfaStatus, mfaDisable, signOutOtherSessions, type MfaStatus } from "@/lib/mfa.functions";
 import {
   trustedDeviceExpiry,
   untrustDevice,
@@ -27,72 +30,106 @@ export const Route = createFileRoute("/_authenticated/guvenlik")({
   }),
 });
 
-type Factor = { id: string; friendly_name?: string | null; status: string; created_at: string };
+function RemoveMfaForm({ onCancel, onSuccess }: { onCancel: () => void; onSuccess: () => void }) {
+  const disableFn = useServerFn(mfaDisable);
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const submit = async () => {
+    const cleaned = code.replace(/\s/g, "");
+    if (cleaned.length !== 6) return toast.error("[!] 6 haneli kod gir");
+    setLoading(true);
+    try {
+      await disableFn({ data: { code: cleaned } });
+      onSuccess();
+    } catch (e) {
+      toast.error(`[!] ${(e as Error).message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="glass-card rounded-lg p-5 space-y-3">
+      <div className="flex items-center gap-2 font-mono text-sm text-primary">
+        <ShieldCheck className="h-4 w-4" /> kaldırma onayı
+      </div>
+      <div className="font-mono text-[11px] text-muted-foreground">
+        authenticator uygulamandan 6 haneli kodu gir.
+      </div>
+      <Input
+        inputMode="numeric"
+        maxLength={6}
+        placeholder="000000"
+        autoFocus
+        value={code}
+        onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+        onKeyDown={(e) => e.key === "Enter" && submit()}
+        className="font-mono text-center tracking-[0.4em] text-lg"
+      />
+      <div className="flex gap-2">
+        <Button disabled={loading || code.length !== 6} onClick={submit} className="font-mono neon-glow flex-1">
+          {loading ? "…" : "> kaldır"}
+        </Button>
+        <Button variant="outline" className="font-mono" onClick={onCancel}>
+          iptal
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function SecurityPage() {
   const navigate = useNavigate();
-  const [factors, setFactors] = useState<Factor[]>([]);
-  const [aal, setAal] = useState<"aal1" | "aal2" | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { user, isAdmin } = useAuth();
+  const mfaStatusFn = useServerFn(getMfaStatus);
+  const signOutOthersFn = useServerFn(signOutOtherSessions);
+  const [status, setStatus] = useState<MfaStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<"idle" | "enroll" | "verify-remove" | "step-up">("idle");
-  const [removeTarget, setRemoveTarget] = useState<string | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
   const [trustedUntil, setTrustedUntil] = useState<Date | null>(null);
   const [devices, setDevices] = useState<TrustedDeviceRow[]>([]);
   const [currentDeviceId, setCurrentDeviceId] = useState<string | null>(null);
 
+  const userId = user?.id ?? null;
+
   const refresh = async () => {
     setLoading(true);
-    const { data: u } = await supabase.auth.getUser();
-    const [{ data: f }, { data: a }, roleRes] = await Promise.all([
-      supabase.auth.mfa.listFactors(),
-      supabase.auth.mfa.getAuthenticatorAssuranceLevel(),
-      u.user ? supabase.rpc("has_role", { _user_id: u.user.id, _role: "admin" }) : Promise.resolve({ data: false }),
-    ]);
-    setFactors(((f?.totp as Factor[]) ?? []).filter((x) => x.status === "verified"));
-    setAal((a?.currentLevel as "aal1" | "aal2" | null) ?? null);
-    setIsAdmin(Boolean(roleRes.data));
-    setUserId(u.user?.id ?? null);
-    setTrustedUntil(trustedDeviceExpiry(u.user?.id ?? null));
+    const s = await mfaStatusFn().catch(() => null);
+    setStatus(s);
+    setTrustedUntil(trustedDeviceExpiry(userId));
     setCurrentDeviceId(getDeviceId());
-    setDevices(u.user ? await listTrustedDevices() : []);
+    setDevices(userId ? await listTrustedDevices() : []);
     setLoading(false);
   };
 
   useEffect(() => {
     refresh();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
-  const enabled = factors.length > 0;
+  const enabled = !!status?.enrolled;
+  const aal = status?.aal ?? null;
 
-  const askRemove = (id: string) => {
-    setRemoveTarget(id);
-    // Güvenlik: aal2 olsa bile her kaldırma öncesi taze TOTP kodu zorunlu.
-    // Aksi halde ele geçirilmiş bir admin oturumu 2FA'yı sessizce söker.
-    setMode("verify-remove");
-  };
-
-  const doRemove = async (id: string) => {
-    const { error } = await supabase.auth.mfa.unenroll({ factorId: id });
-    if (error) return toast.error(`[!] ${error.message}`);
-    // Bu cihazın güvenilir işaretini de temizle
+  const doRemove = async () => {
     untrustDevice(userId);
-    // Diğer tüm cihazlardaki oturumları kapat — 2FA sökülünce bir başkası
-    // eski aal2 tokenıyla admin panele erişmeye devam edemesin.
     try {
-      await supabase.auth.signOut({ scope: "others" });
-    } catch { /* noop */ }
+      await signOutOthersFn();
+    } catch {
+      /* noop */
+    }
     toast.success("[✓] 2FA kaldırıldı · diğer oturumlar sonlandırıldı");
-    setRemoveTarget(null);
     setMode("idle");
     refresh();
   };
 
   const signOutOthers = async () => {
-    const { error } = await supabase.auth.signOut({ scope: "others" });
-    if (error) return toast.error(`[!] ${error.message}`);
-    toast.success("[✓] diğer tüm cihazlardan çıkış yapıldı");
+    try {
+      await signOutOthersFn();
+      toast.success("[✓] diğer tüm cihazlardan çıkış yapıldı");
+    } catch (e) {
+      toast.error(`[!] ${(e as Error).message}`);
+    }
   };
 
   return (
@@ -184,27 +221,18 @@ function SecurityPage() {
           </div>
         )}
 
-        {mode === "verify-remove" && removeTarget && (
+        {mode === "verify-remove" && (
           <div className="border-t border-border/40 pt-4">
             <div className="mb-3 rounded-md border border-warn/30 bg-warn/5 p-3 font-mono text-[11px] text-warn">
               [!] 2FA kaldırmak için önce mevcut 2FA kodunla doğrulanman gerekiyor.
             </div>
-            <MfaChallenge
-              factorId={removeTarget}
-              title="kaldırma onayı"
-              onCancel={() => {
-                setRemoveTarget(null);
-                setMode("idle");
-              }}
-              onSuccess={() => doRemove(removeTarget)}
-            />
+            <RemoveMfaForm onCancel={() => setMode("idle")} onSuccess={doRemove} />
           </div>
         )}
 
         {mode === "step-up" && enabled && (
           <div className="border-t border-border/40 pt-4">
             <MfaChallenge
-              factorId={factors[0]?.id}
               title="oturum doğrulama"
               onCancel={() => setMode("idle")}
               onSuccess={async () => {
@@ -219,22 +247,24 @@ function SecurityPage() {
 
         {enabled && mode === "idle" && (
           <div className="border-t border-border/40 pt-3 space-y-2">
-            {factors.map((f) => (
-              <div
-                key={f.id}
-                className="flex items-center justify-between gap-2 rounded border border-border/40 bg-background/40 px-3 py-2"
-              >
-                <div className="min-w-0">
-                  <div className="font-mono text-xs truncate">{f.friendly_name || "authenticator"}</div>
+            <div className="flex items-center justify-between gap-2 rounded border border-border/40 bg-background/40 px-3 py-2">
+              <div className="min-w-0">
+                <div className="font-mono text-xs truncate">authenticator</div>
+                {status?.createdAt && (
                   <div className="font-mono text-[10px] text-muted-foreground">
-                    eklendi: {new Date(f.created_at).toLocaleDateString("tr-TR")}
+                    eklendi: {new Date(status.createdAt).toLocaleDateString("tr-TR")}
                   </div>
-                </div>
-                <Button size="sm" variant="ghost" onClick={() => askRemove(f.id)} className="font-mono text-destructive">
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
+                )}
               </div>
-            ))}
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => setMode("verify-remove")}
+                className="font-mono text-destructive"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </div>
         )}
       </div>
