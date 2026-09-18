@@ -1,7 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import type { Database } from "@/integrations/supabase/types";
 
 export type PublicOrderTrack = {
   order_id: string;
@@ -17,23 +15,12 @@ export type PublicOrderTrack = {
 export const trackOrderByRef = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) => z.object({ ref: z.string().trim().min(4).max(64) }).parse(d))
   .handler(async ({ data }): Promise<PublicOrderTrack> => {
-    const url = process.env.SUPABASE_URL;
-    const key = process.env.SUPABASE_PUBLISHABLE_KEY;
-    if (!url || !key) throw new Error("supabase env eksik");
-    const sb = createClient<Database>(url, key, {
-      auth: { storage: undefined, persistSession: false, autoRefreshToken: false },
-    });
-    const { data: rows, error } = await sb.rpc("get_order_by_reference" as never, { _ref: data.ref } as never);
-    if (error) throw new Error(error.message);
-    const list = (rows ?? []) as Array<{
-      order_id: string;
-      status: string;
-      reference_code: string;
-      price_try: number;
-      created_at: string;
-      approved_at: string | null;
-      external_status: string | null;
-      admin_note: string | null;
-    }>;
-    return list[0] ?? null;
+    const { mysqlOne } = await import("./mysql.server");
+    const row = await mysqlOne<NonNullable<PublicOrderTrack>>(
+      `SELECT id AS order_id, status, reference_code, price_try, created_at,
+              approved_at, external_status, NULL AS admin_note
+         FROM orders WHERE reference_code = ? LIMIT 1`,
+      [data.ref],
+    );
+    return row ? { ...row, price_try: Number(row.price_try) } : null;
   });

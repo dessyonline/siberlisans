@@ -24,23 +24,20 @@ export type CatalogQuery = {
 
 /** Aktif ürünlerin herkese açık (satış fiyatı üzerinden) katalog listesi. */
 export async function loadCatalog(baseUrl: string, query: CatalogQuery): Promise<CatalogItem[]> {
-  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-  let q = supabaseAdmin
-    .from("products")
-    .select(
-      "id, slug, name, description, category, price_try, retail_price_try, duration_label, image_url, supplier_out_of_stock, unlimited_stock, stock_hint, avg_rating, review_count, sort_order",
-    )
-    .eq("active", true)
-    .order("sort_order", { ascending: true })
-    .order("orders_count", { ascending: false })
-    .limit(Math.min(Math.max(query.limit ?? 100, 1), 250));
-
-  if (query.category) q = q.eq("category", query.category);
-  if (query.q) q = q.ilike("name", `%${query.q}%`);
-
-  const { data, error } = await q;
-  if (error) throw new Error(error.message);
+  const { mysqlQuery, bool } = await import("./mysql.server");
+  const filters = ["active=1"];
+  const params: Array<string | number> = [];
+  if (query.category) { filters.push("category=?"); params.push(query.category); }
+  if (query.q) { filters.push("name LIKE ?"); params.push(`%${query.q}%`); }
+  const limit = Number.isFinite(query.limit) ? Math.min(Math.max(Math.trunc(query.limit ?? 100),1),250) : 100;
+  const data = await mysqlQuery<{
+    id: string; slug: string; name: string; description: string | null; category: string | null;
+    price_try: number | string; retail_price_try: number | string | null; duration_label: string | null;
+    image_url: string | null; supplier_out_of_stock: unknown; unlimited_stock: unknown;
+    avg_rating: number | string | null; review_count: number | string | null;
+  }>(`SELECT id,slug,name,description,category,price_try,retail_price_try,duration_label,image_url,
+    supplier_out_of_stock,unlimited_stock,avg_rating,review_count FROM products
+    WHERE ${filters.join(" AND ")} ORDER BY sort_order ASC,orders_count DESC LIMIT ${limit}`,params);
 
   const ref = query.code ? `?ref=${encodeURIComponent(query.code)}` : "";
 
@@ -54,8 +51,8 @@ export async function loadCatalog(baseUrl: string, query: CatalogQuery): Promise
     retail_price_try: p.retail_price_try === null ? null : Number(p.retail_price_try),
     duration_label: p.duration_label ?? null,
     image_url: p.image_url ?? null,
-    in_stock: !p.supplier_out_of_stock,
-    unlimited_stock: !!p.unlimited_stock,
+    in_stock: !bool(p.supplier_out_of_stock),
+    unlimited_stock: bool(p.unlimited_stock),
     rating: Number(p.avg_rating ?? 0),
     review_count: Number(p.review_count ?? 0),
     url: `${baseUrl}/urun/${p.slug}${ref}`,
