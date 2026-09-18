@@ -45,7 +45,6 @@ import { AuthProvider, useAuth } from "../lib/auth-context";
 import { cn } from "../lib/utils";
 import { Button } from "../components/ui/button";
 import { Toaster } from "../components/ui/sonner";
-import { supabase } from "../integrations/supabase/client";
 import { initTelegramWebApp } from "../lib/telegram-webapp";
 import { SupportFab } from "../components/SupportFab";
 import { CartButton } from "../components/CartButton";
@@ -66,6 +65,8 @@ import { CyberlabNavLink } from "../components/CyberlabNavLink";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { THEME_BOOT_SCRIPT } from "../lib/theme";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getAccountHero } from "../lib/account.functions";
 
 
 function NotFoundComponent() {
@@ -204,20 +205,6 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-function AuthListener() {
-  const router = useRouter();
-  const { queryClient } = Route.useRouteContext();
-  useEffect(() => {
-    const { data } = supabase.auth.onAuthStateChange((event) => {
-      if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
-      router.invalidate();
-      if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
-    });
-    return () => data.subscription.unsubscribe();
-  }, [router, queryClient]);
-  return null;
-}
-
 function SiteHeader() {
   const { user, isAdmin, signOut } = useAuth();
 
@@ -354,17 +341,15 @@ function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
 }
 
 function HeaderUserBadge({ userId }: { userId: string }) {
+  const heroFn = useServerFn(getAccountHero);
   const { data } = useQuery({
     queryKey: ["header-avatar-balance", userId],
     enabled: !!userId,
     queryFn: async () => {
-      const [{ data: p }, { data: w }] = await Promise.all([
-        supabase.from("profiles").select("avatar_id").eq("id", userId).maybeSingle(),
-        supabase.from("wallets").select("balance_try").eq("user_id", userId).maybeSingle(),
-      ]);
+      const hero = await heroFn();
       return {
-        avatar_id: (p?.avatar_id as string | null) ?? null,
-        balance_try: Number(w?.balance_try ?? 0),
+        avatar_id: hero.avatar_id,
+        balance_try: hero.balance_try,
       };
     },
     refetchInterval: 15000,
@@ -611,7 +596,6 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         
-        <AuthListener />
         <div className="flex min-h-screen flex-col">
           <SiteHeader />
           <main className="flex-1">
