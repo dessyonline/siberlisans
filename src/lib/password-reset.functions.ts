@@ -77,7 +77,7 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
       [token, user.id, expires],
     );
 
-    const link = `${originFromRequest()}/sifre-belirle?token=${token}`;
+    const link = `https://siberlisans.com/sifre-belirle?token=${token}`;
     const escapeHtml = (value: string) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     const delivered = await sendTelegram({
       chatId,
@@ -94,18 +94,13 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
 export const setPasswordWithToken = createServerFn({ method: "POST" })
   .validator((d: unknown) => schema.parse(d))
   .handler(async ({ data }): Promise<{ ok: boolean; error?: string }> => {
-    const { mysqlQuery, mysqlOne } = await import("./mysql.server");
+    const { resetPasswordAtomically } = await import("./password-reset.server");
     const { hashPassword } = await import("./auth.server");
-
-    const row = await mysqlOne<{ user_id: string }>(
-      "SELECT user_id FROM auth_password_tokens WHERE token=? AND used=0 AND expires_at > NOW() LIMIT 1",
-      [data.token],
-    );
-    if (!row) return { ok: false, error: "Bağlantı geçersiz veya süresi dolmuş." };
-
     const hash = await hashPassword(data.password);
-    await mysqlQuery("UPDATE auth_users SET password_hash=? WHERE id=?", [hash, row.user_id]);
-    await mysqlQuery("UPDATE auth_password_tokens SET used=1 WHERE token=?", [data.token]);
-    await mysqlQuery("DELETE FROM auth_sessions WHERE user_id=?", [row.user_id]);
-    return { ok: true };
+    try {
+      const ok = await resetPasswordAtomically(data.token, hash);
+      return ok ? { ok: true } : { ok: false, error: "Bağlantı geçersiz veya süresi dolmuş." };
+    } catch {
+      return { ok: false, error: "Güvenli şifre belirleme şu anda kullanılamıyor. Lütfen destek ekibiyle iletişime geçin." };
+    }
   });
