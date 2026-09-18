@@ -41,3 +41,9 @@
 - [x] Ödeme sayfası (sipariş detayı, banka bilgisi, bakiye, çapraz satış) MySQL'e taşındı
 - [x] Sipariş oluşturma/sepet/onay/red/iptal + kupon + flash indirim (orders.functions.ts) MySQL'e taşındı
 - [x] Admin sipariş, blog, ürün, key ve kar/zarar yönetimi
+
+## MySQL geçişini tamamlama — devam
+- [x] Stok bildirimi kayıt/iptal/durum işlemleri MySQL oturumuna taşındı.
+- [x] Flash indirim yönetimi MySQL yönetici yetkisine taşındı.
+- [x] Referansla sipariş takibi ve dış katalog akışı MySQL'e taşındı; özel yönetici notları halka açılmaz.
+- [ ] Kalan modüller ve PostgreSQL iş kuralları; toplu tamamlandı olarak işaretlenmeyecek.

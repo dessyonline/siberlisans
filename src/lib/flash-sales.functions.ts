@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAdmin } from "./auth-middleware.server";
 
 const upsertInput = z.object({
   id: z.string().uuid().optional(),
@@ -14,35 +14,31 @@ const upsertInput = z.object({
 });
 
 export const adminUpsertFlashSale = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .inputValidator((d: unknown) => upsertInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Yetkisiz");
-    // biome-ignore lint/suspicious/noExplicitAny: new table
-    const table = supabase.from("flash_sales" as any);
+  .handler(async ({ data }) => {
+    const { mysqlQuery } = await import("./mysql.server");
+    const start = new Date(data.starts_at);
+    const end = new Date(data.ends_at);
+    if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end <= start) throw new Error("Geçersiz tarih aralığı");
+    if (data.discount_type === "percent" && data.discount_value > 100) throw new Error("Geçersiz indirim oranı");
+    const values = [data.product_id, data.discount_type, data.discount_value,
+      start.toISOString().slice(0,19).replace("T"," "), end.toISOString().slice(0,19).replace("T"," "),
+      data.is_active, data.label ?? null];
     if (data.id) {
-      const { id, ...rest } = data;
-      const { error } = await table.update(rest).eq("id", id);
-      if (error) throw new Error(error.message);
+      await mysqlQuery("UPDATE flash_sales SET product_id=?,discount_type=?,discount_value=?,starts_at=?,ends_at=?,is_active=?,label=? WHERE id=?", [...values,data.id]);
     } else {
-      const { error } = await table.insert(data);
-      if (error) throw new Error(error.message);
+      await mysqlQuery("INSERT INTO flash_sales (product_id,discount_type,discount_value,starts_at,ends_at,is_active,label,id,created_at) VALUES (?,?,?,?,?,?,?,?,NOW())", [...values,crypto.randomUUID()]);
     }
     return { ok: true };
   });
 
 const deleteInput = z.object({ id: z.string().uuid() });
 export const adminDeleteFlashSale = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .inputValidator((d: unknown) => deleteInput.parse(d))
-  .handler(async ({ data, context }) => {
-    const { supabase, userId } = context;
-    const { data: isAdmin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    if (!isAdmin) throw new Error("Yetkisiz");
-    // biome-ignore lint/suspicious/noExplicitAny: new table
-    const { error } = await supabase.from("flash_sales" as any).delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
+  .handler(async ({ data }) => {
+    const { mysqlQuery } = await import("./mysql.server");
+    await mysqlQuery("DELETE FROM flash_sales WHERE id=?", [data.id]);
     return { ok: true };
   });
