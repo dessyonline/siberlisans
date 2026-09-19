@@ -13,10 +13,7 @@ export const Route = createFileRoute("/api/public/auth/google/start")({
     handlers: {
       GET: async ({ request }) => {
         const cfg = googleConfig();
-        const requestUrl = new URL(request.url);
-        const origin = requestUrl.hostname === "siberlisans.com" || requestUrl.hostname === "www.siberlisans.com"
-          ? requestUrl.origin
-          : "https://siberlisans.com";
+        const origin = new URL(request.url).origin;
         if (!cfg) {
           return new Response(null, {
             status: 302,

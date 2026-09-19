@@ -177,7 +177,11 @@ function AuthPage() {
   const signInGoogle = () => {
     setLoading(true);
     // Kendi Google OAuth istemcimiz üzerinden sunucu taraflı akış.
-    window.location.href = "/api/public/auth/google/start";
+    const productionOrigin = "https://siberlisans.com";
+    const origin = window.location.hostname === "siberlisans.com" || window.location.hostname === "www.siberlisans.com"
+      ? window.location.origin
+      : productionOrigin;
+    window.location.href = `${origin}/api/public/auth/google/start`;
   };
 
 

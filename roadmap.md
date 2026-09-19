@@ -5,13 +5,13 @@
 - [ ] PHP köprüsünü işleme özel yetkilerle sınırlama; Hostinger dağıtım erişimi gerekli.
 - [x] Şifre/token/oturum için transaction kullanan PHP işlemi ve dört başarılı otomatik istemci testi eklendi.
 - [ ] Hostinger köprü güncellemesini yükleme ve gerçek eşzamanlılık testi: dağıtım erişimi gerekli; eski köprüde şifre değişimi güvenli biçimde reddedilir.
-- [ ] Şifre bağlantılarını e-posta kanalından gönderme; gönderici bağlantısı gerekli.
+- [x] Şifre bağlantıları doğrulanmış Gmail göndericisi üzerinden doğrudan kayıtlı e-postaya gönderiliyor.
 - [ ] Gerçek ödeme/lisans teslimi testi; yetkili test hesabı ve ödeme test ortamı gerekli.
 - [x] Üç yedek/geçici dosya ve yerel dışa aktarım betiği kaldırıldı; PHP kaynak dosyası public dışına taşındı. Eklenti ZIP paketi korundu.
 - [x] Uygulama veri erişimleri MySQL'e taşındı; push, kripto ve e-posta kuyruğu dahil doğrudan eski veri istemcisi kullanımı kaldırıldı.
 
 ## Onaylanan giriş düzeltmesi
-- [ ] Şifre belirleme bağlantısını yalnızca doğrulanmış hesap sahibine ulaştırma (e-posta gönderimi/hesap doğrulama kanalı gerekli).
+- [x] Şifre belirleme bağlantısı yalnızca kayıtlı e-posta adresine gönderiliyor.
 - [x] Herkese açık şifre bağlantısı kapatıldı; Telegram teslim hataları artık başarı olarak gösterilmiyor.
 - [x] use-mobile.tsx kaynak kontrolü: belirtilen satır boş, React içe aktarımı mevcut; giriş sayfası tarayıcıda açıldı.
 - [ ] Gerçek hesapla şifre belirleme ve giriş testi: hesap sahibine doğrulanmış teslim kanalı bekliyor; giriş ekranı ve kaynak güvenlik kontrolleri geçti.
@@ -48,4 +48,4 @@
 - [x] Referansla sipariş takibi ve dış katalog akışı MySQL'e taşındı; özel yönetici notları halka açılmaz.
 - [x] Uygulama içindeki kalan modüller MySQL veri katmanına taşındı; doğrudan eski veri istemcisi çağrısı kalmadı.
 
-- [ ] Google girişi: kendi OAuth istemcimizle (GOOGLE_OAUTH_CLIENT_ID/SECRET bekleniyor)
+- [x] Google girişi: kendi OAuth istemcisi ve sabit üretim dönüş alan adıyla çalışıyor.

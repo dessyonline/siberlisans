@@ -34,7 +34,7 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
     );
     const generic = {
       ok: true,
-      message: "Talebin alındı. Hesabın mevcutsa destek ekibi, hesap sahipliğini doğruladıktan sonra şifre belirlemene yardımcı olacak.",
+      message: "Hesabın mevcutsa şifre sıfırlama bağlantısı e-posta adresine gönderildi. Spam klasörünü de kontrol et.",
     };
     if (!user) return generic;
 
@@ -42,25 +42,22 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
       "SELECT token FROM auth_password_tokens WHERE user_id=? AND used=0 AND expires_at > DATE_ADD(NOW(), INTERVAL 55 MINUTE) LIMIT 1",
       [user.id],
     );
-    if (recent) return generic;
-
-    const token = randomHex(32);
-    const expires = mysqlDate(new Date(Date.now() + 60 * 60 * 1000));
-    await mysqlQuery(
-      "INSERT INTO auth_password_tokens (token,user_id,expires_at,used) VALUES (?,?,?,0)",
-      [token, user.id, expires],
-    );
+    const token = recent?.token ?? randomHex(32);
+    if (!recent) {
+      const expires = mysqlDate(new Date(Date.now() + 60 * 60 * 1000));
+      await mysqlQuery(
+        "INSERT INTO auth_password_tokens (token,user_id,expires_at,used) VALUES (?,?,?,0)",
+        [token, user.id, expires],
+      );
+    }
 
     const link = `https://siberlisans.com/sifre-belirle?token=${token}`;
     const delivered = await sendPasswordResetEmail(email, link);
     if (!delivered) {
-      await mysqlQuery("DELETE FROM auth_password_tokens WHERE token=?", [token]);
+      if (!recent) await mysqlQuery("DELETE FROM auth_password_tokens WHERE token=?", [token]);
       return { ok: false, message: "Şifre sıfırlama e-postası gönderilemedi. Lütfen tekrar deneyin." };
     }
-    return {
-      ok: true,
-      message: "Şifre sıfırlama bağlantısı e-posta adresine gönderildi. Spam klasörünü de kontrol et.",
-    };
+    return generic;
   });
 
 /** Tek kullanımlık bağlantı ile şifre belirleme. */
