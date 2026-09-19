@@ -22,7 +22,16 @@ const authSearch = z.object({
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
   validateSearch: authSearch,
-  head: () => ({ meta: [{ title: "Giriş / Kayıt — SiberPHP" }] }),
+  head: () => ({
+    meta: [
+      { title: "Giriş / Kayıt — SiberPHP" },
+      { name: "description", content: "SiberPHP hesabınıza giriş yapın veya yeni hesap oluşturun." },
+      { property: "og:title", content: "Giriş / Kayıt — SiberPHP" },
+      { property: "og:description", content: "SiberPHP hesabınıza güvenli şekilde erişin." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
 });
 
 // Sık kullanılan geçici / disposable mail sağlayıcıları
