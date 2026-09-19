@@ -10,10 +10,6 @@ const credentials = z.object({
   referralCode: z.string().max(60).optional(),
 });
 
-const oauthTokens = z.object({
-  accessToken: z.string().min(20).max(10_000),
-});
-
 export type AuthUser = {
   id: string;
   email: string | null;
@@ -132,81 +128,3 @@ export const signOut = createServerFn({ method: "POST" }).handler(async () => {
   deleteCookie(SESSION_COOKIE, { path: "/" });
   return { ok: true };
 });
-
-/** Doğrulanmış sosyal giriş kimliğini yerel MySQL hesabı ve oturumuna dönüştürür. */
-export const completeOAuthSignIn = createServerFn({ method: "POST" })
-  .validator((d: unknown) => oauthTokens.parse(d))
-  .handler(async ({ data }): Promise<{ ok: true; user: AuthUser } | { ok: false; error: string }> => {
-    const authUrl = process.env['VITE_SUPABASE_URL'];
-    const publishableKey = process.env['VITE_SUPABASE_PUBLISHABLE_KEY'];
-    if (!authUrl || !publishableKey) {
-      return { ok: false, error: "Google girişi şu anda kullanılamıyor." };
-    }
-
-    const response = await fetch(`${authUrl}/auth/v1/user`, {
-      headers: {
-        apikey: publishableKey,
-        Authorization: `Bearer ${data.accessToken}`,
-      },
-    });
-    if (!response.ok) return { ok: false, error: "Google kimliği doğrulanamadı." };
-
-    const identity = (await response.json()) as {
-      id?: unknown;
-      email?: unknown;
-      user_metadata?: { full_name?: unknown; name?: unknown };
-    };
-    const email = typeof identity.email === "string" ? identity.email.trim().toLowerCase() : "";
-    if (!email || !z.string().email().safeParse(email).success) {
-      return { ok: false, error: "Google hesabında doğrulanmış e-posta bulunamadı." };
-    }
-
-    const auth = await import("./auth.server");
-    const { mysqlQuery } = await import("./mysql.server");
-    let localUser = await auth.findUserByEmail(email);
-    if (!localUser) {
-      const id = crypto.randomUUID();
-      const now = new Date().toISOString().slice(0, 19).replace("T", " ");
-      const rawName = identity.user_metadata?.full_name ?? identity.user_metadata?.name;
-      const displayName = typeof rawName === "string" && rawName.trim()
-        ? rawName.trim().slice(0, 120)
-        : email.split("@")[0];
-      const referralCode = `SP${id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
-      await mysqlQuery("INSERT INTO auth_users (id,email,password_hash,created_at) VALUES (?,?,NULL,?)", [
-        id,
-        email,
-        now,
-      ]);
-      await mysqlQuery(
-        `INSERT INTO profiles (id,email,display_name,created_at,updated_at,referral_code)
-         VALUES (?,?,?,?,?,?)`,
-        [id, email, displayName, now, now, referralCode],
-      );
-      await mysqlQuery("INSERT IGNORE INTO user_roles (id,user_id,role) VALUES (?,?,?)", [
-        crypto.randomUUID(),
-        id,
-        "user",
-      ]);
-      await mysqlQuery("INSERT IGNORE INTO wallets (id,user_id,balance_try,created_at,updated_at) VALUES (?,?,?,?,?)", [
-        crypto.randomUUID(),
-        id,
-        0,
-        now,
-        now,
-      ]);
-      localUser = await auth.findUserByEmail(email);
-    }
-    if (!localUser) return { ok: false, error: "Yerel hesap oluşturulamadı." };
-
-    const { token, expires } = await auth.createSession(localUser.id, getRequestIP() ?? null);
-    setCookie(auth.SESSION_COOKIE, token, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: true,
-      path: "/",
-      expires,
-    });
-    const user = await auth.getUserByToken(token);
-    if (!user) return { ok: false, error: "Oturum oluşturulamadı." };
-    return { ok: true, user };
-  });

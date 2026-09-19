@@ -22,7 +22,16 @@ const authSearch = z.object({
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
   validateSearch: authSearch,
-  head: () => ({ meta: [{ title: "Giriş / Kayıt — SiberPHP" }] }),
+  head: () => ({
+    meta: [
+      { title: "Giriş / Kayıt — SiberPHP" },
+      { name: "description", content: "SiberPHP hesabınıza giriş yapın veya yeni hesap oluşturun." },
+      { property: "og:title", content: "Giriş / Kayıt — SiberPHP" },
+      { property: "og:description", content: "SiberPHP hesabınıza güvenli şekilde erişin." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
 });
 
 // Sık kullanılan geçici / disposable mail sağlayıcıları
@@ -174,13 +183,6 @@ function AuthPage() {
     }
   };
 
-  const signInGoogle = () => {
-    setLoading(true);
-    // Kendi Google OAuth istemcimiz üzerinden sunucu taraflı akış.
-    window.location.href = "/api/public/auth/google/start";
-  };
-
-
   return (
     <div className="mx-auto max-w-md px-4 py-16">
       <div className="glass-card rounded-lg p-6 sm:p-8">
@@ -233,12 +235,13 @@ function AuthPage() {
         ) : (
           <>
             <Button
-              onClick={signInGoogle}
-              disabled={loading}
+              asChild
               variant="outline"
               className="mt-6 w-full font-mono border-primary/30 hover:bg-primary/10"
             >
-              <GoogleIcon /> <span className="ml-2">google ile devam et</span>
+              <a href="https://siberlisans.com/api/public/auth/google/start">
+                <GoogleIcon /> <span className="ml-2">google ile devam et</span>
+              </a>
             </Button>
             <div className="my-4 flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
               <span className="h-px flex-1 bg-border/60" />
