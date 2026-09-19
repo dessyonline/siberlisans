@@ -11,7 +11,7 @@ function encodedHeader(value: string) {
   return /^[\x00-\x7F]*$/.test(value) ? value : `=?UTF-8?B?${base64(value)}?=`;
 }
 
-function rawEmail(to: string, subject: string, text: string) {
+export function createRawEmail(to: string, subject: string, text: string) {
   const message = [
     `To: ${to}`,
     `Subject: ${encodedHeader(subject)}`,
@@ -46,7 +46,7 @@ export async function sendPasswordResetEmail(to: string, link: string): Promise<
       "X-Connection-Api-Key": connectionKey,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ raw: rawEmail(to, "Siber Lisans şifre sıfırlama", text) }),
+    body: JSON.stringify({ raw: createRawEmail(to, "Siber Lisans şifre sıfırlama", text) }),
   });
   if (!response.ok) {
     console.error(`Password reset email failed [${response.status}]: ${await response.text()}`);
