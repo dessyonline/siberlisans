@@ -183,17 +183,6 @@ function AuthPage() {
     }
   };
 
-  const signInGoogle = () => {
-    setLoading(true);
-    // Kendi Google OAuth istemcimiz üzerinden sunucu taraflı akış.
-    const productionOrigin = "https://siberlisans.com";
-    const origin = window.location.hostname === "siberlisans.com" || window.location.hostname === "www.siberlisans.com"
-      ? window.location.origin
-      : productionOrigin;
-    window.location.href = `${origin}/api/public/auth/google/start`;
-  };
-
-
   return (
     <div className="mx-auto max-w-md px-4 py-16">
       <div className="glass-card rounded-lg p-6 sm:p-8">
@@ -246,12 +235,13 @@ function AuthPage() {
         ) : (
           <>
             <Button
-              onClick={signInGoogle}
-              disabled={loading}
+              asChild
               variant="outline"
               className="mt-6 w-full font-mono border-primary/30 hover:bg-primary/10"
             >
-              <GoogleIcon /> <span className="ml-2">google ile devam et</span>
+              <a href="https://siberlisans.com/api/public/auth/google/start">
+                <GoogleIcon /> <span className="ml-2">google ile devam et</span>
+              </a>
             </Button>
             <div className="my-4 flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
               <span className="h-px flex-1 bg-border/60" />

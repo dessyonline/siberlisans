@@ -14,7 +14,7 @@
 - [x] Şifre belirleme bağlantısı yalnızca kayıtlı e-posta adresine gönderiliyor.
 - [x] Herkese açık şifre bağlantısı kapatıldı; Telegram teslim hataları artık başarı olarak gösterilmiyor.
 - [x] use-mobile.tsx kaynak kontrolü: belirtilen satır boş, React içe aktarımı mevcut; giriş sayfası tarayıcıda açıldı.
-- [ ] Gerçek hesapla şifre belirleme ve giriş testi: hesap sahibine doğrulanmış teslim kanalı bekliyor; giriş ekranı ve kaynak güvenlik kontrolleri geçti.
+- [ ] Gerçek hesapla şifre belirleme ve giriş testi: kullanıcı hesabında gelen e-posta ve Google onayı gerektiriyor; otomatik kontroller geçti.
 
 ## MySQL (Hostinger) geçişi
 - [x] PHP köprü + gizli anahtarlar
