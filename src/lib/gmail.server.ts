@@ -11,8 +11,9 @@ function encodedHeader(value: string) {
   return /^[\x00-\x7F]*$/.test(value) ? value : `=?UTF-8?B?${base64(value)}?=`;
 }
 
-export function createRawEmail(to: string, subject: string, text: string) {
+export function createRawEmail(to: string, subject: string, text: string, from?: string) {
   const message = [
+    ...(from ? [`From: ${from}`] : []),
     `To: ${to}`,
     `Subject: ${encodedHeader(subject)}`,
     "MIME-Version: 1.0",
@@ -26,7 +27,7 @@ export function createRawEmail(to: string, subject: string, text: string) {
 
 export async function sendPasswordResetEmail(to: string, link: string): Promise<boolean> {
   const apiKey = process.env["LOVABLE_API_KEY"];
-  const connectionKey = process.env["GOOGLE_MAIL_API_KEY"];
+  const connectionKey = process.env["GOOGLE_MAIL_API_KEY_1"];
   if (!apiKey || !connectionKey) return false;
 
   const text = [
@@ -46,7 +47,9 @@ export async function sendPasswordResetEmail(to: string, link: string): Promise<
       "X-Connection-Api-Key": connectionKey,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ raw: createRawEmail(to, "Siber Lisans şifre sıfırlama", text) }),
+    body: JSON.stringify({
+      raw: createRawEmail(to, "Siber Lisans şifre sıfırlama", text, "Siber Lisans <siberlisans@gmail.com>"),
+    }),
   });
   if (!response.ok) {
     console.error(`Password reset email failed [${response.status}]: ${await response.text()}`);
