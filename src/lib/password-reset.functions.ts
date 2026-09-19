@@ -20,21 +20,12 @@ function mysqlDate(d: Date) {
   return d.toISOString().slice(0, 19).replace("T", " ");
 }
 
-/**
- * Şifre belirleme / sıfırlama talebi.
- * Bağlantı yalnızca destek ekibine iletilir; hesap sahipliği doğrulanmadan
- * istekte bulunana asla döndürülmez.
- */
+/** Şifre belirleme / sıfırlama talebi. Bağlantı yalnızca kayıtlı e-postaya gider. */
 export const requestPasswordReset = createServerFn({ method: "POST" })
   .validator((d: unknown) => requestSchema.parse(d))
   .handler(async ({ data }): Promise<{ ok: boolean; link?: string; message: string }> => {
     const { mysqlQuery, mysqlOne } = await import("./mysql.server");
-    const { sendTelegram } = await import("./telegram.server");
-
-    const chatId = process.env.TELEGRAM_ADMIN_CHAT_ID;
-    if (!chatId || !process.env.TELEGRAM_BOT_TOKEN) {
-      return { ok: false, message: "Şifre belirleme bildirimi şu anda gönderilemiyor. Lütfen destek ekibiyle iletişime geçin." };
-    }
+    const { sendPasswordResetEmail } = await import("./gmail.server");
 
     const email = data.email.trim().toLowerCase();
     const user = await mysqlOne<{ id: string; password_hash: string | null }>(
@@ -46,12 +37,6 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
       message: "Talebin alındı. Hesabın mevcutsa destek ekibi, hesap sahipliğini doğruladıktan sonra şifre belirlemene yardımcı olacak.",
     };
     if (!user) return generic;
-
-    const roleRow = await mysqlOne<{ role: string }>(
-      "SELECT role FROM user_roles WHERE user_id=? AND role='admin' LIMIT 1",
-      [user.id],
-    );
-    const isAdmin = !!roleRow;
 
     const recent = await mysqlOne<{ token: string }>(
       "SELECT token FROM auth_password_tokens WHERE user_id=? AND used=0 AND expires_at > DATE_ADD(NOW(), INTERVAL 55 MINUTE) LIMIT 1",
@@ -67,16 +52,15 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
     );
 
     const link = `https://siberlisans.com/sifre-belirle?token=${token}`;
-    const escapeHtml = (value: string) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    const delivered = await sendTelegram({
-      chatId,
-      text: `🔑 Şifre belirleme talebi\nE-posta: ${escapeHtml(email)}${isAdmin ? " (YÖNETİCİ)" : ""}\n${escapeHtml(link)}\n(1 saat geçerli)\nHesap sahipliğini doğrulamadan bağlantıyı paylaşmayın.`,
-    });
-    if (!delivered.ok) {
+    const delivered = await sendPasswordResetEmail(email, link);
+    if (!delivered) {
       await mysqlQuery("DELETE FROM auth_password_tokens WHERE token=?", [token]);
-      return { ok: false, message: "Şifre belirleme bildirimi gönderilemedi. Lütfen destek ekibiyle iletişime geçin." };
+      return { ok: false, message: "Şifre sıfırlama e-postası gönderilemedi. Lütfen tekrar deneyin." };
     }
-    return generic;
+    return {
+      ok: true,
+      message: "Şifre sıfırlama bağlantısı e-posta adresine gönderildi. Spam klasörünü de kontrol et.",
+    };
   });
 
 /** Tek kullanımlık bağlantı ile şifre belirleme. */
