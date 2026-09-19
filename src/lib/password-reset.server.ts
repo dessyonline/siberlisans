@@ -27,7 +27,16 @@ export async function resetPasswordAtomically(token: string, passwordHash: strin
   }
 
   // Köprü eski sürüm: işleme özel uç noktayı tanımıyor. Tek ifadelik token tüketimi ile devam et.
-  // Token'i önce "used=1" yapmak yarış durumunda yalnızca tek isteğin kazanmasını garanti eder.
+  try {
+    return await fallbackReset(token, passwordHash);
+  } catch (error) {
+    console.error('Password reset fallback failed', error);
+    throw new Error('Güvenli şifre işlemi kullanılamıyor');
+  }
+}
+
+// Token'i önce "used=1" yapmak yarış durumunda yalnızca tek isteğin kazanmasını garanti eder.
+async function fallbackReset(token: string, passwordHash: string): Promise<boolean> {
   const claimed = await mysqlExec(
     'UPDATE auth_password_tokens SET used=1 WHERE token=? AND used=0 AND expires_at > NOW()',
     [token],
