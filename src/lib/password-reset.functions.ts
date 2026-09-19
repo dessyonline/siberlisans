@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 const schema = z.object({
-  token: z.string().min(10).max(64),
+  token: z.string().regex(/^[a-f0-9]{32,64}$/),
   password: z.string().min(6).max(200),
 });
 
@@ -39,12 +39,12 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
     if (!user) return generic;
 
     const recent = await mysqlOne<{ token: string }>(
-      "SELECT token FROM auth_password_tokens WHERE user_id=? AND used=0 AND expires_at > DATE_ADD(NOW(), INTERVAL 55 MINUTE) LIMIT 1",
+      "SELECT token FROM auth_password_tokens WHERE user_id=? AND used=0 AND expires_at > DATE_ADD(NOW(), INTERVAL 23 HOUR) LIMIT 1",
       [user.id],
     );
     const token = recent?.token ?? randomHex(32);
     if (!recent) {
-      const expires = mysqlDate(new Date(Date.now() + 60 * 60 * 1000));
+      const expires = mysqlDate(new Date(Date.now() + 24 * 60 * 60 * 1000));
       await mysqlQuery(
         "INSERT INTO auth_password_tokens (token,user_id,expires_at,used) VALUES (?,?,?,0)",
         [token, user.id, expires],
