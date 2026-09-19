@@ -6,6 +6,7 @@
 - [x] Şifre/token/oturum için transaction kullanan PHP işlemi ve dört başarılı otomatik istemci testi eklendi.
 - [ ] Hostinger köprü güncellemesini yükleme ve gerçek eşzamanlılık testi: dağıtım erişimi gerekli; eski köprüde şifre değişimi güvenli biçimde reddedilir.
 - [x] Şifre bağlantıları doğrulanmış Gmail göndericisi üzerinden doğrudan kayıtlı e-postaya gönderiliyor.
+- [x] Şifre sıfırlama göndericisi restoran hesabından ayrıldı ve Siber Lisans Gmail hesabına sabitlendi.
 - [ ] Gerçek ödeme/lisans teslimi testi; yetkili test hesabı ve ödeme test ortamı gerekli.
 - [x] Üç yedek/geçici dosya ve yerel dışa aktarım betiği kaldırıldı; PHP kaynak dosyası public dışına taşındı. Eklenti ZIP paketi korundu.
 - [x] Uygulama veri erişimleri MySQL'e taşındı; push, kripto ve e-posta kuyruğu dahil doğrudan eski veri istemcisi kullanımı kaldırıldı.
