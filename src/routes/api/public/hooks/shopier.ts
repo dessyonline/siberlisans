@@ -76,17 +76,21 @@ export const Route = createFileRoute("/api/public/hooks/shopier")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const token = process.env.SHOPIER_WEBHOOK_TOKEN;
+        const token = process.env["SHOPIER_WEBHOOK_TOKEN"];
         const raw = await request.text();
 
-        if (token) {
-          const provided = request.headers.get("shopier-signature") ?? "";
-          const expected = createHmac("sha256", token).update(raw).digest("hex");
-          const a = Buffer.from(provided);
-          const b = Buffer.from(expected);
-          if (a.length !== b.length || !timingSafeEqual(a, b)) {
-            return new Response("invalid signature", { status: 401 });
-          }
+        // Fail closed: without the signing secret no payment notification can be trusted.
+        if (!token) {
+          console.error("[shopier-webhook] SHOPIER_WEBHOOK_TOKEN missing — request rejected");
+          return new Response("webhook not configured", { status: 503 });
+        }
+
+        const provided = request.headers.get("shopier-signature") ?? "";
+        const expected = createHmac("sha256", token).update(raw).digest("hex");
+        const a = Buffer.from(provided);
+        const b = Buffer.from(expected);
+        if (a.length !== b.length || !timingSafeEqual(a, b)) {
+          return new Response("invalid signature", { status: 401 });
         }
 
         let payload: any;
