@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { getRequestIP } from "@tanstack/start-server-core";
+import { getRequestIP } from "@tanstack/react-start/server";
 import { requireAuth } from "@/lib/auth-middleware.server";
 import { mysqlOne, mysqlQuery } from "@/lib/mysql.server";
 
