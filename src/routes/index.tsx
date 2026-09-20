@@ -78,11 +78,17 @@ const HOME_FAQ = [
 
 ];
 
-const homeProductsQuery = { queryKey: ["mysql-products", "active"], queryFn: () => listProducts() };
+const homeProductsQuery = {
+  queryKey: ["mysql-products", "active"],
+  queryFn: () => listProducts(),
+  retry: 3,
+  retryDelay: (attempt: number) => Math.min(2000, 300 * 2 ** attempt),
+};
 
 export const Route = createFileRoute("/")({
   loader: ({ context }) => context.queryClient.ensureQueryData(homeProductsQuery),
   component: Index,
+
   head: () => ({
     meta: [
       { title: "SiberLisans — Orijinal Yazılım Lisansları ve Ücretsiz Araçlar" },
