@@ -29,13 +29,33 @@ function isTransient(message: string): boolean {
   );
 }
 
-/** Köprüdeki bağlantı limitini aşmamak için eşzamanlı istek sınırı. */
-const MAX_CONCURRENT = 1;
+/**
+ * Köprüdeki bağlantı/oran limitini aşmadan mümkün olan en yüksek paralelliği
+ * kullanan uyarlanabilir sınırlayıcı: 429/limit hatasında daralır, başarılı
+ * isteklerde kademeli olarak tekrar genişler.
+ */
+const HARD_MAX_CONCURRENT = Number(process.env["MYSQL_BRIDGE_MAX_CONCURRENT"] ?? 4) || 4;
+const MIN_CONCURRENT = 1;
+let limit = HARD_MAX_CONCURRENT;
+let okStreak = 0;
 let active = 0;
 const waiting: Array<() => void> = [];
 
+function noteThrottled() {
+  okStreak = 0;
+  limit = Math.max(MIN_CONCURRENT, limit - 1);
+}
+
+function noteSuccess() {
+  okStreak++;
+  if (okStreak >= 20 && limit < HARD_MAX_CONCURRENT) {
+    limit++;
+    okStreak = 0;
+  }
+}
+
 async function acquire() {
-  if (active < MAX_CONCURRENT) {
+  if (active < limit) {
     active++;
     return;
   }
@@ -87,13 +107,16 @@ async function bridgeCall(sql: string, params: Params): Promise<any> {
         } catch {
           throw new Error(`Köprü geçersiz yanıt verdi (${res.status})`);
         }
+        if (res.status === 429) noteThrottled();
         if (!res.ok || json?.error) {
           const detail = typeof json?.error === "string" ? `: ${json.error}` : "";
           throw new Error(`Köprü hatası (${res.status})${detail}`);
         }
+        noteSuccess();
         return json;
       } catch (err) {
         lastError = err instanceof Error ? err : new Error(String(err));
+        if (/429|rate limit|istek sınırı/i.test(lastError.message)) noteThrottled();
         if (!isTransient(lastError.message)) throw lastError;
       }
     }

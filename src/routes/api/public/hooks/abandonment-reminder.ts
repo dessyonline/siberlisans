@@ -1,6 +1,7 @@
 // Terkedilmiş siparişler için hatırlatma. pg_cron ile 15 dakikada bir çağrılır.
 import { createFileRoute } from "@tanstack/react-router";
 import { mysqlQuery, mysqlOne, num, bool } from "@/lib/mysql.server";
+import { requireCron } from "@/lib/cron-auth.server";
 
 function ts(d: Date = new Date()): string {
   return d.toISOString().slice(0, 19).replace("T", " ");
@@ -13,15 +14,8 @@ export const Route = createFileRoute("/api/public/hooks/abandonment-reminder")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const expected =
-          process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-        const got = request.headers.get("apikey") || request.headers.get("x-api-key");
-        if (!expected || !got || got !== expected) {
-          return new Response(JSON.stringify({ error: "unauthorized" }), {
-            status: 401,
-            headers: { "content-type": "application/json" },
-          });
-        }
+        const unauth = requireCron(request);
+        if (unauth) return unauth;
 
         try {
           const list = await mysqlQuery<{

@@ -72,7 +72,7 @@ export async function verifyLicense(license_key: string): Promise<
 }
 
 
-// Simple per-key sliding window rate limit (in-memory, per worker instance).
+// In-memory fallback (used only when the shared store is unreachable).
 const buckets = new Map<string, number[]>();
 export function rateLimit(key: string, limit: number, windowMs: number): boolean {
   const now = Date.now();
@@ -84,6 +84,34 @@ export function rateLimit(key: string, limit: number, windowMs: number): boolean
   arr.push(now);
   buckets.set(key, arr);
   return true;
+}
+
+/**
+ * Shared, restart-proof fixed-window rate limit stored in the database, so the
+ * limit holds across worker restarts and multiple instances.
+ */
+export async function rateLimitShared(key: string, limit: number, windowMs: number): Promise<boolean> {
+  const now = Date.now();
+  const windowStart = now - (now % windowMs);
+  try {
+    const { mysqlExec, mysqlOne, num } = await import("@/lib/mysql.server");
+    await mysqlExec(
+      `INSERT INTO api_rate_limits (bucket, window_start, hits) VALUES (?,?,1)
+       ON DUPLICATE KEY UPDATE
+         hits = IF(window_start < VALUES(window_start), 1, hits + 1),
+         window_start = IF(window_start < VALUES(window_start), VALUES(window_start), window_start)`,
+      [key.slice(0, 191), windowStart],
+    );
+    const row = await mysqlOne<{ hits: number | string }>(
+      "SELECT hits FROM api_rate_limits WHERE bucket=? AND window_start=?",
+      [key.slice(0, 191), windowStart],
+    );
+    const hits = num(row?.hits) ?? 1;
+    return hits <= limit;
+  } catch {
+    // Store unreachable — degrade to the per-instance limiter instead of allowing everything.
+    return rateLimit(key, limit, windowMs);
+  }
 }
 
 export async function gate(
@@ -117,7 +145,7 @@ export async function gate(
     return { response: json({ ok: false, error: verified.error }, verified.status) };
   }
   if (opts?.rateLimit) {
-    const okRate = rateLimit(
+    const okRate = await rateLimitShared(
       (opts.eventName ?? "feat") + ":" + license_key,
       opts.rateLimit.limit,
       opts.rateLimit.windowMs,

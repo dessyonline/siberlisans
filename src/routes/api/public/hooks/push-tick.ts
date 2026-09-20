@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { sendPushToUser } from "@/lib/web-push.server";
 import { mysqlQuery } from "@/lib/mysql.server";
+import { requireCron } from "@/lib/cron-auth.server";
 
 function ts(d: Date = new Date()): string {
   return d.toISOString().slice(0, 19).replace("T", " ");
@@ -14,7 +15,9 @@ function ts(d: Date = new Date()): string {
 export const Route = createFileRoute("/api/public/hooks/push-tick")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const unauth = requireCron(request);
+        if (unauth) return unauth;
         let rows: Array<{ id: string; user_id: string; title: string | null; body: string | null; link: string | null }>;
         try {
           rows = await mysqlQuery(

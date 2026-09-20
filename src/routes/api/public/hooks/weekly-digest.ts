@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { mysqlQuery, num, bool } from "@/lib/mysql.server";
+import { requireCron } from "@/lib/cron-auth.server";
 
 function ts(d: Date = new Date()): string {
   return d.toISOString().slice(0, 19).replace("T", " ");
@@ -18,7 +19,9 @@ function uid(): string {
 export const Route = createFileRoute("/api/public/hooks/weekly-digest")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        const unauth = requireCron(request);
+        if (unauth) return unauth;
         const users = await mysqlQuery<{ id: string }>(
           "SELECT id FROM profiles WHERE weekly_digest_enabled = 1 LIMIT 2000",
         );

@@ -1,21 +1,14 @@
 // pg_cron tarafından günde bir kez çağrılır: tam katalog senkronu.
 // Yetki: apikey header (Supabase anon key). /api/public/* bypass'ından yararlanır.
 import { createFileRoute } from "@tanstack/react-router";
+import { requireCron } from "@/lib/cron-auth.server";
 
 export const Route = createFileRoute("/api/public/hooks/uniquelisans-catalog")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const expected =
-          process.env.SUPABASE_PUBLISHABLE_KEY ||
-          process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-        const got = request.headers.get("apikey") || request.headers.get("x-api-key");
-        if (!expected || !got || got !== expected) {
-          return new Response(JSON.stringify({ error: "unauthorized" }), {
-            status: 401,
-            headers: { "content-type": "application/json" },
-          });
-        }
+        const unauth = requireCron(request);
+        if (unauth) return unauth;
 
         try {
           const { runUniquelisansCatalogSync } = await import("@/lib/uniquelisans-catalog.server");
