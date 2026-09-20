@@ -52,3 +52,4 @@
 - [x] Uygulama içindeki kalan modüller MySQL veri katmanına taşındı; doğrudan eski veri istemcisi çağrısı kalmadı.
 
 - [x] Google girişi: kendi OAuth istemcisi ve sabit üretim dönüş alan adıyla çalışıyor.
+- [x] Eski bcrypt yönetici şifre doğrulaması sunucu paketine sabitlendi; giriş hataları artık kopuk RPC yerine kontrollü yanıt döndürüyor.
