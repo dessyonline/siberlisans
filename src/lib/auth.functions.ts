@@ -48,7 +48,11 @@ export const signIn = createServerFn({ method: "POST" })
       expires,
     });
     const me = await auth.getUserByToken(token);
-    return { ok: true, user: me! };
+    if (!me) {
+      await auth.destroySession(token);
+      return { ok: false, error: "Oturum oluşturulamadı. Lütfen tekrar deneyin." };
+    }
+    return { ok: true, user: me };
   });
 
 export const signUp = createServerFn({ method: "POST" })
@@ -117,7 +121,11 @@ export const signUp = createServerFn({ method: "POST" })
       expires,
     });
     const me = await auth.getUserByToken(token);
-    return { ok: true, user: me! };
+    if (!me) {
+      await auth.destroySession(token);
+      return { ok: false, error: "Oturum oluşturulamadı. Lütfen tekrar deneyin." };
+    }
+    return { ok: true, user: me };
   });
 
 export const signOut = createServerFn({ method: "POST" }).handler(async () => {
