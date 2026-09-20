@@ -107,13 +107,16 @@ async function bridgeCall(sql: string, params: Params): Promise<any> {
         } catch {
           throw new Error(`Köprü geçersiz yanıt verdi (${res.status})`);
         }
+        if (res.status === 429) noteThrottled();
         if (!res.ok || json?.error) {
           const detail = typeof json?.error === "string" ? `: ${json.error}` : "";
           throw new Error(`Köprü hatası (${res.status})${detail}`);
         }
+        noteSuccess();
         return json;
       } catch (err) {
         lastError = err instanceof Error ? err : new Error(String(err));
+        if (/429|rate limit|istek sınırı/i.test(lastError.message)) noteThrottled();
         if (!isTransient(lastError.message)) throw lastError;
       }
     }
