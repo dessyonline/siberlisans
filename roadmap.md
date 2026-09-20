@@ -16,6 +16,7 @@
 - [x] Herkese açık şifre bağlantısı kapatıldı; Telegram teslim hataları artık başarı olarak gösterilmiyor.
 - [x] use-mobile.tsx kaynak kontrolü: belirtilen satır boş, React içe aktarımı mevcut; giriş sayfası tarayıcıda açıldı.
 - [x] Şifre başarıyla yenilendiğinde yeni oturum çerezi oluşturuluyor ve kullanıcı doğrudan hesabına yönlendiriliyor.
+- [x] Giriş sonrası kullanıcı okumasındaki eski Telegram sütunu uyumsuzluğu kaldırıldı; oturum sorgusu canlı MySQL üzerinde doğrulandı.
 - [ ] Gerçek hesapla şifre belirleme ve giriş testi: kullanıcı hesabında gelen e-posta ve Google onayı gerektiriyor; otomatik kontroller geçti.
 
 ## MySQL (Hostinger) geçişi

@@ -48,7 +48,11 @@ export const signIn = createServerFn({ method: "POST" })
       expires,
     });
     const me = await auth.getUserByToken(token);
-    return { ok: true, user: me! };
+    if (!me) {
+      await auth.destroySession(token);
+      return { ok: false, error: "Oturum oluşturulamadı. Lütfen tekrar deneyin." };
+    }
+    return { ok: true, user: me };
   });
 
 export const signUp = createServerFn({ method: "POST" })
@@ -83,8 +87,8 @@ export const signUp = createServerFn({ method: "POST" })
 
     const refCode = `SP${id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
     await mysqlQuery(
-      `INSERT INTO profiles (id,email,display_name,created_at,updated_at,referral_code,referred_by,telegram_username)
-       VALUES (?,?,?,?,?,?,?,?)`,
+      `INSERT INTO profiles (id,email,display_name,created_at,updated_at,referral_code,referred_by)
+       VALUES (?,?,?,?,?,?,?)`,
       [
         id,
         data.email,
@@ -93,7 +97,6 @@ export const signUp = createServerFn({ method: "POST" })
         now,
         refCode,
         referredBy,
-        data.telegramUsername ?? null,
       ],
     );
     await mysqlQuery("INSERT IGNORE INTO user_roles (id,user_id,role) VALUES (?,?,?)", [
@@ -118,7 +121,11 @@ export const signUp = createServerFn({ method: "POST" })
       expires,
     });
     const me = await auth.getUserByToken(token);
-    return { ok: true, user: me! };
+    if (!me) {
+      await auth.destroySession(token);
+      return { ok: false, error: "Oturum oluşturulamadı. Lütfen tekrar deneyin." };
+    }
+    return { ok: true, user: me };
   });
 
 export const signOut = createServerFn({ method: "POST" }).handler(async () => {

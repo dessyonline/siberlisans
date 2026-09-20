@@ -79,7 +79,7 @@ export type SessionUser = {
 export async function getUserByToken(token: string | undefined | null): Promise<SessionUser | null> {
   if (!token) return null;
   const row = await mysqlOne<{ id: string; email: string | null; display_name: string | null; telegram_handle: string | null }>(
-    `SELECT u.id, u.email, p.display_name, p.telegram_handle
+    `SELECT u.id, u.email, p.display_name, NULL AS telegram_handle
        FROM auth_sessions s
        JOIN auth_users u ON u.id = s.user_id
        LEFT JOIN profiles p ON p.id = u.id
