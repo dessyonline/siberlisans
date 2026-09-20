@@ -27,34 +27,39 @@ export const getMe = createServerFn({ method: "GET" }).handler(async (): Promise
 export const signIn = createServerFn({ method: "POST" })
   .validator((d: unknown) => credentials.pick({ email: true, password: true }).parse(d))
   .handler(async ({ data }): Promise<{ ok: true; user: AuthUser } | { ok: false; error: string }> => {
-    const auth = await import("./auth.server");
-    const user = await auth.findUserByEmail(data.email);
-    if (!user) return { ok: false, error: "E-posta veya şifre hatalı." };
-    if (!user.password_hash) {
-      return {
-        ok: false,
-        error: "Bu hesap için henüz şifre belirlenmemiş. 'Şifremi unuttum' ile yeni şifre oluşturun.",
-      };
-    }
-    if (!(await auth.verifyPassword(data.password, user.password_hash))) {
-      return { ok: false, error: "E-posta veya şifre hatalı." };
-    }
-    await auth.upgradePasswordHash(user.id, data.password, user.password_hash).catch(() => {});
-    const { token, expires } = await auth.createSession(user.id, getRequestIP() ?? null);
+    try {
+      const auth = await import("./auth.server");
+      const user = await auth.findUserByEmail(data.email);
+      if (!user) return { ok: false, error: "E-posta veya şifre hatalı." };
+      if (!user.password_hash) {
+        return {
+          ok: false,
+          error: "Bu hesap için henüz şifre belirlenmemiş. 'Şifremi unuttum' ile yeni şifre oluşturun.",
+        };
+      }
+      if (!(await auth.verifyPassword(data.password, user.password_hash))) {
+        return { ok: false, error: "E-posta veya şifre hatalı." };
+      }
+      await auth.upgradePasswordHash(user.id, data.password, user.password_hash).catch(() => {});
+      const { token, expires } = await auth.createSession(user.id, getRequestIP() ?? null);
 
-    setCookie(auth.SESSION_COOKIE, token, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: true,
-      path: "/",
-      expires,
-    });
-    const me = await auth.getUserByToken(token);
-    if (!me) {
-      await auth.destroySession(token);
-      return { ok: false, error: "Oturum oluşturulamadı. Lütfen tekrar deneyin." };
+      setCookie(auth.SESSION_COOKIE, token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: true,
+        path: "/",
+        expires,
+      });
+      const me = await auth.getUserByToken(token);
+      if (!me) {
+        await auth.destroySession(token);
+        return { ok: false, error: "Oturum oluşturulamadı. Lütfen tekrar deneyin." };
+      }
+      return { ok: true, user: me };
+    } catch (error) {
+      console.error("signIn failed", error instanceof Error ? error.message : String(error));
+      return { ok: false, error: "Giriş servisine şu anda ulaşılamıyor. Lütfen tekrar deneyin." };
     }
-    return { ok: true, user: me };
   });
 
 export const signUp = createServerFn({ method: "POST" })

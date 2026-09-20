@@ -1,4 +1,5 @@
 import { mysqlQuery, mysqlOne } from "./mysql.server";
+import bcrypt from "bcryptjs";
 
 const ITER = 100_000;
 
@@ -19,7 +20,9 @@ function randomHex(bytes: number) {
 async function pbkdf2(password: string, saltHex: string) {
   const enc = new TextEncoder();
   const key = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, ["deriveBits"]);
-  const salt = Uint8Array.from(saltHex.match(/.{2}/g)!.map((h) => parseInt(h, 16)));
+  const saltParts = saltHex.match(/.{2}/g);
+  if (!saltParts) return "";
+  const salt = Uint8Array.from(saltParts.map((h) => parseInt(h, 16)));
   const bits = await crypto.subtle.deriveBits(
     { name: "PBKDF2", hash: "SHA-256", salt, iterations: ITER },
     key,
@@ -38,7 +41,6 @@ export async function verifyPassword(password: string, stored: string | null) {
   if (!stored) return false;
   // Eski sistemden taşınan bcrypt ($2a/$2b/$2y) hash'leri
   if (/^\$2[aby]?\$/.test(stored)) {
-    const bcrypt = (await import("bcryptjs")).default;
     return bcrypt.compare(password, stored.replace(/^\$2y\$/, "$2a$"));
   }
   const parts = stored.split("$");
