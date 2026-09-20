@@ -75,7 +75,6 @@ export async function createSession(userId: string, ip?: string | null) {
     "INSERT INTO auth_sessions (token,user_id,created_at,expires_at,ip) VALUES (?,?,?,?,?)",
     [token, userId, mysqlDate(new Date()), mysqlDate(expires), ip ?? null],
   );
-  await mysqlQuery("UPDATE auth_users SET last_sign_in_at=? WHERE id=?", [mysqlDate(new Date()), userId]);
   return { token, expires };
 }
 
@@ -107,8 +106,18 @@ export async function getUserByToken(token: string | undefined | null): Promise<
 }
 
 export async function findUserByEmail(email: string) {
-  return mysqlOne<{ id: string; email: string; password_hash: string | null }>(
-    "SELECT id,email,password_hash FROM auth_users WHERE LOWER(email)=LOWER(?) LIMIT 1",
+  return mysqlOne<{
+    id: string;
+    email: string;
+    password_hash: string | null;
+    display_name: string | null;
+    roles_csv: string | null;
+  }>(
+    `SELECT u.id, u.email, u.password_hash, p.display_name,
+            (SELECT GROUP_CONCAT(ur.role) FROM user_roles ur WHERE ur.user_id = u.id) AS roles_csv
+       FROM auth_users u
+       LEFT JOIN profiles p ON p.id = u.id
+      WHERE LOWER(u.email)=LOWER(?) LIMIT 1`,
     [email],
   );
 }

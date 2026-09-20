@@ -40,7 +40,6 @@ export const signIn = createServerFn({ method: "POST" })
       if (!(await auth.verifyPassword(data.password, user.password_hash))) {
         return { ok: false, error: "E-posta veya şifre hatalı." };
       }
-      await auth.upgradePasswordHash(user.id, data.password, user.password_hash).catch(() => {});
       const { token, expires } = await auth.createSession(user.id, getRequestIP() ?? null);
 
       setCookie(auth.SESSION_COOKIE, token, {
@@ -50,11 +49,13 @@ export const signIn = createServerFn({ method: "POST" })
         path: "/",
         expires,
       });
-      const me = await auth.getUserByToken(token);
-      if (!me) {
-        await auth.destroySession(token);
-        return { ok: false, error: "Oturum oluşturulamadı. Lütfen tekrar deneyin." };
-      }
+      const me: AuthUser = {
+        id: user.id,
+        email: user.email,
+        display_name: user.display_name,
+        telegram_handle: null,
+        roles: user.roles_csv ? user.roles_csv.split(",").filter(Boolean) : [],
+      };
       return { ok: true, user: me };
     } catch (error) {
       console.error("signIn failed", error instanceof Error ? error.message : String(error));
