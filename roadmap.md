@@ -53,4 +53,4 @@
 
 - [x] Google girişi: kendi OAuth istemcisi ve sabit üretim dönüş alan adıyla çalışıyor.
 - [x] Eski bcrypt yönetici şifre doğrulaması sunucu paketine sabitlendi; giriş hataları artık kopuk RPC yerine kontrollü yanıt döndürüyor.
-- [x] Giriş akışı Hostinger 429 sınırı için 6-7 köprü çağrısından 2 çağrıya indirildi.
+- [x] Giriş akışı Hostinger 429 sınırı için 6-7 köprü çağrısından 2 çağrıya indirildi; 429 yanıtları Retry-After beklemesiyle yeniden deneniyor ve köprü istekleri tek sırada çalışıyor.

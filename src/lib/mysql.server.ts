@@ -20,13 +20,17 @@ function isTransient(message: string): boolean {
     m.includes("network") ||
     m.includes("timeout") ||
     m.includes("econnreset") ||
+    m.includes("köprü hatası (429") ||
+    m.includes("too many requests") ||
+    m.includes("rate limit") ||
+    m.includes("istek sınırı") ||
     m.includes("köprü hatası (5") ||
     m.includes("köprü geçersiz yanıt")
   );
 }
 
 /** Köprüdeki bağlantı limitini aşmamak için eşzamanlı istek sınırı. */
-const MAX_CONCURRENT = 4;
+const MAX_CONCURRENT = 1;
 let active = 0;
 const waiting: Array<() => void> = [];
 
@@ -45,7 +49,7 @@ function release() {
   if (next) next();
 }
 
-const MAX_ATTEMPTS = 5;
+const MAX_ATTEMPTS = 7;
 
 async function bridgeCall(sql: string, params: Params): Promise<any> {
   const url = process.env["MYSQL_BRIDGE_URL"];
@@ -55,9 +59,13 @@ async function bridgeCall(sql: string, params: Params): Promise<any> {
   await acquire();
   try {
     let lastError: Error = new Error("MySQL köprüsüne ulaşılamadı");
+    let retryAfterMs = 0;
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
       if (attempt > 0) {
-        const delay = Math.min(1500, 150 * 2 ** (attempt - 1)) + Math.floor(Math.random() * 120);
+        const delay = Math.max(
+          retryAfterMs,
+          Math.min(4000, 300 * 2 ** (attempt - 1)) + Math.floor(Math.random() * 180),
+        );
         await new Promise((r) => setTimeout(r, delay));
       }
       try {
@@ -67,6 +75,12 @@ async function bridgeCall(sql: string, params: Params): Promise<any> {
           body: JSON.stringify({ sql, params }),
         });
         const text = await res.text();
+        const retryAfter = Number(res.headers.get("retry-after"));
+        retryAfterMs = Number.isFinite(retryAfter) && retryAfter > 0
+          ? Math.min(10_000, retryAfter * 1000)
+          : res.status === 429
+            ? 2000
+            : 0;
         let json: any;
         try {
           json = JSON.parse(text);
@@ -74,7 +88,8 @@ async function bridgeCall(sql: string, params: Params): Promise<any> {
           throw new Error(`Köprü geçersiz yanıt verdi (${res.status})`);
         }
         if (!res.ok || json?.error) {
-          throw new Error(json?.error ?? `Köprü hatası (${res.status})`);
+          const detail = typeof json?.error === "string" ? `: ${json.error}` : "";
+          throw new Error(`Köprü hatası (${res.status})${detail}`);
         }
         return json;
       } catch (err) {
