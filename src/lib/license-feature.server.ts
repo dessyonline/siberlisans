@@ -145,7 +145,7 @@ export async function gate(
     return { response: json({ ok: false, error: verified.error }, verified.status) };
   }
   if (opts?.rateLimit) {
-    const okRate = rateLimit(
+    const okRate = await rateLimitShared(
       (opts.eventName ?? "feat") + ":" + license_key,
       opts.rateLimit.limit,
       opts.rateLimit.windowMs,
