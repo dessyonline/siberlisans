@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { mysqlQuery, mysqlOne, num, bool } from "@/lib/mysql.server";
+import { mysqlQuery, mysqlExec, mysqlOne, num, bool } from "@/lib/mysql.server";
 import { assignKeyToOrder } from "@/lib/license-mysql.server";
 import { requireCron } from "@/lib/cron-auth.server";
 
@@ -95,7 +95,17 @@ async function renewSubscription(subId: string): Promise<"success" | "insufficie
     [orderId, sub.user_id, sub.product_id, price, referenceCode, ts(), ts(), ts()],
   );
 
-  await mysqlQuery("UPDATE wallets SET balance_try = balance_try - ?, updated_at=? WHERE user_id=?", [price, ts(), sub.user_id]);
+  // Atomic debit: the balance check and the deduction happen in one statement,
+  // so two concurrent renewals can never both pass the earlier balance check.
+  const debited = await mysqlExec(
+    "UPDATE wallets SET balance_try = balance_try - ?, updated_at=? WHERE user_id=? AND balance_try >= ?",
+    [price, ts(), sub.user_id, price],
+  );
+  if (debited < 1) {
+    await mysqlQuery("UPDATE orders SET status='failed', updated_at=? WHERE id=?", [ts(), orderId]);
+    await logAttempt(subId, "insufficient_funds", { error_message: "Concurrent debit / insufficient balance", amount_try: price });
+    return "insufficient_funds";
+  }
   const w2 = await mysqlOne<{ balance_try: string | number | null }>("SELECT balance_try FROM wallets WHERE user_id=?", [sub.user_id]);
   await mysqlQuery(
     "INSERT INTO wallet_transactions (id,user_id,kind,amount_try,balance_after,order_id,note,created_at) VALUES (?,?,?,?,?,?,?,?)",
@@ -158,6 +168,19 @@ async function processDueSubscriptions(): Promise<{ processed: number; succeeded
   let failed = 0;
   for (const s of due) {
     try {
+      // Claim the row before doing any money work. The same guard used by the
+      // SELECT is repeated here, so a second worker (or a second cron tick)
+      // gets 0 affected rows and skips the subscription.
+      const claimed = await mysqlExec(
+        `UPDATE subscriptions SET last_attempt_at = NOW(), updated_at = NOW()
+          WHERE id = ?
+            AND status = 'active'
+            AND auto_renew = 1
+            AND (last_attempt_at IS NULL OR last_attempt_at < DATE_SUB(NOW(), INTERVAL 6 HOUR))`,
+        [s.id],
+      );
+      if (claimed < 1) continue;
+
       const outcome = await renewSubscription(s.id);
       processed++;
       if (outcome === "success") succeeded++;
