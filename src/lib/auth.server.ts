@@ -36,6 +36,11 @@ export async function hashPassword(password: string) {
 
 export async function verifyPassword(password: string, stored: string | null) {
   if (!stored) return false;
+  // Eski sistemden taşınan bcrypt ($2a/$2b/$2y) hash'leri
+  if (/^\$2[aby]?\$/.test(stored)) {
+    const bcrypt = (await import("bcryptjs")).default;
+    return bcrypt.compare(password, stored.replace(/^\$2y\$/, "$2a$"));
+  }
   const parts = stored.split("$");
   if (parts.length !== 4 || parts[0] !== "pbkdf2") return false;
   const calc = await pbkdf2(password, parts[2]);
@@ -45,6 +50,14 @@ export async function verifyPassword(password: string, stored: string | null) {
   for (let i = 0; i < calc.length; i++) diff |= calc.charCodeAt(i) ^ parts[3].charCodeAt(i);
   return diff === 0;
 }
+
+/** Giriş başarılıysa eski hash'i güncel formata yükseltir. */
+export async function upgradePasswordHash(userId: string, password: string, stored: string | null) {
+  if (!stored || !/^\$2[aby]?\$/.test(stored)) return;
+  const fresh = await hashPassword(password);
+  await mysqlQuery("UPDATE auth_users SET password_hash=? WHERE id=?", [fresh, userId]);
+}
+
 
 export const SESSION_COOKIE = "siber_session";
 const SESSION_DAYS = 30;

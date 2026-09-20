@@ -39,7 +39,9 @@ export const signIn = createServerFn({ method: "POST" })
     if (!(await auth.verifyPassword(data.password, user.password_hash))) {
       return { ok: false, error: "E-posta veya şifre hatalı." };
     }
+    await auth.upgradePasswordHash(user.id, data.password, user.password_hash).catch(() => {});
     const { token, expires } = await auth.createSession(user.id, getRequestIP() ?? null);
+
     setCookie(auth.SESSION_COOKIE, token, {
       httpOnly: true,
       sameSite: "lax",
