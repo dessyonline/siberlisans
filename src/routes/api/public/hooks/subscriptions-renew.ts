@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { mysqlQuery, mysqlOne, num, bool } from "@/lib/mysql.server";
 import { assignKeyToOrder } from "@/lib/license-mysql.server";
+import { requireCron } from "@/lib/cron-auth.server";
 
 function ts(d: Date = new Date()): string {
   return d.toISOString().slice(0, 19).replace("T", " ");
@@ -173,12 +174,8 @@ export const Route = createFileRoute("/api/public/hooks/subscriptions-renew")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Validate anon key header (pg_cron sends this)
-        const apiKey = request.headers.get("apikey") ?? "";
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY ?? "";
-        if (!apiKey || !expected || apiKey !== expected) {
-          return new Response("unauthorized", { status: 401 });
-        }
+        const unauth = requireCron(request);
+        if (unauth) return unauth;
 
         try {
           const row = await processDueSubscriptions();

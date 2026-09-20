@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { mysqlQuery, mysqlOne, num } from "@/lib/mysql.server";
+import { requireCron } from "@/lib/cron-auth.server";
 
 // Fal.ai queue-based video generation worker.
 // Called by pg_cron every minute. For each queued job: submit to fal.ai.
@@ -222,14 +223,8 @@ export const Route = createFileRoute("/api/public/hooks/process-ai-videos")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        // Simple auth via apikey header (Supabase anon key expected)
-        const apikey = request.headers.get("apikey");
-        if (!apikey || apikey !== process.env.SUPABASE_PUBLISHABLE_KEY) {
-          return new Response(JSON.stringify({ error: "unauthorized" }), {
-            status: 401,
-            headers: { "Content-Type": "application/json" },
-          });
-        }
+        const unauth = requireCron(request);
+        if (unauth) return unauth;
         const key = process.env.FAL_API_KEY;
         if (!key) {
           return new Response(JSON.stringify({ error: "FAL_API_KEY missing" }), {

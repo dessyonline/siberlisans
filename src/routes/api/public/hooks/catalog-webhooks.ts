@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { mysqlQuery } from "@/lib/mysql.server";
+import { requireCron } from "@/lib/cron-auth.server";
 
 /**
  * Katalog olay kuyruğunu bayi webhook'larına dağıtır (cron ile dakikalık çalışır).
@@ -31,9 +32,8 @@ export const Route = createFileRoute("/api/public/hooks/catalog-webhooks")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apikey = request.headers.get("apikey") ?? "";
-        const expected = process.env.SUPABASE_PUBLISHABLE_KEY ?? "";
-        if (!expected || apikey !== expected) return new Response("Unauthorized", { status: 401 });
+        const unauth = requireCron(request);
+        if (unauth) return unauth;
 
         let events: Array<{ id: number | string; event: string; payload: unknown; created_at: string }>;
         try {
