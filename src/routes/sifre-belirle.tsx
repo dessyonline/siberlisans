@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Terminal, KeyRound } from "lucide-react";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/sifre-belirle")({
   component: SetPasswordPage,
@@ -28,6 +29,7 @@ function SetPasswordPage() {
   const { token } = useSearch({ from: "/sifre-belirle" });
   const navigate = useNavigate();
   const submit = useServerFn(setPasswordWithToken);
+  const { refresh } = useAuth();
   const [password, setPassword] = useState("");
   const [again, setAgain] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,8 +43,9 @@ function SetPasswordPage() {
       const res = await submit({ data: { token, password } });
       setLoading(false);
       if (!res.ok) return toast.error(res.error ?? "İşlem başarısız");
+      await refresh();
       toast.success("[✓] şifren güncellendi");
-      navigate({ to: "/auth" });
+      navigate({ to: "/hesabim" });
     } catch {
       setLoading(false);
       toast.error("İşlem başarısız, tekrar deneyin.");
