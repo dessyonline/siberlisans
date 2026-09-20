@@ -16,43 +16,78 @@ function isTransient(message: string): boolean {
     m.includes("server has gone away") ||
     m.includes("deadlock") ||
     m.includes("lock wait timeout") ||
+    m.includes("fetch failed") ||
+    m.includes("network") ||
+    m.includes("timeout") ||
+    m.includes("econnreset") ||
     m.includes("köprü hatası (5") ||
     m.includes("köprü geçersiz yanıt")
   );
 }
+
+/** Köprüdeki bağlantı limitini aşmamak için eşzamanlı istek sınırı. */
+const MAX_CONCURRENT = 4;
+let active = 0;
+const waiting: Array<() => void> = [];
+
+async function acquire() {
+  if (active < MAX_CONCURRENT) {
+    active++;
+    return;
+  }
+  await new Promise<void>((resolve) => waiting.push(resolve));
+  active++;
+}
+
+function release() {
+  active--;
+  const next = waiting.shift();
+  if (next) next();
+}
+
+const MAX_ATTEMPTS = 5;
 
 async function bridgeCall(sql: string, params: Params): Promise<any> {
   const url = process.env["MYSQL_BRIDGE_URL"];
   const token = process.env["MYSQL_BRIDGE_TOKEN"];
   if (!url || !token) throw new Error("MySQL köprü ayarları eksik");
 
-  let lastError: Error = new Error("MySQL köprüsüne ulaşılamadı");
-  for (let attempt = 0; attempt < 3; attempt++) {
-    if (attempt > 0) await new Promise((r) => setTimeout(r, 200 * attempt));
-    try {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-Bridge-Token": token },
-        body: JSON.stringify({ sql, params }),
-      });
-      const text = await res.text();
-      let json: any;
+  await acquire();
+  try {
+    let lastError: Error = new Error("MySQL köprüsüne ulaşılamadı");
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+      if (attempt > 0) {
+        const delay = Math.min(1500, 150 * 2 ** (attempt - 1)) + Math.floor(Math.random() * 120);
+        await new Promise((r) => setTimeout(r, delay));
+      }
       try {
-        json = JSON.parse(text);
-      } catch {
-        throw new Error(`Köprü geçersiz yanıt verdi (${res.status})`);
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "X-Bridge-Token": token },
+          body: JSON.stringify({ sql, params }),
+        });
+        const text = await res.text();
+        let json: any;
+        try {
+          json = JSON.parse(text);
+        } catch {
+          throw new Error(`Köprü geçersiz yanıt verdi (${res.status})`);
+        }
+        if (!res.ok || json?.error) {
+          throw new Error(json?.error ?? `Köprü hatası (${res.status})`);
+        }
+        return json;
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err));
+        if (!isTransient(lastError.message)) throw lastError;
       }
-      if (!res.ok || json?.error) {
-        throw new Error(json?.error ?? `Köprü hatası (${res.status})`);
-      }
-      return json;
-    } catch (err) {
-      lastError = err instanceof Error ? err : new Error(String(err));
-      if (!isTransient(lastError.message)) throw lastError;
     }
+    throw lastError;
+  } finally {
+    release();
   }
-  throw lastError;
 }
+
 
 export async function mysqlQuery<T = Record<string, unknown>>(
   sql: string,
