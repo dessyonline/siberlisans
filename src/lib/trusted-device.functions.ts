@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { getRequestIP } from "@tanstack/start-server-core";
+import { getRequestIP } from "@tanstack/react-start/server";
 import { requireAuth } from "@/lib/auth-middleware.server";
 import { mysqlQuery } from "@/lib/mysql.server";
 

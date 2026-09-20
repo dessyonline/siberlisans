@@ -107,8 +107,8 @@ export async function sessionCookieForIdentity(
       "user",
     ]);
     await mysqlQuery(
-      "INSERT IGNORE INTO wallets (id,user_id,balance_try,created_at,updated_at) VALUES (?,?,?,?,?)",
-      [crypto.randomUUID(), id, 0, now, now],
+      "INSERT IGNORE INTO wallets (user_id,balance_try,updated_at) VALUES (?,?,?)",
+      [id, 0, now],
     );
     user = await findUserByEmail(identity.email);
   }

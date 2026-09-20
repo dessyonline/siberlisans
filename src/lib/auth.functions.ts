@@ -104,11 +104,9 @@ export const signUp = createServerFn({ method: "POST" })
       id,
       "user",
     ]);
-    await mysqlQuery("INSERT IGNORE INTO wallets (id,user_id,balance_try,created_at,updated_at) VALUES (?,?,?,?,?)", [
-      crypto.randomUUID(),
+    await mysqlQuery("INSERT IGNORE INTO wallets (user_id,balance_try,updated_at) VALUES (?,?,?)", [
       id,
       0,
-      now,
       now,
     ]);
 
