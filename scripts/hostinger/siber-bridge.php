@@ -82,7 +82,7 @@ try {
     if ($operation === 'reset_password') {
         $token = $payload['token'] ?? '';
         $hash = $payload['passwordHash'] ?? '';
-        if (!is_string($token) || !preg_match('/^[a-f0-9]{64}$/D', $token) ||
+        if (!is_string($token) || !preg_match('/^[a-f0-9]{32,64}$/D', $token) ||
             !is_string($hash) || !preg_match('/^pbkdf2\$100000\$[a-f0-9]{32}\$[a-f0-9]{64}$/D', $hash)) {
             fail(400, 'Invalid reset payload');
         }

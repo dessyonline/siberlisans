@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequestIP, setCookie } from "@tanstack/react-start/server";
 import { z } from "zod";
 
 const schema = z.object({
@@ -63,13 +64,31 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
 /** Tek kullanımlık bağlantı ile şifre belirleme. */
 export const setPasswordWithToken = createServerFn({ method: "POST" })
   .validator((d: unknown) => schema.parse(d))
-  .handler(async ({ data }): Promise<{ ok: boolean; error?: string }> => {
+  .handler(async ({ data }): Promise<{ ok: boolean; signedIn?: boolean; error?: string }> => {
     const { resetPasswordAtomically } = await import("./password-reset.server");
-    const { hashPassword } = await import("./auth.server");
+    const { createSession, hashPassword, SESSION_COOKIE } = await import("./auth.server");
+    const { mysqlOne } = await import("./mysql.server");
+
+    const owner = await mysqlOne<{ user_id: string }>(
+      "SELECT user_id FROM auth_password_tokens WHERE token=? AND used=0 AND expires_at > NOW() LIMIT 1",
+      [data.token],
+    );
+    if (!owner) return { ok: false, error: "Bağlantı geçersiz veya süresi dolmuş." };
+
     const hash = await hashPassword(data.password);
     try {
       const ok = await resetPasswordAtomically(data.token, hash);
-      return ok ? { ok: true } : { ok: false, error: "Bağlantı geçersiz veya süresi dolmuş." };
+      if (!ok) return { ok: false, error: "Bağlantı geçersiz veya süresi dolmuş." };
+
+      const { token, expires } = await createSession(owner.user_id, getRequestIP() ?? null);
+      setCookie(SESSION_COOKIE, token, {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: true,
+        path: "/",
+        expires,
+      });
+      return { ok: true, signedIn: true };
     } catch {
       return { ok: false, error: "Güvenli şifre belirleme şu anda kullanılamıyor. Lütfen destek ekibiyle iletişime geçin." };
     }
