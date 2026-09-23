@@ -26,10 +26,9 @@ export function isMysqlUnavailable(err: unknown): err is MysqlUnavailableError {
 }
 
 const cfg = {
-  hardMax: Math.min(4, Math.max(1, Number(process.env["MYSQL_BRIDGE_MAX_CONCURRENT"] ?? 2) || 2)),
+  hardMax: Math.min(4, Math.max(1, Number(process.env["MYSQL_BRIDGE_MAX_CONCURRENT"] ?? 1) || 1)),
   totalBudgetMs: 10_000,
   maxAttempts: 4,
-  maxRetryAfterMs: 30_000,
   defaultThrottleMs: 2_000,
 };
 
@@ -37,7 +36,12 @@ let limit = cfg.hardMax;
 let okStreak = 0;
 let active = 0;
 let pausedUntil = 0;
-type Waiter = { resolve: () => void; reject: (e: Error) => void; timer: ReturnType<typeof setTimeout> };
+type Waiter = {
+  resolve: () => void;
+  reject: (e: Error) => void;
+  deadline: number;
+  timer: ReturnType<typeof setTimeout>;
+};
 const waiting: Waiter[] = [];
 let pumpTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -53,8 +57,13 @@ function pump() {
     return;
   }
   while (active < limit && waiting.length) {
-    const w = waiting.shift()!;
+    const w = waiting.shift();
+    if (!w) break;
     clearTimeout(w.timer);
+    if (Date.now() >= w.deadline) {
+      w.reject(new MysqlUnavailableError("Veritabanı kuyruğu zaman aşımına uğradı"));
+      continue;
+    }
     active++;
     w.resolve();
   }
@@ -84,6 +93,7 @@ function acquire(deadline: number): Promise<void> {
     const w: Waiter = {
       resolve,
       reject,
+      deadline,
       timer: setTimeout(() => {
         const i = waiting.indexOf(w);
         if (i >= 0) waiting.splice(i, 1);
@@ -181,7 +191,7 @@ async function bridgeCall(sql: string, params: Params): Promise<any> {
       if (res.status === 429) {
         // Sunucu isteği reddetti -> SQL çalışmadı; yazma dahil tekrar güvenli.
         const ra = parseRetryAfter(res.headers.get("retry-after"));
-        const wait = Math.min(cfg.maxRetryAfterMs, ra ?? cfg.defaultThrottleMs);
+        const wait = ra ?? cfg.defaultThrottleMs;
         noteThrottled(wait);
         lastError = new MysqlUnavailableError("Veritabanı istek sınırına ulaşıldı (429)");
         if (Date.now() + wait >= deadline) break; // talimatı kısaltmak yerine hızlı başarısız ol
@@ -275,10 +285,10 @@ export const __bridgeTest = {
     cfg.hardMax = 2;
     cfg.totalBudgetMs = 10_000;
     cfg.maxAttempts = 4;
-    cfg.maxRetryAfterMs = 30_000;
     cfg.defaultThrottleMs = 2_000;
     limit = cfg.hardMax;
     okStreak = 0;
+    active = 0;
     pausedUntil = 0;
     for (const w of waiting.splice(0)) clearTimeout(w.timer);
     if (pumpTimer) clearTimeout(pumpTimer);

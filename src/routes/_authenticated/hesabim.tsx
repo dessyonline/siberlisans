@@ -56,16 +56,18 @@ function MyAccount() {
   const subFn = useServerFn(getMyAiSubscription);
   const jobsFn = useServerFn(listMyAiJobs);
   const ordersFn = useServerFn(listMyOrders);
-  const { data: orders, isLoading } = useQuery({
+  const { data: orders, isLoading, isError: ordersFailed, refetch: retryOrders } = useQuery({
     queryKey: ["my-orders", user?.id],
     enabled: !!user,
     queryFn: () => ordersFn(),
+    retry: 2,
   });
 
   const { data: aiSub } = useQuery({
     queryKey: ["my-ai-sub", user?.id],
     enabled: !!user,
     queryFn: () => subFn(),
+    retry: 2,
   });
 
   const approvedKeys = useMemo(
@@ -219,6 +221,12 @@ function MyAccount() {
         </TabsContent>
 
         <TabsContent value="orders" className="mt-6">
+          {ordersFailed ? (
+            <div className="mb-3 flex items-center justify-between gap-3 font-mono text-sm text-muted-foreground">
+              <span>Siparişler geçici olarak yüklenemedi.</span>
+              <Button variant="outline" size="sm" onClick={() => void retryOrders()}>yeniden dene</Button>
+            </div>
+          ) : null}
           <OrdersTab orders={orders ?? []} isLoading={isLoading} />
         </TabsContent>
         <TabsContent value="keys" className="mt-6">
@@ -772,7 +780,7 @@ function WalletBalance() {
     queryKey: ["wallet", user?.id],
     enabled: !!user,
     queryFn: () => walletFn(),
-    refetchInterval: 8000,
+    refetchInterval: 30000,
   });
   const n = Number(data?.balance_try ?? 0);
   return <>{n.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL</>;
@@ -792,10 +800,13 @@ type AiJob = {
 };
 
 function MyVideosTab({ fetchJobs }: { fetchJobs: () => Promise<AiJob[]> }) {
-  const { data: jobs = [], isLoading, refetch } = useQuery({
-    queryKey: ["my-ai-jobs"],
+  const { user } = useAuth();
+  const { data: jobs = [], isLoading, isError, refetch } = useQuery({
+    queryKey: ["my-ai-jobs", user?.id],
+    enabled: !!user,
     queryFn: () => fetchJobs() as Promise<AiJob[]>,
     refetchInterval: 15000,
+    retry: 2,
   });
 
   const videos = useMemo(
@@ -805,6 +816,12 @@ function MyVideosTab({ fetchJobs }: { fetchJobs: () => Promise<AiJob[]> }) {
 
   return (
     <div>
+      {isError ? (
+        <div className="mb-3 flex items-center justify-between gap-3 font-mono text-sm text-muted-foreground">
+          <span>Video işlemleri geçici olarak yüklenemedi.</span>
+          <Button variant="outline" size="sm" onClick={() => void refetch()}>yeniden dene</Button>
+        </div>
+      ) : null}
       <div className="flex items-center justify-between mb-3">
         <div className="font-mono text-xs text-muted-foreground">
           $ ./my-videos —— toplam {videos.length}

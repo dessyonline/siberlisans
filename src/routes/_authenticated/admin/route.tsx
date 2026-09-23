@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { createFileRoute, Outlet, redirect, Link, useLocation } from "@tanstack/react-router";
-import { getMe } from "@/lib/auth.functions";
 import { getMfaStatus } from "@/lib/mfa.functions";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
@@ -38,11 +37,10 @@ import {
 
 export const Route = createFileRoute("/_authenticated/admin")({
   ssr: false,
-  beforeLoad: async () => {
-    const user = await getMe().catch(() => null);
-    if (!user) throw redirect({ to: "/auth" });
+  beforeLoad: async ({ context }) => {
+    const user = context.user;
     if (!user.roles.includes("admin")) throw redirect({ to: "/hesabim" });
-    const status = await getMfaStatus().catch(() => null);
+    const status = await getMfaStatus();
     if (status?.aal !== "aal2") {
       throw redirect({ to: "/guvenlik" });
     }
