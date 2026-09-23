@@ -90,8 +90,17 @@ export type SessionUser = {
   roles: string[];
 };
 
-export async function getUserByToken(token: string | undefined | null): Promise<SessionUser | null> {
-  if (!token) return null;
+// Aynı worker'da aynı anda başlayan route ve server-function kontrollerini tek
+// sorguda birleştirir. Tamamlanmış yetki sonucu önbelleğe alınmaz; böylece iptal
+// edilen oturum veya değişen rol sonraki istekte mutlaka sunucuda doğrulanır.
+const sessionChecks = new Map<string, Promise<SessionUser | null>>();
+
+async function sessionCacheKey(token: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function queryUserByToken(token: string): Promise<SessionUser | null> {
   const row = await mysqlOne<{
     id: string;
     email: string | null;
@@ -112,6 +121,19 @@ export async function getUserByToken(token: string | undefined | null): Promise<
   if (!row) return null;
   const { roles_csv, ...user } = row;
   return { ...user, roles: roles_csv ? roles_csv.split(",").filter(Boolean) : [] };
+}
+
+export async function getUserByToken(token: string | undefined | null): Promise<SessionUser | null> {
+  if (!token) return null;
+  const key = await sessionCacheKey(token);
+  const pending = sessionChecks.get(key);
+  if (pending) return pending;
+
+  const promise = queryUserByToken(token).finally(() => {
+    sessionChecks.delete(key);
+  });
+  sessionChecks.set(key, promise);
+  return promise;
 }
 
 export async function findUserByEmail(email: string) {

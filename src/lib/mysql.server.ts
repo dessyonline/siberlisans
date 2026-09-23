@@ -27,8 +27,8 @@ export function isMysqlUnavailable(err: unknown): err is MysqlUnavailableError {
 
 const cfg = {
   hardMax: Math.min(4, Math.max(1, Number(process.env["MYSQL_BRIDGE_MAX_CONCURRENT"] ?? 1) || 1)),
-  totalBudgetMs: 10_000,
-  maxAttempts: 4,
+  totalBudgetMs: 8_000,
+  maxAttempts: 2,
   defaultThrottleMs: 2_000,
 };
 
@@ -283,8 +283,8 @@ export const __bridgeTest = {
   },
   reset() {
     cfg.hardMax = 2;
-    cfg.totalBudgetMs = 10_000;
-    cfg.maxAttempts = 4;
+    cfg.totalBudgetMs = 8_000;
+    cfg.maxAttempts = 2;
     cfg.defaultThrottleMs = 2_000;
     limit = cfg.hardMax;
     okStreak = 0;
