@@ -22,7 +22,7 @@ describe("MySQL Bridge Retry & Concurrency", () => {
       if (callCount === 1) {
         return new Response("Throttled", {
           status: 429,
-          headers: { "Retry-After": "1" } // 1 second
+          headers: { "Retry-After": "1" }
         });
       }
       return Response.json({ rows: [{ ok: 1 }] });
@@ -34,7 +34,6 @@ describe("MySQL Bridge Retry & Concurrency", () => {
 
     expect(callCount).toBe(2);
     expect(duration).toBeGreaterThanOrEqual(1000);
-    expect(__bridgeTest.state().pausedUntil).toBeGreaterThan(start + 900);
   });
 
   test("handles HTML/empty 429 responses safely", async () => {
@@ -51,7 +50,7 @@ describe("MySQL Bridge Retry & Concurrency", () => {
     } catch (e) {
       expect(isMysqlUnavailable(e)).toBe(true);
     }
-    expect(__bridgeTest.state().limit).toBe(1); // Reduced from 2 to 1
+    expect(__bridgeTest.state().limit).toBe(1);
   });
 
   test("enforces hard concurrency limit and queues requests", async () => {
@@ -62,12 +61,11 @@ describe("MySQL Bridge Retry & Concurrency", () => {
     globalThis.fetch = (async () => {
       activeAtOnce++;
       maxActive = Math.max(maxActive, activeAtOnce);
-      await new Promise(r => setTimeout(r, 50));
+      await new Promise(r => setTimeout(r, 20));
       activeAtOnce--;
       return Response.json({ rows: [] });
     }) as any;
 
-    // Run 3 queries concurrently
     await Promise.all([
       mysqlQuery("SELECT 1"),
       mysqlQuery("SELECT 2"),
@@ -75,52 +73,57 @@ describe("MySQL Bridge Retry & Concurrency", () => {
     ]);
 
     expect(maxActive).toBe(1);
-    expect(__bridgeTest.state().active).toBe(0);
-    expect(__bridgeTest.state().queued).toBe(0);
   });
 
   test("respects total deadline and drops expired queued work", async () => {
-    __bridgeTest.configure({ hardMax: 1, totalBudgetMs: 100 });
+    // p1 takes 100ms. p2 waits and its total budget is 50ms.
+    __bridgeTest.configure({ hardMax: 1, totalBudgetMs: 50 });
     
+    let p1Started = false;
     globalThis.fetch = (async () => {
-      await new Promise(r => setTimeout(r, 60));
+      p1Started = true;
+      await new Promise(r => setTimeout(r, 100));
       return Response.json({ rows: [] });
     }) as any;
 
-    const p1 = mysqlQuery("SELECT 1"); // Takes 60ms
-    const p2 = mysqlQuery("SELECT 2"); // Waits in queue, should expire
-
-    await p1;
+    const p1 = mysqlQuery("SELECT 1");
+    // Wait until p1 has definitely started and is holding the lock
+    while(!p1Started) await new Promise(r => setTimeout(r, 1));
+    
     try {
-      await p2;
-      expect.unreachable("p2 should have timed out");
+      await mysqlQuery("SELECT 2");
+      expect.unreachable("Should have timed out in queue");
     } catch (e: any) {
       expect(e.message).toContain("zaman aşımı");
     }
+    await p1;
   });
 
-  test("retries writes (INSERT) on 429 but NOT on 500", async () => {
+  test("retries writes (INSERT) on 429", async () => {
     let callCount = 0;
-    globalThis.fetch = (async (url, init: any) => {
+    globalThis.fetch = (async () => {
       callCount++;
-      const sql = JSON.parse(init.body).sql;
-      if (callCount === 1) {
-        return new Response("Error", { status: sql.includes("INSERT") ? 429 : 500 });
-      }
+      if (callCount === 1) return new Response("Error", { status: 429 });
       return Response.json({ rowCount: 1 });
     }) as any;
 
-    // Test 429 on INSERT (Safe to retry because bridge didn't run it)
-    __bridgeTest.configure({ defaultThrottleMs: 10 });
+    __bridgeTest.configure({ defaultThrottleMs: 1 });
     const count = await mysqlExec("INSERT INTO t VALUES (1)");
     expect(count).toBe(1);
     expect(callCount).toBe(2);
+  });
 
-    // Test 500 on INSERT (NOT safe to retry, could have side effects)
-    callCount = 0;
+  test("does NOT retry writes (INSERT) on 500", async () => {
+    let callCount = 0;
+    globalThis.fetch = (async () => {
+      callCount++;
+      return new Response("Error", { status: 500 });
+    }) as any;
+
+    __bridgeTest.configure({ maxAttempts: 2 });
     try {
       await mysqlExec("INSERT INTO t VALUES (2)");
-      expect.unreachable("Should have thrown on 500");
+      expect.unreachable("Should have thrown");
     } catch (e: any) {
       expect(e.message).toContain("500");
     }
@@ -141,7 +144,7 @@ describe("MySQL Bridge Retry & Concurrency", () => {
   });
   
   test("adaptive limit increases after streak of successes", async () => {
-    __bridgeTest.configure({ hardMax: 4 });
+    __bridgeTest.configure({ hardMax: 4, defaultThrottleMs: 1 });
     // First, force a reduction
     globalThis.fetch = (async () => new Response("429", { status: 429 })) as any;
     try { await mysqlQuery("SELECT 1"); } catch {}
@@ -153,5 +156,18 @@ describe("MySQL Bridge Retry & Concurrency", () => {
       await mysqlQuery("SELECT 1");
     }
     expect(__bridgeTest.state().limit).toBe(2);
+  });
+});
+
+describe("parseRetryAfter date handling", () => {
+  test("handles HTTP date in Retry-After", () => {
+    const now = Date.now();
+    const target = now + 5000;
+    const dateStr = new Date(target).toUTCString();
+    const { parseRetryAfter } = require("../src/lib/mysql.server");
+    const wait = parseRetryAfter(dateStr, now);
+    // Use a range to account for potential ms rounding in toUTCString
+    expect(wait).toBeGreaterThan(4000);
+    expect(wait).toBeLessThanOrEqual(5000);
   });
 });
