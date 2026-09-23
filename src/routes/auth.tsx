@@ -67,7 +67,7 @@ function newCaptcha() {
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { user, refresh, signOut: ctxSignOut } = useAuth();
+  const { user, acceptUser, signOut: ctxSignOut } = useAuth();
   const doSignIn = useServerFn(signInFn);
   const doSignUp = useServerFn(signUpFn);
   const doReset = useServerFn(requestPasswordResetFn);
@@ -112,7 +112,7 @@ function AuthPage() {
         setLoading(false);
         return toast.error(res.error);
       }
-      await refresh();
+      acceptUser(res.user);
       setLoading(false);
       toast.success("Giriş başarılı");
       navigate({ to: "/hesabim" });
@@ -172,7 +172,7 @@ function AuthPage() {
         setCaptchaInput("");
         return toast.error(res.error);
       }
-      await refresh();
+      acceptUser(res.user);
       toast.success("[✓] hesabın oluşturuldu");
       navigate({ to: "/hesabim" });
     } catch {

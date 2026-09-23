@@ -56,16 +56,18 @@ function MyAccount() {
   const subFn = useServerFn(getMyAiSubscription);
   const jobsFn = useServerFn(listMyAiJobs);
   const ordersFn = useServerFn(listMyOrders);
-  const { data: orders, isLoading } = useQuery({
+  const { data: orders, isLoading, isError: ordersFailed, refetch: retryOrders } = useQuery({
     queryKey: ["my-orders", user?.id],
     enabled: !!user,
     queryFn: () => ordersFn(),
+    retry: 2,
   });
 
   const { data: aiSub } = useQuery({
     queryKey: ["my-ai-sub", user?.id],
     enabled: !!user,
     queryFn: () => subFn(),
+    retry: 2,
   });
 
   const approvedKeys = useMemo(
@@ -219,6 +221,12 @@ function MyAccount() {
         </TabsContent>
 
         <TabsContent value="orders" className="mt-6">
+          {ordersFailed ? (
+            <div className="mb-3 flex items-center justify-between gap-3 font-mono text-sm text-muted-foreground">
+              <span>Siparişler geçici olarak yüklenemedi.</span>
+              <Button variant="outline" size="sm" onClick={() => void retryOrders()}>yeniden dene</Button>
+            </div>
+          ) : null}
           <OrdersTab orders={orders ?? []} isLoading={isLoading} />
         </TabsContent>
         <TabsContent value="keys" className="mt-6">

@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
-import { getMe, signOut as signOutFn, type AuthUser } from "@/lib/auth.functions";
+import { getMe, signOut as signOutFn, type AuthUser, type SessionResult } from "@/lib/auth.functions";
 
 type Role = "admin" | "user";
 
@@ -10,7 +10,9 @@ interface AuthState {
   roles: Role[];
   isAdmin: boolean;
   loading: boolean;
-  refresh: () => Promise<void>;
+  refresh: () => Promise<AuthUser | null>;
+  acceptUser: (user: AuthUser) => void;
+  serviceUnavailable: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -19,29 +21,44 @@ const AuthCtx = createContext<AuthState | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [serviceUnavailable, setServiceUnavailable] = useState(false);
   const fetchMe = useServerFn(getMe);
   const doSignOut = useServerFn(signOutFn);
 
   const refresh = useCallback(async () => {
     try {
-      const me = (await fetchMe()) as AuthUser | null;
-      setUser(me ?? null);
+      const result = (await fetchMe()) as SessionResult;
+      setServiceUnavailable(false);
+      if (result.status === "authenticated") {
+        setUser(result.user);
+        return result.user;
+      }
+      setUser(null);
+      return null;
     } catch (err) {
       console.error("Oturum bilgisi alınamadı:", err);
-      setUser(null);
+      setServiceUnavailable(true);
+      throw err;
     } finally {
       setLoading(false);
     }
   }, [fetchMe]);
 
   useEffect(() => {
-    void refresh();
+    void refresh().catch(() => {});
   }, [refresh]);
 
   const signOut = async () => {
     await doSignOut({ data: undefined as never }).catch(() => {});
     setUser(null);
+    setServiceUnavailable(false);
   };
+
+  const acceptUser = useCallback((nextUser: AuthUser) => {
+    setUser(nextUser);
+    setServiceUnavailable(false);
+    setLoading(false);
+  }, []);
 
   const roles = (user?.roles ?? []) as Role[];
 
@@ -54,6 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin: roles.includes("admin"),
         loading,
         refresh,
+        acceptUser,
+        serviceUnavailable,
         signOut,
       }}
     >

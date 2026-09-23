@@ -92,17 +92,25 @@ export type SessionUser = {
 
 export async function getUserByToken(token: string | undefined | null): Promise<SessionUser | null> {
   if (!token) return null;
-  const row = await mysqlOne<{ id: string; email: string | null; display_name: string | null; telegram_handle: string | null }>(
-    `SELECT u.id, u.email, p.display_name, NULL AS telegram_handle
+  const row = await mysqlOne<{
+    id: string;
+    email: string | null;
+    display_name: string | null;
+    telegram_handle: string | null;
+    roles_csv: string | null;
+  }>(
+    `SELECT u.id, u.email, p.display_name, NULL AS telegram_handle,
+            GROUP_CONCAT(ur.role) AS roles_csv
        FROM auth_sessions s
        JOIN auth_users u ON u.id = s.user_id
        LEFT JOIN profiles p ON p.id = u.id
+       LEFT JOIN user_roles ur ON ur.user_id = u.id
       WHERE s.token = ? AND s.expires_at > NOW()`,
     [token],
   );
   if (!row) return null;
-  const roles = await mysqlQuery<{ role: string }>("SELECT role FROM user_roles WHERE user_id=?", [row.id]);
-  return { ...row, roles: roles.map((r) => r.role) };
+  const { roles_csv, ...user } = row;
+  return { ...user, roles: roles_csv ? roles_csv.split(",").filter(Boolean) : [] };
 }
 
 export async function findUserByEmail(email: string) {

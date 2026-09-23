@@ -18,10 +18,15 @@ export type AuthUser = {
   roles: string[];
 };
 
-/** Aktif oturumdaki kullanıcı (yoksa null). */
-export const getMe = createServerFn({ method: "GET" }).handler(async (): Promise<AuthUser | null> => {
+export type SessionResult =
+  | { status: "authenticated"; user: AuthUser }
+  | { status: "unauthenticated" };
+
+/** Geçici servis hatalarını yutmadan aktif oturumu sınıflandırır. */
+export const getMe = createServerFn({ method: "GET" }).handler(async (): Promise<SessionResult> => {
   const { getUserByToken, SESSION_COOKIE } = await import("./auth.server");
-  return getUserByToken(getCookie(SESSION_COOKIE));
+  const user = await getUserByToken(getCookie(SESSION_COOKIE));
+  return user ? { status: "authenticated", user } : { status: "unauthenticated" };
 });
 
 export const signIn = createServerFn({ method: "POST" })
