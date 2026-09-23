@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { createFileRoute, Outlet, redirect, Link, useLocation } from "@tanstack/react-router";
-import { getMe } from "@/lib/auth.functions";
 import { getMfaStatus } from "@/lib/mfa.functions";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";

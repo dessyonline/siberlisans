@@ -114,8 +114,6 @@ function AuthPage() {
       }
       acceptUser(res.user);
       setLoading(false);
-      toast.success("Giriş başarılı");
-      navigate({ to: "/hesabim" });
     } catch {
       setLoading(false);
       toast.error("Giriş yapılamadı, tekrar deneyin.");
@@ -173,8 +171,6 @@ function AuthPage() {
         return toast.error(res.error);
       }
       acceptUser(res.user);
-      toast.success("[✓] hesabın oluşturuldu");
-      navigate({ to: "/hesabim" });
     } catch {
       setLoading(false);
       setCaptcha(newCaptcha());
