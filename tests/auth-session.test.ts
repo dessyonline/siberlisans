@@ -58,3 +58,32 @@ test("temporary bridge failure is not converted to unauthenticated", async () =>
   const error = await getUserByToken("valid-token").catch((caught: unknown) => caught);
   expect(isMysqlUnavailable(error)).toBe(true);
 });
+
+test("coalesces simultaneous checks for the same session without sharing users", async () => {
+  let calls = 0;
+  globalThis.fetch = (async (_input, init) => {
+    calls++;
+    const payload = JSON.parse(String(init?.body)) as { params: string[] };
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    return Response.json({
+      rows: [{
+        id: payload.params[0],
+        email: `${payload.params[0]}@example.invalid`,
+        display_name: "User",
+        telegram_handle: null,
+        roles_csv: "user",
+      }],
+    });
+  }) as typeof fetch;
+
+  const [first, duplicate, other] = await Promise.all([
+    getUserByToken("coalesce-token"),
+    getUserByToken("coalesce-token"),
+    getUserByToken("other-token"),
+  ]);
+
+  expect(first?.id).toBe("coalesce-token");
+  expect(duplicate?.id).toBe("coalesce-token");
+  expect(other?.id).toBe("other-token");
+  expect(calls).toBe(2);
+});

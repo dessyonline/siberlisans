@@ -90,8 +90,23 @@ export type SessionUser = {
   roles: string[];
 };
 
-export async function getUserByToken(token: string | undefined | null): Promise<SessionUser | null> {
-  if (!token) return null;
+type SessionCacheEntry = {
+  expiresAt: number;
+  promise: Promise<SessionUser | null>;
+};
+
+// Aynı worker'da aynı anda başlayan route ve server-function kontrollerini tek
+// sorguda birleştirir. Anahtar oturum token'ının geri döndürülemez özetidir;
+// sonuç çok kısa tutulur ve geçici bağlantı hataları önbelleğe alınmaz.
+const SESSION_CACHE_MS = 2_000;
+const sessionCache = new Map<string, SessionCacheEntry>();
+
+async function sessionCacheKey(token: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(token));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function queryUserByToken(token: string): Promise<SessionUser | null> {
   const row = await mysqlOne<{
     id: string;
     email: string | null;
@@ -112,6 +127,20 @@ export async function getUserByToken(token: string | undefined | null): Promise<
   if (!row) return null;
   const { roles_csv, ...user } = row;
   return { ...user, roles: roles_csv ? roles_csv.split(",").filter(Boolean) : [] };
+}
+
+export async function getUserByToken(token: string | undefined | null): Promise<SessionUser | null> {
+  if (!token) return null;
+  const key = await sessionCacheKey(token);
+  const cached = sessionCache.get(key);
+  if (cached && cached.expiresAt > Date.now()) return cached.promise;
+
+  const promise = queryUserByToken(token).catch((error: unknown) => {
+    sessionCache.delete(key);
+    throw error;
+  });
+  sessionCache.set(key, { expiresAt: Date.now() + SESSION_CACHE_MS, promise });
+  return promise;
 }
 
 export async function findUserByEmail(email: string) {
