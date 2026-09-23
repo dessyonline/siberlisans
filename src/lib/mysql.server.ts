@@ -288,6 +288,7 @@ export const __bridgeTest = {
     cfg.defaultThrottleMs = 2_000;
     limit = cfg.hardMax;
     okStreak = 0;
+    active = 0;
     pausedUntil = 0;
     for (const w of waiting.splice(0)) clearTimeout(w.timer);
     if (pumpTimer) clearTimeout(pumpTimer);

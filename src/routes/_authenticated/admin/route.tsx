@@ -42,7 +42,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
     const session = await getMe();
     if (session.status === "unauthenticated") throw redirect({ to: "/auth" });
     if (!session.user.roles.includes("admin")) throw redirect({ to: "/hesabim" });
-    const status = await getMfaStatus().catch(() => null);
+    const status = await getMfaStatus();
     if (status?.aal !== "aal2") {
       throw redirect({ to: "/guvenlik" });
     }

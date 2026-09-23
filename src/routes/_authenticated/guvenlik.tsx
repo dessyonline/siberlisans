@@ -104,7 +104,7 @@ function SecurityPage() {
   };
 
   useEffect(() => {
-    refresh();
+    void refresh().catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
@@ -120,7 +120,7 @@ function SecurityPage() {
     }
     toast.success("[✓] 2FA kaldırıldı · diğer oturumlar sonlandırıldı");
     setMode("idle");
-    refresh();
+    void refresh().catch(() => {});
   };
 
   const signOutOthers = async () => {
@@ -209,7 +209,7 @@ function SecurityPage() {
             <MfaEnroll
               onDone={() => {
                 setMode("idle");
-                refresh();
+                void refresh().catch(() => {});
               }}
             />
             <button
@@ -237,7 +237,7 @@ function SecurityPage() {
               onCancel={() => setMode("idle")}
               onSuccess={async () => {
                 setMode("idle");
-                await refresh();
+                await refresh().catch(() => null);
                 toast.success("[✓] doğrulandı — admin paneline yönlendiriliyorsun");
                 if (isAdmin) navigate({ to: "/admin" });
               }}

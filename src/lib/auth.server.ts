@@ -105,7 +105,8 @@ export async function getUserByToken(token: string | undefined | null): Promise<
        JOIN auth_users u ON u.id = s.user_id
        LEFT JOIN profiles p ON p.id = u.id
        LEFT JOIN user_roles ur ON ur.user_id = u.id
-      WHERE s.token = ? AND s.expires_at > NOW()`,
+      WHERE s.token = ? AND s.expires_at > NOW()
+      GROUP BY u.id, u.email, p.display_name`,
     [token],
   );
   if (!row) return null;
