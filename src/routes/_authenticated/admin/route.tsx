@@ -38,10 +38,9 @@ import {
 
 export const Route = createFileRoute("/_authenticated/admin")({
   ssr: false,
-  beforeLoad: async () => {
-    const session = await getMe();
-    if (session.status === "unauthenticated") throw redirect({ to: "/auth" });
-    if (!session.user.roles.includes("admin")) throw redirect({ to: "/hesabim" });
+  beforeLoad: async ({ context }) => {
+    const user = context.user;
+    if (!user.roles.includes("admin")) throw redirect({ to: "/hesabim" });
     const status = await getMfaStatus();
     if (status?.aal !== "aal2") {
       throw redirect({ to: "/guvenlik" });

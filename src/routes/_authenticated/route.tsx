@@ -1,6 +1,8 @@
 import { createFileRoute, Outlet, redirect, useRouter } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { getMe } from "@/lib/auth.functions";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -9,9 +11,20 @@ export const Route = createFileRoute("/_authenticated")({
     if (session.status === "unauthenticated") throw redirect({ to: "/auth" });
     return { user: session.user };
   },
-  component: () => <Outlet />,
+  component: AuthenticatedLayout,
   errorComponent: AuthServiceError,
 });
+
+function AuthenticatedLayout() {
+  const { user } = Route.useRouteContext();
+  const { acceptUser } = useAuth();
+
+  useEffect(() => {
+    acceptUser(user);
+  }, [acceptUser, user]);
+
+  return <Outlet />;
+}
 
 function AuthServiceError() {
   const router = useRouter();

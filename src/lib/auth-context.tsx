@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { useRouterState } from "@tanstack/react-router";
 import { getMe, signOut as signOutFn, type AuthUser, type SessionResult } from "@/lib/auth.functions";
 
 type Role = "admin" | "user";
@@ -24,6 +25,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [serviceUnavailable, setServiceUnavailable] = useState(false);
   const fetchMe = useServerFn(getMe);
   const doSignOut = useServerFn(signOutFn);
+  const protectedRouteActive = useRouterState({
+    select: (state) => state.matches.some((match) => match.routeId.startsWith("/_authenticated")),
+  });
 
   const refresh = useCallback(async () => {
     try {
@@ -45,8 +49,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [fetchMe]);
 
   useEffect(() => {
+    if (protectedRouteActive) {
+      setLoading(false);
+      return;
+    }
     void refresh().catch(() => {});
-  }, [refresh]);
+  }, [protectedRouteActive, refresh]);
 
   const signOut = async () => {
     await doSignOut({ data: undefined as never }).catch(() => {});
