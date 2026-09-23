@@ -141,15 +141,17 @@ async function bridgeCall(sql: string, params: Params): Promise<any> {
   const deadline = Date.now() + cfg.totalBudgetMs;
   const readOnly = isReadOnlySql(sql);
   let lastError: Error = new MysqlUnavailableError("MySQL köprüsüne ulaşılamadı");
+  let retry = true;
 
   for (let attempt = 0; attempt < cfg.maxAttempts; attempt++) {
+    if (!retry) break; // belirsiz hata sonrası yazma tekrar edilmez
     if (attempt > 0) {
       const backoff = Math.min(2000, 250 * 2 ** (attempt - 1)) + Math.floor(Math.random() * 150);
       if (Date.now() + backoff >= deadline) break;
       await sleep(backoff);
     }
     await acquire(deadline); // global Retry-After beklemesi burada uygulanır
-    let retry = false;
+    retry = false;
     try {
       const remaining = deadline - Date.now();
       if (remaining <= 0) throw new MysqlUnavailableError("Veritabanı isteği zaman aşımına uğradı");
@@ -165,7 +167,7 @@ async function bridgeCall(sql: string, params: Params): Promise<any> {
           signal: ctrl.signal,
         });
         text = await res.text();
-      } catch (e) {
+      } catch {
         // Belirsiz: istek sunucuya ulaşmış ve çalışmış olabilir.
         lastError = new MysqlUnavailableError(
           ctrl.signal.aborted ? "Veritabanı isteği zaman aşımına uğradı" : "Veritabanına ulaşılamadı",
@@ -223,30 +225,17 @@ async function bridgeCall(sql: string, params: Params): Promise<any> {
       return json;
     } finally {
       release();
-      if (!retry && lastError && attempt >= 0) {
-        /* no-op: loop control below */
-      }
-      if (!retry) attempt = attempt; // eslint-friendly
     }
   }
   throw lastError;
 }
 
-// Yukarıdaki döngüde `continue` + retry=false durumunu yakalamak için sarmalayıcı.
-async function guardedCall(sql: string, params: Params): Promise<any> {
-  return bridgeCallStrict(sql, params);
-}
-
-/** retry bayrağına saygı duyan sürüm. */
-async function bridgeCallStrict(sql: string, params: Params): Promise<any> {
-  return bridgeCall(sql, params);
-}
 
 export async function mysqlQuery<T = Record<string, unknown>>(
   sql: string,
   params: Params = [],
 ): Promise<T[]> {
-  const json = await guardedCall(sql, params);
+  const json = await bridgeCall(sql, params);
   return (json.rows ?? []) as T[];
 }
 
@@ -272,7 +261,7 @@ export function bool(v: unknown): boolean {
 
 /** INSERT/UPDATE/DELETE için etkilenen satır sayısını döndürür. */
 export async function mysqlExec(sql: string, params: Params = []): Promise<number> {
-  const json = await guardedCall(sql, params);
+  const json = await bridgeCall(sql, params);
   return Number(json.rowCount ?? 0);
 }
 
