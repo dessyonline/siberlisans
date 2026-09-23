@@ -55,5 +55,6 @@ test("temporary bridge failure is not converted to unauthenticated", async () =>
   __bridgeTest.configure({ totalBudgetMs: 20, maxAttempts: 1 });
   globalThis.fetch = (async () => new Response("", { status: 429 })) as typeof fetch;
 
-  await expect(getUserByToken("valid-token")).rejects.toSatisfy(isMysqlUnavailable);
+  const error = await getUserByToken("valid-token").catch((caught: unknown) => caught);
+  expect(isMysqlUnavailable(error)).toBe(true);
 });

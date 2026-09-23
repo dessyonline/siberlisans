@@ -27,7 +27,8 @@ test("classifies an HTML 429 before parsing and applies Retry-After globally", a
     headers: { "Retry-After": "1", "Content-Type": "text/html" },
   })) as typeof fetch;
 
-  await expect(mysqlQuery("SELECT 1")).rejects.toSatisfy(isMysqlUnavailable);
+  const error = await mysqlQuery("SELECT 1").catch((caught: unknown) => caught);
+  expect(isMysqlUnavailable(error)).toBe(true);
   expect(__bridgeTest.state().pausedUntil).toBeGreaterThan(Date.now() + 800);
 });
 
@@ -51,7 +52,8 @@ test("expired queued work never reaches the bridge", async () => {
 
   const first = mysqlQuery("SELECT 1").catch(() => []);
   await new Promise((resolve) => setTimeout(resolve, 2));
-  await expect(mysqlQuery("SELECT 2")).rejects.toSatisfy(isMysqlUnavailable);
+  const error = await mysqlQuery("SELECT 2").catch((caught: unknown) => caught);
+  expect(isMysqlUnavailable(error)).toBe(true);
   await first;
   expect(calls).toBe(1);
   expect(__bridgeTest.state().active).toBe(0);
@@ -65,7 +67,10 @@ test("does not retry a write after an ambiguous network failure", async () => {
     throw new TypeError("network lost");
   }) as typeof fetch;
 
-  await expect(mysqlExec("UPDATE wallets SET balance_try=balance_try-? WHERE user_id=?", [1, "u"])).rejects.toSatisfy(isMysqlUnavailable);
+  const error = await mysqlExec("UPDATE wallets SET balance_try=balance_try-? WHERE user_id=?", [1, "u"]).catch(
+    (caught: unknown) => caught,
+  );
+  expect(isMysqlUnavailable(error)).toBe(true);
   expect(calls).toBe(1);
 });
 
