@@ -105,17 +105,30 @@ export function buildOtpAuthUri(secretBase32: string, email: string, issuer = "S
 let tablesReady = false;
 export async function ensureMfaTables(): Promise<void> {
   if (tablesReady) return;
-  await mysqlQuery(`CREATE TABLE IF NOT EXISTS user_mfa_totp (
-    user_id CHAR(36) PRIMARY KEY,
-    secret VARCHAR(64) NOT NULL,
-    verified TINYINT(1) NOT NULL DEFAULT 0,
-    created_at DATETIME NOT NULL,
-    verified_at DATETIME NULL
-  )`);
-  try {
-    await mysqlQuery(`ALTER TABLE auth_sessions ADD COLUMN mfa_verified_at DATETIME NULL`);
-  } catch {
-    // sütun zaten varsa hata yutulur
+  // Önce salt-okunur kontrol: her soğuk başlatmada auth_sessions üzerinde ALTER TABLE
+  // çalıştırmak metadata kilidi alıp tüm oturum sorgularını kilitleyebiliyordu.
+  const rows = await mysqlQuery<{ t: number; c: number }>(
+    `SELECT
+       (SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='user_mfa_totp') AS t,
+       (SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='auth_sessions' AND COLUMN_NAME='mfa_verified_at') AS c`,
+  );
+  const hasTable = Number(rows[0]?.t ?? 0) > 0;
+  const hasColumn = Number(rows[0]?.c ?? 0) > 0;
+  if (!hasTable) {
+    await mysqlQuery(`CREATE TABLE IF NOT EXISTS user_mfa_totp (
+      user_id CHAR(36) PRIMARY KEY,
+      secret VARCHAR(64) NOT NULL,
+      verified TINYINT(1) NOT NULL DEFAULT 0,
+      created_at DATETIME NOT NULL,
+      verified_at DATETIME NULL
+    )`);
+  }
+  if (!hasColumn) {
+    try {
+      await mysqlQuery(`ALTER TABLE auth_sessions ADD COLUMN mfa_verified_at DATETIME NULL`);
+    } catch {
+      // sütun zaten varsa hata yutulur
+    }
   }
   tablesReady = true;
 }
