@@ -60,4 +60,5 @@
 - [x] Hostinger verisini kopyala (hesaplar dahil)
 - [x] Site kodunu Hostinger köprüsünden kendi Supabase'e çevir (giriş, admin, ödeme, cron)
 - [ ] Yayından hemen önce son veri kopyası (canlı site yayına kadar Hostinger'a yazıyor)
-- [ ] Giriş/admin testleri, sonra yayın
+- [x] Giriş/kayıt/admin testleri (önizlemede geçti)
+- [ ] Yayın (kullanıcı onayı bekliyor)
