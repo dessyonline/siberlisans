@@ -68,7 +68,7 @@ export const getDashboardFinancials = createServerFn({ method: "GET" })
            FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id GROUP BY oi.order_id`,
       ),
       mysqlQuery<ManualRevRow>(
-        `SELECT DATE(occurred_at) day, COALESCE(SUM(amount_try),0) revenue, COALESCE(SUM(cost_try),0) cost
+        `SELECT DATE(occurred_at) AS day, COALESCE(SUM(amount_try),0) AS revenue, COALESCE(SUM(cost_try),0) AS cost
            FROM manual_revenue_entries GROUP BY DATE(occurred_at)`,
       ),
     ]);
