@@ -10,6 +10,8 @@
  * - Belirsiz ağ/sunucu hatalarından sonra yazma SQL'i tekrar çalıştırılmaz.
  */
 
+import { isDdl, mysqlizeRow, pgLiteral, showColumnsTable, translate, type PgMeta } from "@/lib/db/pg-translate";
+
 type Params = Array<string | number | boolean | null>;
 
 /** Veritabanı geçici olarak ulaşılamaz (oturum geçersizliği DEĞİL). */
@@ -26,7 +28,7 @@ export function isMysqlUnavailable(err: unknown): err is MysqlUnavailableError {
 }
 
 const cfg = {
-  hardMax: Math.min(4, Math.max(1, Number(process.env["MYSQL_BRIDGE_MAX_CONCURRENT"] ?? 1) || 1)),
+  hardMax: Math.min(4, Math.max(1, Number(process.env["MYSQL_BRIDGE_MAX_CONCURRENT"] ?? 4) || 1)),
   totalBudgetMs: 8_000,
   maxAttempts: 2,
   defaultThrottleMs: 2_000,
@@ -143,13 +145,70 @@ function isDeadlock(msg: string): boolean {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+let metaPromise: Promise<PgMeta> | null = null;
+function loadMeta(): Promise<PgMeta> {
+  if (!metaPromise) {
+    metaPromise = (async () => {
+      const b = await rawCall(
+        `SELECT column_name AS c FROM information_schema.columns WHERE table_schema='public'
+         GROUP BY column_name HAVING bool_and(data_type='boolean')`,
+      );
+      const u = await rawCall(
+        `SELECT t.relname AS t, i.indisprimary AS p,
+                array_agg(a.attname::text ORDER BY k.ord) AS cols
+         FROM pg_index i JOIN pg_class t ON t.oid=i.indrelid JOIN pg_namespace n ON n.oid=t.relnamespace
+         CROSS JOIN LATERAL unnest(i.indkey) WITH ORDINALITY k(attnum, ord)
+         JOIN pg_attribute a ON a.attrelid=t.oid AND a.attnum=k.attnum
+         WHERE n.nspname='public' AND i.indisunique AND i.indpred IS NULL
+         GROUP BY t.relname, i.indexrelid, i.indisprimary ORDER BY i.indisprimary`,
+      );
+      const uniques = new Map<string, string[][]>();
+      for (const r of u.rows as Array<{ t: string; cols: string[] | string }>) {
+        const colsArr: string[] = typeof r.cols === "string" ? JSON.parse(r.cols) : r.cols;
+        const list = uniques.get(r.t) ?? [];
+        list.push(colsArr.map((c) => c.toLowerCase()));
+        uniques.set(r.t, list);
+      }
+      return {
+        boolCols: new Set((b.rows as Array<{ c: string }>).map((r) => r.c.toLowerCase())),
+        uniques,
+      };
+    })().catch((e) => {
+      metaPromise = null;
+      throw e;
+    });
+  }
+  return metaPromise;
+}
+
 async function bridgeCall(sql: string, params: Params): Promise<any> {
-  const url = process.env["MYSQL_BRIDGE_URL"];
-  const token = process.env["MYSQL_BRIDGE_TOKEN"];
-  if (!url || !token) throw new Error("MySQL köprü ayarları eksik");
+  if (isDdl(sql)) return { rows: [], rowCount: 0 }; // şema Supabase'te hazır
+  const showTable = showColumnsTable(sql);
+  if (showTable) {
+    return rawCall(
+      `SELECT column_name AS "Field", data_type AS "Type", is_nullable AS "Null",
+              column_default AS "Default", '' AS "Extra"
+       FROM information_schema.columns WHERE table_schema='public' AND table_name=${pgLiteral(showTable)}
+       ORDER BY ordinal_position`,
+      true,
+    );
+  }
+  const meta = await loadMeta();
+  return rawCall(translate(sql, params, meta), isReadOnlySql(sql));
+}
+
+function supabaseRpcConfig(): { url: string; key: string } {
+  const base = (process.env["EXT_SUPABASE_URL"] ?? "").replace(/\/+$/, "").replace(/\/rest\/v1$/, "");
+  const key = process.env["EXT_SUPABASE_SERVICE_ROLE_KEY"];
+  if (!base || !key) throw new Error("Supabase veritabanı ayarları eksik");
+  return { url: `${base}/rest/v1/rpc/exec_sql`, key };
+}
+
+async function rawCall(sql: string, readOnlyHint?: boolean): Promise<any> {
+  const { url, key } = supabaseRpcConfig();
 
   const deadline = Date.now() + cfg.totalBudgetMs;
-  const readOnly = isReadOnlySql(sql);
+  const readOnly = readOnlyHint ?? isReadOnlySql(sql);
   let lastError: Error = new MysqlUnavailableError("MySQL köprüsüne ulaşılamadı");
   let retry = true;
 
@@ -172,8 +231,8 @@ async function bridgeCall(sql: string, params: Params): Promise<any> {
       try {
         res = await fetch(url, {
           method: "POST",
-          headers: { "Content-Type": "application/json", "X-Bridge-Token": token },
-          body: JSON.stringify({ sql, params }),
+          headers: { "Content-Type": "application/json", apikey: key },
+          body: JSON.stringify({ q: sql }),
           signal: ctrl.signal,
         });
         text = await res.text();
@@ -217,7 +276,8 @@ async function bridgeCall(sql: string, params: Params): Promise<any> {
         continue;
       }
       if (!res.ok || json.error) {
-        const detail = typeof json.error === "string" ? json.error : "";
+        const detail =
+          typeof json.message === "string" ? json.message : typeof json.error === "string" ? json.error : "";
         if (isPreExecutionDbError(detail)) {
           lastError = new MysqlUnavailableError("Veritabanı bağlantısı kurulamadı");
           retry = true;
@@ -229,10 +289,14 @@ async function bridgeCall(sql: string, params: Params): Promise<any> {
           retry = true;
           continue;
         }
+        if (process.env["DB_DEBUG_SQL"] === "1") console.error("[db] sql hatası:", detail, "|", sql.slice(0, 400));
         throw new Error(`Köprü hatası (${res.status})${detail ? `: ${detail}` : ""}`);
       }
       noteSuccess();
-      return json;
+      return {
+        rows: Array.isArray(json.rows) ? json.rows.map(mysqlizeRow) : [],
+        rowCount: Number(json.rowCount ?? 0),
+      };
     } finally {
       release();
     }

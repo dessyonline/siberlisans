@@ -1,59 +1,27 @@
-import { mysqlExec, mysqlOne } from "./mysql.server";
+import { mysqlOne } from "./mysql.server";
 
 const TOKEN_RE = /^[a-f0-9]{32,64}$/;
 
 /**
- * Şifre sıfırlama.
- * Öncelik: köprüdeki işleme özel (transaction'lı) uç nokta.
- * Köprü henüz güncellenmemişse tek ifadelik atomik token tüketimi ile yürütülür.
+ * Şifre sıfırlama — tek SQL ifadesinde (tek transaction) token tüketimi,
+ * şifre güncelleme, diğer token'ları kapatma ve oturumları sonlandırma.
  */
 export async function resetPasswordAtomically(token: string, passwordHash: string): Promise<boolean> {
-  const url = process.env['MYSQL_BRIDGE_URL'];
-  const secret = process.env['MYSQL_BRIDGE_TOKEN'];
-  if (!url || !secret) throw new Error('MySQL köprü ayarları eksik');
   if (!TOKEN_RE.test(token)) return false;
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Bridge-Token': secret },
-    body: JSON.stringify({ operation: 'reset_password', token, passwordHash }),
-  });
-
-  if (response.ok) {
-    const result: unknown = await response.json();
-    if (result && typeof result === 'object' && 'ok' in result && typeof result.ok === 'boolean') {
-      return result.ok;
-    }
-  }
-
-  // Köprü eski sürüm: işleme özel uç noktayı tanımıyor. Tek ifadelik token tüketimi ile devam et.
-  try {
-    return await fallbackReset(token, passwordHash);
-  } catch (error) {
-    console.error('Password reset fallback failed', error);
-    throw new Error('Güvenli şifre işlemi kullanılamıyor');
-  }
-}
-
-// Token'i önce "used=1" yapmak yarış durumunda yalnızca tek isteğin kazanmasını garanti eder.
-async function fallbackReset(token: string, passwordHash: string): Promise<boolean> {
-  const claimed = await mysqlExec(
-    'UPDATE auth_password_tokens SET used=1 WHERE token=? AND used=0 AND expires_at > NOW()',
-    [token],
+  const row = await mysqlOne<{ n: number }>(
+    `WITH claimed AS (
+       UPDATE auth_password_tokens SET used=1 WHERE token=? AND used=0 AND expires_at > NOW() RETURNING user_id
+     ), u AS (
+       UPDATE auth_users SET password_hash=? WHERE id IN (SELECT user_id FROM claimed) RETURNING id
+     ), t AS (
+       UPDATE auth_password_tokens SET used=1 WHERE user_id IN (SELECT id FROM u) AND used=0 RETURNING 1
+     ), s AS (
+       DELETE FROM auth_sessions WHERE user_id IN (SELECT id FROM u) RETURNING 1
+     )
+     SELECT COUNT(*) AS n FROM u`,
+    [token, passwordHash],
   );
-  if (claimed === 0) return false;
-
-  const owner = await mysqlOne<{ user_id: string }>(
-    'SELECT user_id FROM auth_password_tokens WHERE token=? LIMIT 1',
-    [token],
-  );
-  const userId = owner?.user_id;
-  if (!userId) return false;
-
-  await mysqlExec('UPDATE auth_users SET password_hash=? WHERE id=?', [passwordHash, userId]);
-  await mysqlExec('UPDATE auth_password_tokens SET used=1 WHERE user_id=? AND used=0', [userId]);
-  await mysqlExec('DELETE FROM auth_sessions WHERE user_id=?', [userId]);
-  return true;
+  return Number(row?.n ?? 0) > 0;
 }
 
 /** Bağlantı hâlâ geçerli mi? Sayfa açıldığında kullanıcıya net bilgi vermek için. */
