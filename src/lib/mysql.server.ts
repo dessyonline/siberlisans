@@ -345,7 +345,12 @@ export const __bridgeTest = {
     Object.assign(cfg, o);
     limit = cfg.hardMax;
   },
+  /** Testlerde şema bilgisini ağdan çekmeden sağlar. */
+  setMeta(meta: PgMeta) {
+    metaPromise = Promise.resolve(meta);
+  },
   reset() {
+    metaPromise = Promise.resolve({ boolCols: new Set<string>(), uniques: new Map<string, string[][]>() });
     cfg.hardMax = 2;
     cfg.totalBudgetMs = 8_000;
     cfg.maxAttempts = 2;
