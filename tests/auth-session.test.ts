@@ -63,12 +63,13 @@ test("coalesces simultaneous checks for the same session without sharing users",
   let calls = 0;
   globalThis.fetch = (async (_input, init) => {
     calls++;
-    const payload = JSON.parse(String(init?.body)) as { params: string[] };
+    const q = String((JSON.parse(String(init?.body)) as { q: string }).q);
+    const token = /'([a-z]+-token)'/.exec(q)?.[1] ?? "";
     await new Promise((resolve) => setTimeout(resolve, 5));
     return Response.json({
       rows: [{
-        id: payload.params[0],
-        email: `${payload.params[0]}@example.invalid`,
+        id: token,
+        email: `${token}@example.invalid`,
         display_name: "User",
         telegram_handle: null,
         roles_csv: "user",
