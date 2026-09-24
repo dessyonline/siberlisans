@@ -58,5 +58,7 @@
 ## Supabase (kendi projesi) geçişi
 - [x] Tabloları kendi Supabase projesinde kur
 - [x] Hostinger verisini kopyala (hesaplar dahil)
-- [ ] Site kodunu Hostinger köprüsünden kendi Supabase'e çevir (giriş, admin, ödeme, cron)
-- [ ] Giriş/admin testleri, sonra yayın
+- [x] Site kodunu Hostinger köprüsünden kendi Supabase'e çevir (giriş, admin, ödeme, cron)
+- [ ] Yayından hemen önce son veri kopyası (canlı site yayına kadar Hostinger'a yazıyor)
+- [x] Giriş/kayıt/admin testleri (önizlemede geçti)
+- [ ] Yayın (kullanıcı onayı bekliyor)

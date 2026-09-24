@@ -3,22 +3,22 @@ import { getUserByToken } from "../src/lib/auth.server";
 import { __bridgeTest, isMysqlUnavailable } from "../src/lib/mysql.server";
 
 const originalFetch = globalThis.fetch;
-const oldUrl = process.env.MYSQL_BRIDGE_URL;
-const oldToken = process.env.MYSQL_BRIDGE_TOKEN;
+const oldUrl = process.env.EXT_SUPABASE_URL;
+const oldToken = process.env.EXT_SUPABASE_SERVICE_ROLE_KEY;
 
 beforeEach(() => {
-  process.env.MYSQL_BRIDGE_URL = "https://bridge.invalid";
-  process.env.MYSQL_BRIDGE_TOKEN = "test-only";
+  process.env.EXT_SUPABASE_URL = "https://bridge.invalid";
+  process.env.EXT_SUPABASE_SERVICE_ROLE_KEY = "test-only";
   __bridgeTest.reset();
 });
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
   __bridgeTest.reset();
-  if (oldUrl === undefined) delete process.env.MYSQL_BRIDGE_URL;
-  else process.env.MYSQL_BRIDGE_URL = oldUrl;
-  if (oldToken === undefined) delete process.env.MYSQL_BRIDGE_TOKEN;
-  else process.env.MYSQL_BRIDGE_TOKEN = oldToken;
+  if (oldUrl === undefined) delete process.env.EXT_SUPABASE_URL;
+  else process.env.EXT_SUPABASE_URL = oldUrl;
+  if (oldToken === undefined) delete process.env.EXT_SUPABASE_SERVICE_ROLE_KEY;
+  else process.env.EXT_SUPABASE_SERVICE_ROLE_KEY = oldToken;
 });
 
 test("missing or expired session is unauthenticated with one bridge call", async () => {
@@ -63,12 +63,13 @@ test("coalesces simultaneous checks for the same session without sharing users",
   let calls = 0;
   globalThis.fetch = (async (_input, init) => {
     calls++;
-    const payload = JSON.parse(String(init?.body)) as { params: string[] };
+    const q = String((JSON.parse(String(init?.body)) as { q: string }).q);
+    const token = /'([a-z]+-token)'/.exec(q)?.[1] ?? "";
     await new Promise((resolve) => setTimeout(resolve, 5));
     return Response.json({
       rows: [{
-        id: payload.params[0],
-        email: `${payload.params[0]}@example.invalid`,
+        id: token,
+        email: `${token}@example.invalid`,
         display_name: "User",
         telegram_handle: null,
         roles_csv: "user",
