@@ -13,6 +13,8 @@ interface AuthState {
   loading: boolean;
   refresh: () => Promise<AuthUser | null>;
   acceptUser: (user: AuthUser) => void;
+  /** Oturum henüz yüklenmediyse sunucudan doğrular; giriş yoksa null. */
+  ensureUser: () => Promise<AuthUser | null>;
   serviceUnavailable: boolean;
   signOut: () => Promise<void>;
 }
@@ -68,6 +70,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLoading(false);
   }, []);
 
+  const ensureUser = useCallback(async () => {
+    if (user) return user;
+    try {
+      return await refresh();
+    } catch {
+      return null;
+    }
+  }, [user, refresh]);
+
   const roles = (user?.roles ?? []) as Role[];
 
   return (
@@ -80,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         refresh,
         acceptUser,
+        ensureUser,
         serviceUnavailable,
         signOut,
       }}

@@ -26,7 +26,7 @@ export function CartDrawer() {
   const setQuantity = useCart((s) => s.setQuantity);
   const removeItem = useCart((s) => s.removeItem);
   const clear = useCart((s) => s.clear);
-  const { user } = useAuth();
+  const { user, ensureUser } = useAuth();
   const navigate = useNavigate();
   const createCartOrderFn = useServerFn(createCartOrder);
   const fetchCartPricingFn = useServerFn(getCartLivePricing);
@@ -68,7 +68,7 @@ export function CartDrawer() {
 
   async function applyCoupon() {
     if (!couponInput.trim()) return;
-    if (!user) {
+    if (!(user ?? (await ensureUser()))) {
       toast("Kupon uygulamak için giriş yap");
       return;
     }
@@ -87,7 +87,7 @@ export function CartDrawer() {
 
   const checkout = async () => {
     if (items.length === 0) return;
-    if (!user) {
+    if (!(user ?? (await ensureUser()))) {
       close();
       toast("Devam etmek için giriş yap");
       navigate({ to: "/auth" });

@@ -39,7 +39,7 @@ function Page() {
   const [balance, setBalance] = useState<number | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const nav = useNavigate();
-  const { user } = useAuth();
+  const { user, ensureUser } = useAuth();
   const fetchWallet = useServerFn(getMyWallet);
 
   useEffect(() => {
@@ -61,7 +61,7 @@ function Page() {
     const plan = plans.find((p) => p.slug === slug);
     if (!plan) return;
     const price = billing === "yearly" ? plan.yearly_price_try ?? plan.price_try * 12 : plan.price_try;
-    if (!user) {
+    if (!(user ?? (await ensureUser()))) {
       toast.error("Önce giriş yapmalısın");
       nav({ to: "/auth" });
       return;
