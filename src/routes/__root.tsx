@@ -206,7 +206,7 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 function SiteHeader() {
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, loading, signOut } = useAuth();
 
   return (
     <header className="fixed top-0 z-50 w-full pt-4 px-4 md:px-6 pointer-events-none">
@@ -270,7 +270,9 @@ function SiteHeader() {
             </div>
             <ThemeToggle className="hidden sm:inline-flex" />
 
-            {user ? (
+            {loading ? (
+              <div className="h-8 w-20 animate-pulse rounded-md bg-primary/20" />
+            ) : user ? (
               <>
                 {isAdmin && (
                   <Button asChild size="sm" variant="outline" className="font-mono text-xs h-8 px-2 md:px-3 gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
@@ -295,7 +297,6 @@ function SiteHeader() {
                   <LogOut className="h-4 w-4" />
                 </Button>
               </>
-
             ) : (
               <Button asChild size="sm" className="font-mono h-8 px-3 bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-[0_0_15px_hsl(var(--primary)/0.4)]">
                 <Link to="/auth" aria-label="Giriş">

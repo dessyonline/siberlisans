@@ -4,6 +4,8 @@ import { z } from "zod";
 import { useServerFn } from "@tanstack/react-start";
 import { signIn as signInFn, signUp as signUpFn } from "@/lib/auth.functions";
 import { requestPasswordReset as requestPasswordResetFn } from "@/lib/password-reset.functions";
+import { getMe } from "@/lib/auth.functions";
+import { redirect } from "@tanstack/react-router";
 
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -22,6 +24,12 @@ const authSearch = z.object({
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
   validateSearch: authSearch,
+  beforeLoad: async () => {
+    const session = await getMe();
+    if (session.status === "authenticated") {
+      throw redirect({ to: "/hesabim" });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Giriş / Kayıt — SiberPHP" },
