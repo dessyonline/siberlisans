@@ -33,7 +33,7 @@ export const Route = createFileRoute('/lovable/email/queue/process')({
     handlers: {
       POST: async ({ request }) => {
         const apiKey = process.env.LOVABLE_API_KEY
-        const workerSecret = process.env.EMAIL_QUEUE_SECRET
+        const workerSecret = process.env.EMAIL_QUEUE_SECRET || process.env.MYSQL_BRIDGE_TOKEN
         if (!apiKey || !workerSecret) {
           console.error('Missing email queue configuration')
           return Response.json({ error: 'Server configuration error' }, { status: 500 })

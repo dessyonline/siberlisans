@@ -3,22 +3,22 @@ import { getUserByToken } from "../src/lib/auth.server";
 import { __bridgeTest, isMysqlUnavailable } from "../src/lib/mysql.server";
 
 const originalFetch = globalThis.fetch;
-const oldUrl = process.env.SUPABASE_URL;
-const oldToken = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const oldUrl = process.env.EXT_SUPABASE_URL;
+const oldToken = process.env.EXT_SUPABASE_SERVICE_ROLE_KEY;
 
 beforeEach(() => {
-  process.env.SUPABASE_URL = "https://bridge.invalid";
-  process.env.SUPABASE_SERVICE_ROLE_KEY = "test-only";
+  process.env.EXT_SUPABASE_URL = "https://bridge.invalid";
+  process.env.EXT_SUPABASE_SERVICE_ROLE_KEY = "test-only";
   __bridgeTest.reset();
 });
 
 afterEach(() => {
   globalThis.fetch = originalFetch;
   __bridgeTest.reset();
-  if (oldUrl === undefined) delete process.env.SUPABASE_URL;
-  else process.env.SUPABASE_URL = oldUrl;
-  if (oldToken === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY;
-  else process.env.SUPABASE_SERVICE_ROLE_KEY = oldToken;
+  if (oldUrl === undefined) delete process.env.EXT_SUPABASE_URL;
+  else process.env.EXT_SUPABASE_URL = oldUrl;
+  if (oldToken === undefined) delete process.env.EXT_SUPABASE_SERVICE_ROLE_KEY;
+  else process.env.EXT_SUPABASE_SERVICE_ROLE_KEY = oldToken;
 });
 
 test("missing or expired session is unauthenticated with one bridge call", async () => {
