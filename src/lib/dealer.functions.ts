@@ -421,6 +421,7 @@ export type DealerStatsResult = {
   total_commission_try: number;
   paid_commission_try: number;
   pending_commission_try: number;
+  wallet_balance_try: number;
   customer_count: number;
   order_count: number;
   next_tier: {
@@ -474,6 +475,10 @@ export const getDealerStats = createServerFn({ method: "GET" })
       "SELECT SUM(amount_try) s FROM dealer_commissions WHERE dealer_user_id=? AND status='pending'",
       [userId],
     );
+    const walletRow = await mysqlOne<{ balance_try: unknown }>(
+      "SELECT balance_try FROM wallets WHERE user_id=? LIMIT 1",
+      [userId],
+    );
     const customerRow = await mysqlOne<{ c: number }>(
       "SELECT COUNT(*) c FROM profiles WHERE dealer_id=?",
       [userId],
@@ -509,6 +514,7 @@ export const getDealerStats = createServerFn({ method: "GET" })
       total_commission_try: num(d.total_commission_try) ?? 0,
       paid_commission_try: num(d.paid_commission_try) ?? 0,
       pending_commission_try: num(pendingRow?.s) ?? 0,
+      wallet_balance_try: num(walletRow?.balance_try) ?? 0,
       customer_count: Number(customerRow?.c ?? 0),
       order_count: Number(orderRow?.c ?? 0),
       next_tier: nextTier

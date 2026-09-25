@@ -135,6 +135,7 @@ function DealerPanel() {
       {/* KPI */}
       <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
+          { icon: Wallet, label: "cüzdan bakiyesi", value: try_(stats.wallet_balance_try) },
           { icon: TrendingUp, label: "toplam ciro", value: try_(stats.total_volume_try) },
           { icon: Package, label: "sipariş", value: String(stats.order_count) },
           { icon: Users, label: "müşteri", value: String(stats.customer_count) },
@@ -146,6 +147,23 @@ function DealerPanel() {
           </div>
         ))}
       </div>
+
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm">
+        <span className="text-muted-foreground">Bekleyen komisyon</span>
+        <span className="font-mono text-base text-primary">{try_(stats.pending_commission_try)}</span>
+      </div>
+
+      {stats.order_count === 0 && (
+        <div className="mt-4 rounded-xl border border-primary/30 bg-card/50 p-4">
+          <div className="font-mono text-xs text-primary">İlk satışına başla</div>
+          <p className="mt-1 text-sm text-muted-foreground">Davet linkini paylaş, ürünleri toptan fiyatla al veya kendi siten için API anahtarı oluştur.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button size="sm" variant="outline" className="font-mono" onClick={() => navigator.clipboard.writeText(inviteUrl).then(() => toast.success("Bayi linkin kopyalandı"))}>davet linkini kopyala</Button>
+            <Button size="sm" variant="outline" className="font-mono" onClick={() => setTab("fiyat")}>ürünleri gör</Button>
+            <Button size="sm" className="font-mono" onClick={() => setTab("api")}>api anahtarı oluştur</Button>
+          </div>
+        </div>
+      )}
 
       {stats.next_tier && (
         <div className="glass-card mt-4 rounded-xl border border-primary/25 p-4">
