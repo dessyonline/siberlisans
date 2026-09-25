@@ -10,7 +10,7 @@ export const listProducts = createServerFn({ method: "GET" }).handler(async () =
             p.image_url, p.manual_fulfillment, p.stock_hint, p.unlimited_stock,
             p.supplier_out_of_stock, p.created_at, p.sort_order, p.tier,
             p.retail_price_try, p.retail_price_source_url, p.duration_label,
-            p.orders_count, p.avg_rating, p.review_count, p.featured, p.demo_video_url,
+            p.orders_count, p.avg_rating, p.review_count, p.featured, p.demo_video_url, p.warranty_price_try, p.warranty_label,
             (SELECT COUNT(*) FROM license_keys k
               WHERE k.product_id = p.id AND k.status = 'available') AS available_keys
        FROM products p
@@ -40,6 +40,8 @@ export const listProducts = createServerFn({ method: "GET" }).handler(async () =
     retail_price_try: num(r.retail_price_try),
     retail_price_source_url: (r.retail_price_source_url ?? null) as string | null,
     duration_label: (r.duration_label ?? null) as string | null,
+    warranty_price_try: num(r.warranty_price_try),
+    warranty_label: (r.warranty_label ?? null) as string | null,
     orders_count: num(r.orders_count) ?? 0,
     avg_rating: num(r.avg_rating) ?? 0,
     review_count: num(r.review_count) ?? 0,

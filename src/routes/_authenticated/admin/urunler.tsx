@@ -71,6 +71,8 @@ type Product = {
   retail_price_try: number | null;
   retail_price_source_url: string | null;
   duration_label: string | null;
+  warranty_price_try?: number | null;
+  warranty_label?: string | null;
   grants_app: string | null;
   grants_app_days: number | null;
 };
@@ -343,6 +345,8 @@ function ProductsAdmin() {
         retail_price_try: editing.retail_price_try ?? null,
         retail_price_source_url: editing.retail_price_source_url ?? null,
         duration_label: editing.duration_label ?? null,
+        warranty_price_try: editing.warranty_price_try ?? null,
+        warranty_label: editing.warranty_label || null,
       } });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
       qc.invalidateQueries({ queryKey: ["products"] });
@@ -805,6 +809,20 @@ function ProductsAdmin() {
                     label="kaynak URL"
                     value={editing.retail_price_source_url ?? ""}
                     onChange={(v) => setEditing((p) => ({ ...p!, retail_price_source_url: v }))}
+                  />
+                </div>
+                <div className="font-mono text-[10px] text-muted-foreground">Garantili alım: fiyat girersen ürün sayfasında "garanti ekle" kutucuğu çıkar. Boş bırakırsan gösterilmez.</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Field
+                    label="garanti ek fiyatı (₺)"
+                    value={editing.warranty_price_try == null ? "" : String(editing.warranty_price_try)}
+                    onChange={(v) => setEditing((p) => ({ ...p!, warranty_price_try: v === "" ? null : Number(v) }))}
+                    type="number"
+                  />
+                  <Field
+                    label="garanti bilgisi (18 ay garanti…)"
+                    value={editing.warranty_label ?? ""}
+                    onChange={(v) => setEditing((p) => ({ ...p!, warranty_label: v }))}
                   />
                 </div>
                 <div className="flex justify-end">
