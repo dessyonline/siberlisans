@@ -315,7 +315,7 @@ function fixInsertBoolLiterals(sql: string, meta: PgMeta): string {
 
 const ISO_TS = /^(\d{4}-\d\d-\d\d)T(\d\d:\d\d:\d\d)(?:\.\d+)?(?:\+00:00|Z)$/;
 
-/** PG JSON satırını MySQL köprüsünün döndürdüğü biçime yaklaştırır. */
+/** PG JSON satırını eski sorgu katmanının beklediği biçime yaklaştırır. */
 export function mysqlizeRow(row: Record<string, unknown>): Record<string, unknown> {
   const o: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(row)) {

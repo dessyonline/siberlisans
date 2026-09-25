@@ -4,21 +4,21 @@ import { __bridgeTest } from '../src/lib/mysql.server';
 
 const TOKEN = 'a'.repeat(64);
 const originalFetch = globalThis.fetch;
-const originalUrl = process.env.EXT_SUPABASE_URL;
-const originalKey = process.env.EXT_SUPABASE_SERVICE_ROLE_KEY;
+const originalUrl = process.env.SUPABASE_URL;
+const originalKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 beforeEach(() => __bridgeTest.reset());
 afterEach(() => {
   globalThis.fetch = originalFetch;
   __bridgeTest.reset();
-  if (originalUrl === undefined) delete process.env.EXT_SUPABASE_URL;
-  else process.env.EXT_SUPABASE_URL = originalUrl;
-  if (originalKey === undefined) delete process.env.EXT_SUPABASE_SERVICE_ROLE_KEY;
-  else process.env.EXT_SUPABASE_SERVICE_ROLE_KEY = originalKey;
+  if (originalUrl === undefined) delete process.env.SUPABASE_URL;
+  else process.env.SUPABASE_URL = originalUrl;
+  if (originalKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+  else process.env.SUPABASE_SERVICE_ROLE_KEY = originalKey;
 });
 
 function mockDb(body: unknown, status = 200) {
-  process.env.EXT_SUPABASE_URL = 'https://db.invalid';
-  process.env.EXT_SUPABASE_SERVICE_ROLE_KEY = 'test-only';
+  process.env.SUPABASE_URL = 'https://db.invalid';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-only';
   const calls: string[] = [];
   globalThis.fetch = (async (_input: unknown, init?: RequestInit) => {
     calls.push(String(JSON.parse(String(init?.body)).q));

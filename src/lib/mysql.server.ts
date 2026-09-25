@@ -1,5 +1,9 @@
 /**
- * MySQL erişim katmanı (Hostinger PHP köprüsü üzerinden).
+ * Supabase üzerinde çalışan eski SQL uyumluluk katmanı.
+ *
+ * Uygulamanın eski sorguları MySQL biçiminde kaldığı için PostgreSQL'e çevrilir;
+ * bağlantı Supabase'in sunucu istemcisi üzerinden doğrudan yapılır. Haricî
+ * Hostinger/PHP köprüsü veya ayrı EXT_SUPABASE yapılandırması kullanılmaz.
  * Sadece sunucu tarafında kullanılır.
  *
  * - HTTP durumu gövde çözümlenmeden önce sınıflandırılır (HTML/boş 429 dahil).
@@ -28,7 +32,7 @@ export function isMysqlUnavailable(err: unknown): err is MysqlUnavailableError {
 }
 
 const cfg = {
-  hardMax: Math.min(4, Math.max(1, Number(process.env["MYSQL_BRIDGE_MAX_CONCURRENT"] ?? 4) || 1)),
+  hardMax: Math.min(4, Math.max(1, Number(process.env["SUPABASE_SQL_MAX_CONCURRENT"] ?? 4) || 1)),
   totalBudgetMs: 8_000,
   maxAttempts: 2,
   defaultThrottleMs: 2_000,
@@ -128,7 +132,7 @@ export function isReadOnlySql(sql: string): boolean {
   return /^(select|show|describe|desc|explain)\b/.test(s);
 }
 
-/** Bridge JSON hatası: sorgu çalışmadan önce reddedildiği kesin olanlar. */
+/** Sorgu çalışmadan önce reddedildiği kesin olan veritabanı hataları. */
 function isPreExecutionDbError(msg: string): boolean {
   const m = msg.toLowerCase();
   return (
@@ -181,7 +185,7 @@ function loadMeta(): Promise<PgMeta> {
   return metaPromise;
 }
 
-async function bridgeCall(sql: string, params: Params): Promise<any> {
+async function supabaseSqlCall(sql: string, params: Params): Promise<any> {
   if (isDdl(sql)) return { rows: [], rowCount: 0 }; // şema Supabase'te hazır
   const showTable = showColumnsTable(sql);
   if (showTable) {
@@ -197,19 +201,10 @@ async function bridgeCall(sql: string, params: Params): Promise<any> {
   return rawCall(translate(sql, params, meta), isReadOnlySql(sql));
 }
 
-function supabaseRpcConfig(): { url: string; key: string } {
-  const base = (process.env["EXT_SUPABASE_URL"] ?? "").replace(/\/+$/, "").replace(/\/rest\/v1$/, "");
-  const key = process.env["EXT_SUPABASE_SERVICE_ROLE_KEY"];
-  if (!base || !key) throw new Error("Supabase veritabanı ayarları eksik");
-  return { url: `${base}/rest/v1/rpc/exec_sql`, key };
-}
-
 async function rawCall(sql: string, readOnlyHint?: boolean): Promise<any> {
-  const { url, key } = supabaseRpcConfig();
-
   const deadline = Date.now() + cfg.totalBudgetMs;
   const readOnly = readOnlyHint ?? isReadOnlySql(sql);
-  let lastError: Error = new MysqlUnavailableError("MySQL köprüsüne ulaşılamadı");
+  let lastError: Error = new MysqlUnavailableError("Supabase veritabanına ulaşılamadı");
   let retry = true;
 
   for (let attempt = 0; attempt < cfg.maxAttempts; attempt++) {
@@ -222,75 +217,51 @@ async function rawCall(sql: string, readOnlyHint?: boolean): Promise<any> {
     await acquire(deadline); // global Retry-After beklemesi burada uygulanır
     retry = false;
     try {
-      const remaining = deadline - Date.now();
-      if (remaining <= 0) throw new MysqlUnavailableError("Veritabanı isteği zaman aşımına uğradı");
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), remaining);
-      let res: Response;
-      let text: string;
+      if (Date.now() >= deadline) {
+        lastError = new MysqlUnavailableError("Veritabanı isteği zaman aşımına uğradı");
+        break;
+      }
+      let data: unknown = null;
+      let error: { message?: string; code?: string; status?: number } | null = null;
       try {
-        res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", apikey: key },
-          body: JSON.stringify({ q: sql }),
-          signal: ctrl.signal,
-        });
-        text = await res.text();
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const client = supabaseAdmin as unknown as {
+          rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message?: string; code?: string; status?: number } | null }>;
+        };
+        ({ data, error } = await client.rpc("exec_sql", { q: sql }));
       } catch {
-        // Belirsiz: istek sunucuya ulaşmış ve çalışmış olabilir.
-        lastError = new MysqlUnavailableError(
-          ctrl.signal.aborted ? "Veritabanı isteği zaman aşımına uğradı" : "Veritabanına ulaşılamadı",
-        );
-        retry = readOnly;
-        continue;
-      } finally {
-        clearTimeout(timer);
-      }
-
-      if (res.status === 429) {
-        // Sunucu isteği reddetti -> SQL çalışmadı; yazma dahil tekrar güvenli.
-        const ra = parseRetryAfter(res.headers.get("retry-after"));
-        const wait = ra ?? cfg.defaultThrottleMs;
-        noteThrottled(wait);
-        lastError = new MysqlUnavailableError("Veritabanı istek sınırına ulaşıldı (429)");
-        if (Date.now() + wait >= deadline) break; // talimatı kısaltmak yerine hızlı başarısız ol
-        retry = true;
-        continue;
-      }
-      if (res.status >= 500) {
-        lastError = new MysqlUnavailableError(`Veritabanı köprüsü geçici hata verdi (${res.status})`);
+        // Belirsiz ağ/sunucu hatasından sonra yalnızca okuma sorguları tekrarlanır.
+        lastError = new MysqlUnavailableError("Supabase veritabanına ulaşılamadı");
         retry = readOnly;
         continue;
       }
-
-      let json: any;
-      try {
-        json = text ? JSON.parse(text) : null;
-      } catch {
-        json = null;
-      }
-      if (json === null || typeof json !== "object") {
-        if (!res.ok) throw new Error(`Köprü hatası (${res.status})`);
-        lastError = new MysqlUnavailableError(`Köprü geçersiz yanıt verdi (${res.status})`);
-        retry = readOnly;
-        continue;
-      }
-      if (!res.ok || json.error) {
-        const detail =
-          typeof json.message === "string" ? json.message : typeof json.error === "string" ? json.error : "";
-        if (isPreExecutionDbError(detail)) {
-          lastError = new MysqlUnavailableError("Veritabanı bağlantısı kurulamadı");
-          retry = true;
+      if (error) {
+        const detail = error.message ?? "";
+        const status = error.status ?? 0;
+        if (status === 429) {
+          noteThrottled(cfg.defaultThrottleMs);
+          lastError = new MysqlUnavailableError("Supabase istek sınırına ulaşıldı (429)");
+          if (Date.now() + cfg.defaultThrottleMs < deadline) retry = true;
+          continue;
+        }
+        if (status >= 500 || isPreExecutionDbError(detail)) {
+          lastError = new MysqlUnavailableError("Supabase veritabanı geçici olarak kullanılamıyor");
+          retry = readOnly;
           continue;
         }
         if (isDeadlock(detail)) {
-          // MySQL deadlock'ta ifadeyi geri alır; tek ifade için tekrar güvenli.
           lastError = new MysqlUnavailableError("Veritabanı kilit çakışması");
           retry = true;
           continue;
         }
         if (process.env["DB_DEBUG_SQL"] === "1") console.error("[db] sql hatası:", detail, "|", sql.slice(0, 400));
-        throw new Error(`Köprü hatası (${res.status})${detail ? `: ${detail}` : ""}`);
+        throw new Error(`Supabase sorgu hatası${detail ? `: ${detail}` : ""}`);
+      }
+      const json = data as { rows?: unknown[]; rowCount?: number } | null;
+      if (!json || typeof json !== "object") {
+        lastError = new MysqlUnavailableError("Supabase geçersiz yanıt verdi");
+        retry = readOnly;
+        continue;
       }
       noteSuccess();
       return {
@@ -309,7 +280,7 @@ export async function mysqlQuery<T = Record<string, unknown>>(
   sql: string,
   params: Params = [],
 ): Promise<T[]> {
-  const json = await bridgeCall(sql, params);
+  const json = await supabaseSqlCall(sql, params);
   return (json.rows ?? []) as T[];
 }
 
@@ -335,12 +306,12 @@ export function bool(v: unknown): boolean {
 
 /** INSERT/UPDATE/DELETE için etkilenen satır sayısını döndürür. */
 export async function mysqlExec(sql: string, params: Params = []): Promise<number> {
-  const json = await bridgeCall(sql, params);
+  const json = await supabaseSqlCall(sql, params);
   return Number(json.rowCount ?? 0);
 }
 
 /** Yalnızca testler için. */
-export const __bridgeTest = {
+export const __supabaseSqlTest = {
   configure(o: Partial<typeof cfg>) {
     Object.assign(cfg, o);
     limit = cfg.hardMax;
@@ -365,3 +336,6 @@ export const __bridgeTest = {
   },
   state: () => ({ limit, active, queued: waiting.length, pausedUntil }),
 };
+
+/** @deprecated Test kodu taşınana kadar geriye dönük isim. */
+export const __bridgeTest = __supabaseSqlTest;
