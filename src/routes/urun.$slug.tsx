@@ -868,7 +868,8 @@ function StockNotifyButton({ productId, productName, compact }: { productId: str
   const subscribed = !!status?.subscribed;
 
   const onClick = async () => {
-    if (!(user ?? (await ensureUser()))) {
+    const me = user ?? (await ensureUser());
+    if (!me) {
       toast("Haber almak için giriş yap");
       navigate({ to: "/auth" });
       return;
@@ -879,7 +880,7 @@ function StockNotifyButton({ productId, productName, compact }: { productId: str
         await unsubscribeFn({ data: { productId } });
         toast.success("Stok bildirimi iptal edildi");
       } else {
-        await subscribeFn({ data: { productId, email: user.email ?? undefined } });
+        await subscribeFn({ data: { productId, email: me.email ?? undefined } });
         toast.success(`${productName} stoğa gelince haber vereceğiz`);
       }
       await qc.invalidateQueries({ queryKey: ["stock-notify", productId] });
