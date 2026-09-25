@@ -16,7 +16,7 @@ export function FavoriteButton({
   className?: string;
   size?: number;
 }) {
-  const { user } = useAuth();
+  const { user, ensureUser } = useAuth();
   const navigate = useNavigate();
   const listFn = useServerFn(listMyFavoriteIds);
   const toggleFn = useServerFn(toggleFavorite);
@@ -38,7 +38,7 @@ export function FavoriteButton({
   async function onClick(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-    if (!user) {
+    if (!(user ?? (await ensureUser()))) {
       toast("Favorilere eklemek için giriş yap");
       navigate({ to: "/auth" });
       return;

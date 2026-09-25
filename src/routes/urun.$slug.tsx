@@ -152,7 +152,7 @@ const DUR: Record<string, string> = { monthly: "aylık", yearly: "yıllık", lif
 function ProductDetail() {
   const { slug } = Route.useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, ensureUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const createOrderFn = useServerFn(createOrder);
   const createCartOrderFn = useServerFn(createCartOrder);
@@ -198,7 +198,7 @@ function ProductDetail() {
   const warrantyLabel = (product as { warranty_label?: string | null } | null)?.warranty_label ?? null;
 
   const handleBuy = async () => {
-    if (!user) {
+    if (!(user ?? (await ensureUser()))) {
       toast("Devam etmek için giriş yap");
       navigate({ to: "/auth" });
       return;
@@ -852,7 +852,7 @@ function StockBadge({ stock, manual, unlimited }: { stock: number; manual: boole
 }
 
 function StockNotifyButton({ productId, productName, compact }: { productId: string; productName: string; compact?: boolean }) {
-  const { user } = useAuth();
+  const { user, ensureUser } = useAuth();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const subscribeFn = useServerFn(subscribeStockNotify);
@@ -868,7 +868,7 @@ function StockNotifyButton({ productId, productName, compact }: { productId: str
   const subscribed = !!status?.subscribed;
 
   const onClick = async () => {
-    if (!user) {
+    if (!(user ?? (await ensureUser()))) {
       toast("Haber almak için giriş yap");
       navigate({ to: "/auth" });
       return;

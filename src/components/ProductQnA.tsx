@@ -18,7 +18,7 @@ type QRow = {
 };
 
 export function ProductQnA({ productId }: { productId: string }) {
-  const { user } = useAuth();
+  const { user, ensureUser } = useAuth();
   const qc = useQueryClient();
   const askFn = useServerFn(askProductQuestion);
   const listFn = useServerFn(listProductQuestions);
@@ -31,7 +31,7 @@ export function ProductQnA({ productId }: { productId: string }) {
   });
 
   const submit = async () => {
-    if (!user) {
+    if (!(user ?? (await ensureUser()))) {
       toast("Soru sormak için giriş yap");
       return;
     }

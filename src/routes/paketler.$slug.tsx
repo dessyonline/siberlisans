@@ -56,10 +56,10 @@ function BundleDetail() {
   const items = b.items ?? [];
   const originalSum = items.reduce((s, i) => s + (Number(i.product?.price_try) || 0) * i.quantity, 0);
   const saved = originalSum - Number(b.price_try);
-  const { user } = useAuth();
+  const { user, ensureUser } = useAuth();
 
   async function buyBundle() {
-    if (!user) {
+    if (!(user ?? (await ensureUser()))) {
       toast.error("Önce giriş yap");
       return;
     }
