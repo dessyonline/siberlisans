@@ -196,6 +196,7 @@ function ProductDetail() {
 
   const warrantyPrice = Number((product as { warranty_price_try?: number | null } | null)?.warranty_price_try ?? 0);
   const warrantyLabel = (product as { warranty_label?: string | null } | null)?.warranty_label ?? null;
+  const checkoutPrice = Math.max(0, flash.final + (withWarranty && warrantyPrice > 0 ? warrantyPrice : 0));
 
   const handleBuy = async () => {
     if (!(user ?? (await ensureUser()))) {
@@ -519,7 +520,7 @@ function ProductDetail() {
               </div>
 
               {warrantyPrice > 0 && (
-                <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-md border border-primary/40 bg-primary/5 px-3 py-2.5 font-mono text-xs hover:bg-primary/10 transition-colors">
+                <label className={`mt-6 flex cursor-pointer items-start gap-3 rounded-md border px-3 py-2.5 font-mono text-xs transition-colors ${withWarranty ? "border-primary bg-primary/15" : "border-primary/40 bg-primary/5 hover:bg-primary/10"}`}>
                   <input
                     type="checkbox"
                     checked={withWarranty}
@@ -534,6 +535,7 @@ function ProductDetail() {
                     <span className="mt-0.5 block text-[11px] text-muted-foreground">
                       {warrantyLabel ? `${warrantyLabel} · ` : ""}süre içinde çalışmazsa ücretsiz yenisi verilir
                     </span>
+                    {withWarranty && <span className="mt-1 block text-[11px] text-primary">Garanti siparişine eklendi · toplam ₺{checkoutPrice.toLocaleString("tr-TR")}</span>}
                   </span>
                 </label>
               )}
@@ -548,7 +550,7 @@ function ProductDetail() {
                   <span className="pointer-events-none absolute inset-0 scan-line opacity-30" aria-hidden />
                   <Zap className="relative mr-2 h-4 w-4 animate-pulse" />
                   <span className="relative">
-                    {loading ? "$ processing…" : soldOut ? "$ out_of_stock" : "$ satın al --now"}
+                    {loading ? "$ processing…" : soldOut ? "$ out_of_stock" : `$ satın al · ₺${checkoutPrice.toLocaleString("tr-TR")}`}
                   </span>
                 </Button>
                 <Button
