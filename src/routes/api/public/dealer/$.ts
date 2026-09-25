@@ -85,6 +85,9 @@ type PriceListProduct = {
   name: string;
   slug: string | null;
   category: string | null;
+  description: string | null;
+  duration_label: string | null;
+  image_url: string | null;
   price_try: unknown;
   unlimited_stock: number | null;
   manual_fulfillment: number | null;
@@ -95,7 +98,8 @@ async function apiDealerPriceList(userId: string) {
   if (disc === null) throw new Error("Bayi değilsiniz");
 
   const products = await mysqlQuery<PriceListProduct>(
-    `SELECT id, name, slug, category, price_try, unlimited_stock, manual_fulfillment
+    `SELECT id, name, slug, category, description, duration_label, image_url,
+            price_try, unlimited_stock, manual_fulfillment
        FROM products WHERE active=1 ORDER BY sort_order, name`,
   );
   const out = [];
@@ -110,6 +114,9 @@ async function apiDealerPriceList(userId: string) {
       name: p.name,
       slug: p.slug,
       category: p.category,
+      description: p.description,
+      duration_label: p.duration_label,
+      image_url: p.image_url,
       price_try: price,
       dealer_price_try: Math.round((price * (100 - disc)) / 100 * 100) / 100,
       available: Number(available?.c ?? 0),
@@ -118,6 +125,14 @@ async function apiDealerPriceList(userId: string) {
     });
   }
   return out;
+}
+
+/** Bayinin kendi fiyatı, stok ve satış sayfasında kullanılabilecek ürün metadatası. */
+async function apiDealerProduct(userId: string, productId: string) {
+  const products = await apiDealerPriceList(userId);
+  const product = products.find((item) => item.id === productId);
+  if (!product) throw new Error("Ürün bulunamadı");
+  return product;
 }
 
 async function apiDealerBalance(userId: string) {
@@ -199,6 +214,38 @@ async function apiDealerOrder(userId: string, reference: string) {
     })),
     keys: keys.map((k) => ({ key: k.key_value, expires_at: k.expires_at, delivered_at: k.delivered_at })),
   };
+}
+
+/** Sipariş listesinin içinde lisans anahtarları dönmez; anahtarlar tekil sipariş sorgusunda verilir. */
+async function apiDealerOrders(userId: string, limit: number) {
+  const orders = await mysqlQuery<{
+    id: string;
+    reference_code: string;
+    status: string;
+    price_try: unknown;
+    item_count: number | null;
+    created_at: string;
+    approved_at: string | null;
+  }>(
+    `SELECT id, reference_code, status, price_try, item_count, created_at, approved_at
+       FROM orders WHERE user_id=? ORDER BY created_at DESC LIMIT ${limit}`,
+    [userId],
+  );
+
+  return Promise.all(orders.map(async (order) => {
+    const discount = await mysqlOne<{ d: unknown }>(
+      "SELECT SUM(discount_try) d FROM order_discounts WHERE order_id=?",
+      [order.id],
+    );
+    return {
+      reference_code: order.reference_code,
+      status: order.status,
+      total_try: Math.max(0, (num(order.price_try) ?? 0) - (num(discount?.d) ?? 0)),
+      item_count: Number(order.item_count ?? 0),
+      created_at: order.created_at,
+      approved_at: order.approved_at,
+    };
+  }));
 }
 
 async function apiDealerCreateOrder(userId: string, productId: string, quantity: number) {
@@ -321,6 +368,7 @@ async function apiDealerPayOrder(userId: string, orderId: string) {
 
 async function handle(request: Request, splat: string) {
   const path = (splat || "").replace(/^\/+|\/+$/g, "");
+  const url = new URL(request.url);
   const apiKey = readApiKey(request);
   if (!apiKey) return json({ error: "missing_api_key" }, 401);
 
@@ -338,9 +386,21 @@ async function handle(request: Request, splat: string) {
       return json({ products });
     }
 
+    if (request.method === "GET" && path.startsWith("products/")) {
+      const id = decodeURIComponent(path.slice("products/".length));
+      if (!id || id.includes("/")) return json({ error: "not_found" }, 404);
+      return json({ product: await apiDealerProduct(userId, id) });
+    }
+
     if (request.method === "GET" && path === "balance") {
       const balance = await apiDealerBalance(userId);
       return json(balance);
+    }
+
+    if (request.method === "GET" && path === "orders") {
+      const requested = Number(url.searchParams.get("limit"));
+      const limit = Number.isFinite(requested) ? Math.min(Math.max(Math.trunc(requested), 1), 100) : 25;
+      return json({ orders: await apiDealerOrders(userId, limit) });
     }
 
     if (request.method === "GET" && path.startsWith("orders/")) {

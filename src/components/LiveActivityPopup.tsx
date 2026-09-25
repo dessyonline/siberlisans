@@ -62,7 +62,7 @@ export function LiveActivityPopup() {
 
   return (
     <div
-      className={`fixed bottom-4 left-4 z-40 max-w-[300px] transition-all duration-500 ${
+      className={`fixed bottom-4 left-4 z-40 hidden max-w-[300px] transition-all duration-500 sm:block ${
         visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4 pointer-events-none"
       }`}
     >

@@ -299,7 +299,6 @@ function Index() {
       <RaffleFloatingBadge />
       <UserBalanceWelcome />
       <AnnouncementBar />
-      <LiveSalesTicker />
       {/* HERO — cinematic */}
 
       <section className="relative overflow-hidden border-b border-border/40">
@@ -319,8 +318,8 @@ function Index() {
         <div className="pointer-events-none absolute inset-0 scan-line opacity-20" aria-hidden />
 
 
-        <div className="relative mx-auto max-w-6xl px-4 pt-28 pb-24 sm:pt-32 sm:pb-28">
-          <div className="grid gap-14 lg:grid-cols-[1.15fr_1fr] items-center">
+        <div className="relative mx-auto max-w-6xl px-4 pt-16 pb-14 sm:pt-20 sm:pb-16">
+          <div className="grid gap-8 lg:grid-cols-[1.15fr_1fr] items-center">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3.5 py-1.5 font-mono text-[11px] backdrop-blur">
                 <span className="relative flex h-1.5 w-1.5">
@@ -331,7 +330,7 @@ function Index() {
                 <span className="text-primary/60">·</span>
                 <span className="text-primary">anlık teslim aktif</span>
               </div>
-              <h1 className="mt-7 font-mono text-4xl sm:text-6xl lg:text-7xl font-semibold tracking-tight leading-[1.02]">
+              <h1 className="mt-5 font-mono text-4xl sm:text-5xl lg:text-6xl font-semibold tracking-tight leading-[1.02]">
                 <span className="block text-muted-foreground/70 text-sm sm:text-base font-normal tracking-[0.35em] uppercase mb-3">
                   <span className="text-primary">$</span> siberlisans --init
                 </span>
@@ -342,7 +341,7 @@ function Index() {
                   <CyberRotator />
                 </span>
               </h1>
-              <p className="mt-6 max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
+              <p className="mt-4 max-w-xl text-base sm:text-lg text-muted-foreground leading-relaxed">
                 <span className="text-primary font-mono">//</span>{" "}
                 <TypedLine text="Cüzdanına bakiye yükle veya kartla öde." delay={300} />
                 <br />
@@ -352,7 +351,7 @@ function Index() {
                   delay={1600}
                 />
               </p>
-              <div className="mt-9 flex flex-wrap gap-4">
+              <div className="mt-7 flex flex-wrap gap-3">
                 <Button asChild size="lg" className="font-mono neon-glow-strong cyber-button group h-14 px-10 text-base rounded-xl">
                   <Link to="/urunler">
                     <Rocket className="mr-2 h-5 w-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
@@ -369,7 +368,7 @@ function Index() {
               </div>
 
               {/* mini trust stats */}
-              <div className="mt-10 grid grid-cols-3 gap-3 sm:gap-4 max-w-md">
+              <div className="mt-7 grid grid-cols-3 gap-3 sm:gap-4 max-w-md">
                 {[
                   { v: `${(products?.length ?? 0)}+`, l: "aktif lisans" },
                   { v: "< 15 dk", l: "ort. onay" },
@@ -382,7 +381,7 @@ function Index() {
                 ))}
               </div>
 
-              <div className="mt-6 flex flex-wrap gap-2 font-mono text-[11px]">
+              <div className="mt-4 flex flex-wrap gap-2 font-mono text-[11px]">
                 {[
                   { icon: Lock, label: "AES-256" },
                   { icon: ShieldCheck, label: "TLS 1.3" },
@@ -420,7 +419,7 @@ function Index() {
                     <span className="h-2.5 w-2.5 rounded-full bg-destructive/70" />
                     <span className="h-2.5 w-2.5 rounded-full bg-warn/70" />
                     <span className="h-2.5 w-2.5 rounded-full bg-primary/70" />
-                    <span className="ml-2 text-muted-foreground">siberphp@secure:~/live</span>
+                    <span className="ml-2 text-muted-foreground">siberlisans@secure:~/live</span>
                     <span className="ml-auto text-primary/70">● REC</span>
                   </div>
                   <div className="mt-3 space-y-1.5 text-muted-foreground leading-relaxed">
@@ -456,6 +455,23 @@ function Index() {
 
       {/* CANLI SATIŞ AKIŞI — sosyal kanıt */}
       <LiveSalesTicker />
+
+      {featured.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 pt-10 pb-2">
+          <div className="mb-5 flex items-end justify-between gap-4">
+            <div>
+              <div className="text-xs text-muted-foreground font-mono flex items-center gap-2">
+                <Star className="h-3 w-3 text-warn fill-warn" /> öne çıkan
+              </div>
+              <h2 className="mt-1 text-2xl font-semibold tracking-tight">Popüler Lisanslar</h2>
+            </div>
+            <Button asChild variant="outline" size="sm"><Link to="/urunler">Tümünü gör →</Link></Button>
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.slice(0, 3).map((p) => <ProductCard key={p.id} p={p} featured />)}
+          </div>
+        </section>
+      )}
 
       {/* HIZLI ERİŞİM — Araç Laboratuvarı + AI Paketleri */}
       <QuickAccessCards />
@@ -521,7 +537,7 @@ function Index() {
               <div className="flex items-center gap-2 font-mono text-xs">
                 <span className="h-2 w-2 rounded-full bg-primary" />
                 <span className="text-primary">son eklenenler</span>
-                <span className="text-muted-foreground/80">· /var/log/siberphp/new arrivals</span>
+                <span className="text-muted-foreground/80">· /var/log/siberlisans/new arrivals</span>
               </div>
               <Link
                 to="/urunler"
@@ -582,31 +598,6 @@ function Index() {
       {/* KATEGORİ HIZLI GEZİNME */}
       <CategoryStrip products={products ?? []} />
 
-      {/* FEATURED */}
-
-      {featured.length > 0 && (
-        <section className="mx-auto max-w-6xl px-4 pt-20 pb-4">
-          <div className="mb-8 flex items-end justify-between gap-4">
-            <div>
-              <div className="text-xs text-muted-foreground font-mono flex items-center gap-2">
-                <Star className="h-3 w-3 text-warn fill-warn" /> öne çıkan
-              </div>
-              <h2 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight">
-                Popüler Lisanslar
-              </h2>
-            </div>
-            <Button asChild variant="outline" size="sm">
-              <Link to="/urunler">Tümünü gör →</Link>
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {featured.slice(0, 6).map((p) => (
-              <ProductCard key={p.id} p={p} featured />
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* PRODUCTS */}
       <section className="mx-auto max-w-6xl px-4 py-16">
         <div className="mb-8 font-mono">
@@ -633,7 +624,7 @@ function Index() {
       {/* HOW IT WORKS */}
       <section id="nasil-calisir" className="relative mx-auto max-w-6xl px-4 py-20">
         <div className="mb-10 font-mono">
-          <div className="text-xs text-muted-foreground">$ man siberphp</div>
+          <div className="text-xs text-muted-foreground">$ man siberlisans</div>
           <h2 className="mt-2 text-3xl sm:text-4xl neon-text-glow">Nasıl Çalışır?</h2>
           <p className="mt-3 text-sm text-muted-foreground max-w-xl font-sans">
             Dört adımda lisansın panelinde. Ortalama uçtan uca süre: <span className="text-primary">5–15 dk</span>.

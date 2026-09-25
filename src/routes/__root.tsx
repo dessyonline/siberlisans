@@ -124,24 +124,24 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "SiberPHP — Güvenli Lisans Dağıtım Sistemi" },
+      { title: "SiberLisans — Güvenli Lisans Dağıtım Sistemi" },
       {
         name: "description",
         content:
-          "SiberPHP: yazılım lisans anahtarlarınızı havale/EFT ile güvenle, anında satın alın. Şifreli teslimat, kesintisiz destek.",
+          "SiberLisans: yazılım lisans anahtarlarınızı havale/EFT ile güvenle, anında satın alın. Şifreli teslimat, kesintisiz destek.",
       },
-      { name: "author", content: "SiberPHP" },
+      { name: "author", content: "SiberLisans" },
       { name: "theme-color", content: "#00ff9c" },
-      { property: "og:site_name", content: "SiberPHP" },
+      { property: "og:site_name", content: "SiberLisans" },
       { property: "og:type", content: "website" },
       { property: "og:locale", content: "tr_TR" },
-      { property: "og:title", content: "SiberPHP — Güvenli Lisans Dağıtım Sistemi" },
+      { property: "og:title", content: "SiberLisans — Güvenli Lisans Dağıtım Sistemi" },
       {
         property: "og:description",
         content: "Havale/EFT ile hızlı ve güvenli lisans anahtarı teslimi.",
       },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "SiberPHP — Güvenli Lisans Dağıtım Sistemi" },
+      { name: "twitter:title", content: "SiberLisans — Güvenli Lisans Dağıtım Sistemi" },
       {
         name: "twitter:description",
         content: "Havale/EFT ile hızlı ve güvenli lisans anahtarı teslimi.",
@@ -160,7 +160,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Organization",
-          name: "SiberPHP",
+          name: "SiberLisans",
           url: "https://siberlisans.lovable.app",
           logo: "https://siberlisans.lovable.app/favicon.png",
           sameAs: [],
@@ -171,7 +171,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "WebSite",
-          name: "SiberPHP",
+          name: "SiberLisans",
           url: "https://siberlisans.lovable.app",
           inLanguage: "tr-TR",
           potentialAction: {
@@ -209,7 +209,7 @@ function SiteHeader() {
   const { user, isAdmin, loading, signOut } = useAuth();
 
   return (
-    <header className="fixed top-0 z-50 w-full pt-4 px-4 md:px-6 pointer-events-none">
+    <header className="sticky top-0 z-50 w-full pt-3 px-3 md:px-6 pointer-events-none">
       <div className="relative group mx-auto max-w-6xl pointer-events-auto">
         {/* glass refraction effect */}
         <div className="absolute inset-0 bg-primary/5 blur-3xl opacity-20 rounded-3xl pointer-events-none" />
@@ -226,12 +226,12 @@ function SiteHeader() {
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
             </span>
             <span className="font-mono text-sm font-bold tracking-tight text-primary truncate">
-              ~/siberphp
+              ~/siberlisans
             </span>
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden lg:flex min-w-0 flex-1 items-center justify-center gap-3 xl:gap-4 font-mono text-xs overflow-hidden">
+          <nav className="hidden 2xl:flex min-w-0 flex-1 items-center justify-center gap-3 xl:gap-4 font-mono text-xs">
             <NavLink to="/">anasayfa</NavLink>
             <NavLink to="/urunler">ürünler</NavLink>
             <NavLink to="/paketler">paketler</NavLink>
@@ -313,7 +313,7 @@ function SiteHeader() {
         {/* Environment label */}
         <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-background/80 border border-primary/20 rounded-sm">
           <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-primary/60 leading-none">
-            SiberPHP · LIVE
+            SiberLisans · LIVE
           </p>
         </div>
       </div>
@@ -391,7 +391,7 @@ function MobileMenu({
         aria-label="Menü"
         aria-expanded="false"
         aria-controls="mobile-menu-panel"
-        className="lg:hidden relative z-[110] inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none"
+        className="2xl:hidden relative z-[110] inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none"
       >
         <Menu className="h-5 w-5 pointer-events-none" />
       </button>
@@ -400,7 +400,7 @@ function MobileMenu({
       <div
         data-mobile-menu-backdrop
         aria-hidden="true"
-        className="lg:hidden fixed inset-0 z-[90] bg-black/70"
+        className="2xl:hidden fixed inset-0 z-[90] bg-black/70"
       />
 
       {/* Panel */}
@@ -410,7 +410,7 @@ function MobileMenu({
         role="dialog"
         aria-modal="true"
         aria-label="Ana menü"
-        className="lg:hidden fixed right-0 top-0 z-[100] h-screen w-[280px] sm:w-[320px] bg-background border-l border-primary/30 shadow-2xl flex-col"
+        className="2xl:hidden fixed right-0 top-0 z-[100] h-screen w-[280px] sm:w-[320px] bg-background border-l border-primary/30 shadow-2xl flex-col"
       >
         <div className="flex items-center justify-between border-b border-primary/20 px-4 py-3">
           <div className="font-mono text-sm">
@@ -498,7 +498,7 @@ function SiteFooter() {
           <div className="min-w-0 max-w-sm">
             <div className="flex items-center gap-2 text-foreground mb-2">
               <ShieldCheck className="h-4 w-4 text-primary" />
-              <span className="neon-text">SiberPHP</span>
+              <span className="neon-text">SiberLisans</span>
             </div>
             <p className="text-muted-foreground text-[11px] leading-relaxed">
               Güvenli lisans dağıtım sistemi. Şifreli teslimat, kesintisiz destek.
@@ -535,7 +535,7 @@ function SiteFooter() {
           </div>
         </div>
         <div className="mt-10 pt-6 border-t border-border/40 flex flex-col items-center gap-4 text-center text-muted-foreground text-[11px] md:flex-row md:items-center md:justify-between md:gap-8 md:text-left">
-          <div className="order-2 md:order-1">© {new Date().getFullYear()} SiberPHP — Tüm hakları saklıdır.</div>
+          <div className="order-2 md:order-1">© {new Date().getFullYear()} SiberLisans — Tüm hakları saklıdır.</div>
           <div className="order-1 flex items-center gap-3 md:order-2">
             <a
               href="https://youtube.com/@siberphp"

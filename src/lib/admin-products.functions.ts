@@ -9,13 +9,11 @@ export const listAdminProducts = createServerFn({ method: "GET" })
     const rows = await mysqlQuery<Record<string, unknown>>(
       `SELECT p.*,
               COALESCE(k.available_count,0) available_count,
-              COALESCE(k.assigned_count,0) assigned_count,
               COALESCE(k.total_count,0) total_count
          FROM products p
          LEFT JOIN (
            SELECT product_id, COUNT(*) total_count,
-                  SUM(status='available') available_count,
-                  SUM(status='assigned') assigned_count
+                  SUM(status='available') available_count
              FROM license_keys GROUP BY product_id
          ) k ON k.product_id=p.id
         ORDER BY p.sort_order DESC, p.created_at DESC`,
@@ -36,11 +34,8 @@ export const listAdminProducts = createServerFn({ method: "GET" })
       duration_label: (p.duration_label as string | null) ?? null, grants_app: (p.grants_app as string | null) ?? null,
       grants_app_days: num(p.grants_app_days),
       warranty_price_try: num(p.warranty_price_try), warranty_label: (p.warranty_label as string | null) ?? null,
-      license_keys: [
-        ...Array.from({ length: num(p.available_count) ?? 0 }, () => ({ status: "available" })),
-        ...Array.from({ length: num(p.assigned_count) ?? 0 }, () => ({ status: "assigned" })),
-        ...Array.from({ length: Math.max(0, (num(p.total_count) ?? 0) - (num(p.available_count) ?? 0) - (num(p.assigned_count) ?? 0)) }, () => ({ status: "revoked" })),
-      ],
+      available_count: num(p.available_count) ?? 0,
+      total_count: num(p.total_count) ?? 0,
     }));
   });
 

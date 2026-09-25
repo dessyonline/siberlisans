@@ -828,18 +828,24 @@ function ApiAccess() {
           gönderilmeli. Temel adres: <code className="font-mono text-primary">{base}/api/public/dealer</code>
         </p>
         <pre className="mt-3 overflow-x-auto rounded-lg border border-border/50 bg-background/70 p-3 font-mono text-[11px] leading-relaxed">
-{`# toptan fiyat listesi + stok
+{`# ürünler: bayi fiyatı, stok ve katalog bilgileri
 GET  /api/public/dealer/products
 
-# bakiye ve seviye durumu
+# tek ürün detayı
+GET  /api/public/dealer/products/{product_id}
+
+# bakiye ve bayi seviye durumu
 GET  /api/public/dealer/balance
 
-# sipariş oluştur + cüzdandan öde + anahtarı al
+# son siparişler (varsayılan 25, en çok 100)
+GET  /api/public/dealer/orders?limit=25
+
+# sipariş oluştur, cüzdandan öde ve anahtarı al
 POST /api/public/dealer/orders
 { "product_id": "uuid", "quantity": 1 }
 # ödemeden sadece sipariş açmak için: "pay": false
 
-# sipariş sorgula (teslim edilen anahtarlarla birlikte)
+# tek sipariş (teslim edilen anahtarlarla birlikte)
 GET  /api/public/dealer/orders/SBR-XXXXXXXX
 
 # örnek
@@ -994,4 +1000,3 @@ function Webhooks() {
     </div>
   );
 }
-

@@ -77,6 +77,11 @@ type Product = {
   grants_app_days: number | null;
 };
 
+type ProductWithStock = Product & {
+  available_count: number;
+  total_count: number;
+};
+
 type Filter = "all" | "active" | "inactive" | "featured" | "epic" | "low" | "empty";
 
 function slugify(s: string) {
@@ -99,6 +104,7 @@ function ProductsAdmin() {
   const { data: products } = useQuery({
     queryKey: ["admin-products"],
     queryFn: () => listFn(),
+    staleTime: 30_000,
   });
 
   const [editing, setEditing] = useState<Partial<Product> | null>(null);
@@ -126,13 +132,13 @@ function ProductsAdmin() {
   const stats = useMemo(() => {
     const list = products ?? [];
     let active = 0, low = 0, empty = 0, epic = 0, featured = 0;
-    for (const p of list as Array<Product & { license_keys: { status: string }[] }>) {
+    for (const p of list as ProductWithStock[]) {
       if (p.active) active++;
       if (p.tier === "epic") epic++;
       if (p.featured) featured++;
       if (p.unlimited_stock || p.manual_fulfillment) continue;
-      const avail = (p.license_keys ?? []).filter((k) => k.status === "available").length;
-      const total = (p.license_keys ?? []).length;
+      const avail = p.available_count;
+      const total = p.total_count;
       const shown = avail > 0 ? avail : (p.stock_hint ?? 0);
       if (total > 0 && avail === 0) empty++;
       else if (shown > 0 && shown < 3) low++;
@@ -142,14 +148,14 @@ function ProductsAdmin() {
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return ((products ?? []) as unknown as Array<Product & { license_keys: { status: string }[] }>).filter((p) => {
+    return ((products ?? []) as ProductWithStock[]).filter((p) => {
       if (q && !(
         p.name.toLowerCase().includes(q) ||
         p.slug.toLowerCase().includes(q) ||
         (p.category ?? "").toLowerCase().includes(q)
       )) return false;
-      const avail = (p.license_keys ?? []).filter((k) => k.status === "available").length;
-      const total = (p.license_keys ?? []).length;
+      const avail = p.available_count;
+      const total = p.total_count;
       const shown = avail > 0 ? avail : (p.stock_hint ?? 0);
       switch (filter) {
         case "active": return p.active;
@@ -486,9 +492,9 @@ function ProductsAdmin() {
           </div>
         )}
         {visible.map((raw) => {
-          const p = raw as Product & { license_keys: { status: string }[] };
-          const avail = (p.license_keys ?? []).filter((k) => k.status === "available").length;
-          const total = (p.license_keys ?? []).length;
+          const p = raw as ProductWithStock;
+          const avail = p.available_count;
+          const total = p.total_count;
           const shown = avail > 0 ? avail : (p.stock_hint ?? 0);
           const pct = total ? Math.round((avail / total) * 100) : (p.stock_hint ? Math.min(100, p.stock_hint * 10) : 0);
           const state: "unlimited" | "manual" | "empty" | "low" | "ok" =
