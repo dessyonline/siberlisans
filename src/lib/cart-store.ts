@@ -14,6 +14,10 @@ export type CartItem = {
   discountLabel?: string | null;
   imageUrl: string | null;
   quantity: number;
+  /** Garantili alım seçildi mi. */
+  warranty?: boolean;
+  warrantyPriceTry?: number;
+  warrantyLabel?: string | null;
 };
 
 type CartState = {
@@ -43,7 +47,13 @@ export const useCart = create<CartState>()(
             return {
               items: s.items.map((i) =>
                 i.productId === item.productId
-                  ? { ...i, quantity: Math.min(50, i.quantity + qty) }
+                  ? {
+                      ...i,
+                      quantity: Math.min(50, i.quantity + qty),
+                      warranty: item.warranty ?? i.warranty,
+                      warrantyPriceTry: item.warranty ? item.warrantyPriceTry : i.warrantyPriceTry,
+                      warrantyLabel: item.warranty ? item.warrantyLabel : i.warrantyLabel,
+                    }
                   : i,
               ),
               isOpen: true,
@@ -75,4 +85,4 @@ export const selectCartCount = (s: { items: CartItem[] }) =>
   s.items.reduce((sum, i) => sum + i.quantity, 0);
 
 export const selectCartTotal = (s: { items: CartItem[] }) =>
-  s.items.reduce((sum, i) => sum + i.quantity * i.priceTry, 0);
+  s.items.reduce((sum, i) => sum + i.quantity * (i.priceTry + (i.warranty ? Number(i.warrantyPriceTry ?? 0) : 0)), 0);

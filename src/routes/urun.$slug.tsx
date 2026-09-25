@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { getProduct } from "@/lib/catalog.functions";
 import { useAuth } from "@/lib/auth-context";
 import { useServerFn } from "@tanstack/react-start";
-import { createOrder } from "@/lib/orders.functions";
+import { createOrder, createCartOrder } from "@/lib/orders.functions";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Info, ShieldCheck, Zap, CheckCircle2, X, KeyRound, Lock, ArrowLeft, Terminal, Cpu, Wifi, Crown, Sparkles, Landmark, Package, RefreshCw, HelpCircle, Users, Clock, ShoppingCart, BellRing, BellOff } from "lucide-react";
@@ -155,6 +155,8 @@ function ProductDetail() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const createOrderFn = useServerFn(createOrder);
+  const createCartOrderFn = useServerFn(createCartOrder);
+  const [withWarranty, setWithWarranty] = useState(false);
   const addToCart = useCart((s) => s.addItem);
 
 
@@ -192,6 +194,9 @@ function ProductDetail() {
     return { final, saved, percent, hasSale: saved > 0 };
   })();
 
+  const warrantyPrice = Number((product as { warranty_price_try?: number | null } | null)?.warranty_price_try ?? 0);
+  const warrantyLabel = (product as { warranty_label?: string | null } | null)?.warranty_label ?? null;
+
   const handleBuy = async () => {
     if (!user) {
       toast("Devam etmek için giriş yap");
@@ -201,7 +206,9 @@ function ProductDetail() {
     if (!product) return;
     setLoading(true);
     try {
-      const res = await createOrderFn({ data: { productId: product.id } });
+      const res = withWarranty && warrantyPrice > 0
+        ? await createCartOrderFn({ data: { items: [{ productId: product.id, quantity: 1, warranty: true }] } })
+        : await createOrderFn({ data: { productId: product.id } });
       navigate({ to: "/odeme/$orderId", params: { orderId: res.orderId } });
     } catch (e) {
       toast.error((e as Error).message);
@@ -222,6 +229,9 @@ function ProductDetail() {
       discountTry: flash.hasSale ? flash.saved : undefined,
       discountLabel: flash.hasSale ? (flashSale?.label ?? "flash indirim") : null,
       imageUrl: product.image_url ?? null,
+      warranty: withWarranty && warrantyPrice > 0,
+      warrantyPriceTry: withWarranty && warrantyPrice > 0 ? warrantyPrice : undefined,
+      warrantyLabel: withWarranty && warrantyPrice > 0 ? warrantyLabel : null,
     });
     toast.success("Sepete eklendi");
   };
@@ -507,6 +517,26 @@ function ProductDetail() {
                   </div>
                 ))}
               </div>
+
+              {warrantyPrice > 0 && (
+                <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-md border border-primary/40 bg-primary/5 px-3 py-2.5 font-mono text-xs hover:bg-primary/10 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={withWarranty}
+                    onChange={(e) => setWithWarranty(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 accent-[var(--primary)]"
+                  />
+                  <span className="flex-1">
+                    <span className="flex items-center gap-1.5 text-primary">
+                      <ShieldCheck className="h-3.5 w-3.5" /> garanti ekle
+                      <span className="ml-auto neon-text">+₺{warrantyPrice.toLocaleString("tr-TR")}</span>
+                    </span>
+                    <span className="mt-0.5 block text-[11px] text-muted-foreground">
+                      {warrantyLabel ? `${warrantyLabel} · ` : ""}süre içinde çalışmazsa ücretsiz yenisi verilir
+                    </span>
+                  </span>
+                </label>
+              )}
 
               <div className="mt-7 hidden md:grid grid-cols-[1fr_auto] gap-2">
                 <Button

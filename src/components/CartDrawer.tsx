@@ -6,7 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Minus, Plus, Trash2, ShoppingCart, KeyRound, ArrowRight, Ticket, X, Package } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingCart, KeyRound, ArrowRight, Ticket, X, Package, ShieldCheck } from "lucide-react";
 import { getCartLivePricing } from "@/lib/storefront.functions";
 import { useCart } from "@/lib/cart-store";
 import { useAuth } from "@/lib/auth-context";
@@ -57,7 +57,8 @@ export function CartDrawer() {
     const unitFinal = live ? (flash.hasSale ? flash.final : original) : Math.max(0, it.priceTry);
     const unitSaved = Math.max(0, Math.round((original - unitFinal) * 100) / 100);
     const discountLabel = live?.sale?.label ?? it.discountLabel ?? (storedDiscount > 0 ? "flash indirim" : null);
-    return { ...it, original, unitFinal, unitSaved, discountLabel };
+    const warrantyAdd = it.warranty ? Number(it.warrantyPriceTry ?? 0) : 0;
+    return { ...it, original: original + warrantyAdd, unitFinal: unitFinal + warrantyAdd, unitSaved, discountLabel };
   });
 
   const subtotal = pricedItems.reduce((sum, i) => sum + i.original * i.quantity, 0);
@@ -96,7 +97,7 @@ export function CartDrawer() {
     try {
       const res = await createCartOrderFn({
         data: {
-          items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
+          items: items.map((i) => ({ productId: i.productId, quantity: i.quantity, warranty: !!i.warranty })),
           couponCode: coupon?.code ?? null,
         },
       });
@@ -157,6 +158,11 @@ export function CartDrawer() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="font-mono text-sm truncate">{it.name}</div>
+                {it.warranty && (
+                  <div className="mt-0.5 flex items-center gap-1 font-mono text-[10px] text-primary">
+                    <ShieldCheck className="h-3 w-3" /> garantili{it.warrantyLabel ? ` · ${it.warrantyLabel}` : ""} (+₺{Number(it.warrantyPriceTry ?? 0).toLocaleString("tr-TR")})
+                  </div>
+                )}
                 {it.unitSaved > 0 ? (
                   <div className="mt-1 space-y-0.5 font-mono">
                     <div className="flex flex-wrap items-center gap-2 text-[11px]">

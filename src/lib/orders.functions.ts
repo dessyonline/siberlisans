@@ -372,6 +372,7 @@ const cartOrderInput = z.object({
       z.object({
         productId: z.string().uuid(),
         quantity: z.number().int().min(1).max(50),
+        warranty: z.boolean().optional(),
       }),
     )
     .min(1)
@@ -396,8 +397,10 @@ export const createCartOrder = createServerFn({ method: "POST" })
       external_id: string | null;
       external_price: string | null;
       supplier_out_of_stock: number | null;
+      warranty_price_try: string | null;
+      warranty_label: string | null;
     }>(
-      `SELECT id,name,price_try,active,source,external_id,external_price,supplier_out_of_stock
+      `SELECT id,name,price_try,active,source,external_id,external_price,supplier_out_of_stock,warranty_price_try,warranty_label
          FROM products WHERE id IN (${placeholders})`,
       ids,
     );
@@ -492,10 +495,17 @@ export const createCartOrder = createServerFn({ method: "POST" })
 
     const priceMap = new Map(prods.map((p) => [p.id, num(p.price_try) ?? 0]));
     const nameMap = new Map(prods.map((p) => [p.id, p.name]));
+    const warrantyMap = new Map(prods.map((p) => [p.id, { price: num(p.warranty_price_try) ?? 0, label: p.warranty_label }]));
+    const warrantyFor = (it: { productId: string; warranty?: boolean }) => {
+      const w = warrantyMap.get(it.productId);
+      return it.warranty && w && w.price > 0 ? w : null;
+    };
+    const unitFor = (it: { productId: string; warranty?: boolean }) =>
+      (priceMap.get(it.productId) ?? 0) + (warrantyFor(it)?.price ?? 0);
     let total = 0;
     let itemCount = 0;
     for (const it of data.items) {
-      total += (priceMap.get(it.productId) ?? 0) * it.quantity;
+      total += unitFor(it) * it.quantity;
       itemCount += it.quantity;
     }
     total = Math.round(total * 100) / 100;
@@ -513,15 +523,20 @@ export const createCartOrder = createServerFn({ method: "POST" })
     );
     for (const it of data.items) {
       await mysqlQuery(
-        `INSERT INTO order_items (id,order_id,product_id,quantity,unit_price_try,product_name_snapshot,created_at)
-         VALUES (?,?,?,?,?,?,?)`,
+        `INSERT INTO order_items (id,order_id,product_id,quantity,unit_price_try,product_name_snapshot,warranty,warranty_price_try,warranty_label,created_at)
+         VALUES (?,?,?,?,?,?,?,?,?,?)`,
         [
           uid(),
           orderId,
           it.productId,
           it.quantity,
-          priceMap.get(it.productId) ?? 0,
-          nameMap.get(it.productId) ?? null,
+          unitFor(it),
+          warrantyFor(it)
+            ? `${nameMap.get(it.productId) ?? ""} + GARANTİ${warrantyFor(it)!.label ? ` (${warrantyFor(it)!.label})` : ""}`
+            : nameMap.get(it.productId) ?? null,
+          !!warrantyFor(it),
+          warrantyFor(it)?.price ?? 0,
+          warrantyFor(it)?.label ?? null,
           ts(),
         ],
       );

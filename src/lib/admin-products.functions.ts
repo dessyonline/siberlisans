@@ -35,6 +35,7 @@ export const listAdminProducts = createServerFn({ method: "GET" })
       retail_price_source_url: (p.retail_price_source_url as string | null) ?? null,
       duration_label: (p.duration_label as string | null) ?? null, grants_app: (p.grants_app as string | null) ?? null,
       grants_app_days: num(p.grants_app_days),
+      warranty_price_try: num(p.warranty_price_try), warranty_label: (p.warranty_label as string | null) ?? null,
       license_keys: [
         ...Array.from({ length: num(p.available_count) ?? 0 }, () => ({ status: "available" })),
         ...Array.from({ length: num(p.assigned_count) ?? 0 }, () => ({ status: "assigned" })),
@@ -85,6 +86,8 @@ export const updateProductFields = createServerFn({ method: "POST" }).middleware
     delivery_type: z.enum(["key", "account", "link", "link_token"]).optional(),
     retail_price_try: z.number().min(0).nullable().optional(), retail_price_source_url: z.string().max(500).nullable().optional(),
     duration_label: z.string().max(100).nullable().optional(),
+    warranty_price_try: z.number().min(0).max(1000000).nullable().optional(),
+    warranty_label: z.string().max(100).nullable().optional(),
   }).parse(d))
   .handler(async ({ data }) => {
     const { id, ...patch } = data;
