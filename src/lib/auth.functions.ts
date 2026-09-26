@@ -122,6 +122,10 @@ export const signUp = createServerFn({ method: "POST" })
     const { mysqlQuery } = await import("./mysql.server");
 
     const email = data.email.trim().toLowerCase();
+    const at = email.lastIndexOf("@");
+    if (at > 0 && email.slice(0, at).includes("+")) {
+      return { ok: false, error: "Geçici/Alias (+ işaretli) e-postalar kabul edilmemektedir." };
+    }
     const existing = await auth.findUserByEmail(email);
     if (existing) {
       if (existing.email_confirmed_at) return { ok: false, error: "Bu e-posta ile kayıtlı bir hesap zaten var." };

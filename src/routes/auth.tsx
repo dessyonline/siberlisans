@@ -62,9 +62,17 @@ const DISPOSABLE_DOMAINS = new Set([
 function isDisposableEmail(email: string): boolean {
   const at = email.lastIndexOf("@");
   if (at < 0) return false;
+  const localPart = email.slice(0, at);
   const domain = email.slice(at + 1).trim().toLowerCase();
-  if (!domain) return false;
-  return DISPOSABLE_DOMAINS.has(domain);
+  
+  // 1. Bilinen tek kullanımlık servisleri engelle
+  if (!domain || DISPOSABLE_DOMAINS.has(domain)) return true;
+  
+  // 2. Gmail / Outlook "plus alias" (+ işareti) kullanımını engelle 
+  // Örn: kullanici+spam@gmail.com
+  if (localPart.includes("+")) return true;
+
+  return false;
 }
 
 function newCaptcha() {
@@ -170,7 +178,7 @@ function AuthPage() {
     const em = email.trim().toLowerCase();
     if (!emailValid) return toast.error("[!] geçerli bir e-posta gir");
     if (isDisposableEmail(em)) {
-      return toast.error("[!] geçici / disposable e-posta adresleri kabul edilmiyor");
+      return toast.error("[!] geçici mailler veya alias (kullanici+spam@...) kabul edilmiyor");
     }
     if (password.length < 6) return toast.error("[!] şifre en az 6 karakter olmalı");
     if (!telegram.trim()) return toast.error("[!] telegram adresi zorunludur (yoksa 'yok' yazın)");
