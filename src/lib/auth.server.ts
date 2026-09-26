@@ -101,13 +101,14 @@ async function sessionCacheKey(token: string): Promise<string> {
 }
 
 async function queryUserByToken(token: string): Promise<SessionUser | null> {
-  const row = await mysqlOne<{
+  type UserRow = {
     id: string;
     email: string | null;
     display_name: string | null;
     telegram_handle: string | null;
     roles_csv: string | null;
-  }>(
+  };
+  const sql =
     `SELECT u.id, u.email, p.display_name, NULL AS telegram_handle,
             GROUP_CONCAT(ur.role) AS roles_csv
        FROM auth_sessions s
@@ -116,9 +117,26 @@ async function queryUserByToken(token: string): Promise<SessionUser | null> {
        LEFT JOIN user_roles ur ON ur.user_id = u.id
        LEFT JOIN account_blocks ab ON ab.user_id = u.id AND ab.blocked_until > NOW()
       WHERE s.token = ? AND s.expires_at > NOW() AND ab.user_id IS NULL
-      GROUP BY u.id, u.email, p.display_name`,
-    [token],
-  );
+      GROUP BY u.id, u.email, p.display_name`;
+  let row: UserRow | null;
+  try {
+    row = await mysqlOne<UserRow>(sql, [token]);
+  } catch (error) {
+    // Migration henüz uygulanmamış eski veritabanında giriş ekranını tamamen
+    // kilitleme; tablo oluştuğunda üstteki hesap engeli sorgusu devreye girer.
+    if (!String(error).includes("account_blocks")) throw error;
+    row = await mysqlOne<UserRow>(
+      `SELECT u.id, u.email, p.display_name, NULL AS telegram_handle,
+              GROUP_CONCAT(ur.role) AS roles_csv
+         FROM auth_sessions s
+         JOIN auth_users u ON u.id = s.user_id
+         LEFT JOIN profiles p ON p.id = u.id
+         LEFT JOIN user_roles ur ON ur.user_id = u.id
+        WHERE s.token = ? AND s.expires_at > NOW()
+        GROUP BY u.id, u.email, p.display_name`,
+      [token],
+    );
+  }
   if (!row) return null;
   const { roles_csv, ...user } = row;
   return { ...user, roles: roles_csv ? roles_csv.split(",").filter(Boolean) : [] };
@@ -138,20 +156,32 @@ export async function getUserByToken(token: string | undefined | null): Promise<
 }
 
 export async function findUserByEmail(email: string) {
-  return mysqlOne<{
+  type UserRow = {
     id: string;
     email: string;
     password_hash: string | null;
     display_name: string | null;
     roles_csv: string | null;
     email_confirmed_at: string | null;
-  }>(
+  };
+  const sql =
     `SELECT u.id, u.email, u.password_hash, u.email_confirmed_at, p.display_name,
             (SELECT GROUP_CONCAT(ur.role) FROM user_roles ur WHERE ur.user_id = u.id) AS roles_csv
        FROM auth_users u
        LEFT JOIN profiles p ON p.id = u.id
        LEFT JOIN account_blocks ab ON ab.user_id = u.id AND ab.blocked_until > NOW()
-      WHERE LOWER(u.email)=LOWER(?) AND ab.user_id IS NULL LIMIT 1`,
-    [email],
-  );
+      WHERE LOWER(u.email)=LOWER(?) AND ab.user_id IS NULL LIMIT 1`;
+  try {
+    return await mysqlOne<UserRow>(sql, [email]);
+  } catch (error) {
+    if (!String(error).includes("account_blocks")) throw error;
+    return mysqlOne<UserRow>(
+      `SELECT u.id, u.email, u.password_hash, u.email_confirmed_at, p.display_name,
+              (SELECT GROUP_CONCAT(ur.role) FROM user_roles ur WHERE ur.user_id = u.id) AS roles_csv
+         FROM auth_users u
+         LEFT JOIN profiles p ON p.id = u.id
+        WHERE LOWER(u.email)=LOWER(?) LIMIT 1`,
+      [email],
+    );
+  }
 }
