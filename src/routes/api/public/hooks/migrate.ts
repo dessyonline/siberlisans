@@ -2,7 +2,7 @@ import { json } from "@tanstack/react-start";
 import { createAPIFileRoute } from "@tanstack/react-start/api";
 import { mysqlQuery } from "../../../../lib/mysql.server";
 
-export const APIRoute = createAPIFileRoute("/api/public/hooks/migrate")({
+export const Route = createAPIFileRoute("/api/public/hooks/migrate")({
   GET: async ({ request }) => {
     try {
       await mysqlQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS warranty_price_try DECIMAL(12,2) DEFAULT NULL");

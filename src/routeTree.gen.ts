@@ -9,233 +9,163 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UrunlerRouteImport } from './routes/urunler'
-import { Route as SssRouteImport } from './routes/sss'
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
-import { Route as SifreBelirleRouteImport } from './routes/sifre-belirle'
-import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
-import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
-import { Route as LiderlikRouteImport } from './routes/liderlik'
-import { Route as KvkkRouteImport } from './routes/kvkk'
-import { Route as KosullarRouteImport } from './routes/kosullar'
-import { Route as KarsilastirRouteImport } from './routes/karsilastir'
-import { Route as IletisimRouteImport } from './routes/iletisim'
-import { Route as IadeRouteImport } from './routes/iade'
-import { Route as GizlilikRouteImport } from './routes/gizlilik'
-import { Route as CyberlabRouteImport } from './routes/cyberlab'
-import { Route as CekilisRouteImport } from './routes/cekilis'
-import { Route as BayilikRouteImport } from './routes/bayilik'
-import { Route as AuthRouteImport } from './routes/auth'
-import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PaketlerIndexRouteImport } from './routes/paketler.index'
-import { Route as BlogIndexRouteImport } from './routes/blog.index'
-import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
-import { Route as SiparisRefRouteImport } from './routes/siparis.$ref'
-import { Route as PaketlerAiRouteImport } from './routes/paketler.ai'
-import { Route as PaketlerSlugRouteImport } from './routes/paketler.$slug'
-import { Route as PCodeRouteImport } from './routes/p.$code'
-import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
-import { Route as CyberlabSsoRouteImport } from './routes/cyberlab/sso'
-import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
-import { Route as BakiyeYukleTopupIdRouteImport } from './routes/bakiye-yukle.$topupId'
-import { Route as BCodeRouteImport } from './routes/b.$code'
-import { Route as ApiValidateRouteImport } from './routes/api/validate'
-import { Route as ApiUnlockRouteImport } from './routes/api/unlock'
-import { Route as ApiTamperingReportRouteImport } from './routes/api/tampering-report'
-import { Route as ApiSourceCodeRouteImport } from './routes/api/source-code'
-import { Route as ApiSessionRouteImport } from './routes/api/session'
-import { Route as ApiRevokeRouteImport } from './routes/api/revoke'
-import { Route as ApiNotificationsRouteImport } from './routes/api/notifications'
-import { Route as ApiLoginRouteImport } from './routes/api/login'
-import { Route as ApiCreateProjectRouteImport } from './routes/api/create-project'
-import { Route as ApiChatRouteImport } from './routes/api/chat'
-import { Route as ApiApprovePlanRouteImport } from './routes/api/approve-plan'
-import { Route as ApiActivateRouteImport } from './routes/api/activate'
-import { Route as AktivasyonTokenRouteImport } from './routes/aktivasyon.$token'
-import { Route as AuthenticatedKriptoYukleRouteImport } from './routes/_authenticated/kripto-yukle'
-import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
-import { Route as AuthenticatedGuvenlikRouteImport } from './routes/_authenticated/guvenlik'
-import { Route as AuthenticatedGorevlerRouteImport } from './routes/_authenticated/gorevler'
-import { Route as AuthenticatedFavorilerimRouteImport } from './routes/_authenticated/favorilerim'
-import { Route as AuthenticatedDestekRouteImport } from './routes/_authenticated/destek'
-import { Route as AuthenticatedDavetRouteImport } from './routes/_authenticated/davet'
-import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated/cuzdan'
-import { Route as AuthenticatedBildirimlerRouteImport } from './routes/_authenticated/bildirimler'
-import { Route as AuthenticatedBayiRouteImport } from './routes/_authenticated/bayi'
-import { Route as AuthenticatedAraclarRouteRouteImport } from './routes/_authenticated/araclar/route'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as BayilikRouteImport } from './routes/bayilik'
+import { Route as CekilisRouteImport } from './routes/cekilis'
+import { Route as CyberlabRouteImport } from './routes/cyberlab'
+import { Route as GizlilikRouteImport } from './routes/gizlilik'
+import { Route as IadeRouteImport } from './routes/iade'
+import { Route as IletisimRouteImport } from './routes/iletisim'
+import { Route as KarsilastirRouteImport } from './routes/karsilastir'
+import { Route as KosullarRouteImport } from './routes/kosullar'
+import { Route as KvkkRouteImport } from './routes/kvkk'
+import { Route as LiderlikRouteImport } from './routes/liderlik'
+import { Route as NasilCalisirRouteImport } from './routes/nasil-calisir'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SifreBelirleRouteImport } from './routes/sifre-belirle'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as SssRouteImport } from './routes/sss'
+import { Route as UrunlerRouteImport } from './routes/urunler'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
-import { Route as AuthenticatedAraclarIndexRouteImport } from './routes/_authenticated/araclar/index'
+import { Route as AuthenticatedAraclarRouteRouteImport } from './routes/_authenticated/araclar/route'
+import { Route as AuthenticatedBayiRouteImport } from './routes/_authenticated/bayi'
+import { Route as AuthenticatedBildirimlerRouteImport } from './routes/_authenticated/bildirimler'
+import { Route as AuthenticatedCuzdanRouteImport } from './routes/_authenticated/cuzdan'
+import { Route as AuthenticatedDavetRouteImport } from './routes/_authenticated/davet'
+import { Route as AuthenticatedDestekRouteImport } from './routes/_authenticated/destek'
+import { Route as AuthenticatedFavorilerimRouteImport } from './routes/_authenticated/favorilerim'
+import { Route as AuthenticatedGorevlerRouteImport } from './routes/_authenticated/gorevler'
+import { Route as AuthenticatedGuvenlikRouteImport } from './routes/_authenticated/guvenlik'
+import { Route as AuthenticatedHesabimRouteImport } from './routes/_authenticated/hesabim'
+import { Route as AuthenticatedKriptoYukleRouteImport } from './routes/_authenticated/kripto-yukle'
+import { Route as AktivasyonTokenRouteImport } from './routes/aktivasyon.$token'
+import { Route as ApiActivateRouteImport } from './routes/api/activate'
+import { Route as ApiApprovePlanRouteImport } from './routes/api/approve-plan'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiCreateProjectRouteImport } from './routes/api/create-project'
+import { Route as ApiLoginRouteImport } from './routes/api/login'
+import { Route as ApiNotificationsRouteImport } from './routes/api/notifications'
+import { Route as ApiRevokeRouteImport } from './routes/api/revoke'
+import { Route as ApiSessionRouteImport } from './routes/api/session'
+import { Route as ApiSourceCodeRouteImport } from './routes/api/source-code'
+import { Route as ApiTamperingReportRouteImport } from './routes/api/tampering-report'
+import { Route as ApiUnlockRouteImport } from './routes/api/unlock'
+import { Route as ApiValidateRouteImport } from './routes/api/validate'
+import { Route as BCodeRouteImport } from './routes/b.$code'
+import { Route as BakiyeYukleTopupIdRouteImport } from './routes/bakiye-yukle.$topupId'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as CyberlabSsoRouteImport } from './routes/cyberlab/sso'
+import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
+import { Route as PCodeRouteImport } from './routes/p.$code'
+import { Route as PaketlerIndexRouteImport } from './routes/paketler.index'
+import { Route as PaketlerSlugRouteImport } from './routes/paketler.$slug'
+import { Route as PaketlerAiRouteImport } from './routes/paketler.ai'
+import { Route as SiparisRefRouteImport } from './routes/siparis.$ref'
+import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
-import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
-import { Route as ApiPublicLoginRouteImport } from './routes/api/public/login'
-import { Route as ApiPublicEmbedDotjsRouteImport } from './routes/api/public/embed[.]js'
-import { Route as ApiPublicCatalogDotxmlRouteImport } from './routes/api/public/catalog[.]xml'
-import { Route as ApiPublicCatalogDotjsonRouteImport } from './routes/api/public/catalog[.]json'
-import { Route as ApiAdminRevokeRouteImport } from './routes/api/admin/revoke'
-import { Route as ApiAdminCreateRouteImport } from './routes/api/admin/create'
-import { Route as AuthenticatedHesabimLisanslarRouteImport } from './routes/_authenticated/hesabim.lisanslar'
-import { Route as AuthenticatedAraclarWatermarkRouteImport } from './routes/_authenticated/araclar/watermark'
-import { Route as AuthenticatedAraclarVideoWatermarkRouteImport } from './routes/_authenticated/araclar/video-watermark'
-import { Route as AuthenticatedAraclarVideoUzunRouteImport } from './routes/_authenticated/araclar/video-uzun'
-import { Route as AuthenticatedAraclarVideoTrimRouteImport } from './routes/_authenticated/araclar/video-trim'
-import { Route as AuthenticatedAraclarVideoThumbnailRouteImport } from './routes/_authenticated/araclar/video-thumbnail'
-import { Route as AuthenticatedAraclarVideoSikistirRouteImport } from './routes/_authenticated/araclar/video-sikistir'
-import { Route as AuthenticatedAraclarVideoSessizRouteImport } from './routes/_authenticated/araclar/video-sessiz'
-import { Route as AuthenticatedAraclarVideoMp3RouteImport } from './routes/_authenticated/araclar/video-mp3'
-import { Route as AuthenticatedAraclarVideoHizRouteImport } from './routes/_authenticated/araclar/video-hiz'
-import { Route as AuthenticatedAraclarVideoGifRouteImport } from './routes/_authenticated/araclar/video-gif'
-import { Route as AuthenticatedAraclarVideoDondurRouteImport } from './routes/_authenticated/araclar/video-dondur'
-import { Route as AuthenticatedAraclarVideoBirlestirRouteImport } from './routes/_authenticated/araclar/video-birlestir'
-import { Route as AuthenticatedAraclarVideoRouteImport } from './routes/_authenticated/araclar/video'
-import { Route as AuthenticatedAraclarUuidRouteImport } from './routes/_authenticated/araclar/uuid'
-import { Route as AuthenticatedAraclarUrlRouteImport } from './routes/_authenticated/araclar/url'
-import { Route as AuthenticatedAraclarSlugRouteImport } from './routes/_authenticated/araclar/slug'
-import { Route as AuthenticatedAraclarSikistirRouteImport } from './routes/_authenticated/araclar/sikistir'
-import { Route as AuthenticatedAraclarSifreRouteImport } from './routes/_authenticated/araclar/sifre'
-import { Route as AuthenticatedAraclarSayacRouteImport } from './routes/_authenticated/araclar/sayac'
-import { Route as AuthenticatedAraclarRenkRouteImport } from './routes/_authenticated/araclar/renk'
-import { Route as AuthenticatedAraclarQrRouteImport } from './routes/_authenticated/araclar/qr'
-import { Route as AuthenticatedAraclarPdfRouteImport } from './routes/_authenticated/araclar/pdf'
-import { Route as AuthenticatedAraclarPaletRouteImport } from './routes/_authenticated/araclar/palet'
-import { Route as AuthenticatedAraclarKirpRouteImport } from './routes/_authenticated/araclar/kirp'
-import { Route as AuthenticatedAraclarJwtRouteImport } from './routes/_authenticated/araclar/jwt'
-import { Route as AuthenticatedAraclarJsonRouteImport } from './routes/_authenticated/araclar/json'
-import { Route as AuthenticatedAraclarHashRouteImport } from './routes/_authenticated/araclar/hash'
-import { Route as AuthenticatedAraclarExifRouteImport } from './routes/_authenticated/araclar/exif'
-import { Route as AuthenticatedAraclarBase64RouteImport } from './routes/_authenticated/araclar/base64'
-import { Route as AuthenticatedAraclarArkaplanRouteImport } from './routes/_authenticated/araclar/arkaplan'
-import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
-import { Route as AuthenticatedAdminUniquelisansRouteImport } from './routes/_authenticated/admin/uniquelisans'
-import { Route as AuthenticatedAdminTedarikciLogRouteImport } from './routes/_authenticated/admin/tedarikci-log'
-import { Route as AuthenticatedAdminSorularRouteImport } from './routes/_authenticated/admin/sorular'
-import { Route as AuthenticatedAdminSiparislerRouteImport } from './routes/_authenticated/admin/siparisler'
-import { Route as AuthenticatedAdminShopierRouteImport } from './routes/_authenticated/admin/shopier'
-import { Route as AuthenticatedAdminRaporRouteImport } from './routes/_authenticated/admin/rapor'
-import { Route as AuthenticatedAdminPromosyonlarRouteImport } from './routes/_authenticated/admin/promosyonlar'
-import { Route as AuthenticatedAdminPopulerRouteImport } from './routes/_authenticated/admin/populer'
-import { Route as AuthenticatedAdminPartnerRouteImport } from './routes/_authenticated/admin/partner'
-import { Route as AuthenticatedAdminPaketlerRouteImport } from './routes/_authenticated/admin/paketler'
-import { Route as AuthenticatedAdminLisanslarRouteImport } from './routes/_authenticated/admin/lisanslar'
-import { Route as AuthenticatedAdminKuponlarRouteImport } from './routes/_authenticated/admin/kuponlar'
-import { Route as AuthenticatedAdminKullanicilarRouteImport } from './routes/_authenticated/admin/kullanicilar'
-import { Route as AuthenticatedAdminKriptoRouteImport } from './routes/_authenticated/admin/kripto'
-import { Route as AuthenticatedAdminKeylerRouteImport } from './routes/_authenticated/admin/keyler'
-import { Route as AuthenticatedAdminKampanyalarRouteImport } from './routes/_authenticated/admin/kampanyalar'
-import { Route as AuthenticatedAdminIpYonetimRouteImport } from './routes/_authenticated/admin/ip-yonetim'
-import { Route as AuthenticatedAdminFlashRouteImport } from './routes/_authenticated/admin/flash'
-import { Route as AuthenticatedAdminDestekRouteImport } from './routes/_authenticated/admin/destek'
-import { Route as AuthenticatedAdminDenetimRouteImport } from './routes/_authenticated/admin/denetim'
-import { Route as AuthenticatedAdminCyberlabRouteImport } from './routes/_authenticated/admin/cyberlab'
-import { Route as AuthenticatedAdminCuzdanRouteImport } from './routes/_authenticated/admin/cuzdan'
-import { Route as AuthenticatedAdminCekilisRouteImport } from './routes/_authenticated/admin/cekilis'
-import { Route as AuthenticatedAdminCaprazSatisRouteImport } from './routes/_authenticated/admin/capraz-satis'
-import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin/blog'
-import { Route as AuthenticatedAdminBildirimlerRouteImport } from './routes/_authenticated/admin/bildirimler'
-import { Route as AuthenticatedAdminBayilerRouteImport } from './routes/_authenticated/admin/bayiler'
-import { Route as AuthenticatedAdminAyarlarRouteImport } from './routes/_authenticated/admin/ayarlar'
-import { Route as AuthenticatedAdminAraclarRouteImport } from './routes/_authenticated/admin/araclar'
 import { Route as AuthenticatedAdminAboneliklerRouteImport } from './routes/_authenticated/admin/abonelikler'
-import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
-import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
-import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
-import { Route as ApiV1AuthVerifyRouteImport } from './routes/api/v1/auth/verify'
-import { Route as ApiPublicHooksWeeklyDigestRouteImport } from './routes/api/public/hooks/weekly-digest'
-import { Route as ApiPublicHooksUniquelisansCatalogRouteImport } from './routes/api/public/hooks/uniquelisans-catalog'
-import { Route as ApiPublicHooksTelegramRouteImport } from './routes/api/public/hooks/telegram'
-import { Route as ApiPublicHooksSyncUniquelisansRouteImport } from './routes/api/public/hooks/sync-uniquelisans'
-import { Route as ApiPublicHooksSubscriptionsRenewRouteImport } from './routes/api/public/hooks/subscriptions-renew'
-import { Route as ApiPublicHooksShopierRouteImport } from './routes/api/public/hooks/shopier'
-import { Route as ApiPublicHooksPushTickRouteImport } from './routes/api/public/hooks/push-tick'
-import { Route as ApiPublicHooksProcessAiVideosRouteImport } from './routes/api/public/hooks/process-ai-videos'
-import { Route as ApiPublicHooksCatalogWebhooksRouteImport } from './routes/api/public/hooks/catalog-webhooks'
-import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
-import { Route as ApiPublicHooksAbandonmentReminderRouteImport } from './routes/api/public/hooks/abandonment-reminder'
-import { Route as ApiPublicDealerSplatRouteImport } from './routes/api/public/dealer/$'
-import { Route as ApiPublicCyberlabVerifyRouteImport } from './routes/api/public/cyberlab/verify'
+import { Route as AuthenticatedAdminAraclarRouteImport } from './routes/_authenticated/admin/araclar'
+import { Route as AuthenticatedAdminAyarlarRouteImport } from './routes/_authenticated/admin/ayarlar'
+import { Route as AuthenticatedAdminBayilerRouteImport } from './routes/_authenticated/admin/bayiler'
+import { Route as AuthenticatedAdminBildirimlerRouteImport } from './routes/_authenticated/admin/bildirimler'
+import { Route as AuthenticatedAdminBlogRouteImport } from './routes/_authenticated/admin/blog'
+import { Route as AuthenticatedAdminCaprazSatisRouteImport } from './routes/_authenticated/admin/capraz-satis'
+import { Route as AuthenticatedAdminCekilisRouteImport } from './routes/_authenticated/admin/cekilis'
+import { Route as AuthenticatedAdminCuzdanRouteImport } from './routes/_authenticated/admin/cuzdan'
+import { Route as AuthenticatedAdminCyberlabRouteImport } from './routes/_authenticated/admin/cyberlab'
+import { Route as AuthenticatedAdminDenetimRouteImport } from './routes/_authenticated/admin/denetim'
+import { Route as AuthenticatedAdminDestekRouteImport } from './routes/_authenticated/admin/destek'
+import { Route as AuthenticatedAdminFlashRouteImport } from './routes/_authenticated/admin/flash'
+import { Route as AuthenticatedAdminIpYonetimRouteImport } from './routes/_authenticated/admin/ip-yonetim'
+import { Route as AuthenticatedAdminKampanyalarRouteImport } from './routes/_authenticated/admin/kampanyalar'
+import { Route as AuthenticatedAdminKeylerRouteImport } from './routes/_authenticated/admin/keyler'
+import { Route as AuthenticatedAdminKriptoRouteImport } from './routes/_authenticated/admin/kripto'
+import { Route as AuthenticatedAdminKullanicilarRouteImport } from './routes/_authenticated/admin/kullanicilar'
+import { Route as AuthenticatedAdminKuponlarRouteImport } from './routes/_authenticated/admin/kuponlar'
+import { Route as AuthenticatedAdminLisanslarRouteImport } from './routes/_authenticated/admin/lisanslar'
+import { Route as AuthenticatedAdminPaketlerRouteImport } from './routes/_authenticated/admin/paketler'
+import { Route as AuthenticatedAdminPartnerRouteImport } from './routes/_authenticated/admin/partner'
+import { Route as AuthenticatedAdminPopulerRouteImport } from './routes/_authenticated/admin/populer'
+import { Route as AuthenticatedAdminPromosyonlarRouteImport } from './routes/_authenticated/admin/promosyonlar'
+import { Route as AuthenticatedAdminRaporRouteImport } from './routes/_authenticated/admin/rapor'
+import { Route as AuthenticatedAdminShopierRouteImport } from './routes/_authenticated/admin/shopier'
+import { Route as AuthenticatedAdminSiparislerRouteImport } from './routes/_authenticated/admin/siparisler'
+import { Route as AuthenticatedAdminSorularRouteImport } from './routes/_authenticated/admin/sorular'
+import { Route as AuthenticatedAdminTedarikciLogRouteImport } from './routes/_authenticated/admin/tedarikci-log'
+import { Route as AuthenticatedAdminUniquelisansRouteImport } from './routes/_authenticated/admin/uniquelisans'
+import { Route as AuthenticatedAdminUrunlerRouteImport } from './routes/_authenticated/admin/urunler'
+import { Route as AuthenticatedAraclarIndexRouteImport } from './routes/_authenticated/araclar/index'
+import { Route as AuthenticatedAraclarArkaplanRouteImport } from './routes/_authenticated/araclar/arkaplan'
+import { Route as AuthenticatedAraclarBase64RouteImport } from './routes/_authenticated/araclar/base64'
+import { Route as AuthenticatedAraclarExifRouteImport } from './routes/_authenticated/araclar/exif'
+import { Route as AuthenticatedAraclarHashRouteImport } from './routes/_authenticated/araclar/hash'
+import { Route as AuthenticatedAraclarJsonRouteImport } from './routes/_authenticated/araclar/json'
+import { Route as AuthenticatedAraclarJwtRouteImport } from './routes/_authenticated/araclar/jwt'
+import { Route as AuthenticatedAraclarKirpRouteImport } from './routes/_authenticated/araclar/kirp'
+import { Route as AuthenticatedAraclarPaletRouteImport } from './routes/_authenticated/araclar/palet'
+import { Route as AuthenticatedAraclarPdfRouteImport } from './routes/_authenticated/araclar/pdf'
+import { Route as AuthenticatedAraclarQrRouteImport } from './routes/_authenticated/araclar/qr'
+import { Route as AuthenticatedAraclarRenkRouteImport } from './routes/_authenticated/araclar/renk'
+import { Route as AuthenticatedAraclarSayacRouteImport } from './routes/_authenticated/araclar/sayac'
+import { Route as AuthenticatedAraclarSifreRouteImport } from './routes/_authenticated/araclar/sifre'
+import { Route as AuthenticatedAraclarSikistirRouteImport } from './routes/_authenticated/araclar/sikistir'
+import { Route as AuthenticatedAraclarSlugRouteImport } from './routes/_authenticated/araclar/slug'
+import { Route as AuthenticatedAraclarUrlRouteImport } from './routes/_authenticated/araclar/url'
+import { Route as AuthenticatedAraclarUuidRouteImport } from './routes/_authenticated/araclar/uuid'
+import { Route as AuthenticatedAraclarVideoRouteImport } from './routes/_authenticated/araclar/video'
+import { Route as AuthenticatedAraclarVideoBirlestirRouteImport } from './routes/_authenticated/araclar/video-birlestir'
+import { Route as AuthenticatedAraclarVideoDondurRouteImport } from './routes/_authenticated/araclar/video-dondur'
+import { Route as AuthenticatedAraclarVideoGifRouteImport } from './routes/_authenticated/araclar/video-gif'
+import { Route as AuthenticatedAraclarVideoHizRouteImport } from './routes/_authenticated/araclar/video-hiz'
+import { Route as AuthenticatedAraclarVideoMp3RouteImport } from './routes/_authenticated/araclar/video-mp3'
+import { Route as AuthenticatedAraclarVideoSessizRouteImport } from './routes/_authenticated/araclar/video-sessiz'
+import { Route as AuthenticatedAraclarVideoSikistirRouteImport } from './routes/_authenticated/araclar/video-sikistir'
+import { Route as AuthenticatedAraclarVideoThumbnailRouteImport } from './routes/_authenticated/araclar/video-thumbnail'
+import { Route as AuthenticatedAraclarVideoTrimRouteImport } from './routes/_authenticated/araclar/video-trim'
+import { Route as AuthenticatedAraclarVideoUzunRouteImport } from './routes/_authenticated/araclar/video-uzun'
+import { Route as AuthenticatedAraclarVideoWatermarkRouteImport } from './routes/_authenticated/araclar/video-watermark'
+import { Route as AuthenticatedAraclarWatermarkRouteImport } from './routes/_authenticated/araclar/watermark'
+import { Route as AuthenticatedHesabimLisanslarRouteImport } from './routes/_authenticated/hesabim.lisanslar'
+import { Route as ApiAdminCreateRouteImport } from './routes/api/admin/create'
+import { Route as ApiAdminRevokeRouteImport } from './routes/api/admin/revoke'
+import { Route as ApiPublicCatalogDotjsonRouteImport } from './routes/api/public/catalog[.]json'
+import { Route as ApiPublicCatalogDotxmlRouteImport } from './routes/api/public/catalog[.]xml'
+import { Route as ApiPublicEmbedDotjsRouteImport } from './routes/api/public/embed[.]js'
+import { Route as ApiPublicLoginRouteImport } from './routes/api/public/login'
+import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
 import { Route as ApiPublicCyberlabProxyRouteImport } from './routes/api/public/cyberlab/proxy'
-import { Route as ApiPublicV1AuthVerifyRouteImport } from './routes/api/public/v1/auth/verify'
-import { Route as ApiPublicAuthGoogleStartRouteImport } from './routes/api/public/auth/google/start'
+import { Route as ApiPublicCyberlabVerifyRouteImport } from './routes/api/public/cyberlab/verify'
+import { Route as ApiPublicDealerSplatRouteImport } from './routes/api/public/dealer/$'
+import { Route as ApiPublicHooksAbandonmentReminderRouteImport } from './routes/api/public/hooks/abandonment-reminder'
+import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/public/hooks/campaign-tick'
+import { Route as ApiPublicHooksCatalogWebhooksRouteImport } from './routes/api/public/hooks/catalog-webhooks'
+import { Route as ApiPublicHooksMigrateRouteImport } from './routes/api/public/hooks/migrate'
+import { Route as ApiPublicHooksProcessAiVideosRouteImport } from './routes/api/public/hooks/process-ai-videos'
+import { Route as ApiPublicHooksPushTickRouteImport } from './routes/api/public/hooks/push-tick'
+import { Route as ApiPublicHooksShopierRouteImport } from './routes/api/public/hooks/shopier'
+import { Route as ApiPublicHooksSubscriptionsRenewRouteImport } from './routes/api/public/hooks/subscriptions-renew'
+import { Route as ApiPublicHooksSyncUniquelisansRouteImport } from './routes/api/public/hooks/sync-uniquelisans'
+import { Route as ApiPublicHooksTelegramRouteImport } from './routes/api/public/hooks/telegram'
+import { Route as ApiPublicHooksUniquelisansCatalogRouteImport } from './routes/api/public/hooks/uniquelisans-catalog'
+import { Route as ApiPublicHooksWeeklyDigestRouteImport } from './routes/api/public/hooks/weekly-digest'
+import { Route as ApiV1AuthVerifyRouteImport } from './routes/api/v1/auth/verify'
+import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
+import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicAuthGoogleCallbackRouteImport } from './routes/api/public/auth/google/callback'
+import { Route as ApiPublicAuthGoogleStartRouteImport } from './routes/api/public/auth/google/start'
+import { Route as ApiPublicV1AuthVerifyRouteImport } from './routes/api/public/v1/auth/verify'
 
-const UrunlerRoute = UrunlerRouteImport.update({
-  id: '/urunler',
-  path: '/urunler',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SssRoute = SssRouteImport.update({
-  id: '/sss',
-  path: '/sss',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
-  id: '/sitemap.xml',
-  path: '/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SifreBelirleRoute = SifreBelirleRouteImport.update({
-  id: '/sifre-belirle',
-  path: '/sifre-belirle',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
-  id: '/robots.txt',
-  path: '/robots.txt',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NasilCalisirRoute = NasilCalisirRouteImport.update({
-  id: '/nasil-calisir',
-  path: '/nasil-calisir',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LiderlikRoute = LiderlikRouteImport.update({
-  id: '/liderlik',
-  path: '/liderlik',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const KvkkRoute = KvkkRouteImport.update({
-  id: '/kvkk',
-  path: '/kvkk',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const KosullarRoute = KosullarRouteImport.update({
-  id: '/kosullar',
-  path: '/kosullar',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const KarsilastirRoute = KarsilastirRouteImport.update({
-  id: '/karsilastir',
-  path: '/karsilastir',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IletisimRoute = IletisimRouteImport.update({
-  id: '/iletisim',
-  path: '/iletisim',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IadeRoute = IadeRouteImport.update({
-  id: '/iade',
-  path: '/iade',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GizlilikRoute = GizlilikRouteImport.update({
-  id: '/gizlilik',
-  path: '/gizlilik',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CyberlabRoute = CyberlabRouteImport.update({
-  id: '/cyberlab',
-  path: '/cyberlab',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CekilisRoute = CekilisRouteImport.update({
-  id: '/cekilis',
-  path: '/cekilis',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BayilikRoute = BayilikRouteImport.update({
-  id: '/bayilik',
-  path: '/bayilik',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -243,191 +173,89 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
-  id: '/_authenticated',
+const BayilikRoute = BayilikRouteImport.update({
+  id: '/bayilik',
+  path: '/bayilik',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const CekilisRoute = CekilisRouteImport.update({
+  id: '/cekilis',
+  path: '/cekilis',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PaketlerIndexRoute = PaketlerIndexRouteImport.update({
-  id: '/paketler/',
-  path: '/paketler/',
+const CyberlabRoute = CyberlabRouteImport.update({
+  id: '/cyberlab',
+  path: '/cyberlab',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BlogIndexRoute = BlogIndexRouteImport.update({
-  id: '/blog/',
-  path: '/blog/',
+const GizlilikRoute = GizlilikRouteImport.update({
+  id: '/gizlilik',
+  path: '/gizlilik',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UrunSlugRoute = UrunSlugRouteImport.update({
-  id: '/urun/$slug',
-  path: '/urun/$slug',
+const IadeRoute = IadeRouteImport.update({
+  id: '/iade',
+  path: '/iade',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SiparisRefRoute = SiparisRefRouteImport.update({
-  id: '/siparis/$ref',
-  path: '/siparis/$ref',
+const IletisimRoute = IletisimRouteImport.update({
+  id: '/iletisim',
+  path: '/iletisim',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PaketlerAiRoute = PaketlerAiRouteImport.update({
-  id: '/paketler/ai',
-  path: '/paketler/ai',
+const KarsilastirRoute = KarsilastirRouteImport.update({
+  id: '/karsilastir',
+  path: '/karsilastir',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PaketlerSlugRoute = PaketlerSlugRouteImport.update({
-  id: '/paketler/$slug',
-  path: '/paketler/$slug',
+const KosullarRoute = KosullarRouteImport.update({
+  id: '/kosullar',
+  path: '/kosullar',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PCodeRoute = PCodeRouteImport.update({
-  id: '/p/$code',
-  path: '/p/$code',
+const KvkkRoute = KvkkRouteImport.update({
+  id: '/kvkk',
+  path: '/kvkk',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OdemeOrderIdRoute = OdemeOrderIdRouteImport.update({
-  id: '/odeme/$orderId',
-  path: '/odeme/$orderId',
+const LiderlikRoute = LiderlikRouteImport.update({
+  id: '/liderlik',
+  path: '/liderlik',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CyberlabSsoRoute = CyberlabSsoRouteImport.update({
-  id: '/sso',
-  path: '/sso',
-  getParentRoute: () => CyberlabRoute,
-} as any)
-const BlogSlugRoute = BlogSlugRouteImport.update({
-  id: '/blog/$slug',
-  path: '/blog/$slug',
+const NasilCalisirRoute = NasilCalisirRouteImport.update({
+  id: '/nasil-calisir',
+  path: '/nasil-calisir',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BakiyeYukleTopupIdRoute = BakiyeYukleTopupIdRouteImport.update({
-  id: '/bakiye-yukle/$topupId',
-  path: '/bakiye-yukle/$topupId',
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BCodeRoute = BCodeRouteImport.update({
-  id: '/b/$code',
-  path: '/b/$code',
+const SifreBelirleRoute = SifreBelirleRouteImport.update({
+  id: '/sifre-belirle',
+  path: '/sifre-belirle',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiValidateRoute = ApiValidateRouteImport.update({
-  id: '/api/validate',
-  path: '/api/validate',
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiUnlockRoute = ApiUnlockRouteImport.update({
-  id: '/api/unlock',
-  path: '/api/unlock',
+const SssRoute = SssRouteImport.update({
+  id: '/sss',
+  path: '/sss',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiTamperingReportRoute = ApiTamperingReportRouteImport.update({
-  id: '/api/tampering-report',
-  path: '/api/tampering-report',
+const UrunlerRoute = UrunlerRouteImport.update({
+  id: '/urunler',
+  path: '/urunler',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiSourceCodeRoute = ApiSourceCodeRouteImport.update({
-  id: '/api/source-code',
-  path: '/api/source-code',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiSessionRoute = ApiSessionRouteImport.update({
-  id: '/api/session',
-  path: '/api/session',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiRevokeRoute = ApiRevokeRouteImport.update({
-  id: '/api/revoke',
-  path: '/api/revoke',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiNotificationsRoute = ApiNotificationsRouteImport.update({
-  id: '/api/notifications',
-  path: '/api/notifications',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiLoginRoute = ApiLoginRouteImport.update({
-  id: '/api/login',
-  path: '/api/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCreateProjectRoute = ApiCreateProjectRouteImport.update({
-  id: '/api/create-project',
-  path: '/api/create-project',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiChatRoute = ApiChatRouteImport.update({
-  id: '/api/chat',
-  path: '/api/chat',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiApprovePlanRoute = ApiApprovePlanRouteImport.update({
-  id: '/api/approve-plan',
-  path: '/api/approve-plan',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiActivateRoute = ApiActivateRouteImport.update({
-  id: '/api/activate',
-  path: '/api/activate',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AktivasyonTokenRoute = AktivasyonTokenRouteImport.update({
-  id: '/aktivasyon/$token',
-  path: '/aktivasyon/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedKriptoYukleRoute =
-  AuthenticatedKriptoYukleRouteImport.update({
-    id: '/kripto-yukle',
-    path: '/kripto-yukle',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedHesabimRoute = AuthenticatedHesabimRouteImport.update({
-  id: '/hesabim',
-  path: '/hesabim',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedGuvenlikRoute = AuthenticatedGuvenlikRouteImport.update({
-  id: '/guvenlik',
-  path: '/guvenlik',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedGorevlerRoute = AuthenticatedGorevlerRouteImport.update({
-  id: '/gorevler',
-  path: '/gorevler',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedFavorilerimRoute =
-  AuthenticatedFavorilerimRouteImport.update({
-    id: '/favorilerim',
-    path: '/favorilerim',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedDestekRoute = AuthenticatedDestekRouteImport.update({
-  id: '/destek',
-  path: '/destek',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedDavetRoute = AuthenticatedDavetRouteImport.update({
-  id: '/davet',
-  path: '/davet',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedCuzdanRoute = AuthenticatedCuzdanRouteImport.update({
-  id: '/cuzdan',
-  path: '/cuzdan',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedBildirimlerRoute =
-  AuthenticatedBildirimlerRouteImport.update({
-    id: '/bildirimler',
-    path: '/bildirimler',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
-const AuthenticatedBayiRoute = AuthenticatedBayiRouteImport.update({
-  id: '/bayi',
-  path: '/bayi',
+const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAraclarRouteRoute =
@@ -436,408 +264,193 @@ const AuthenticatedAraclarRouteRoute =
     path: '/araclar',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedAdminRouteRoute = AuthenticatedAdminRouteRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const AuthenticatedBayiRoute = AuthenticatedBayiRouteImport.update({
+  id: '/bayi',
+  path: '/bayi',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAraclarIndexRoute =
-  AuthenticatedAraclarIndexRouteImport.update({
-    id: '/',
-    path: '/',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+const AuthenticatedBildirimlerRoute =
+  AuthenticatedBildirimlerRouteImport.update({
+    id: '/bildirimler',
+    path: '/bildirimler',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCuzdanRoute = AuthenticatedCuzdanRouteImport.update({
+  id: '/cuzdan',
+  path: '/cuzdan',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDavetRoute = AuthenticatedDavetRouteImport.update({
+  id: '/davet',
+  path: '/davet',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDestekRoute = AuthenticatedDestekRouteImport.update({
+  id: '/destek',
+  path: '/destek',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFavorilerimRoute =
+  AuthenticatedFavorilerimRouteImport.update({
+    id: '/favorilerim',
+    path: '/favorilerim',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGorevlerRoute = AuthenticatedGorevlerRouteImport.update({
+  id: '/gorevler',
+  path: '/gorevler',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGuvenlikRoute = AuthenticatedGuvenlikRouteImport.update({
+  id: '/guvenlik',
+  path: '/guvenlik',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHesabimRoute = AuthenticatedHesabimRouteImport.update({
+  id: '/hesabim',
+  path: '/hesabim',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedKriptoYukleRoute =
+  AuthenticatedKriptoYukleRouteImport.update({
+    id: '/kripto-yukle',
+    path: '/kripto-yukle',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AktivasyonTokenRoute = AktivasyonTokenRouteImport.update({
+  id: '/aktivasyon/$token',
+  path: '/aktivasyon/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiActivateRoute = ApiActivateRouteImport.update({
+  id: '/api/activate',
+  path: '/api/activate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiApprovePlanRoute = ApiApprovePlanRouteImport.update({
+  id: '/api/approve-plan',
+  path: '/api/approve-plan',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiCreateProjectRoute = ApiCreateProjectRouteImport.update({
+  id: '/api/create-project',
+  path: '/api/create-project',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiLoginRoute = ApiLoginRouteImport.update({
+  id: '/api/login',
+  path: '/api/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiNotificationsRoute = ApiNotificationsRouteImport.update({
+  id: '/api/notifications',
+  path: '/api/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiRevokeRoute = ApiRevokeRouteImport.update({
+  id: '/api/revoke',
+  path: '/api/revoke',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSessionRoute = ApiSessionRouteImport.update({
+  id: '/api/session',
+  path: '/api/session',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSourceCodeRoute = ApiSourceCodeRouteImport.update({
+  id: '/api/source-code',
+  path: '/api/source-code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiTamperingReportRoute = ApiTamperingReportRouteImport.update({
+  id: '/api/tampering-report',
+  path: '/api/tampering-report',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiUnlockRoute = ApiUnlockRouteImport.update({
+  id: '/api/unlock',
+  path: '/api/unlock',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiValidateRoute = ApiValidateRouteImport.update({
+  id: '/api/validate',
+  path: '/api/validate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BCodeRoute = BCodeRouteImport.update({
+  id: '/b/$code',
+  path: '/b/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BakiyeYukleTopupIdRoute = BakiyeYukleTopupIdRouteImport.update({
+  id: '/bakiye-yukle/$topupId',
+  path: '/bakiye-yukle/$topupId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CyberlabSsoRoute = CyberlabSsoRouteImport.update({
+  id: '/sso',
+  path: '/sso',
+  getParentRoute: () => CyberlabRoute,
+} as any)
+const OdemeOrderIdRoute = OdemeOrderIdRouteImport.update({
+  id: '/odeme/$orderId',
+  path: '/odeme/$orderId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PCodeRoute = PCodeRouteImport.update({
+  id: '/p/$code',
+  path: '/p/$code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaketlerIndexRoute = PaketlerIndexRouteImport.update({
+  id: '/paketler/',
+  path: '/paketler/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaketlerSlugRoute = PaketlerSlugRouteImport.update({
+  id: '/paketler/$slug',
+  path: '/paketler/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaketlerAiRoute = PaketlerAiRouteImport.update({
+  id: '/paketler/ai',
+  path: '/paketler/ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SiparisRefRoute = SiparisRefRouteImport.update({
+  id: '/siparis/$ref',
+  path: '/siparis/$ref',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UrunSlugRoute = UrunSlugRouteImport.update({
+  id: '/urun/$slug',
+  path: '/urun/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
-const ApiPublicSitemapDotxmlRoute = ApiPublicSitemapDotxmlRouteImport.update({
-  id: '/api/public/sitemap.xml',
-  path: '/api/public/sitemap.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicLoginRoute = ApiPublicLoginRouteImport.update({
-  id: '/api/public/login',
-  path: '/api/public/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicEmbedDotjsRoute = ApiPublicEmbedDotjsRouteImport.update({
-  id: '/api/public/embed.js',
-  path: '/api/public/embed.js',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicCatalogDotxmlRoute = ApiPublicCatalogDotxmlRouteImport.update({
-  id: '/api/public/catalog.xml',
-  path: '/api/public/catalog.xml',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicCatalogDotjsonRoute = ApiPublicCatalogDotjsonRouteImport.update({
-  id: '/api/public/catalog.json',
-  path: '/api/public/catalog.json',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAdminRevokeRoute = ApiAdminRevokeRouteImport.update({
-  id: '/api/admin/revoke',
-  path: '/api/admin/revoke',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiAdminCreateRoute = ApiAdminCreateRouteImport.update({
-  id: '/api/admin/create',
-  path: '/api/admin/create',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedHesabimLisanslarRoute =
-  AuthenticatedHesabimLisanslarRouteImport.update({
-    id: '/lisanslar',
-    path: '/lisanslar',
-    getParentRoute: () => AuthenticatedHesabimRoute,
-  } as any)
-const AuthenticatedAraclarWatermarkRoute =
-  AuthenticatedAraclarWatermarkRouteImport.update({
-    id: '/watermark',
-    path: '/watermark',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarVideoWatermarkRoute =
-  AuthenticatedAraclarVideoWatermarkRouteImport.update({
-    id: '/video-watermark',
-    path: '/video-watermark',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarVideoUzunRoute =
-  AuthenticatedAraclarVideoUzunRouteImport.update({
-    id: '/video-uzun',
-    path: '/video-uzun',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarVideoTrimRoute =
-  AuthenticatedAraclarVideoTrimRouteImport.update({
-    id: '/video-trim',
-    path: '/video-trim',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarVideoThumbnailRoute =
-  AuthenticatedAraclarVideoThumbnailRouteImport.update({
-    id: '/video-thumbnail',
-    path: '/video-thumbnail',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarVideoSikistirRoute =
-  AuthenticatedAraclarVideoSikistirRouteImport.update({
-    id: '/video-sikistir',
-    path: '/video-sikistir',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarVideoSessizRoute =
-  AuthenticatedAraclarVideoSessizRouteImport.update({
-    id: '/video-sessiz',
-    path: '/video-sessiz',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarVideoMp3Route =
-  AuthenticatedAraclarVideoMp3RouteImport.update({
-    id: '/video-mp3',
-    path: '/video-mp3',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarVideoHizRoute =
-  AuthenticatedAraclarVideoHizRouteImport.update({
-    id: '/video-hiz',
-    path: '/video-hiz',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarVideoGifRoute =
-  AuthenticatedAraclarVideoGifRouteImport.update({
-    id: '/video-gif',
-    path: '/video-gif',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarVideoDondurRoute =
-  AuthenticatedAraclarVideoDondurRouteImport.update({
-    id: '/video-dondur',
-    path: '/video-dondur',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarVideoBirlestirRoute =
-  AuthenticatedAraclarVideoBirlestirRouteImport.update({
-    id: '/video-birlestir',
-    path: '/video-birlestir',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarVideoRoute =
-  AuthenticatedAraclarVideoRouteImport.update({
-    id: '/video',
-    path: '/video',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarUuidRoute =
-  AuthenticatedAraclarUuidRouteImport.update({
-    id: '/uuid',
-    path: '/uuid',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarUrlRoute = AuthenticatedAraclarUrlRouteImport.update({
-  id: '/url',
-  path: '/url',
-  getParentRoute: () => AuthenticatedAraclarRouteRoute,
-} as any)
-const AuthenticatedAraclarSlugRoute =
-  AuthenticatedAraclarSlugRouteImport.update({
-    id: '/slug',
-    path: '/slug',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarSikistirRoute =
-  AuthenticatedAraclarSikistirRouteImport.update({
-    id: '/sikistir',
-    path: '/sikistir',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarSifreRoute =
-  AuthenticatedAraclarSifreRouteImport.update({
-    id: '/sifre',
-    path: '/sifre',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarSayacRoute =
-  AuthenticatedAraclarSayacRouteImport.update({
-    id: '/sayac',
-    path: '/sayac',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarRenkRoute =
-  AuthenticatedAraclarRenkRouteImport.update({
-    id: '/renk',
-    path: '/renk',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarQrRoute = AuthenticatedAraclarQrRouteImport.update({
-  id: '/qr',
-  path: '/qr',
-  getParentRoute: () => AuthenticatedAraclarRouteRoute,
-} as any)
-const AuthenticatedAraclarPdfRoute = AuthenticatedAraclarPdfRouteImport.update({
-  id: '/pdf',
-  path: '/pdf',
-  getParentRoute: () => AuthenticatedAraclarRouteRoute,
-} as any)
-const AuthenticatedAraclarPaletRoute =
-  AuthenticatedAraclarPaletRouteImport.update({
-    id: '/palet',
-    path: '/palet',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarKirpRoute =
-  AuthenticatedAraclarKirpRouteImport.update({
-    id: '/kirp',
-    path: '/kirp',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarJwtRoute = AuthenticatedAraclarJwtRouteImport.update({
-  id: '/jwt',
-  path: '/jwt',
-  getParentRoute: () => AuthenticatedAraclarRouteRoute,
-} as any)
-const AuthenticatedAraclarJsonRoute =
-  AuthenticatedAraclarJsonRouteImport.update({
-    id: '/json',
-    path: '/json',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarHashRoute =
-  AuthenticatedAraclarHashRouteImport.update({
-    id: '/hash',
-    path: '/hash',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarExifRoute =
-  AuthenticatedAraclarExifRouteImport.update({
-    id: '/exif',
-    path: '/exif',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarBase64Route =
-  AuthenticatedAraclarBase64RouteImport.update({
-    id: '/base64',
-    path: '/base64',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAraclarArkaplanRoute =
-  AuthenticatedAraclarArkaplanRouteImport.update({
-    id: '/arkaplan',
-    path: '/arkaplan',
-    getParentRoute: () => AuthenticatedAraclarRouteRoute,
-  } as any)
-const AuthenticatedAdminUrunlerRoute =
-  AuthenticatedAdminUrunlerRouteImport.update({
-    id: '/urunler',
-    path: '/urunler',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminUniquelisansRoute =
-  AuthenticatedAdminUniquelisansRouteImport.update({
-    id: '/uniquelisans',
-    path: '/uniquelisans',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminTedarikciLogRoute =
-  AuthenticatedAdminTedarikciLogRouteImport.update({
-    id: '/tedarikci-log',
-    path: '/tedarikci-log',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminSorularRoute =
-  AuthenticatedAdminSorularRouteImport.update({
-    id: '/sorular',
-    path: '/sorular',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminSiparislerRoute =
-  AuthenticatedAdminSiparislerRouteImport.update({
-    id: '/siparisler',
-    path: '/siparisler',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminShopierRoute =
-  AuthenticatedAdminShopierRouteImport.update({
-    id: '/shopier',
-    path: '/shopier',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminRaporRoute = AuthenticatedAdminRaporRouteImport.update({
-  id: '/rapor',
-  path: '/rapor',
-  getParentRoute: () => AuthenticatedAdminRouteRoute,
-} as any)
-const AuthenticatedAdminPromosyonlarRoute =
-  AuthenticatedAdminPromosyonlarRouteImport.update({
-    id: '/promosyonlar',
-    path: '/promosyonlar',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminPopulerRoute =
-  AuthenticatedAdminPopulerRouteImport.update({
-    id: '/populer',
-    path: '/populer',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminPartnerRoute =
-  AuthenticatedAdminPartnerRouteImport.update({
-    id: '/partner',
-    path: '/partner',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminPaketlerRoute =
-  AuthenticatedAdminPaketlerRouteImport.update({
-    id: '/paketler',
-    path: '/paketler',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminLisanslarRoute =
-  AuthenticatedAdminLisanslarRouteImport.update({
-    id: '/lisanslar',
-    path: '/lisanslar',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminKuponlarRoute =
-  AuthenticatedAdminKuponlarRouteImport.update({
-    id: '/kuponlar',
-    path: '/kuponlar',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminKullanicilarRoute =
-  AuthenticatedAdminKullanicilarRouteImport.update({
-    id: '/kullanicilar',
-    path: '/kullanicilar',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminKriptoRoute =
-  AuthenticatedAdminKriptoRouteImport.update({
-    id: '/kripto',
-    path: '/kripto',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminKeylerRoute =
-  AuthenticatedAdminKeylerRouteImport.update({
-    id: '/keyler',
-    path: '/keyler',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminKampanyalarRoute =
-  AuthenticatedAdminKampanyalarRouteImport.update({
-    id: '/kampanyalar',
-    path: '/kampanyalar',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminIpYonetimRoute =
-  AuthenticatedAdminIpYonetimRouteImport.update({
-    id: '/ip-yonetim',
-    path: '/ip-yonetim',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminFlashRoute = AuthenticatedAdminFlashRouteImport.update({
-  id: '/flash',
-  path: '/flash',
-  getParentRoute: () => AuthenticatedAdminRouteRoute,
-} as any)
-const AuthenticatedAdminDestekRoute =
-  AuthenticatedAdminDestekRouteImport.update({
-    id: '/destek',
-    path: '/destek',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminDenetimRoute =
-  AuthenticatedAdminDenetimRouteImport.update({
-    id: '/denetim',
-    path: '/denetim',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminCyberlabRoute =
-  AuthenticatedAdminCyberlabRouteImport.update({
-    id: '/cyberlab',
-    path: '/cyberlab',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminCuzdanRoute =
-  AuthenticatedAdminCuzdanRouteImport.update({
-    id: '/cuzdan',
-    path: '/cuzdan',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminCekilisRoute =
-  AuthenticatedAdminCekilisRouteImport.update({
-    id: '/cekilis',
-    path: '/cekilis',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminCaprazSatisRoute =
-  AuthenticatedAdminCaprazSatisRouteImport.update({
-    id: '/capraz-satis',
-    path: '/capraz-satis',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
-  id: '/blog',
-  path: '/blog',
-  getParentRoute: () => AuthenticatedAdminRouteRoute,
-} as any)
-const AuthenticatedAdminBildirimlerRoute =
-  AuthenticatedAdminBildirimlerRouteImport.update({
-    id: '/bildirimler',
-    path: '/bildirimler',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminBayilerRoute =
-  AuthenticatedAdminBayilerRouteImport.update({
-    id: '/bayiler',
-    path: '/bayiler',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
-const AuthenticatedAdminAyarlarRoute =
-  AuthenticatedAdminAyarlarRouteImport.update({
-    id: '/ayarlar',
-    path: '/ayarlar',
+const AuthenticatedAdminAboneliklerRoute =
+  AuthenticatedAdminAboneliklerRouteImport.update({
+    id: '/abonelikler',
+    path: '/abonelikler',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
 const AuthenticatedAdminAraclarRoute =
@@ -846,82 +459,419 @@ const AuthenticatedAdminAraclarRoute =
     path: '/araclar',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
-const AuthenticatedAdminAboneliklerRoute =
-  AuthenticatedAdminAboneliklerRouteImport.update({
-    id: '/abonelikler',
-    path: '/abonelikler',
+const AuthenticatedAdminAyarlarRoute =
+  AuthenticatedAdminAyarlarRouteImport.update({
+    id: '/ayarlar',
+    path: '/ayarlar',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
-const LovableEmailQueueProcessRoute =
-  LovableEmailQueueProcessRouteImport.update({
-    id: '/lovable/email/queue/process',
-    path: '/lovable/email/queue/process',
-    getParentRoute: () => rootRouteImport,
+const AuthenticatedAdminBayilerRoute =
+  AuthenticatedAdminBayilerRouteImport.update({
+    id: '/bayiler',
+    path: '/bayiler',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
-const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
-  id: '/lovable/email/auth/webhook',
-  path: '/lovable/email/auth/webhook',
+const AuthenticatedAdminBildirimlerRoute =
+  AuthenticatedAdminBildirimlerRouteImport.update({
+    id: '/bildirimler',
+    path: '/bildirimler',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminBlogRoute = AuthenticatedAdminBlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminCaprazSatisRoute =
+  AuthenticatedAdminCaprazSatisRouteImport.update({
+    id: '/capraz-satis',
+    path: '/capraz-satis',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminCekilisRoute =
+  AuthenticatedAdminCekilisRouteImport.update({
+    id: '/cekilis',
+    path: '/cekilis',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminCuzdanRoute =
+  AuthenticatedAdminCuzdanRouteImport.update({
+    id: '/cuzdan',
+    path: '/cuzdan',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminCyberlabRoute =
+  AuthenticatedAdminCyberlabRouteImport.update({
+    id: '/cyberlab',
+    path: '/cyberlab',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminDenetimRoute =
+  AuthenticatedAdminDenetimRouteImport.update({
+    id: '/denetim',
+    path: '/denetim',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminDestekRoute =
+  AuthenticatedAdminDestekRouteImport.update({
+    id: '/destek',
+    path: '/destek',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminFlashRoute = AuthenticatedAdminFlashRouteImport.update({
+  id: '/flash',
+  path: '/flash',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminIpYonetimRoute =
+  AuthenticatedAdminIpYonetimRouteImport.update({
+    id: '/ip-yonetim',
+    path: '/ip-yonetim',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminKampanyalarRoute =
+  AuthenticatedAdminKampanyalarRouteImport.update({
+    id: '/kampanyalar',
+    path: '/kampanyalar',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminKeylerRoute =
+  AuthenticatedAdminKeylerRouteImport.update({
+    id: '/keyler',
+    path: '/keyler',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminKriptoRoute =
+  AuthenticatedAdminKriptoRouteImport.update({
+    id: '/kripto',
+    path: '/kripto',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminKullanicilarRoute =
+  AuthenticatedAdminKullanicilarRouteImport.update({
+    id: '/kullanicilar',
+    path: '/kullanicilar',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminKuponlarRoute =
+  AuthenticatedAdminKuponlarRouteImport.update({
+    id: '/kuponlar',
+    path: '/kuponlar',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminLisanslarRoute =
+  AuthenticatedAdminLisanslarRouteImport.update({
+    id: '/lisanslar',
+    path: '/lisanslar',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPaketlerRoute =
+  AuthenticatedAdminPaketlerRouteImport.update({
+    id: '/paketler',
+    path: '/paketler',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPartnerRoute =
+  AuthenticatedAdminPartnerRouteImport.update({
+    id: '/partner',
+    path: '/partner',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPopulerRoute =
+  AuthenticatedAdminPopulerRouteImport.update({
+    id: '/populer',
+    path: '/populer',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminPromosyonlarRoute =
+  AuthenticatedAdminPromosyonlarRouteImport.update({
+    id: '/promosyonlar',
+    path: '/promosyonlar',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminRaporRoute = AuthenticatedAdminRaporRouteImport.update({
+  id: '/rapor',
+  path: '/rapor',
+  getParentRoute: () => AuthenticatedAdminRouteRoute,
+} as any)
+const AuthenticatedAdminShopierRoute =
+  AuthenticatedAdminShopierRouteImport.update({
+    id: '/shopier',
+    path: '/shopier',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminSiparislerRoute =
+  AuthenticatedAdminSiparislerRouteImport.update({
+    id: '/siparisler',
+    path: '/siparisler',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminSorularRoute =
+  AuthenticatedAdminSorularRouteImport.update({
+    id: '/sorular',
+    path: '/sorular',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminTedarikciLogRoute =
+  AuthenticatedAdminTedarikciLogRouteImport.update({
+    id: '/tedarikci-log',
+    path: '/tedarikci-log',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminUniquelisansRoute =
+  AuthenticatedAdminUniquelisansRouteImport.update({
+    id: '/uniquelisans',
+    path: '/uniquelisans',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAdminUrunlerRoute =
+  AuthenticatedAdminUrunlerRouteImport.update({
+    id: '/urunler',
+    path: '/urunler',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
+const AuthenticatedAraclarIndexRoute =
+  AuthenticatedAraclarIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarArkaplanRoute =
+  AuthenticatedAraclarArkaplanRouteImport.update({
+    id: '/arkaplan',
+    path: '/arkaplan',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarBase64Route =
+  AuthenticatedAraclarBase64RouteImport.update({
+    id: '/base64',
+    path: '/base64',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarExifRoute =
+  AuthenticatedAraclarExifRouteImport.update({
+    id: '/exif',
+    path: '/exif',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarHashRoute =
+  AuthenticatedAraclarHashRouteImport.update({
+    id: '/hash',
+    path: '/hash',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarJsonRoute =
+  AuthenticatedAraclarJsonRouteImport.update({
+    id: '/json',
+    path: '/json',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarJwtRoute = AuthenticatedAraclarJwtRouteImport.update({
+  id: '/jwt',
+  path: '/jwt',
+  getParentRoute: () => AuthenticatedAraclarRouteRoute,
+} as any)
+const AuthenticatedAraclarKirpRoute =
+  AuthenticatedAraclarKirpRouteImport.update({
+    id: '/kirp',
+    path: '/kirp',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarPaletRoute =
+  AuthenticatedAraclarPaletRouteImport.update({
+    id: '/palet',
+    path: '/palet',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarPdfRoute = AuthenticatedAraclarPdfRouteImport.update({
+  id: '/pdf',
+  path: '/pdf',
+  getParentRoute: () => AuthenticatedAraclarRouteRoute,
+} as any)
+const AuthenticatedAraclarQrRoute = AuthenticatedAraclarQrRouteImport.update({
+  id: '/qr',
+  path: '/qr',
+  getParentRoute: () => AuthenticatedAraclarRouteRoute,
+} as any)
+const AuthenticatedAraclarRenkRoute =
+  AuthenticatedAraclarRenkRouteImport.update({
+    id: '/renk',
+    path: '/renk',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarSayacRoute =
+  AuthenticatedAraclarSayacRouteImport.update({
+    id: '/sayac',
+    path: '/sayac',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarSifreRoute =
+  AuthenticatedAraclarSifreRouteImport.update({
+    id: '/sifre',
+    path: '/sifre',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarSikistirRoute =
+  AuthenticatedAraclarSikistirRouteImport.update({
+    id: '/sikistir',
+    path: '/sikistir',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarSlugRoute =
+  AuthenticatedAraclarSlugRouteImport.update({
+    id: '/slug',
+    path: '/slug',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarUrlRoute = AuthenticatedAraclarUrlRouteImport.update({
+  id: '/url',
+  path: '/url',
+  getParentRoute: () => AuthenticatedAraclarRouteRoute,
+} as any)
+const AuthenticatedAraclarUuidRoute =
+  AuthenticatedAraclarUuidRouteImport.update({
+    id: '/uuid',
+    path: '/uuid',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoRoute =
+  AuthenticatedAraclarVideoRouteImport.update({
+    id: '/video',
+    path: '/video',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoBirlestirRoute =
+  AuthenticatedAraclarVideoBirlestirRouteImport.update({
+    id: '/video-birlestir',
+    path: '/video-birlestir',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoDondurRoute =
+  AuthenticatedAraclarVideoDondurRouteImport.update({
+    id: '/video-dondur',
+    path: '/video-dondur',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoGifRoute =
+  AuthenticatedAraclarVideoGifRouteImport.update({
+    id: '/video-gif',
+    path: '/video-gif',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoHizRoute =
+  AuthenticatedAraclarVideoHizRouteImport.update({
+    id: '/video-hiz',
+    path: '/video-hiz',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoMp3Route =
+  AuthenticatedAraclarVideoMp3RouteImport.update({
+    id: '/video-mp3',
+    path: '/video-mp3',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoSessizRoute =
+  AuthenticatedAraclarVideoSessizRouteImport.update({
+    id: '/video-sessiz',
+    path: '/video-sessiz',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoSikistirRoute =
+  AuthenticatedAraclarVideoSikistirRouteImport.update({
+    id: '/video-sikistir',
+    path: '/video-sikistir',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoThumbnailRoute =
+  AuthenticatedAraclarVideoThumbnailRouteImport.update({
+    id: '/video-thumbnail',
+    path: '/video-thumbnail',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoTrimRoute =
+  AuthenticatedAraclarVideoTrimRouteImport.update({
+    id: '/video-trim',
+    path: '/video-trim',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoUzunRoute =
+  AuthenticatedAraclarVideoUzunRouteImport.update({
+    id: '/video-uzun',
+    path: '/video-uzun',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarVideoWatermarkRoute =
+  AuthenticatedAraclarVideoWatermarkRouteImport.update({
+    id: '/video-watermark',
+    path: '/video-watermark',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedAraclarWatermarkRoute =
+  AuthenticatedAraclarWatermarkRouteImport.update({
+    id: '/watermark',
+    path: '/watermark',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
+const AuthenticatedHesabimLisanslarRoute =
+  AuthenticatedHesabimLisanslarRouteImport.update({
+    id: '/lisanslar',
+    path: '/lisanslar',
+    getParentRoute: () => AuthenticatedHesabimRoute,
+  } as any)
+const ApiAdminCreateRoute = ApiAdminCreateRouteImport.update({
+  id: '/api/admin/create',
+  path: '/api/admin/create',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
-  id: '/lovable/email/auth/preview',
-  path: '/lovable/email/auth/preview',
+const ApiAdminRevokeRoute = ApiAdminRevokeRouteImport.update({
+  id: '/api/admin/revoke',
+  path: '/api/admin/revoke',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiV1AuthVerifyRoute = ApiV1AuthVerifyRouteImport.update({
-  id: '/api/v1/auth/verify',
-  path: '/api/v1/auth/verify',
+const ApiPublicCatalogDotjsonRoute = ApiPublicCatalogDotjsonRouteImport.update({
+  id: '/api/public/catalog.json',
+  path: '/api/public/catalog.json',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicHooksWeeklyDigestRoute =
-  ApiPublicHooksWeeklyDigestRouteImport.update({
-    id: '/api/public/hooks/weekly-digest',
-    path: '/api/public/hooks/weekly-digest',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksUniquelisansCatalogRoute =
-  ApiPublicHooksUniquelisansCatalogRouteImport.update({
-    id: '/api/public/hooks/uniquelisans-catalog',
-    path: '/api/public/hooks/uniquelisans-catalog',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksTelegramRoute = ApiPublicHooksTelegramRouteImport.update({
-  id: '/api/public/hooks/telegram',
-  path: '/api/public/hooks/telegram',
+const ApiPublicCatalogDotxmlRoute = ApiPublicCatalogDotxmlRouteImport.update({
+  id: '/api/public/catalog.xml',
+  path: '/api/public/catalog.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicHooksSyncUniquelisansRoute =
-  ApiPublicHooksSyncUniquelisansRouteImport.update({
-    id: '/api/public/hooks/sync-uniquelisans',
-    path: '/api/public/hooks/sync-uniquelisans',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksSubscriptionsRenewRoute =
-  ApiPublicHooksSubscriptionsRenewRouteImport.update({
-    id: '/api/public/hooks/subscriptions-renew',
-    path: '/api/public/hooks/subscriptions-renew',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksShopierRoute = ApiPublicHooksShopierRouteImport.update({
-  id: '/api/public/hooks/shopier',
-  path: '/api/public/hooks/shopier',
+const ApiPublicEmbedDotjsRoute = ApiPublicEmbedDotjsRouteImport.update({
+  id: '/api/public/embed.js',
+  path: '/api/public/embed.js',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicHooksPushTickRoute = ApiPublicHooksPushTickRouteImport.update({
-  id: '/api/public/hooks/push-tick',
-  path: '/api/public/hooks/push-tick',
+const ApiPublicLoginRoute = ApiPublicLoginRouteImport.update({
+  id: '/api/public/login',
+  path: '/api/public/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicHooksProcessAiVideosRoute =
-  ApiPublicHooksProcessAiVideosRouteImport.update({
-    id: '/api/public/hooks/process-ai-videos',
-    path: '/api/public/hooks/process-ai-videos',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiPublicHooksCatalogWebhooksRoute =
-  ApiPublicHooksCatalogWebhooksRouteImport.update({
-    id: '/api/public/hooks/catalog-webhooks',
-    path: '/api/public/hooks/catalog-webhooks',
+const ApiPublicSitemapDotxmlRoute = ApiPublicSitemapDotxmlRouteImport.update({
+  id: '/api/public/sitemap.xml',
+  path: '/api/public/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCyberlabProxyRoute = ApiPublicCyberlabProxyRouteImport.update({
+  id: '/api/public/cyberlab/proxy',
+  path: '/api/public/cyberlab/proxy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCyberlabVerifyRoute = ApiPublicCyberlabVerifyRouteImport.update({
+  id: '/api/public/cyberlab/verify',
+  path: '/api/public/cyberlab/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicDealerSplatRoute = ApiPublicDealerSplatRouteImport.update({
+  id: '/api/public/dealer/$',
+  path: '/api/public/dealer/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHooksAbandonmentReminderRoute =
+  ApiPublicHooksAbandonmentReminderRouteImport.update({
+    id: '/api/public/hooks/abandonment-reminder',
+    path: '/api/public/hooks/abandonment-reminder',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksCampaignTickRoute =
@@ -930,36 +880,81 @@ const ApiPublicHooksCampaignTickRoute =
     path: '/api/public/hooks/campaign-tick',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksAbandonmentReminderRoute =
-  ApiPublicHooksAbandonmentReminderRouteImport.update({
-    id: '/api/public/hooks/abandonment-reminder',
-    path: '/api/public/hooks/abandonment-reminder',
+const ApiPublicHooksCatalogWebhooksRoute =
+  ApiPublicHooksCatalogWebhooksRouteImport.update({
+    id: '/api/public/hooks/catalog-webhooks',
+    path: '/api/public/hooks/catalog-webhooks',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicDealerSplatRoute = ApiPublicDealerSplatRouteImport.update({
-  id: '/api/public/dealer/$',
-  path: '/api/public/dealer/$',
+const ApiPublicHooksMigrateRoute = ApiPublicHooksMigrateRouteImport.update({
+  id: '/api/public/hooks/migrate',
+  path: '/api/public/hooks/migrate',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicCyberlabVerifyRoute = ApiPublicCyberlabVerifyRouteImport.update({
-  id: '/api/public/cyberlab/verify',
-  path: '/api/public/cyberlab/verify',
+const ApiPublicHooksProcessAiVideosRoute =
+  ApiPublicHooksProcessAiVideosRouteImport.update({
+    id: '/api/public/hooks/process-ai-videos',
+    path: '/api/public/hooks/process-ai-videos',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksPushTickRoute = ApiPublicHooksPushTickRouteImport.update({
+  id: '/api/public/hooks/push-tick',
+  path: '/api/public/hooks/push-tick',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicCyberlabProxyRoute = ApiPublicCyberlabProxyRouteImport.update({
-  id: '/api/public/cyberlab/proxy',
-  path: '/api/public/cyberlab/proxy',
+const ApiPublicHooksShopierRoute = ApiPublicHooksShopierRouteImport.update({
+  id: '/api/public/hooks/shopier',
+  path: '/api/public/hooks/shopier',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicV1AuthVerifyRoute = ApiPublicV1AuthVerifyRouteImport.update({
-  id: '/api/public/v1/auth/verify',
-  path: '/api/public/v1/auth/verify',
+const ApiPublicHooksSubscriptionsRenewRoute =
+  ApiPublicHooksSubscriptionsRenewRouteImport.update({
+    id: '/api/public/hooks/subscriptions-renew',
+    path: '/api/public/hooks/subscriptions-renew',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksSyncUniquelisansRoute =
+  ApiPublicHooksSyncUniquelisansRouteImport.update({
+    id: '/api/public/hooks/sync-uniquelisans',
+    path: '/api/public/hooks/sync-uniquelisans',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksTelegramRoute = ApiPublicHooksTelegramRouteImport.update({
+  id: '/api/public/hooks/telegram',
+  path: '/api/public/hooks/telegram',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicAuthGoogleStartRoute =
-  ApiPublicAuthGoogleStartRouteImport.update({
-    id: '/api/public/auth/google/start',
-    path: '/api/public/auth/google/start',
+const ApiPublicHooksUniquelisansCatalogRoute =
+  ApiPublicHooksUniquelisansCatalogRouteImport.update({
+    id: '/api/public/hooks/uniquelisans-catalog',
+    path: '/api/public/hooks/uniquelisans-catalog',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksWeeklyDigestRoute =
+  ApiPublicHooksWeeklyDigestRouteImport.update({
+    id: '/api/public/hooks/weekly-digest',
+    path: '/api/public/hooks/weekly-digest',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiV1AuthVerifyRoute = ApiV1AuthVerifyRouteImport.update({
+  id: '/api/v1/auth/verify',
+  path: '/api/v1/auth/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthPreviewRoute = LovableEmailAuthPreviewRouteImport.update({
+  id: '/lovable/email/auth/preview',
+  path: '/lovable/email/auth/preview',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailAuthWebhookRoute = LovableEmailAuthWebhookRouteImport.update({
+  id: '/lovable/email/auth/webhook',
+  path: '/lovable/email/auth/webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicAuthGoogleCallbackRoute =
@@ -968,6 +963,17 @@ const ApiPublicAuthGoogleCallbackRoute =
     path: '/api/public/auth/google/callback',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAuthGoogleStartRoute =
+  ApiPublicAuthGoogleStartRouteImport.update({
+    id: '/api/public/auth/google/start',
+    path: '/api/public/auth/google/start',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicV1AuthVerifyRoute = ApiPublicV1AuthVerifyRouteImport.update({
+  id: '/api/public/v1/auth/verify',
+  path: '/api/public/v1/auth/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -1102,6 +1108,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/catalog-webhooks': typeof ApiPublicHooksCatalogWebhooksRoute
+  '/api/public/hooks/migrate': typeof ApiPublicHooksMigrateRoute
   '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
@@ -1249,6 +1256,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/catalog-webhooks': typeof ApiPublicHooksCatalogWebhooksRoute
+  '/api/public/hooks/migrate': typeof ApiPublicHooksMigrateRoute
   '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
@@ -1400,6 +1408,7 @@ export interface FileRoutesById {
   '/api/public/hooks/abandonment-reminder': typeof ApiPublicHooksAbandonmentReminderRoute
   '/api/public/hooks/campaign-tick': typeof ApiPublicHooksCampaignTickRoute
   '/api/public/hooks/catalog-webhooks': typeof ApiPublicHooksCatalogWebhooksRoute
+  '/api/public/hooks/migrate': typeof ApiPublicHooksMigrateRoute
   '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
@@ -1551,6 +1560,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/catalog-webhooks'
+    | '/api/public/hooks/migrate'
     | '/api/public/hooks/process-ai-videos'
     | '/api/public/hooks/push-tick'
     | '/api/public/hooks/shopier'
@@ -1698,6 +1708,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/catalog-webhooks'
+    | '/api/public/hooks/migrate'
     | '/api/public/hooks/process-ai-videos'
     | '/api/public/hooks/push-tick'
     | '/api/public/hooks/shopier'
@@ -1848,6 +1859,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/abandonment-reminder'
     | '/api/public/hooks/campaign-tick'
     | '/api/public/hooks/catalog-webhooks'
+    | '/api/public/hooks/migrate'
     | '/api/public/hooks/process-ai-videos'
     | '/api/public/hooks/push-tick'
     | '/api/public/hooks/shopier'
@@ -1922,6 +1934,7 @@ export interface RootRouteChildren {
   ApiPublicHooksAbandonmentReminderRoute: typeof ApiPublicHooksAbandonmentReminderRoute
   ApiPublicHooksCampaignTickRoute: typeof ApiPublicHooksCampaignTickRoute
   ApiPublicHooksCatalogWebhooksRoute: typeof ApiPublicHooksCatalogWebhooksRoute
+  ApiPublicHooksMigrateRoute: typeof ApiPublicHooksMigrateRoute
   ApiPublicHooksProcessAiVideosRoute: typeof ApiPublicHooksProcessAiVideosRoute
   ApiPublicHooksPushTickRoute: typeof ApiPublicHooksPushTickRoute
   ApiPublicHooksShopierRoute: typeof ApiPublicHooksShopierRoute
@@ -1941,123 +1954,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/urunler': {
-      id: '/urunler'
-      path: '/urunler'
-      fullPath: '/urunler'
-      preLoaderRoute: typeof UrunlerRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sss': {
-      id: '/sss'
-      path: '/sss'
-      fullPath: '/sss'
-      preLoaderRoute: typeof SssRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sitemap.xml': {
-      id: '/sitemap.xml'
-      path: '/sitemap.xml'
-      fullPath: '/sitemap.xml'
-      preLoaderRoute: typeof SitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/sifre-belirle': {
-      id: '/sifre-belirle'
-      path: '/sifre-belirle'
-      fullPath: '/sifre-belirle'
-      preLoaderRoute: typeof SifreBelirleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/robots.txt': {
-      id: '/robots.txt'
-      path: '/robots.txt'
-      fullPath: '/robots.txt'
-      preLoaderRoute: typeof RobotsDottxtRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/nasil-calisir': {
-      id: '/nasil-calisir'
-      path: '/nasil-calisir'
-      fullPath: '/nasil-calisir'
-      preLoaderRoute: typeof NasilCalisirRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/liderlik': {
-      id: '/liderlik'
-      path: '/liderlik'
-      fullPath: '/liderlik'
-      preLoaderRoute: typeof LiderlikRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/kvkk': {
-      id: '/kvkk'
-      path: '/kvkk'
-      fullPath: '/kvkk'
-      preLoaderRoute: typeof KvkkRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/kosullar': {
-      id: '/kosullar'
-      path: '/kosullar'
-      fullPath: '/kosullar'
-      preLoaderRoute: typeof KosullarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/karsilastir': {
-      id: '/karsilastir'
-      path: '/karsilastir'
-      fullPath: '/karsilastir'
-      preLoaderRoute: typeof KarsilastirRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/iletisim': {
-      id: '/iletisim'
-      path: '/iletisim'
-      fullPath: '/iletisim'
-      preLoaderRoute: typeof IletisimRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/iade': {
-      id: '/iade'
-      path: '/iade'
-      fullPath: '/iade'
-      preLoaderRoute: typeof IadeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gizlilik': {
-      id: '/gizlilik'
-      path: '/gizlilik'
-      fullPath: '/gizlilik'
-      preLoaderRoute: typeof GizlilikRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cyberlab': {
-      id: '/cyberlab'
-      path: '/cyberlab'
-      fullPath: '/cyberlab'
-      preLoaderRoute: typeof CyberlabRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cekilis': {
-      id: '/cekilis'
-      path: '/cekilis'
-      fullPath: '/cekilis'
-      preLoaderRoute: typeof CekilisRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/bayilik': {
-      id: '/bayilik'
-      path: '/bayilik'
-      fullPath: '/bayilik'
-      preLoaderRoute: typeof BayilikRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -2067,256 +1968,130 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/paketler/': {
-      id: '/paketler/'
-      path: '/paketler'
-      fullPath: '/paketler/'
-      preLoaderRoute: typeof PaketlerIndexRouteImport
+    '/bayilik': {
+      id: '/bayilik'
+      path: '/bayilik'
+      fullPath: '/bayilik'
+      preLoaderRoute: typeof BayilikRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog/': {
-      id: '/blog/'
-      path: '/blog'
-      fullPath: '/blog/'
-      preLoaderRoute: typeof BlogIndexRouteImport
+    '/cekilis': {
+      id: '/cekilis'
+      path: '/cekilis'
+      fullPath: '/cekilis'
+      preLoaderRoute: typeof CekilisRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/urun/$slug': {
-      id: '/urun/$slug'
-      path: '/urun/$slug'
-      fullPath: '/urun/$slug'
-      preLoaderRoute: typeof UrunSlugRouteImport
+    '/cyberlab': {
+      id: '/cyberlab'
+      path: '/cyberlab'
+      fullPath: '/cyberlab'
+      preLoaderRoute: typeof CyberlabRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/siparis/$ref': {
-      id: '/siparis/$ref'
-      path: '/siparis/$ref'
-      fullPath: '/siparis/$ref'
-      preLoaderRoute: typeof SiparisRefRouteImport
+    '/gizlilik': {
+      id: '/gizlilik'
+      path: '/gizlilik'
+      fullPath: '/gizlilik'
+      preLoaderRoute: typeof GizlilikRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/paketler/ai': {
-      id: '/paketler/ai'
-      path: '/paketler/ai'
-      fullPath: '/paketler/ai'
-      preLoaderRoute: typeof PaketlerAiRouteImport
+    '/iade': {
+      id: '/iade'
+      path: '/iade'
+      fullPath: '/iade'
+      preLoaderRoute: typeof IadeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/paketler/$slug': {
-      id: '/paketler/$slug'
-      path: '/paketler/$slug'
-      fullPath: '/paketler/$slug'
-      preLoaderRoute: typeof PaketlerSlugRouteImport
+    '/iletisim': {
+      id: '/iletisim'
+      path: '/iletisim'
+      fullPath: '/iletisim'
+      preLoaderRoute: typeof IletisimRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/p/$code': {
-      id: '/p/$code'
-      path: '/p/$code'
-      fullPath: '/p/$code'
-      preLoaderRoute: typeof PCodeRouteImport
+    '/karsilastir': {
+      id: '/karsilastir'
+      path: '/karsilastir'
+      fullPath: '/karsilastir'
+      preLoaderRoute: typeof KarsilastirRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/odeme/$orderId': {
-      id: '/odeme/$orderId'
-      path: '/odeme/$orderId'
-      fullPath: '/odeme/$orderId'
-      preLoaderRoute: typeof OdemeOrderIdRouteImport
+    '/kosullar': {
+      id: '/kosullar'
+      path: '/kosullar'
+      fullPath: '/kosullar'
+      preLoaderRoute: typeof KosullarRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cyberlab/sso': {
-      id: '/cyberlab/sso'
-      path: '/sso'
-      fullPath: '/cyberlab/sso'
-      preLoaderRoute: typeof CyberlabSsoRouteImport
-      parentRoute: typeof CyberlabRoute
-    }
-    '/blog/$slug': {
-      id: '/blog/$slug'
-      path: '/blog/$slug'
-      fullPath: '/blog/$slug'
-      preLoaderRoute: typeof BlogSlugRouteImport
+    '/kvkk': {
+      id: '/kvkk'
+      path: '/kvkk'
+      fullPath: '/kvkk'
+      preLoaderRoute: typeof KvkkRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/bakiye-yukle/$topupId': {
-      id: '/bakiye-yukle/$topupId'
-      path: '/bakiye-yukle/$topupId'
-      fullPath: '/bakiye-yukle/$topupId'
-      preLoaderRoute: typeof BakiyeYukleTopupIdRouteImport
+    '/liderlik': {
+      id: '/liderlik'
+      path: '/liderlik'
+      fullPath: '/liderlik'
+      preLoaderRoute: typeof LiderlikRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/b/$code': {
-      id: '/b/$code'
-      path: '/b/$code'
-      fullPath: '/b/$code'
-      preLoaderRoute: typeof BCodeRouteImport
+    '/nasil-calisir': {
+      id: '/nasil-calisir'
+      path: '/nasil-calisir'
+      fullPath: '/nasil-calisir'
+      preLoaderRoute: typeof NasilCalisirRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/validate': {
-      id: '/api/validate'
-      path: '/api/validate'
-      fullPath: '/api/validate'
-      preLoaderRoute: typeof ApiValidateRouteImport
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/unlock': {
-      id: '/api/unlock'
-      path: '/api/unlock'
-      fullPath: '/api/unlock'
-      preLoaderRoute: typeof ApiUnlockRouteImport
+    '/sifre-belirle': {
+      id: '/sifre-belirle'
+      path: '/sifre-belirle'
+      fullPath: '/sifre-belirle'
+      preLoaderRoute: typeof SifreBelirleRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/tampering-report': {
-      id: '/api/tampering-report'
-      path: '/api/tampering-report'
-      fullPath: '/api/tampering-report'
-      preLoaderRoute: typeof ApiTamperingReportRouteImport
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/source-code': {
-      id: '/api/source-code'
-      path: '/api/source-code'
-      fullPath: '/api/source-code'
-      preLoaderRoute: typeof ApiSourceCodeRouteImport
+    '/sss': {
+      id: '/sss'
+      path: '/sss'
+      fullPath: '/sss'
+      preLoaderRoute: typeof SssRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/session': {
-      id: '/api/session'
-      path: '/api/session'
-      fullPath: '/api/session'
-      preLoaderRoute: typeof ApiSessionRouteImport
+    '/urunler': {
+      id: '/urunler'
+      path: '/urunler'
+      fullPath: '/urunler'
+      preLoaderRoute: typeof UrunlerRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/revoke': {
-      id: '/api/revoke'
-      path: '/api/revoke'
-      fullPath: '/api/revoke'
-      preLoaderRoute: typeof ApiRevokeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/notifications': {
-      id: '/api/notifications'
-      path: '/api/notifications'
-      fullPath: '/api/notifications'
-      preLoaderRoute: typeof ApiNotificationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/login': {
-      id: '/api/login'
-      path: '/api/login'
-      fullPath: '/api/login'
-      preLoaderRoute: typeof ApiLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/create-project': {
-      id: '/api/create-project'
-      path: '/api/create-project'
-      fullPath: '/api/create-project'
-      preLoaderRoute: typeof ApiCreateProjectRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/chat': {
-      id: '/api/chat'
-      path: '/api/chat'
-      fullPath: '/api/chat'
-      preLoaderRoute: typeof ApiChatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/approve-plan': {
-      id: '/api/approve-plan'
-      path: '/api/approve-plan'
-      fullPath: '/api/approve-plan'
-      preLoaderRoute: typeof ApiApprovePlanRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/activate': {
-      id: '/api/activate'
-      path: '/api/activate'
-      fullPath: '/api/activate'
-      preLoaderRoute: typeof ApiActivateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/aktivasyon/$token': {
-      id: '/aktivasyon/$token'
-      path: '/aktivasyon/$token'
-      fullPath: '/aktivasyon/$token'
-      preLoaderRoute: typeof AktivasyonTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/kripto-yukle': {
-      id: '/_authenticated/kripto-yukle'
-      path: '/kripto-yukle'
-      fullPath: '/kripto-yukle'
-      preLoaderRoute: typeof AuthenticatedKriptoYukleRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/hesabim': {
-      id: '/_authenticated/hesabim'
-      path: '/hesabim'
-      fullPath: '/hesabim'
-      preLoaderRoute: typeof AuthenticatedHesabimRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/guvenlik': {
-      id: '/_authenticated/guvenlik'
-      path: '/guvenlik'
-      fullPath: '/guvenlik'
-      preLoaderRoute: typeof AuthenticatedGuvenlikRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/gorevler': {
-      id: '/_authenticated/gorevler'
-      path: '/gorevler'
-      fullPath: '/gorevler'
-      preLoaderRoute: typeof AuthenticatedGorevlerRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/favorilerim': {
-      id: '/_authenticated/favorilerim'
-      path: '/favorilerim'
-      fullPath: '/favorilerim'
-      preLoaderRoute: typeof AuthenticatedFavorilerimRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/destek': {
-      id: '/_authenticated/destek'
-      path: '/destek'
-      fullPath: '/destek'
-      preLoaderRoute: typeof AuthenticatedDestekRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/davet': {
-      id: '/_authenticated/davet'
-      path: '/davet'
-      fullPath: '/davet'
-      preLoaderRoute: typeof AuthenticatedDavetRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/cuzdan': {
-      id: '/_authenticated/cuzdan'
-      path: '/cuzdan'
-      fullPath: '/cuzdan'
-      preLoaderRoute: typeof AuthenticatedCuzdanRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/bildirimler': {
-      id: '/_authenticated/bildirimler'
-      path: '/bildirimler'
-      fullPath: '/bildirimler'
-      preLoaderRoute: typeof AuthenticatedBildirimlerRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/bayi': {
-      id: '/_authenticated/bayi'
-      path: '/bayi'
-      fullPath: '/bayi'
-      preLoaderRoute: typeof AuthenticatedBayiRouteImport
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/araclar': {
@@ -2326,501 +2101,256 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAraclarRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/admin': {
-      id: '/_authenticated/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AuthenticatedAdminRouteRouteImport
+    '/_authenticated/bayi': {
+      id: '/_authenticated/bayi'
+      path: '/bayi'
+      fullPath: '/bayi'
+      preLoaderRoute: typeof AuthenticatedBayiRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/araclar/': {
-      id: '/_authenticated/araclar/'
-      path: '/'
-      fullPath: '/araclar/'
-      preLoaderRoute: typeof AuthenticatedAraclarIndexRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    '/_authenticated/bildirimler': {
+      id: '/_authenticated/bildirimler'
+      path: '/bildirimler'
+      fullPath: '/bildirimler'
+      preLoaderRoute: typeof AuthenticatedBildirimlerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cuzdan': {
+      id: '/_authenticated/cuzdan'
+      path: '/cuzdan'
+      fullPath: '/cuzdan'
+      preLoaderRoute: typeof AuthenticatedCuzdanRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/davet': {
+      id: '/_authenticated/davet'
+      path: '/davet'
+      fullPath: '/davet'
+      preLoaderRoute: typeof AuthenticatedDavetRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/destek': {
+      id: '/_authenticated/destek'
+      path: '/destek'
+      fullPath: '/destek'
+      preLoaderRoute: typeof AuthenticatedDestekRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/favorilerim': {
+      id: '/_authenticated/favorilerim'
+      path: '/favorilerim'
+      fullPath: '/favorilerim'
+      preLoaderRoute: typeof AuthenticatedFavorilerimRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gorevler': {
+      id: '/_authenticated/gorevler'
+      path: '/gorevler'
+      fullPath: '/gorevler'
+      preLoaderRoute: typeof AuthenticatedGorevlerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/guvenlik': {
+      id: '/_authenticated/guvenlik'
+      path: '/guvenlik'
+      fullPath: '/guvenlik'
+      preLoaderRoute: typeof AuthenticatedGuvenlikRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/hesabim': {
+      id: '/_authenticated/hesabim'
+      path: '/hesabim'
+      fullPath: '/hesabim'
+      preLoaderRoute: typeof AuthenticatedHesabimRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/kripto-yukle': {
+      id: '/_authenticated/kripto-yukle'
+      path: '/kripto-yukle'
+      fullPath: '/kripto-yukle'
+      preLoaderRoute: typeof AuthenticatedKriptoYukleRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/aktivasyon/$token': {
+      id: '/aktivasyon/$token'
+      path: '/aktivasyon/$token'
+      fullPath: '/aktivasyon/$token'
+      preLoaderRoute: typeof AktivasyonTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/activate': {
+      id: '/api/activate'
+      path: '/api/activate'
+      fullPath: '/api/activate'
+      preLoaderRoute: typeof ApiActivateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/approve-plan': {
+      id: '/api/approve-plan'
+      path: '/api/approve-plan'
+      fullPath: '/api/approve-plan'
+      preLoaderRoute: typeof ApiApprovePlanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/create-project': {
+      id: '/api/create-project'
+      path: '/api/create-project'
+      fullPath: '/api/create-project'
+      preLoaderRoute: typeof ApiCreateProjectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/login': {
+      id: '/api/login'
+      path: '/api/login'
+      fullPath: '/api/login'
+      preLoaderRoute: typeof ApiLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/notifications': {
+      id: '/api/notifications'
+      path: '/api/notifications'
+      fullPath: '/api/notifications'
+      preLoaderRoute: typeof ApiNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/revoke': {
+      id: '/api/revoke'
+      path: '/api/revoke'
+      fullPath: '/api/revoke'
+      preLoaderRoute: typeof ApiRevokeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/session': {
+      id: '/api/session'
+      path: '/api/session'
+      fullPath: '/api/session'
+      preLoaderRoute: typeof ApiSessionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/source-code': {
+      id: '/api/source-code'
+      path: '/api/source-code'
+      fullPath: '/api/source-code'
+      preLoaderRoute: typeof ApiSourceCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/tampering-report': {
+      id: '/api/tampering-report'
+      path: '/api/tampering-report'
+      fullPath: '/api/tampering-report'
+      preLoaderRoute: typeof ApiTamperingReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/unlock': {
+      id: '/api/unlock'
+      path: '/api/unlock'
+      fullPath: '/api/unlock'
+      preLoaderRoute: typeof ApiUnlockRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/validate': {
+      id: '/api/validate'
+      path: '/api/validate'
+      fullPath: '/api/validate'
+      preLoaderRoute: typeof ApiValidateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/b/$code': {
+      id: '/b/$code'
+      path: '/b/$code'
+      fullPath: '/b/$code'
+      preLoaderRoute: typeof BCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bakiye-yukle/$topupId': {
+      id: '/bakiye-yukle/$topupId'
+      path: '/bakiye-yukle/$topupId'
+      fullPath: '/bakiye-yukle/$topupId'
+      preLoaderRoute: typeof BakiyeYukleTopupIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cyberlab/sso': {
+      id: '/cyberlab/sso'
+      path: '/sso'
+      fullPath: '/cyberlab/sso'
+      preLoaderRoute: typeof CyberlabSsoRouteImport
+      parentRoute: typeof CyberlabRoute
+    }
+    '/odeme/$orderId': {
+      id: '/odeme/$orderId'
+      path: '/odeme/$orderId'
+      fullPath: '/odeme/$orderId'
+      preLoaderRoute: typeof OdemeOrderIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/p/$code': {
+      id: '/p/$code'
+      path: '/p/$code'
+      fullPath: '/p/$code'
+      preLoaderRoute: typeof PCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/paketler/': {
+      id: '/paketler/'
+      path: '/paketler'
+      fullPath: '/paketler/'
+      preLoaderRoute: typeof PaketlerIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/paketler/$slug': {
+      id: '/paketler/$slug'
+      path: '/paketler/$slug'
+      fullPath: '/paketler/$slug'
+      preLoaderRoute: typeof PaketlerSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/paketler/ai': {
+      id: '/paketler/ai'
+      path: '/paketler/ai'
+      fullPath: '/paketler/ai'
+      preLoaderRoute: typeof PaketlerAiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/siparis/$ref': {
+      id: '/siparis/$ref'
+      path: '/siparis/$ref'
+      fullPath: '/siparis/$ref'
+      preLoaderRoute: typeof SiparisRefRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/urun/$slug': {
+      id: '/urun/$slug'
+      path: '/urun/$slug'
+      fullPath: '/urun/$slug'
+      preLoaderRoute: typeof UrunSlugRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AuthenticatedAdminIndexRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/api/public/sitemap.xml': {
-      id: '/api/public/sitemap.xml'
-      path: '/api/public/sitemap.xml'
-      fullPath: '/api/public/sitemap.xml'
-      preLoaderRoute: typeof ApiPublicSitemapDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/login': {
-      id: '/api/public/login'
-      path: '/api/public/login'
-      fullPath: '/api/public/login'
-      preLoaderRoute: typeof ApiPublicLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/embed.js': {
-      id: '/api/public/embed.js'
-      path: '/api/public/embed.js'
-      fullPath: '/api/public/embed.js'
-      preLoaderRoute: typeof ApiPublicEmbedDotjsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/catalog.xml': {
-      id: '/api/public/catalog.xml'
-      path: '/api/public/catalog.xml'
-      fullPath: '/api/public/catalog.xml'
-      preLoaderRoute: typeof ApiPublicCatalogDotxmlRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/catalog.json': {
-      id: '/api/public/catalog.json'
-      path: '/api/public/catalog.json'
-      fullPath: '/api/public/catalog.json'
-      preLoaderRoute: typeof ApiPublicCatalogDotjsonRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin/revoke': {
-      id: '/api/admin/revoke'
-      path: '/api/admin/revoke'
-      fullPath: '/api/admin/revoke'
-      preLoaderRoute: typeof ApiAdminRevokeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/admin/create': {
-      id: '/api/admin/create'
-      path: '/api/admin/create'
-      fullPath: '/api/admin/create'
-      preLoaderRoute: typeof ApiAdminCreateRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/hesabim/lisanslar': {
-      id: '/_authenticated/hesabim/lisanslar'
-      path: '/lisanslar'
-      fullPath: '/hesabim/lisanslar'
-      preLoaderRoute: typeof AuthenticatedHesabimLisanslarRouteImport
-      parentRoute: typeof AuthenticatedHesabimRoute
-    }
-    '/_authenticated/araclar/watermark': {
-      id: '/_authenticated/araclar/watermark'
-      path: '/watermark'
-      fullPath: '/araclar/watermark'
-      preLoaderRoute: typeof AuthenticatedAraclarWatermarkRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/video-watermark': {
-      id: '/_authenticated/araclar/video-watermark'
-      path: '/video-watermark'
-      fullPath: '/araclar/video-watermark'
-      preLoaderRoute: typeof AuthenticatedAraclarVideoWatermarkRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/video-uzun': {
-      id: '/_authenticated/araclar/video-uzun'
-      path: '/video-uzun'
-      fullPath: '/araclar/video-uzun'
-      preLoaderRoute: typeof AuthenticatedAraclarVideoUzunRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/video-trim': {
-      id: '/_authenticated/araclar/video-trim'
-      path: '/video-trim'
-      fullPath: '/araclar/video-trim'
-      preLoaderRoute: typeof AuthenticatedAraclarVideoTrimRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/video-thumbnail': {
-      id: '/_authenticated/araclar/video-thumbnail'
-      path: '/video-thumbnail'
-      fullPath: '/araclar/video-thumbnail'
-      preLoaderRoute: typeof AuthenticatedAraclarVideoThumbnailRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/video-sikistir': {
-      id: '/_authenticated/araclar/video-sikistir'
-      path: '/video-sikistir'
-      fullPath: '/araclar/video-sikistir'
-      preLoaderRoute: typeof AuthenticatedAraclarVideoSikistirRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/video-sessiz': {
-      id: '/_authenticated/araclar/video-sessiz'
-      path: '/video-sessiz'
-      fullPath: '/araclar/video-sessiz'
-      preLoaderRoute: typeof AuthenticatedAraclarVideoSessizRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/video-mp3': {
-      id: '/_authenticated/araclar/video-mp3'
-      path: '/video-mp3'
-      fullPath: '/araclar/video-mp3'
-      preLoaderRoute: typeof AuthenticatedAraclarVideoMp3RouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/video-hiz': {
-      id: '/_authenticated/araclar/video-hiz'
-      path: '/video-hiz'
-      fullPath: '/araclar/video-hiz'
-      preLoaderRoute: typeof AuthenticatedAraclarVideoHizRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/video-gif': {
-      id: '/_authenticated/araclar/video-gif'
-      path: '/video-gif'
-      fullPath: '/araclar/video-gif'
-      preLoaderRoute: typeof AuthenticatedAraclarVideoGifRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/video-dondur': {
-      id: '/_authenticated/araclar/video-dondur'
-      path: '/video-dondur'
-      fullPath: '/araclar/video-dondur'
-      preLoaderRoute: typeof AuthenticatedAraclarVideoDondurRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/video-birlestir': {
-      id: '/_authenticated/araclar/video-birlestir'
-      path: '/video-birlestir'
-      fullPath: '/araclar/video-birlestir'
-      preLoaderRoute: typeof AuthenticatedAraclarVideoBirlestirRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/video': {
-      id: '/_authenticated/araclar/video'
-      path: '/video'
-      fullPath: '/araclar/video'
-      preLoaderRoute: typeof AuthenticatedAraclarVideoRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/uuid': {
-      id: '/_authenticated/araclar/uuid'
-      path: '/uuid'
-      fullPath: '/araclar/uuid'
-      preLoaderRoute: typeof AuthenticatedAraclarUuidRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/url': {
-      id: '/_authenticated/araclar/url'
-      path: '/url'
-      fullPath: '/araclar/url'
-      preLoaderRoute: typeof AuthenticatedAraclarUrlRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/slug': {
-      id: '/_authenticated/araclar/slug'
-      path: '/slug'
-      fullPath: '/araclar/slug'
-      preLoaderRoute: typeof AuthenticatedAraclarSlugRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/sikistir': {
-      id: '/_authenticated/araclar/sikistir'
-      path: '/sikistir'
-      fullPath: '/araclar/sikistir'
-      preLoaderRoute: typeof AuthenticatedAraclarSikistirRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/sifre': {
-      id: '/_authenticated/araclar/sifre'
-      path: '/sifre'
-      fullPath: '/araclar/sifre'
-      preLoaderRoute: typeof AuthenticatedAraclarSifreRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/sayac': {
-      id: '/_authenticated/araclar/sayac'
-      path: '/sayac'
-      fullPath: '/araclar/sayac'
-      preLoaderRoute: typeof AuthenticatedAraclarSayacRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/renk': {
-      id: '/_authenticated/araclar/renk'
-      path: '/renk'
-      fullPath: '/araclar/renk'
-      preLoaderRoute: typeof AuthenticatedAraclarRenkRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/qr': {
-      id: '/_authenticated/araclar/qr'
-      path: '/qr'
-      fullPath: '/araclar/qr'
-      preLoaderRoute: typeof AuthenticatedAraclarQrRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/pdf': {
-      id: '/_authenticated/araclar/pdf'
-      path: '/pdf'
-      fullPath: '/araclar/pdf'
-      preLoaderRoute: typeof AuthenticatedAraclarPdfRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/palet': {
-      id: '/_authenticated/araclar/palet'
-      path: '/palet'
-      fullPath: '/araclar/palet'
-      preLoaderRoute: typeof AuthenticatedAraclarPaletRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/kirp': {
-      id: '/_authenticated/araclar/kirp'
-      path: '/kirp'
-      fullPath: '/araclar/kirp'
-      preLoaderRoute: typeof AuthenticatedAraclarKirpRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/jwt': {
-      id: '/_authenticated/araclar/jwt'
-      path: '/jwt'
-      fullPath: '/araclar/jwt'
-      preLoaderRoute: typeof AuthenticatedAraclarJwtRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/json': {
-      id: '/_authenticated/araclar/json'
-      path: '/json'
-      fullPath: '/araclar/json'
-      preLoaderRoute: typeof AuthenticatedAraclarJsonRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/hash': {
-      id: '/_authenticated/araclar/hash'
-      path: '/hash'
-      fullPath: '/araclar/hash'
-      preLoaderRoute: typeof AuthenticatedAraclarHashRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/exif': {
-      id: '/_authenticated/araclar/exif'
-      path: '/exif'
-      fullPath: '/araclar/exif'
-      preLoaderRoute: typeof AuthenticatedAraclarExifRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/base64': {
-      id: '/_authenticated/araclar/base64'
-      path: '/base64'
-      fullPath: '/araclar/base64'
-      preLoaderRoute: typeof AuthenticatedAraclarBase64RouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/araclar/arkaplan': {
-      id: '/_authenticated/araclar/arkaplan'
-      path: '/arkaplan'
-      fullPath: '/araclar/arkaplan'
-      preLoaderRoute: typeof AuthenticatedAraclarArkaplanRouteImport
-      parentRoute: typeof AuthenticatedAraclarRouteRoute
-    }
-    '/_authenticated/admin/urunler': {
-      id: '/_authenticated/admin/urunler'
-      path: '/urunler'
-      fullPath: '/admin/urunler'
-      preLoaderRoute: typeof AuthenticatedAdminUrunlerRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/uniquelisans': {
-      id: '/_authenticated/admin/uniquelisans'
-      path: '/uniquelisans'
-      fullPath: '/admin/uniquelisans'
-      preLoaderRoute: typeof AuthenticatedAdminUniquelisansRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/tedarikci-log': {
-      id: '/_authenticated/admin/tedarikci-log'
-      path: '/tedarikci-log'
-      fullPath: '/admin/tedarikci-log'
-      preLoaderRoute: typeof AuthenticatedAdminTedarikciLogRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/sorular': {
-      id: '/_authenticated/admin/sorular'
-      path: '/sorular'
-      fullPath: '/admin/sorular'
-      preLoaderRoute: typeof AuthenticatedAdminSorularRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/siparisler': {
-      id: '/_authenticated/admin/siparisler'
-      path: '/siparisler'
-      fullPath: '/admin/siparisler'
-      preLoaderRoute: typeof AuthenticatedAdminSiparislerRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/shopier': {
-      id: '/_authenticated/admin/shopier'
-      path: '/shopier'
-      fullPath: '/admin/shopier'
-      preLoaderRoute: typeof AuthenticatedAdminShopierRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/rapor': {
-      id: '/_authenticated/admin/rapor'
-      path: '/rapor'
-      fullPath: '/admin/rapor'
-      preLoaderRoute: typeof AuthenticatedAdminRaporRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/promosyonlar': {
-      id: '/_authenticated/admin/promosyonlar'
-      path: '/promosyonlar'
-      fullPath: '/admin/promosyonlar'
-      preLoaderRoute: typeof AuthenticatedAdminPromosyonlarRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/populer': {
-      id: '/_authenticated/admin/populer'
-      path: '/populer'
-      fullPath: '/admin/populer'
-      preLoaderRoute: typeof AuthenticatedAdminPopulerRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/partner': {
-      id: '/_authenticated/admin/partner'
-      path: '/partner'
-      fullPath: '/admin/partner'
-      preLoaderRoute: typeof AuthenticatedAdminPartnerRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/paketler': {
-      id: '/_authenticated/admin/paketler'
-      path: '/paketler'
-      fullPath: '/admin/paketler'
-      preLoaderRoute: typeof AuthenticatedAdminPaketlerRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/lisanslar': {
-      id: '/_authenticated/admin/lisanslar'
-      path: '/lisanslar'
-      fullPath: '/admin/lisanslar'
-      preLoaderRoute: typeof AuthenticatedAdminLisanslarRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/kuponlar': {
-      id: '/_authenticated/admin/kuponlar'
-      path: '/kuponlar'
-      fullPath: '/admin/kuponlar'
-      preLoaderRoute: typeof AuthenticatedAdminKuponlarRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/kullanicilar': {
-      id: '/_authenticated/admin/kullanicilar'
-      path: '/kullanicilar'
-      fullPath: '/admin/kullanicilar'
-      preLoaderRoute: typeof AuthenticatedAdminKullanicilarRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/kripto': {
-      id: '/_authenticated/admin/kripto'
-      path: '/kripto'
-      fullPath: '/admin/kripto'
-      preLoaderRoute: typeof AuthenticatedAdminKriptoRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/keyler': {
-      id: '/_authenticated/admin/keyler'
-      path: '/keyler'
-      fullPath: '/admin/keyler'
-      preLoaderRoute: typeof AuthenticatedAdminKeylerRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/kampanyalar': {
-      id: '/_authenticated/admin/kampanyalar'
-      path: '/kampanyalar'
-      fullPath: '/admin/kampanyalar'
-      preLoaderRoute: typeof AuthenticatedAdminKampanyalarRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/ip-yonetim': {
-      id: '/_authenticated/admin/ip-yonetim'
-      path: '/ip-yonetim'
-      fullPath: '/admin/ip-yonetim'
-      preLoaderRoute: typeof AuthenticatedAdminIpYonetimRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/flash': {
-      id: '/_authenticated/admin/flash'
-      path: '/flash'
-      fullPath: '/admin/flash'
-      preLoaderRoute: typeof AuthenticatedAdminFlashRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/destek': {
-      id: '/_authenticated/admin/destek'
-      path: '/destek'
-      fullPath: '/admin/destek'
-      preLoaderRoute: typeof AuthenticatedAdminDestekRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/denetim': {
-      id: '/_authenticated/admin/denetim'
-      path: '/denetim'
-      fullPath: '/admin/denetim'
-      preLoaderRoute: typeof AuthenticatedAdminDenetimRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/cyberlab': {
-      id: '/_authenticated/admin/cyberlab'
-      path: '/cyberlab'
-      fullPath: '/admin/cyberlab'
-      preLoaderRoute: typeof AuthenticatedAdminCyberlabRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/cuzdan': {
-      id: '/_authenticated/admin/cuzdan'
-      path: '/cuzdan'
-      fullPath: '/admin/cuzdan'
-      preLoaderRoute: typeof AuthenticatedAdminCuzdanRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/cekilis': {
-      id: '/_authenticated/admin/cekilis'
-      path: '/cekilis'
-      fullPath: '/admin/cekilis'
-      preLoaderRoute: typeof AuthenticatedAdminCekilisRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/capraz-satis': {
-      id: '/_authenticated/admin/capraz-satis'
-      path: '/capraz-satis'
-      fullPath: '/admin/capraz-satis'
-      preLoaderRoute: typeof AuthenticatedAdminCaprazSatisRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/blog': {
-      id: '/_authenticated/admin/blog'
-      path: '/blog'
-      fullPath: '/admin/blog'
-      preLoaderRoute: typeof AuthenticatedAdminBlogRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/bildirimler': {
-      id: '/_authenticated/admin/bildirimler'
-      path: '/bildirimler'
-      fullPath: '/admin/bildirimler'
-      preLoaderRoute: typeof AuthenticatedAdminBildirimlerRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/bayiler': {
-      id: '/_authenticated/admin/bayiler'
-      path: '/bayiler'
-      fullPath: '/admin/bayiler'
-      preLoaderRoute: typeof AuthenticatedAdminBayilerRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/ayarlar': {
-      id: '/_authenticated/admin/ayarlar'
-      path: '/ayarlar'
-      fullPath: '/admin/ayarlar'
-      preLoaderRoute: typeof AuthenticatedAdminAyarlarRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
-    '/_authenticated/admin/araclar': {
-      id: '/_authenticated/admin/araclar'
-      path: '/araclar'
-      fullPath: '/admin/araclar'
-      preLoaderRoute: typeof AuthenticatedAdminAraclarRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
     '/_authenticated/admin/abonelikler': {
@@ -2830,123 +2360,487 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminAboneliklerRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
-    '/lovable/email/queue/process': {
-      id: '/lovable/email/queue/process'
-      path: '/lovable/email/queue/process'
-      fullPath: '/lovable/email/queue/process'
-      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+    '/_authenticated/admin/araclar': {
+      id: '/_authenticated/admin/araclar'
+      path: '/araclar'
+      fullPath: '/admin/araclar'
+      preLoaderRoute: typeof AuthenticatedAdminAraclarRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/ayarlar': {
+      id: '/_authenticated/admin/ayarlar'
+      path: '/ayarlar'
+      fullPath: '/admin/ayarlar'
+      preLoaderRoute: typeof AuthenticatedAdminAyarlarRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/bayiler': {
+      id: '/_authenticated/admin/bayiler'
+      path: '/bayiler'
+      fullPath: '/admin/bayiler'
+      preLoaderRoute: typeof AuthenticatedAdminBayilerRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/bildirimler': {
+      id: '/_authenticated/admin/bildirimler'
+      path: '/bildirimler'
+      fullPath: '/admin/bildirimler'
+      preLoaderRoute: typeof AuthenticatedAdminBildirimlerRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/blog': {
+      id: '/_authenticated/admin/blog'
+      path: '/blog'
+      fullPath: '/admin/blog'
+      preLoaderRoute: typeof AuthenticatedAdminBlogRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/capraz-satis': {
+      id: '/_authenticated/admin/capraz-satis'
+      path: '/capraz-satis'
+      fullPath: '/admin/capraz-satis'
+      preLoaderRoute: typeof AuthenticatedAdminCaprazSatisRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/cekilis': {
+      id: '/_authenticated/admin/cekilis'
+      path: '/cekilis'
+      fullPath: '/admin/cekilis'
+      preLoaderRoute: typeof AuthenticatedAdminCekilisRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/cuzdan': {
+      id: '/_authenticated/admin/cuzdan'
+      path: '/cuzdan'
+      fullPath: '/admin/cuzdan'
+      preLoaderRoute: typeof AuthenticatedAdminCuzdanRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/cyberlab': {
+      id: '/_authenticated/admin/cyberlab'
+      path: '/cyberlab'
+      fullPath: '/admin/cyberlab'
+      preLoaderRoute: typeof AuthenticatedAdminCyberlabRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/denetim': {
+      id: '/_authenticated/admin/denetim'
+      path: '/denetim'
+      fullPath: '/admin/denetim'
+      preLoaderRoute: typeof AuthenticatedAdminDenetimRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/destek': {
+      id: '/_authenticated/admin/destek'
+      path: '/destek'
+      fullPath: '/admin/destek'
+      preLoaderRoute: typeof AuthenticatedAdminDestekRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/flash': {
+      id: '/_authenticated/admin/flash'
+      path: '/flash'
+      fullPath: '/admin/flash'
+      preLoaderRoute: typeof AuthenticatedAdminFlashRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/ip-yonetim': {
+      id: '/_authenticated/admin/ip-yonetim'
+      path: '/ip-yonetim'
+      fullPath: '/admin/ip-yonetim'
+      preLoaderRoute: typeof AuthenticatedAdminIpYonetimRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/kampanyalar': {
+      id: '/_authenticated/admin/kampanyalar'
+      path: '/kampanyalar'
+      fullPath: '/admin/kampanyalar'
+      preLoaderRoute: typeof AuthenticatedAdminKampanyalarRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/keyler': {
+      id: '/_authenticated/admin/keyler'
+      path: '/keyler'
+      fullPath: '/admin/keyler'
+      preLoaderRoute: typeof AuthenticatedAdminKeylerRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/kripto': {
+      id: '/_authenticated/admin/kripto'
+      path: '/kripto'
+      fullPath: '/admin/kripto'
+      preLoaderRoute: typeof AuthenticatedAdminKriptoRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/kullanicilar': {
+      id: '/_authenticated/admin/kullanicilar'
+      path: '/kullanicilar'
+      fullPath: '/admin/kullanicilar'
+      preLoaderRoute: typeof AuthenticatedAdminKullanicilarRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/kuponlar': {
+      id: '/_authenticated/admin/kuponlar'
+      path: '/kuponlar'
+      fullPath: '/admin/kuponlar'
+      preLoaderRoute: typeof AuthenticatedAdminKuponlarRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/lisanslar': {
+      id: '/_authenticated/admin/lisanslar'
+      path: '/lisanslar'
+      fullPath: '/admin/lisanslar'
+      preLoaderRoute: typeof AuthenticatedAdminLisanslarRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/paketler': {
+      id: '/_authenticated/admin/paketler'
+      path: '/paketler'
+      fullPath: '/admin/paketler'
+      preLoaderRoute: typeof AuthenticatedAdminPaketlerRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/partner': {
+      id: '/_authenticated/admin/partner'
+      path: '/partner'
+      fullPath: '/admin/partner'
+      preLoaderRoute: typeof AuthenticatedAdminPartnerRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/populer': {
+      id: '/_authenticated/admin/populer'
+      path: '/populer'
+      fullPath: '/admin/populer'
+      preLoaderRoute: typeof AuthenticatedAdminPopulerRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/promosyonlar': {
+      id: '/_authenticated/admin/promosyonlar'
+      path: '/promosyonlar'
+      fullPath: '/admin/promosyonlar'
+      preLoaderRoute: typeof AuthenticatedAdminPromosyonlarRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/rapor': {
+      id: '/_authenticated/admin/rapor'
+      path: '/rapor'
+      fullPath: '/admin/rapor'
+      preLoaderRoute: typeof AuthenticatedAdminRaporRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/shopier': {
+      id: '/_authenticated/admin/shopier'
+      path: '/shopier'
+      fullPath: '/admin/shopier'
+      preLoaderRoute: typeof AuthenticatedAdminShopierRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/siparisler': {
+      id: '/_authenticated/admin/siparisler'
+      path: '/siparisler'
+      fullPath: '/admin/siparisler'
+      preLoaderRoute: typeof AuthenticatedAdminSiparislerRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/sorular': {
+      id: '/_authenticated/admin/sorular'
+      path: '/sorular'
+      fullPath: '/admin/sorular'
+      preLoaderRoute: typeof AuthenticatedAdminSorularRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/tedarikci-log': {
+      id: '/_authenticated/admin/tedarikci-log'
+      path: '/tedarikci-log'
+      fullPath: '/admin/tedarikci-log'
+      preLoaderRoute: typeof AuthenticatedAdminTedarikciLogRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/uniquelisans': {
+      id: '/_authenticated/admin/uniquelisans'
+      path: '/uniquelisans'
+      fullPath: '/admin/uniquelisans'
+      preLoaderRoute: typeof AuthenticatedAdminUniquelisansRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/admin/urunler': {
+      id: '/_authenticated/admin/urunler'
+      path: '/urunler'
+      fullPath: '/admin/urunler'
+      preLoaderRoute: typeof AuthenticatedAdminUrunlerRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
+    '/_authenticated/araclar/': {
+      id: '/_authenticated/araclar/'
+      path: '/'
+      fullPath: '/araclar/'
+      preLoaderRoute: typeof AuthenticatedAraclarIndexRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/arkaplan': {
+      id: '/_authenticated/araclar/arkaplan'
+      path: '/arkaplan'
+      fullPath: '/araclar/arkaplan'
+      preLoaderRoute: typeof AuthenticatedAraclarArkaplanRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/base64': {
+      id: '/_authenticated/araclar/base64'
+      path: '/base64'
+      fullPath: '/araclar/base64'
+      preLoaderRoute: typeof AuthenticatedAraclarBase64RouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/exif': {
+      id: '/_authenticated/araclar/exif'
+      path: '/exif'
+      fullPath: '/araclar/exif'
+      preLoaderRoute: typeof AuthenticatedAraclarExifRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/hash': {
+      id: '/_authenticated/araclar/hash'
+      path: '/hash'
+      fullPath: '/araclar/hash'
+      preLoaderRoute: typeof AuthenticatedAraclarHashRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/json': {
+      id: '/_authenticated/araclar/json'
+      path: '/json'
+      fullPath: '/araclar/json'
+      preLoaderRoute: typeof AuthenticatedAraclarJsonRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/jwt': {
+      id: '/_authenticated/araclar/jwt'
+      path: '/jwt'
+      fullPath: '/araclar/jwt'
+      preLoaderRoute: typeof AuthenticatedAraclarJwtRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/kirp': {
+      id: '/_authenticated/araclar/kirp'
+      path: '/kirp'
+      fullPath: '/araclar/kirp'
+      preLoaderRoute: typeof AuthenticatedAraclarKirpRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/palet': {
+      id: '/_authenticated/araclar/palet'
+      path: '/palet'
+      fullPath: '/araclar/palet'
+      preLoaderRoute: typeof AuthenticatedAraclarPaletRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/pdf': {
+      id: '/_authenticated/araclar/pdf'
+      path: '/pdf'
+      fullPath: '/araclar/pdf'
+      preLoaderRoute: typeof AuthenticatedAraclarPdfRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/qr': {
+      id: '/_authenticated/araclar/qr'
+      path: '/qr'
+      fullPath: '/araclar/qr'
+      preLoaderRoute: typeof AuthenticatedAraclarQrRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/renk': {
+      id: '/_authenticated/araclar/renk'
+      path: '/renk'
+      fullPath: '/araclar/renk'
+      preLoaderRoute: typeof AuthenticatedAraclarRenkRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/sayac': {
+      id: '/_authenticated/araclar/sayac'
+      path: '/sayac'
+      fullPath: '/araclar/sayac'
+      preLoaderRoute: typeof AuthenticatedAraclarSayacRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/sifre': {
+      id: '/_authenticated/araclar/sifre'
+      path: '/sifre'
+      fullPath: '/araclar/sifre'
+      preLoaderRoute: typeof AuthenticatedAraclarSifreRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/sikistir': {
+      id: '/_authenticated/araclar/sikistir'
+      path: '/sikistir'
+      fullPath: '/araclar/sikistir'
+      preLoaderRoute: typeof AuthenticatedAraclarSikistirRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/slug': {
+      id: '/_authenticated/araclar/slug'
+      path: '/slug'
+      fullPath: '/araclar/slug'
+      preLoaderRoute: typeof AuthenticatedAraclarSlugRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/url': {
+      id: '/_authenticated/araclar/url'
+      path: '/url'
+      fullPath: '/araclar/url'
+      preLoaderRoute: typeof AuthenticatedAraclarUrlRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/uuid': {
+      id: '/_authenticated/araclar/uuid'
+      path: '/uuid'
+      fullPath: '/araclar/uuid'
+      preLoaderRoute: typeof AuthenticatedAraclarUuidRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video': {
+      id: '/_authenticated/araclar/video'
+      path: '/video'
+      fullPath: '/araclar/video'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-birlestir': {
+      id: '/_authenticated/araclar/video-birlestir'
+      path: '/video-birlestir'
+      fullPath: '/araclar/video-birlestir'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoBirlestirRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-dondur': {
+      id: '/_authenticated/araclar/video-dondur'
+      path: '/video-dondur'
+      fullPath: '/araclar/video-dondur'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoDondurRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-gif': {
+      id: '/_authenticated/araclar/video-gif'
+      path: '/video-gif'
+      fullPath: '/araclar/video-gif'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoGifRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-hiz': {
+      id: '/_authenticated/araclar/video-hiz'
+      path: '/video-hiz'
+      fullPath: '/araclar/video-hiz'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoHizRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-mp3': {
+      id: '/_authenticated/araclar/video-mp3'
+      path: '/video-mp3'
+      fullPath: '/araclar/video-mp3'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoMp3RouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-sessiz': {
+      id: '/_authenticated/araclar/video-sessiz'
+      path: '/video-sessiz'
+      fullPath: '/araclar/video-sessiz'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoSessizRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-sikistir': {
+      id: '/_authenticated/araclar/video-sikistir'
+      path: '/video-sikistir'
+      fullPath: '/araclar/video-sikistir'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoSikistirRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-thumbnail': {
+      id: '/_authenticated/araclar/video-thumbnail'
+      path: '/video-thumbnail'
+      fullPath: '/araclar/video-thumbnail'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoThumbnailRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-trim': {
+      id: '/_authenticated/araclar/video-trim'
+      path: '/video-trim'
+      fullPath: '/araclar/video-trim'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoTrimRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-uzun': {
+      id: '/_authenticated/araclar/video-uzun'
+      path: '/video-uzun'
+      fullPath: '/araclar/video-uzun'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoUzunRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/video-watermark': {
+      id: '/_authenticated/araclar/video-watermark'
+      path: '/video-watermark'
+      fullPath: '/araclar/video-watermark'
+      preLoaderRoute: typeof AuthenticatedAraclarVideoWatermarkRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/watermark': {
+      id: '/_authenticated/araclar/watermark'
+      path: '/watermark'
+      fullPath: '/araclar/watermark'
+      preLoaderRoute: typeof AuthenticatedAraclarWatermarkRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/hesabim/lisanslar': {
+      id: '/_authenticated/hesabim/lisanslar'
+      path: '/lisanslar'
+      fullPath: '/hesabim/lisanslar'
+      preLoaderRoute: typeof AuthenticatedHesabimLisanslarRouteImport
+      parentRoute: typeof AuthenticatedHesabimRoute
+    }
+    '/api/admin/create': {
+      id: '/api/admin/create'
+      path: '/api/admin/create'
+      fullPath: '/api/admin/create'
+      preLoaderRoute: typeof ApiAdminCreateRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/auth/webhook': {
-      id: '/lovable/email/auth/webhook'
-      path: '/lovable/email/auth/webhook'
-      fullPath: '/lovable/email/auth/webhook'
-      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+    '/api/admin/revoke': {
+      id: '/api/admin/revoke'
+      path: '/api/admin/revoke'
+      fullPath: '/api/admin/revoke'
+      preLoaderRoute: typeof ApiAdminRevokeRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/lovable/email/auth/preview': {
-      id: '/lovable/email/auth/preview'
-      path: '/lovable/email/auth/preview'
-      fullPath: '/lovable/email/auth/preview'
-      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+    '/api/public/catalog.json': {
+      id: '/api/public/catalog.json'
+      path: '/api/public/catalog.json'
+      fullPath: '/api/public/catalog.json'
+      preLoaderRoute: typeof ApiPublicCatalogDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/v1/auth/verify': {
-      id: '/api/v1/auth/verify'
-      path: '/api/v1/auth/verify'
-      fullPath: '/api/v1/auth/verify'
-      preLoaderRoute: typeof ApiV1AuthVerifyRouteImport
+    '/api/public/catalog.xml': {
+      id: '/api/public/catalog.xml'
+      path: '/api/public/catalog.xml'
+      fullPath: '/api/public/catalog.xml'
+      preLoaderRoute: typeof ApiPublicCatalogDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/weekly-digest': {
-      id: '/api/public/hooks/weekly-digest'
-      path: '/api/public/hooks/weekly-digest'
-      fullPath: '/api/public/hooks/weekly-digest'
-      preLoaderRoute: typeof ApiPublicHooksWeeklyDigestRouteImport
+    '/api/public/embed.js': {
+      id: '/api/public/embed.js'
+      path: '/api/public/embed.js'
+      fullPath: '/api/public/embed.js'
+      preLoaderRoute: typeof ApiPublicEmbedDotjsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/uniquelisans-catalog': {
-      id: '/api/public/hooks/uniquelisans-catalog'
-      path: '/api/public/hooks/uniquelisans-catalog'
-      fullPath: '/api/public/hooks/uniquelisans-catalog'
-      preLoaderRoute: typeof ApiPublicHooksUniquelisansCatalogRouteImport
+    '/api/public/login': {
+      id: '/api/public/login'
+      path: '/api/public/login'
+      fullPath: '/api/public/login'
+      preLoaderRoute: typeof ApiPublicLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/telegram': {
-      id: '/api/public/hooks/telegram'
-      path: '/api/public/hooks/telegram'
-      fullPath: '/api/public/hooks/telegram'
-      preLoaderRoute: typeof ApiPublicHooksTelegramRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/sync-uniquelisans': {
-      id: '/api/public/hooks/sync-uniquelisans'
-      path: '/api/public/hooks/sync-uniquelisans'
-      fullPath: '/api/public/hooks/sync-uniquelisans'
-      preLoaderRoute: typeof ApiPublicHooksSyncUniquelisansRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/subscriptions-renew': {
-      id: '/api/public/hooks/subscriptions-renew'
-      path: '/api/public/hooks/subscriptions-renew'
-      fullPath: '/api/public/hooks/subscriptions-renew'
-      preLoaderRoute: typeof ApiPublicHooksSubscriptionsRenewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/shopier': {
-      id: '/api/public/hooks/shopier'
-      path: '/api/public/hooks/shopier'
-      fullPath: '/api/public/hooks/shopier'
-      preLoaderRoute: typeof ApiPublicHooksShopierRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/push-tick': {
-      id: '/api/public/hooks/push-tick'
-      path: '/api/public/hooks/push-tick'
-      fullPath: '/api/public/hooks/push-tick'
-      preLoaderRoute: typeof ApiPublicHooksPushTickRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/process-ai-videos': {
-      id: '/api/public/hooks/process-ai-videos'
-      path: '/api/public/hooks/process-ai-videos'
-      fullPath: '/api/public/hooks/process-ai-videos'
-      preLoaderRoute: typeof ApiPublicHooksProcessAiVideosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/catalog-webhooks': {
-      id: '/api/public/hooks/catalog-webhooks'
-      path: '/api/public/hooks/catalog-webhooks'
-      fullPath: '/api/public/hooks/catalog-webhooks'
-      preLoaderRoute: typeof ApiPublicHooksCatalogWebhooksRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/campaign-tick': {
-      id: '/api/public/hooks/campaign-tick'
-      path: '/api/public/hooks/campaign-tick'
-      fullPath: '/api/public/hooks/campaign-tick'
-      preLoaderRoute: typeof ApiPublicHooksCampaignTickRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/hooks/abandonment-reminder': {
-      id: '/api/public/hooks/abandonment-reminder'
-      path: '/api/public/hooks/abandonment-reminder'
-      fullPath: '/api/public/hooks/abandonment-reminder'
-      preLoaderRoute: typeof ApiPublicHooksAbandonmentReminderRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/dealer/$': {
-      id: '/api/public/dealer/$'
-      path: '/api/public/dealer/$'
-      fullPath: '/api/public/dealer/$'
-      preLoaderRoute: typeof ApiPublicDealerSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/cyberlab/verify': {
-      id: '/api/public/cyberlab/verify'
-      path: '/api/public/cyberlab/verify'
-      fullPath: '/api/public/cyberlab/verify'
-      preLoaderRoute: typeof ApiPublicCyberlabVerifyRouteImport
+    '/api/public/sitemap.xml': {
+      id: '/api/public/sitemap.xml'
+      path: '/api/public/sitemap.xml'
+      fullPath: '/api/public/sitemap.xml'
+      preLoaderRoute: typeof ApiPublicSitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/cyberlab/proxy': {
@@ -2956,11 +2850,137 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCyberlabProxyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/v1/auth/verify': {
-      id: '/api/public/v1/auth/verify'
-      path: '/api/public/v1/auth/verify'
-      fullPath: '/api/public/v1/auth/verify'
-      preLoaderRoute: typeof ApiPublicV1AuthVerifyRouteImport
+    '/api/public/cyberlab/verify': {
+      id: '/api/public/cyberlab/verify'
+      path: '/api/public/cyberlab/verify'
+      fullPath: '/api/public/cyberlab/verify'
+      preLoaderRoute: typeof ApiPublicCyberlabVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/dealer/$': {
+      id: '/api/public/dealer/$'
+      path: '/api/public/dealer/$'
+      fullPath: '/api/public/dealer/$'
+      preLoaderRoute: typeof ApiPublicDealerSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/abandonment-reminder': {
+      id: '/api/public/hooks/abandonment-reminder'
+      path: '/api/public/hooks/abandonment-reminder'
+      fullPath: '/api/public/hooks/abandonment-reminder'
+      preLoaderRoute: typeof ApiPublicHooksAbandonmentReminderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/campaign-tick': {
+      id: '/api/public/hooks/campaign-tick'
+      path: '/api/public/hooks/campaign-tick'
+      fullPath: '/api/public/hooks/campaign-tick'
+      preLoaderRoute: typeof ApiPublicHooksCampaignTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/catalog-webhooks': {
+      id: '/api/public/hooks/catalog-webhooks'
+      path: '/api/public/hooks/catalog-webhooks'
+      fullPath: '/api/public/hooks/catalog-webhooks'
+      preLoaderRoute: typeof ApiPublicHooksCatalogWebhooksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/migrate': {
+      id: '/api/public/hooks/migrate'
+      path: '/api/public/hooks/migrate'
+      fullPath: '/api/public/hooks/migrate'
+      preLoaderRoute: typeof ApiPublicHooksMigrateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/process-ai-videos': {
+      id: '/api/public/hooks/process-ai-videos'
+      path: '/api/public/hooks/process-ai-videos'
+      fullPath: '/api/public/hooks/process-ai-videos'
+      preLoaderRoute: typeof ApiPublicHooksProcessAiVideosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/push-tick': {
+      id: '/api/public/hooks/push-tick'
+      path: '/api/public/hooks/push-tick'
+      fullPath: '/api/public/hooks/push-tick'
+      preLoaderRoute: typeof ApiPublicHooksPushTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/shopier': {
+      id: '/api/public/hooks/shopier'
+      path: '/api/public/hooks/shopier'
+      fullPath: '/api/public/hooks/shopier'
+      preLoaderRoute: typeof ApiPublicHooksShopierRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/subscriptions-renew': {
+      id: '/api/public/hooks/subscriptions-renew'
+      path: '/api/public/hooks/subscriptions-renew'
+      fullPath: '/api/public/hooks/subscriptions-renew'
+      preLoaderRoute: typeof ApiPublicHooksSubscriptionsRenewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/sync-uniquelisans': {
+      id: '/api/public/hooks/sync-uniquelisans'
+      path: '/api/public/hooks/sync-uniquelisans'
+      fullPath: '/api/public/hooks/sync-uniquelisans'
+      preLoaderRoute: typeof ApiPublicHooksSyncUniquelisansRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/telegram': {
+      id: '/api/public/hooks/telegram'
+      path: '/api/public/hooks/telegram'
+      fullPath: '/api/public/hooks/telegram'
+      preLoaderRoute: typeof ApiPublicHooksTelegramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/uniquelisans-catalog': {
+      id: '/api/public/hooks/uniquelisans-catalog'
+      path: '/api/public/hooks/uniquelisans-catalog'
+      fullPath: '/api/public/hooks/uniquelisans-catalog'
+      preLoaderRoute: typeof ApiPublicHooksUniquelisansCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/weekly-digest': {
+      id: '/api/public/hooks/weekly-digest'
+      path: '/api/public/hooks/weekly-digest'
+      fullPath: '/api/public/hooks/weekly-digest'
+      preLoaderRoute: typeof ApiPublicHooksWeeklyDigestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/v1/auth/verify': {
+      id: '/api/v1/auth/verify'
+      path: '/api/v1/auth/verify'
+      fullPath: '/api/v1/auth/verify'
+      preLoaderRoute: typeof ApiV1AuthVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/preview': {
+      id: '/lovable/email/auth/preview'
+      path: '/lovable/email/auth/preview'
+      fullPath: '/lovable/email/auth/preview'
+      preLoaderRoute: typeof LovableEmailAuthPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/auth/webhook': {
+      id: '/lovable/email/auth/webhook'
+      path: '/lovable/email/auth/webhook'
+      fullPath: '/lovable/email/auth/webhook'
+      preLoaderRoute: typeof LovableEmailAuthWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/auth/google/callback': {
+      id: '/api/public/auth/google/callback'
+      path: '/api/public/auth/google/callback'
+      fullPath: '/api/public/auth/google/callback'
+      preLoaderRoute: typeof ApiPublicAuthGoogleCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/auth/google/start': {
@@ -2970,11 +2990,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAuthGoogleStartRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/auth/google/callback': {
-      id: '/api/public/auth/google/callback'
-      path: '/api/public/auth/google/callback'
-      fullPath: '/api/public/auth/google/callback'
-      preLoaderRoute: typeof ApiPublicAuthGoogleCallbackRouteImport
+    '/api/public/v1/auth/verify': {
+      id: '/api/public/v1/auth/verify'
+      path: '/api/public/v1/auth/verify'
+      fullPath: '/api/public/v1/auth/verify'
+      preLoaderRoute: typeof ApiPublicV1AuthVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -3248,6 +3268,7 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicHooksAbandonmentReminderRoute,
   ApiPublicHooksCampaignTickRoute: ApiPublicHooksCampaignTickRoute,
   ApiPublicHooksCatalogWebhooksRoute: ApiPublicHooksCatalogWebhooksRoute,
+  ApiPublicHooksMigrateRoute: ApiPublicHooksMigrateRoute,
   ApiPublicHooksProcessAiVideosRoute: ApiPublicHooksProcessAiVideosRoute,
   ApiPublicHooksPushTickRoute: ApiPublicHooksPushTickRoute,
   ApiPublicHooksShopierRoute: ApiPublicHooksShopierRoute,
@@ -3268,13 +3289,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
