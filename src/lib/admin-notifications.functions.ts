@@ -36,12 +36,32 @@ export const sendAdminNotification = createServerFn({ method: "POST" })
 
     if (targetIds.length === 0) throw new Error("Hedef kullanıcı yok");
 
+    const { sendTelegram } = await import("./telegram.server");
     let inserted = 0;
+    
+    // Fetch telegram chat ids in bulk to avoid too many small queries
+    const placeholders = targetIds.map(() => "?").join(",");
+    const profiles = await mysqlQuery<{ id: string; telegram_chat_id: string | null }>(
+      `SELECT id, telegram_chat_id FROM profiles WHERE id IN (${placeholders})`,
+      targetIds
+    );
+    const tgMap = new Map(profiles.map(p => [p.id, p.telegram_chat_id]));
+
     for (const uid of targetIds) {
       await mysqlQuery(
         "INSERT INTO notifications (id, user_id, type, title, body, link, created_at) VALUES (?,?,?,?,?,?,NOW())",
         [crypto.randomUUID(), uid, data.type, data.title, data.body || null, data.link || null],
       );
+      
+      const chatId = tgMap.get(uid);
+      if (chatId) {
+        let tgText = `📢 *${data.title}*\n\n${data.body || ""}`;
+        if (data.link) {
+          tgText += `\n\n🔗 [Detayları Gör](https://siberlisans.com${data.link.startsWith("/") ? data.link : "/" + data.link})`;
+        }
+        await sendTelegram({ chatId, text: tgText.trim() });
+      }
+      
       inserted += 1;
     }
     return { ok: true, count: inserted };

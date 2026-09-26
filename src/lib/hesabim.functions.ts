@@ -16,6 +16,9 @@ export type MyOrder = {
   items: {
     quantity: number;
     product_name_snapshot: string;
+    warranty: boolean;
+    warranty_price_try: number;
+    warranty_label: string | null;
     product: { slug: string; delivery_type: string } | null;
   }[];
   keys: {
@@ -60,10 +63,14 @@ export const listMyOrders = createServerFn({ method: "GET" })
       order_id: string;
       quantity: number;
       product_name_snapshot: string;
+      warranty: unknown;
+      warranty_price_try: unknown;
+      warranty_label: string | null;
       product_slug: string | null;
       product_delivery_type: string | null;
     }>(
       `SELECT oi.order_id, oi.quantity, oi.product_name_snapshot,
+              oi.warranty, oi.warranty_price_try, oi.warranty_label,
               p.slug AS product_slug, p.delivery_type AS product_delivery_type
          FROM order_items oi LEFT JOIN products p ON p.id = oi.product_id
         WHERE oi.order_id IN (${placeholders})`,
@@ -103,6 +110,9 @@ export const listMyOrders = createServerFn({ method: "GET" })
         .map((i) => ({
           quantity: i.quantity,
           product_name_snapshot: i.product_name_snapshot,
+          warranty: !!(i.warranty && (i.warranty === true || i.warranty === 1 || i.warranty === "1")),
+          warranty_price_try: num(i.warranty_price_try) ?? 0,
+          warranty_label: i.warranty_label ?? null,
           product: i.product_slug
             ? { slug: i.product_slug, delivery_type: i.product_delivery_type ?? "key" }
             : null,
@@ -192,4 +202,24 @@ export const getMyWalletBalance = createServerFn({ method: "GET" })
       [context.userId],
     );
     return { balance_try: num(row?.balance_try) ?? 0 };
+  });
+
+/** Kullanıcının Telegram eşleşme durumu. */
+export const getTelegramStatus = createServerFn({ method: "GET" })
+  .middleware([requireAuth])
+  .handler(async ({ context }): Promise<{ chat_id: string | null; verify_code: string | null }> => {
+    const row = await mysqlOne<{ telegram_chat_id: string | null; telegram_verify_code: string | null }>(
+      "SELECT telegram_chat_id, telegram_verify_code FROM profiles WHERE id=?",
+      [context.userId]
+    );
+    return { chat_id: row?.telegram_chat_id ?? null, verify_code: row?.telegram_verify_code ?? null };
+  });
+
+/** Telegram eşleştirme kodu oluşturur. */
+export const generateTelegramVerifyCode = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .handler(async ({ context }): Promise<{ code: string }> => {
+    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    await mysqlQuery("UPDATE profiles SET telegram_verify_code=? WHERE id=?", [code, context.userId]);
+    return { code };
   });

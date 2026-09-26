@@ -20,6 +20,7 @@ import { DailyStreakCard } from "@/components/DailyStreakCard";
 import { AffiliateBlock } from "@/components/AffiliateBlock";
 import { TransferButton } from "@/components/TransferButton";
 import { getMyAiSubscription } from "@/lib/ai-subscriptions.functions";
+import { getMyEmailVerificationStatus, resendMyEmailVerificationCode, verifyEmailCode } from "@/lib/auth.functions";
 import { listMyAiJobs } from "@/lib/ai-tools.functions";
 import { ReviewPromptCard } from "@/components/ReviewPromptCard";
 import {
@@ -29,6 +30,8 @@ import {
   updateMyTelegramHandle,
   changeMyPassword,
   getMyWalletBalance,
+  getTelegramStatus,
+  generateTelegramVerifyCode,
   type MyOrder,
 } from "@/lib/hesabim.functions";
 
@@ -348,12 +351,18 @@ function OrdersTab({ orders, isLoading }: { orders: Order[]; isLoading: boolean 
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
                     <div className="font-semibold break-words leading-snug">{title}</div>
-                    {(o.items ?? []).length > 0 && (
+                      {(o.items ?? []).length > 0 && (
                       <ul className="mt-1 space-y-0.5 text-[11px] text-muted-foreground">
                         {(o.items ?? []).map((it, i) => (
                           <li key={i} className="truncate">
                             <span className="text-primary/60">·</span> {it.product_name_snapshot}
                             {it.quantity > 1 ? ` ×${it.quantity}` : ""}
+                            {it.warranty && (
+                              <span className="ml-1.5 inline-flex items-center gap-0.5 text-[10px] text-primary/80">
+                                <ShieldCheck className="inline h-3 w-3" />
+                                garanti{it.warranty_label ? ` · ${it.warranty_label}` : ""}
+                              </span>
+                            )}
                           </li>
                         ))}
                       </ul>
@@ -585,17 +594,65 @@ function ProfileTab({ userId, email, telegramHandle, onSignOut }: { userId: stri
   const [pw2, setPw2] = useState("");
   const [saving, setSaving] = useState(false);
   const [avatarSaving, setAvatarSaving] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
+  const [verificationBusy, setVerificationBusy] = useState(false);
 
   const avatarFn = useServerFn(getMyAvatar);
   const updateAvatarFn = useServerFn(updateMyAvatar);
   const updateTelegramFn = useServerFn(updateMyTelegramHandle);
   const changePasswordFn = useServerFn(changeMyPassword);
+  const verificationStatusFn = useServerFn(getMyEmailVerificationStatus);
+  const resendVerificationFn = useServerFn(resendMyEmailVerificationCode);
+  const verifyEmailFn = useServerFn(verifyEmailCode);
+  const tgStatusFn = useServerFn(getTelegramStatus);
+  const generateTgCodeFn = useServerFn(generateTelegramVerifyCode);
 
   const { data: profile, refetch: refetchProfile } = useQuery({
     queryKey: ["profile-avatar", userId],
     enabled: !!userId,
     queryFn: () => avatarFn(),
   });
+  const { data: emailVerification, refetch: refetchEmailVerification } = useQuery({
+    queryKey: ["email-verification", userId],
+    enabled: !!userId,
+    queryFn: () => verificationStatusFn(),
+  });
+  const { data: tgStatus, refetch: refetchTgStatus } = useQuery({
+    queryKey: ["telegram-status", userId],
+    enabled: !!userId,
+    queryFn: () => tgStatusFn(),
+  });
+  const [tgPairing, setTgPairing] = useState(false);
+
+  const resendVerification = async () => {
+    setVerificationBusy(true);
+    try {
+      const result = await resendVerificationFn();
+      if (!result.ok) throw new Error(result.error);
+      if (result.verified) return toast.success("[✓] e-posta zaten doğrulanmış");
+      toast.success("[✓] 6 haneli doğrulama kodu e-postana gönderildi");
+    } catch (e) {
+      toast.error(`[!] ${(e as Error).message}`);
+    } finally {
+      setVerificationBusy(false);
+    }
+  };
+
+  const confirmEmail = async () => {
+    if (!/^\d{6}$/.test(verificationCode)) return toast.error("[!] 6 haneli doğrulama kodunu gir");
+    setVerificationBusy(true);
+    try {
+      const result = await verifyEmailFn({ data: { email, code: verificationCode } });
+      if (!result.ok) throw new Error(result.error);
+      setVerificationCode("");
+      await refetchEmailVerification();
+      toast.success("[✓] e-posta adresin doğrulandı");
+    } catch (e) {
+      toast.error(`[!] ${(e as Error).message}`);
+    } finally {
+      setVerificationBusy(false);
+    }
+  };
 
   const pickAvatar = async (id: string) => {
     if (!userId) return;
@@ -608,6 +665,19 @@ function ProfileTab({ userId, email, telegramHandle, onSignOut }: { userId: stri
       toast.error(`[!] ${(e as Error).message}`);
     } finally {
       setAvatarSaving(false);
+    }
+  };
+
+  const generateTgCode = async () => {
+    setTgPairing(true);
+    try {
+      await generateTgCodeFn();
+      await refetchTgStatus();
+      toast.success("[✓] eşleştirme kodu oluşturuldu");
+    } catch (e) {
+      toast.error(`[!] ${(e as Error).message}`);
+    } finally {
+      setTgPairing(false);
     }
   };
 
@@ -657,6 +727,75 @@ function ProfileTab({ userId, email, telegramHandle, onSignOut }: { userId: stri
             <div className="font-mono text-sm break-all">{email}</div>
           </div>
         </div>
+      </div>
+
+      <div className="glass-card rounded-lg p-5">
+        <div className="flex items-center gap-2 font-mono text-sm font-semibold">
+          <ShieldCheck className={`h-4 w-4 ${emailVerification?.verified ? "text-primary" : "text-warn"}`} />
+          E-posta Doğrulama
+        </div>
+        {emailVerification?.verified ? (
+          <p className="mt-2 font-mono text-xs text-muted-foreground">[✓] {email} adresi doğrulanmış.</p>
+        ) : (
+          <div className="mt-3 space-y-3">
+            <p className="font-mono text-xs text-muted-foreground">
+              E-postana gelen 6 haneli kodu gir. Kod 15 dakika geçerlidir.
+            </p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Input
+                value={verificationCode}
+                onChange={(event) => setVerificationCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                placeholder="123456"
+                className="font-mono tracking-[0.4em] sm:max-w-48"
+              />
+              <Button size="sm" disabled={verificationBusy} onClick={confirmEmail} className="font-mono">
+                {verificationBusy ? "işleniyor…" : "> kodu doğrula"}
+              </Button>
+              <Button size="sm" variant="outline" disabled={verificationBusy} onClick={resendVerification} className="font-mono">
+                kodu tekrar gönder
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="glass-card rounded-lg p-5">
+        <div className="flex items-center gap-2 font-mono text-sm font-semibold">
+          <ShieldCheck className={`h-4 w-4 ${tgStatus?.chat_id ? "text-primary" : "text-warn"}`} />
+          Telegram Bildirimleri
+        </div>
+        {tgStatus?.chat_id ? (
+          <p className="mt-2 font-mono text-xs text-muted-foreground">
+            [✓] Telegram hesabınız başarıyla eşleştirildi. (ID: {tgStatus.chat_id})
+          </p>
+        ) : (
+          <div className="mt-3 space-y-3">
+            <p className="font-mono text-xs text-muted-foreground">
+              Şifre sıfırlama, yeni sipariş veya admin mesajlarını doğrudan Telegram'dan alın.
+            </p>
+            {tgStatus?.verify_code ? (
+              <div className="rounded-md border border-primary/30 bg-primary/5 p-3">
+                <p className="font-mono text-xs text-muted-foreground mb-3">
+                  Aşağıdaki butona tıklayarak Telegram botumuzu başlatın.
+                </p>
+                <Button asChild size="sm" className="font-mono">
+                  <a href={`https://t.me/siberlisans_infobot?start=${tgStatus.verify_code}`} target="_blank" rel="noreferrer">
+                    > Telegram'ı Aç
+                  </a>
+                </Button>
+                <p className="mt-3 font-mono text-[10px] text-muted-foreground break-all">
+                  veya manuel link: https://t.me/siberlisans_infobot?start={tgStatus.verify_code}
+                </p>
+              </div>
+            ) : (
+              <Button size="sm" disabled={tgPairing} onClick={generateTgCode} className="font-mono">
+                {tgPairing ? "işleniyor…" : "> Eşleştirme Kodu Al"}
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="glass-card rounded-lg p-5">

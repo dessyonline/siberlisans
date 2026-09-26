@@ -54,7 +54,21 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
 
     const link = `https://siberlisans.com/sifre-belirle?token=${token}`;
     const delivered = await sendPasswordResetEmail(email, link);
-    if (!delivered) {
+
+    const profile = await mysqlOne<{ telegram_chat_id: string | null }>(
+      "SELECT telegram_chat_id FROM profiles WHERE id=? LIMIT 1",
+      [user.id]
+    );
+
+    if (profile?.telegram_chat_id) {
+      const { sendTelegram } = await import("./telegram.server");
+      await sendTelegram({
+        chatId: profile.telegram_chat_id,
+        text: `🔐 *Şifre Sıfırlama Talebi*\n\nSiberLisans hesabınız için şifre sıfırlama talebinde bulundunuz.\n\nAşağıdaki bağlantıya tıklayarak yeni şifrenizi belirleyebilirsiniz:\n${link}\n\nEğer bu işlemi siz yapmadıysanız lütfen bu mesajı dikkate almayın.`,
+      });
+    }
+
+    if (!delivered && !profile?.telegram_chat_id) {
       if (!recent) await mysqlQuery("DELETE FROM auth_password_tokens WHERE token=?", [token]);
       return { ok: false, message: "Şifre sıfırlama e-postası gönderilemedi. Lütfen tekrar deneyin." };
     }

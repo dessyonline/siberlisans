@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getCookie, setCookie, deleteCookie, getRequestIP } from "@tanstack/react-start/server";
 import { z } from "zod";
+import { requireAuth } from "./auth-middleware.server";
 
 const credentials = z.object({
   email: z.string().email(),
@@ -85,8 +86,19 @@ function randomCode() {
 }
 
 async function issueVerificationCode(userId: string, email: string) {
-  const { mysqlQuery } = await import("./mysql.server");
+  const { mysqlQuery, mysqlOne } = await import("./mysql.server");
   const { sendEmailVerificationCode } = await import("./gmail.server");
+
+  const recent = await mysqlOne<{ created_at: string }>(
+    "SELECT created_at FROM auth_email_verifications WHERE user_id=? ORDER BY created_at DESC LIMIT 1",
+    [userId]
+  );
+  if (recent) {
+    const createdTime = new Date(recent.created_at).getTime();
+    if (Date.now() - createdTime < 60000) {
+      throw new Error("Lütfen yeni bir kod göndermeden önce 60 saniye bekleyin.");
+    }
+  }
   const code = randomCode();
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(code));
   const codeHash = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
@@ -141,8 +153,8 @@ export const signUp = createServerFn({ method: "POST" })
 
     const refCode = `SP${id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
     await mysqlQuery(
-      `INSERT INTO profiles (id,email,display_name,created_at,updated_at,referral_code,referred_by)
-       VALUES (?,?,?,?,?,?,?)`,
+      `INSERT INTO profiles (id,email,display_name,created_at,updated_at,referral_code,referred_by,telegram_handle)
+       VALUES (?,?,?,?,?,?,?,?)`,
       [
         id,
         email,
@@ -151,6 +163,7 @@ export const signUp = createServerFn({ method: "POST" })
         now,
         refCode,
         referredBy,
+        data.telegramUsername?.trim() || null,
       ],
     );
     await mysqlQuery("INSERT IGNORE INTO user_roles (id,user_id,role) VALUES (?,?,?)", [
@@ -193,6 +206,36 @@ export const verifyEmailCode = createServerFn({ method: "POST" })
     await mysqlQuery("UPDATE auth_users SET email_confirmed_at=? WHERE id=?", [mysqlDate(), user.id]);
     await mysqlQuery("DELETE FROM auth_email_verifications WHERE user_id=?", [user.id]);
     return { ok: true };
+  });
+
+/** Hesap ekranında doğrulama durumunu gösterir. */
+export const getMyEmailVerificationStatus = createServerFn({ method: "GET" })
+  .middleware([requireAuth])
+  .handler(async ({ context }): Promise<{ email: string; verified: boolean }> => {
+    const { mysqlOne } = await import("./mysql.server");
+    const user = await mysqlOne<{ email: string; email_confirmed_at: string | null }>(
+      "SELECT email,email_confirmed_at FROM auth_users WHERE id=? LIMIT 1",
+      [context.userId],
+    );
+    if (!user?.email) throw new Error("E-posta bilgisi bulunamadı.");
+    return { email: user.email, verified: !!user.email_confirmed_at };
+  });
+
+/** Oturum sahibinin doğrulama kodunu yeniden göndermesi için hesap ekranı işlemi. */
+export const resendMyEmailVerificationCode = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .handler(async ({ context }): Promise<{ ok: boolean; verified: boolean; error?: string }> => {
+    const { mysqlOne } = await import("./mysql.server");
+    const user = await mysqlOne<{ email: string; email_confirmed_at: string | null }>(
+      "SELECT email,email_confirmed_at FROM auth_users WHERE id=? LIMIT 1",
+      [context.userId],
+    );
+    if (!user?.email) return { ok: false, verified: false, error: "E-posta bilgisi bulunamadı." };
+    if (user.email_confirmed_at) return { ok: true, verified: true };
+    const sent = await issueVerificationCode(context.userId, user.email);
+    return sent
+      ? { ok: true, verified: false }
+      : { ok: false, verified: false, error: "Doğrulama e-postası gönderilemedi. Gmail bağlantısını kontrol edin." };
   });
 
 export const signOut = createServerFn({ method: "POST" }).handler(async () => {

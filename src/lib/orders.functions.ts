@@ -41,6 +41,20 @@ async function pushNotification(
       "INSERT INTO notifications (id,user_id,type,title,body,link,created_at) VALUES (?,?,?,?,?,?,?)",
       [uid(), userId, type, title, body, link, ts()],
     );
+
+    const profile = await mysqlOne<{ telegram_chat_id: string | null }>(
+      "SELECT telegram_chat_id FROM profiles WHERE id=? LIMIT 1",
+      [userId]
+    );
+
+    if (profile?.telegram_chat_id) {
+      const { sendTelegram } = await import("./telegram.server");
+      let tgText = `🔔 *${title}*\n\n${body}`;
+      if (link) {
+        tgText += `\n\n🔗 [Detayları Gör](https://siberlisans.com${link.startsWith("/") ? link : "/" + link})`;
+      }
+      await sendTelegram({ chatId: profile.telegram_chat_id, text: tgText });
+    }
   } catch (e) {
     console.error("[notify] push", (e as Error).message);
   }
