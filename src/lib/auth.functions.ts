@@ -37,22 +37,34 @@ export const signIn = createServerFn({ method: "POST" })
     try {
       const auth = await import("./auth.server");
       const ipGuard = await import("./ip-guard.server");
-      if (await ipGuard.isIpBlocked(ipGuard.requestIp())) return { ok: false, error: ipGuard.IP_BLOCKED_MESSAGE };
+      
+      const ip = ipGuard.requestIp();
+      if (await ipGuard.isIpBlocked(ip)) return { ok: false, error: ipGuard.IP_BLOCKED_MESSAGE };
+      
       const user = await auth.findUserByEmail(data.email);
-      if (!user) return { ok: false, error: "E-posta veya şifre hatalı." };
+      if (!user) {
+        await ipGuard.recordFailedAttempt(ip);
+        return { ok: false, error: "E-posta veya şifre hatalı." };
+      }
       if (!user.password_hash) {
+        await ipGuard.recordFailedAttempt(ip);
         return {
           ok: false,
           error: "Bu hesap için henüz şifre belirlenmemiş. 'Şifremi unuttum' ile yeni şifre oluşturun.",
         };
       }
       if (!user.email_confirmed_at) {
+        // Doğrulanmamış hesaplara çok basmak da bot olabilir, ama şimdilik sadece uyarı verelim
         return { ok: false, error: "E-posta adresinizi doğrulamanız gerekiyor. Kodu yeniden göndermek için kayıt ekranını kullanın." };
       }
       if (!(await auth.verifyPassword(data.password, user.password_hash))) {
+        await ipGuard.recordFailedAttempt(ip);
         return { ok: false, error: "E-posta veya şifre hatalı." };
       }
-      const { token, expires } = await auth.createSession(user.id, getRequestIP() ?? null);
+      
+      // Başarılı giriş
+      await ipGuard.resetFailedAttempts(ip);
+      const { token, expires } = await auth.createSession(user.id, ip);
 
       const isProd = process.env.NODE_ENV === "production";
       setCookie(auth.SESSION_COOKIE, token, {
@@ -119,11 +131,16 @@ export const signUp = createServerFn({ method: "POST" })
   .validator((d: unknown) => credentials.parse(d))
   .handler(async ({ data }): Promise<{ ok: true; verificationRequired: true } | { ok: false; error: string }> => {
     const auth = await import("./auth.server");
+    const ipGuard = await import("./ip-guard.server");
     const { mysqlQuery } = await import("./mysql.server");
+    
+    const ip = ipGuard.requestIp();
+    if (await ipGuard.isIpBlocked(ip)) return { ok: false, error: ipGuard.IP_BLOCKED_MESSAGE };
 
     const email = data.email.trim().toLowerCase();
     const at = email.lastIndexOf("@");
     if (at > 0 && email.slice(0, at).includes("+")) {
+      await ipGuard.recordFailedAttempt(ip);
       return { ok: false, error: "Geçici/Alias (+ işaretli) e-postalar kabul edilmemektedir." };
     }
     const existing = await auth.findUserByEmail(email);
