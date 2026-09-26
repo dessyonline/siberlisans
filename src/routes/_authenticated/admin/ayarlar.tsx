@@ -1,15 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { upsertBankAccount, listBankAccounts, type BankAccountRow } from "@/lib/orders.functions";
+import { getSiteSettings, updateSiteSettings, type SiteSettings } from "@/lib/settings.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Save } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/ayarlar")({
   component: SettingsAdmin,
@@ -18,6 +21,124 @@ export const Route = createFileRoute("/_authenticated/admin/ayarlar")({
 type Bank = { id?: string; bank_name: string; iban: string; holder_name: string; active: boolean };
 
 function SettingsAdmin() {
+  return (
+    <div>
+      <h1 className="font-mono text-xl sm:text-2xl neon-text break-words mb-4">Genel Ayarlar</h1>
+      <Tabs defaultValue="site" className="w-full">
+        <TabsList className="mb-4">
+          <TabsTrigger value="site" className="font-mono text-xs">Site Ayarları</TabsTrigger>
+          <TabsTrigger value="banks" className="font-mono text-xs">Banka Hesapları</TabsTrigger>
+        </TabsList>
+        <TabsContent value="site">
+          <SiteSettingsTab />
+        </TabsContent>
+        <TabsContent value="banks">
+          <BankSettingsTab />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function SiteSettingsTab() {
+  const qc = useQueryClient();
+  const updateFn = useServerFn(updateSiteSettings);
+  const [saving, setSaving] = useState(false);
+  
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ["site-settings-admin"],
+    queryFn: async (): Promise<SiteSettings> => useServerFn(getSiteSettings)(),
+  });
+
+  const [form, setForm] = useState<Partial<SiteSettings>>({});
+
+  useEffect(() => {
+    if (settings) {
+      setForm(settings);
+    }
+  }, [settings]);
+
+  const save = async () => {
+    setSaving(true);
+    try {
+      await updateFn({
+        data: {
+          site_name: form.site_name,
+          site_description: form.site_description,
+          maintenance_mode: form.maintenance_mode,
+          whatsapp_number: form.whatsapp_number,
+          telegram_url: form.telegram_url,
+          instagram_url: form.instagram_url,
+          announcement_text: form.announcement_text,
+          announcement_active: form.announcement_active,
+        }
+      });
+      toast.success("Site ayarları güncellendi");
+      qc.invalidateQueries({ queryKey: ["site-settings-admin"] });
+    } catch (e) {
+      toast.error("Ayarlar kaydedilemedi");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (isLoading) return <div className="p-5 font-mono text-xs">Yükleniyor...</div>;
+
+  return (
+    <div className="glass-card rounded-lg p-5 space-y-4 max-w-3xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <Label className="font-mono text-xs">Site Başlığı</Label>
+          <Input value={form.site_name ?? ""} onChange={(e) => setForm({ ...form, site_name: e.target.value })} className="font-mono" />
+        </div>
+        <div>
+          <Label className="font-mono text-xs">Site Açıklaması (SEO)</Label>
+          <Input value={form.site_description ?? ""} onChange={(e) => setForm({ ...form, site_description: e.target.value })} className="font-mono" />
+        </div>
+        <div>
+          <Label className="font-mono text-xs">WhatsApp Numarası</Label>
+          <Input value={form.whatsapp_number ?? ""} onChange={(e) => setForm({ ...form, whatsapp_number: e.target.value })} placeholder="Örn: 905554443322" className="font-mono" />
+        </div>
+        <div>
+          <Label className="font-mono text-xs">Telegram Bot Linki</Label>
+          <Input value={form.telegram_url ?? ""} onChange={(e) => setForm({ ...form, telegram_url: e.target.value })} placeholder="https://t.me/SeninBot" className="font-mono" />
+        </div>
+        <div>
+          <Label className="font-mono text-xs">Instagram Linki</Label>
+          <Input value={form.instagram_url ?? ""} onChange={(e) => setForm({ ...form, instagram_url: e.target.value })} placeholder="https://instagram.com/siberlisans" className="font-mono" />
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-border/40 space-y-4">
+        <h3 className="font-mono text-sm neon-text">Duyuru / Banner</h3>
+        <div>
+          <Label className="font-mono text-xs">Duyuru Metni</Label>
+          <Textarea value={form.announcement_text ?? ""} onChange={(e) => setForm({ ...form, announcement_text: e.target.value })} placeholder="Kısa süreliğine tüm ürünlerde %20 indirim!" className="font-mono min-h-[80px]" />
+        </div>
+        <div className="flex items-center gap-2 font-mono text-sm">
+          <Switch checked={form.announcement_active ?? false} onCheckedChange={(v) => setForm({ ...form, announcement_active: v })} />
+          <span>Duyuruyu Sitede Göster</span>
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-border/40">
+        <h3 className="font-mono text-sm text-destructive mb-3">Kritik Ayarlar</h3>
+        <div className="flex items-center gap-2 font-mono text-sm bg-destructive/10 p-3 rounded border border-destructive/20">
+          <Switch checked={form.maintenance_mode ?? false} onCheckedChange={(v) => setForm({ ...form, maintenance_mode: v })} />
+          <span className="text-destructive font-semibold">Bakım Modu (Sadece Adminler Girebilir)</span>
+        </div>
+      </div>
+
+      <div className="pt-4 flex justify-end">
+        <Button onClick={save} disabled={saving} className="font-mono neon-glow">
+          <Save className="h-4 w-4 mr-2" /> {saving ? "Kaydediliyor..." : "Ayarları Kaydet"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+function BankSettingsTab() {
   const qc = useQueryClient();
   const upsertFn = useServerFn(upsertBankAccount);
   const listFn = useServerFn(listBankAccounts);
@@ -52,12 +173,11 @@ function SettingsAdmin() {
 
   return (
     <div>
-      <h1 className="font-mono text-xl sm:text-2xl neon-text break-words">Ayarlar — Banka Bilgileri</h1>
-      <p className="mt-1 font-mono text-xs text-muted-foreground">
+      <p className="mt-1 font-mono text-xs text-muted-foreground mb-4">
         Sadece <span className="text-primary">aktif</span> banka hesabı müşterilere gösterilir.
       </p>
 
-      <div className="mt-4 flex justify-end">
+      <div className="flex justify-end">
         <Button onClick={() => setEditing({ bank_name: "", iban: "", holder_name: "", active: true })} className="font-mono">
           <Plus className="h-4 w-4 mr-1" />yeni hesap
         </Button>
