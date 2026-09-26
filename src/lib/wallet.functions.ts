@@ -86,7 +86,9 @@ export const createTopup = createServerFn({ method: "POST" })
       throw new Error("Çok sık bakiye yükleme talebi oluşturuyorsunuz. Lütfen 10 dakika sonra tekrar deneyin.");
     }
 
-    const ip = getRequestIP({ xForwardedFor: true }) ?? null;
+    const ipGuard = await import("./ip-guard.server");
+    const ip = ipGuard.requestIp();
+    await ipGuard.assertIpNotBlocked(ip);
     const ua = getRequestHeader("user-agent") ?? null;
     const { is_vpn, country } = await detectVpn(ip);
     if (is_vpn) {

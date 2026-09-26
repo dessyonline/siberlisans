@@ -335,7 +335,9 @@ export const createOrder = createServerFn({ method: "POST" })
 
     const referenceCode = genRef();
     const orderId = uid();
-    const clientIp = getRequestIP({ xForwardedFor: true }) ?? null;
+    const { requestIp, assertIpNotBlocked } = await import("./ip-guard.server");
+    const clientIp = requestIp();
+    await assertIpNotBlocked(clientIp);
     const clientUa = getRequestHeader("user-agent") ?? null;
     await mysqlQuery(
       `INSERT INTO orders (id,user_id,product_id,price_try,reference_code,status,item_count,client_ip,user_agent,created_at,updated_at)
@@ -512,7 +514,9 @@ export const createCartOrder = createServerFn({ method: "POST" })
 
     const orderId = uid();
     const referenceCode = genRef();
-    const cartIp = getRequestIP({ xForwardedFor: true }) ?? null;
+    const ipGuard = await import("./ip-guard.server");
+    const cartIp = ipGuard.requestIp();
+    await ipGuard.assertIpNotBlocked(cartIp);
     const cartUa = getRequestHeader("user-agent") ?? null;
     const firstProduct = data.items[0]?.productId ?? null;
 
