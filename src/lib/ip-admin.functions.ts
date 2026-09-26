@@ -45,7 +45,7 @@ export type SuspiciousIpRow = {
 export const listSuspiciousIps = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
   .handler(async (): Promise<{ rows: SuspiciousIpRow[] }> => {
-    const since = mysqlDate(new Date(Date.now() - 24 * 60 * 60 * 1000));
+    const since = mysqlDate(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
     const topups = await mysqlQuery<{
       client_ip: string | null;
       ip_country: string | null;

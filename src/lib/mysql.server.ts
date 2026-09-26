@@ -198,15 +198,8 @@ async function bridgeCall(sql: string, params: Params): Promise<any> {
 }
 
 function supabaseRpcConfig(): { url: string; key: string } {
-  const base = (
-    process.env["EXT_SUPABASE_URL"] ||
-    process.env["SUPABASE_URL"] ||
-    process.env["VITE_SUPABASE_URL"] ||
-    ""
-  ).replace(/\/+$/, "").replace(/\/rest\/v1$/, "");
-  const key =
-    process.env["EXT_SUPABASE_SERVICE_ROLE_KEY"] ||
-    process.env["SUPABASE_SERVICE_ROLE_KEY"];
+  const base = (process.env["EXT_SUPABASE_URL"] ?? "").replace(/\/+$/, "").replace(/\/rest\/v1$/, "");
+  const key = process.env["EXT_SUPABASE_SERVICE_ROLE_KEY"];
   if (!base || !key) throw new Error("Supabase veritabanı ayarları eksik");
   return { url: `${base}/rest/v1/rpc/exec_sql`, key };
 }
