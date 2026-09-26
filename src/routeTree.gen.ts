@@ -142,6 +142,7 @@ import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/em
 import { Route as ApiV1AuthVerifyRouteImport } from './routes/api/v1/auth/verify'
 import { Route as ApiPublicHooksWeeklyDigestRouteImport } from './routes/api/public/hooks/weekly-digest'
 import { Route as ApiPublicHooksUniquelisansCatalogRouteImport } from './routes/api/public/hooks/uniquelisans-catalog'
+import { Route as ApiPublicHooksTelegramRouteImport } from './routes/api/public/hooks/telegram'
 import { Route as ApiPublicHooksSyncUniquelisansRouteImport } from './routes/api/public/hooks/sync-uniquelisans'
 import { Route as ApiPublicHooksSubscriptionsRenewRouteImport } from './routes/api/public/hooks/subscriptions-renew'
 import { Route as ApiPublicHooksShopierRouteImport } from './routes/api/public/hooks/shopier'
@@ -884,6 +885,11 @@ const ApiPublicHooksUniquelisansCatalogRoute =
     path: '/api/public/hooks/uniquelisans-catalog',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksTelegramRoute = ApiPublicHooksTelegramRouteImport.update({
+  id: '/api/public/hooks/telegram',
+  path: '/api/public/hooks/telegram',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksSyncUniquelisansRoute =
   ApiPublicHooksSyncUniquelisansRouteImport.update({
     id: '/api/public/hooks/sync-uniquelisans',
@@ -1101,6 +1107,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/subscriptions-renew': typeof ApiPublicHooksSubscriptionsRenewRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
+  '/api/public/hooks/telegram': typeof ApiPublicHooksTelegramRoute
   '/api/public/hooks/uniquelisans-catalog': typeof ApiPublicHooksUniquelisansCatalogRoute
   '/api/public/hooks/weekly-digest': typeof ApiPublicHooksWeeklyDigestRoute
   '/api/v1/auth/verify': typeof ApiV1AuthVerifyRoute
@@ -1247,6 +1254,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/subscriptions-renew': typeof ApiPublicHooksSubscriptionsRenewRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
+  '/api/public/hooks/telegram': typeof ApiPublicHooksTelegramRoute
   '/api/public/hooks/uniquelisans-catalog': typeof ApiPublicHooksUniquelisansCatalogRoute
   '/api/public/hooks/weekly-digest': typeof ApiPublicHooksWeeklyDigestRoute
   '/api/v1/auth/verify': typeof ApiV1AuthVerifyRoute
@@ -1397,6 +1405,7 @@ export interface FileRoutesById {
   '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/subscriptions-renew': typeof ApiPublicHooksSubscriptionsRenewRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
+  '/api/public/hooks/telegram': typeof ApiPublicHooksTelegramRoute
   '/api/public/hooks/uniquelisans-catalog': typeof ApiPublicHooksUniquelisansCatalogRoute
   '/api/public/hooks/weekly-digest': typeof ApiPublicHooksWeeklyDigestRoute
   '/api/v1/auth/verify': typeof ApiV1AuthVerifyRoute
@@ -1547,6 +1556,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/shopier'
     | '/api/public/hooks/subscriptions-renew'
     | '/api/public/hooks/sync-uniquelisans'
+    | '/api/public/hooks/telegram'
     | '/api/public/hooks/uniquelisans-catalog'
     | '/api/public/hooks/weekly-digest'
     | '/api/v1/auth/verify'
@@ -1693,6 +1703,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/shopier'
     | '/api/public/hooks/subscriptions-renew'
     | '/api/public/hooks/sync-uniquelisans'
+    | '/api/public/hooks/telegram'
     | '/api/public/hooks/uniquelisans-catalog'
     | '/api/public/hooks/weekly-digest'
     | '/api/v1/auth/verify'
@@ -1842,6 +1853,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/shopier'
     | '/api/public/hooks/subscriptions-renew'
     | '/api/public/hooks/sync-uniquelisans'
+    | '/api/public/hooks/telegram'
     | '/api/public/hooks/uniquelisans-catalog'
     | '/api/public/hooks/weekly-digest'
     | '/api/v1/auth/verify'
@@ -1915,6 +1927,7 @@ export interface RootRouteChildren {
   ApiPublicHooksShopierRoute: typeof ApiPublicHooksShopierRoute
   ApiPublicHooksSubscriptionsRenewRoute: typeof ApiPublicHooksSubscriptionsRenewRoute
   ApiPublicHooksSyncUniquelisansRoute: typeof ApiPublicHooksSyncUniquelisansRoute
+  ApiPublicHooksTelegramRoute: typeof ApiPublicHooksTelegramRoute
   ApiPublicHooksUniquelisansCatalogRoute: typeof ApiPublicHooksUniquelisansCatalogRoute
   ApiPublicHooksWeeklyDigestRoute: typeof ApiPublicHooksWeeklyDigestRoute
   ApiV1AuthVerifyRoute: typeof ApiV1AuthVerifyRoute
@@ -2859,6 +2872,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksUniquelisansCatalogRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/telegram': {
+      id: '/api/public/hooks/telegram'
+      path: '/api/public/hooks/telegram'
+      fullPath: '/api/public/hooks/telegram'
+      preLoaderRoute: typeof ApiPublicHooksTelegramRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/sync-uniquelisans': {
       id: '/api/public/hooks/sync-uniquelisans'
       path: '/api/public/hooks/sync-uniquelisans'
@@ -3233,6 +3253,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksShopierRoute: ApiPublicHooksShopierRoute,
   ApiPublicHooksSubscriptionsRenewRoute: ApiPublicHooksSubscriptionsRenewRoute,
   ApiPublicHooksSyncUniquelisansRoute: ApiPublicHooksSyncUniquelisansRoute,
+  ApiPublicHooksTelegramRoute: ApiPublicHooksTelegramRoute,
   ApiPublicHooksUniquelisansCatalogRoute:
     ApiPublicHooksUniquelisansCatalogRoute,
   ApiPublicHooksWeeklyDigestRoute: ApiPublicHooksWeeklyDigestRoute,
