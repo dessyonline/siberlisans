@@ -51,6 +51,7 @@ function SiteSettingsTab() {
   });
 
   const [form, setForm] = useState<Partial<SiteSettings>>({});
+  const [activeTab, setActiveTab] = useState("genel");
 
   useEffect(() => {
     if (settings) {
@@ -62,16 +63,7 @@ function SiteSettingsTab() {
     setSaving(true);
     try {
       await updateFn({
-        data: {
-          site_name: form.site_name,
-          site_description: form.site_description,
-          maintenance_mode: form.maintenance_mode,
-          whatsapp_number: form.whatsapp_number,
-          telegram_url: form.telegram_url,
-          instagram_url: form.instagram_url,
-          announcement_text: form.announcement_text,
-          announcement_active: form.announcement_active,
-        }
+        data: form
       });
       toast.success("Site ayarları güncellendi");
       qc.invalidateQueries({ queryKey: ["site-settings-admin"] });
@@ -85,54 +77,162 @@ function SiteSettingsTab() {
   if (isLoading) return <div className="p-5 font-mono text-xs">Yükleniyor...</div>;
 
   return (
-    <div className="glass-card rounded-lg p-5 space-y-4 max-w-3xl">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <Label className="font-mono text-xs">Site Başlığı</Label>
-          <Input value={form.site_name ?? ""} onChange={(e) => setForm({ ...form, site_name: e.target.value })} className="font-mono" />
-        </div>
-        <div>
-          <Label className="font-mono text-xs">Site Açıklaması (SEO)</Label>
-          <Input value={form.site_description ?? ""} onChange={(e) => setForm({ ...form, site_description: e.target.value })} className="font-mono" />
-        </div>
-        <div>
-          <Label className="font-mono text-xs">WhatsApp Numarası</Label>
-          <Input value={form.whatsapp_number ?? ""} onChange={(e) => setForm({ ...form, whatsapp_number: e.target.value })} placeholder="Örn: 905554443322" className="font-mono" />
-        </div>
-        <div>
-          <Label className="font-mono text-xs">Telegram Bot Linki</Label>
-          <Input value={form.telegram_url ?? ""} onChange={(e) => setForm({ ...form, telegram_url: e.target.value })} placeholder="https://t.me/SeninBot" className="font-mono" />
-        </div>
-        <div>
-          <Label className="font-mono text-xs">Instagram Linki</Label>
-          <Input value={form.instagram_url ?? ""} onChange={(e) => setForm({ ...form, instagram_url: e.target.value })} placeholder="https://instagram.com/siberlisans" className="font-mono" />
-        </div>
+    <div className="flex flex-col md:flex-row gap-6 items-start">
+      <div className="w-full md:w-48 shrink-0 flex flex-col gap-1 border-r border-border/40 pr-4">
+        {[
+          { id: "genel", label: "Genel" },
+          { id: "iletisim", label: "İletişim & Sosyal" },
+          { id: "smtp", label: "E-Posta (SMTP)" },
+          { id: "sozlesmeler", label: "Sözleşmeler" },
+          { id: "gelismis", label: "Gelişmiş & Ekstra" }
+        ].map(t => (
+          <button
+            key={t.id}
+            onClick={() => setActiveTab(t.id)}
+            className={`text-left px-3 py-2 rounded-md font-mono text-sm transition-colors ${activeTab === t.id ? "bg-primary/10 text-primary font-bold" : "hover:bg-muted text-muted-foreground"}`}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      <div className="pt-4 border-t border-border/40 space-y-4">
-        <h3 className="font-mono text-sm neon-text">Duyuru / Banner</h3>
-        <div>
-          <Label className="font-mono text-xs">Duyuru Metni</Label>
-          <Textarea value={form.announcement_text ?? ""} onChange={(e) => setForm({ ...form, announcement_text: e.target.value })} placeholder="Kısa süreliğine tüm ürünlerde %20 indirim!" className="font-mono min-h-[80px]" />
-        </div>
-        <div className="flex items-center gap-2 font-mono text-sm">
-          <Switch checked={form.announcement_active ?? false} onCheckedChange={(v) => setForm({ ...form, announcement_active: v })} />
-          <span>Duyuruyu Sitede Göster</span>
-        </div>
-      </div>
+      <div className="flex-1 w-full max-w-3xl glass-card rounded-lg p-5 space-y-6">
+        
+        {activeTab === "genel" && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <h3 className="font-mono text-base neon-text mb-4 border-b border-border/40 pb-2">Genel Ayarlar</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="font-mono text-xs">Site Başlığı</Label>
+                <Input value={form.site_name ?? ""} onChange={(e) => setForm({ ...form, site_name: e.target.value })} className="font-mono" />
+              </div>
+              <div className="md:col-span-2">
+                <Label className="font-mono text-xs">Site Açıklaması (SEO Description)</Label>
+                <Textarea value={form.site_description ?? ""} onChange={(e) => setForm({ ...form, site_description: e.target.value })} className="font-mono min-h-[80px]" />
+              </div>
+              <div className="md:col-span-2">
+                <Label className="font-mono text-xs">Anahtar Kelimeler (SEO Keywords)</Label>
+                <Input value={form.seo_keywords ?? ""} onChange={(e) => setForm({ ...form, seo_keywords: e.target.value })} placeholder="örn: oyun, lisans, key, ucuz" className="font-mono" />
+              </div>
+              <div>
+                <Label className="font-mono text-xs">Logo URL</Label>
+                <Input value={form.logo_url ?? ""} onChange={(e) => setForm({ ...form, logo_url: e.target.value })} placeholder="https://..." className="font-mono" />
+              </div>
+              <div>
+                <Label className="font-mono text-xs">Favicon URL</Label>
+                <Input value={form.favicon_url ?? ""} onChange={(e) => setForm({ ...form, favicon_url: e.target.value })} placeholder="https://..." className="font-mono" />
+              </div>
+            </div>
+          </div>
+        )}
 
-      <div className="pt-4 border-t border-border/40">
-        <h3 className="font-mono text-sm text-destructive mb-3">Kritik Ayarlar</h3>
-        <div className="flex items-center gap-2 font-mono text-sm bg-destructive/10 p-3 rounded border border-destructive/20">
-          <Switch checked={form.maintenance_mode ?? false} onCheckedChange={(v) => setForm({ ...form, maintenance_mode: v })} />
-          <span className="text-destructive font-semibold">Bakım Modu (Sadece Adminler Girebilir)</span>
-        </div>
-      </div>
+        {activeTab === "iletisim" && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <h3 className="font-mono text-base neon-text mb-4 border-b border-border/40 pb-2">İletişim ve Sosyal Medya</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="font-mono text-xs">İletişim Email Adresi</Label>
+                <Input value={form.contact_email ?? ""} onChange={(e) => setForm({ ...form, contact_email: e.target.value })} placeholder="destek@siberlisans.com" className="font-mono" />
+              </div>
+              <div>
+                <Label className="font-mono text-xs">WhatsApp Numarası</Label>
+                <Input value={form.whatsapp_number ?? ""} onChange={(e) => setForm({ ...form, whatsapp_number: e.target.value })} placeholder="Örn: 905554443322" className="font-mono" />
+              </div>
+              <div>
+                <Label className="font-mono text-xs">Telegram Linki</Label>
+                <Input value={form.telegram_url ?? ""} onChange={(e) => setForm({ ...form, telegram_url: e.target.value })} placeholder="https://t.me/SeninBot" className="font-mono" />
+              </div>
+              <div>
+                <Label className="font-mono text-xs">Instagram Linki</Label>
+                <Input value={form.instagram_url ?? ""} onChange={(e) => setForm({ ...form, instagram_url: e.target.value })} placeholder="https://instagram.com/..." className="font-mono" />
+              </div>
+            </div>
+          </div>
+        )}
 
-      <div className="pt-4 flex justify-end">
-        <Button onClick={save} disabled={saving} className="font-mono neon-glow">
-          <Save className="h-4 w-4 mr-2" /> {saving ? "Kaydediliyor..." : "Ayarları Kaydet"}
-        </Button>
+        {activeTab === "smtp" && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <h3 className="font-mono text-base neon-text mb-4 border-b border-border/40 pb-2">E-Posta (SMTP) Ayarları</h3>
+            <p className="text-xs text-muted-foreground font-mono mb-4">Sistem e-postalarının (örn. şifre sıfırlama, sipariş bildirimi) hangi adresten gönderileceğini belirleyin.</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="font-mono text-xs">SMTP Sunucu (Host)</Label>
+                <Input value={form.smtp_host ?? ""} onChange={(e) => setForm({ ...form, smtp_host: e.target.value })} placeholder="smtp.hostinger.com" className="font-mono" />
+              </div>
+              <div>
+                <Label className="font-mono text-xs">SMTP Port</Label>
+                <Input type="number" value={form.smtp_port ?? ""} onChange={(e) => setForm({ ...form, smtp_port: e.target.value ? Number(e.target.value) : null })} placeholder="465 veya 587" className="font-mono" />
+              </div>
+              <div>
+                <Label className="font-mono text-xs">Kullanıcı Adı (Email)</Label>
+                <Input value={form.smtp_user ?? ""} onChange={(e) => setForm({ ...form, smtp_user: e.target.value })} placeholder="iletisim@siberlisans.com" className="font-mono" />
+              </div>
+              <div>
+                <Label className="font-mono text-xs">Şifre</Label>
+                <Input type="password" value={form.smtp_pass ?? ""} onChange={(e) => setForm({ ...form, smtp_pass: e.target.value })} placeholder="********" className="font-mono" />
+              </div>
+              <div className="md:col-span-2">
+                <Label className="font-mono text-xs">Gönderen Adresi (From)</Label>
+                <Input value={form.smtp_from ?? ""} onChange={(e) => setForm({ ...form, smtp_from: e.target.value })} placeholder="SiberLisans <iletisim@siberlisans.com>" className="font-mono" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "sozlesmeler" && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <h3 className="font-mono text-base neon-text mb-4 border-b border-border/40 pb-2">Kurumsal Sözleşmeler (HTML Destekli)</h3>
+            <div className="space-y-6">
+              <div>
+                <Label className="font-mono text-xs">Hizmet/Kullanım Koşulları (TOS)</Label>
+                <Textarea value={form.tos_content ?? ""} onChange={(e) => setForm({ ...form, tos_content: e.target.value })} className="font-mono min-h-[150px]" />
+              </div>
+              <div>
+                <Label className="font-mono text-xs">Gizlilik Politikası</Label>
+                <Textarea value={form.privacy_policy_content ?? ""} onChange={(e) => setForm({ ...form, privacy_policy_content: e.target.value })} className="font-mono min-h-[150px]" />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {activeTab === "gelismis" && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+            <h3 className="font-mono text-base neon-text mb-4 border-b border-border/40 pb-2">Gelişmiş Ayarlar</h3>
+            
+            <div className="space-y-4 mb-6">
+              <div>
+                <Label className="font-mono text-xs">Duyuru Metni (Banner)</Label>
+                <Textarea value={form.announcement_text ?? ""} onChange={(e) => setForm({ ...form, announcement_text: e.target.value })} placeholder="Örn: Hafta sonuna özel %20 indirim!" className="font-mono min-h-[60px] mb-2" />
+                <div className="flex items-center gap-2 font-mono text-sm">
+                  <Switch checked={form.announcement_active ?? false} onCheckedChange={(v) => setForm({ ...form, announcement_active: v })} />
+                  <span>Duyuruyu Sitede Göster</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <Label className="font-mono text-xs">Canlı Destek Scripti (Tawk.to / Crisp vb.)</Label>
+                <Textarea value={form.live_support_script ?? ""} onChange={(e) => setForm({ ...form, live_support_script: e.target.value })} placeholder="<script>...</script>" className="font-mono min-h-[100px]" />
+                <p className="text-xs text-muted-foreground mt-1">Bu kod, sitenin <b>&lt;body&gt;</b> kısmına eklenir. Sadece güvenilir kaynaklardan aldığınız kodları girin.</p>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-border/40">
+              <h3 className="font-mono text-sm text-destructive mb-3">Kritik Alan</h3>
+              <div className="flex items-center gap-2 font-mono text-sm bg-destructive/10 p-3 rounded border border-destructive/20">
+                <Switch checked={form.maintenance_mode ?? false} onCheckedChange={(v) => setForm({ ...form, maintenance_mode: v })} />
+                <span className="text-destructive font-semibold">Bakım Modu (Sadece Adminler Girebilir)</span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div className="pt-4 border-t border-border/40 flex justify-end">
+          <Button onClick={save} disabled={saving} className="font-mono neon-glow min-w-[150px]">
+            <Save className="h-4 w-4 mr-2" /> {saving ? "Kaydediliyor..." : "Ayarları Kaydet"}
+          </Button>
+        </div>
       </div>
     </div>
   );
