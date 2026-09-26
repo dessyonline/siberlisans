@@ -32,7 +32,7 @@ export const Route = createFileRoute("/api/public/hooks/telegram")({
         } else if (text === "/start") {
           await sendTelegram({
             chatId,
-            text: "👋 Merhaba! Hesabınızı eşleştirmek için SiberLisans panelinden aldığınız eşleştirme kodunu göndermeniz gerekiyor.\n\nÖrnek:\n`/start ABCDEF`\nveya doğrudan kodu yazabilirsiniz:\n`ABCDEF`",
+            text: "👋 Merhaba! SiberLisans bildirim botuna hoş geldiniz.\n\nHesabınızı Telegram ile eşleştirmek için lütfen şu adımları izleyin:\n1. siberlisans.com adresinden hesabınıza giriş yapın.\n2. Menüden **Hesabım** sayfasına gidin.\n3. **Profil** sekmesini açıp sayfayı aşağı kaydırın.\n4. **Telegram Bildirimleri** alanındaki **> Eşleştirme Kodu Al** butonuna tıklayın.\n5. Ekranda beliren 6 haneli kodu (örneğin: `ABCDEF`) buraya yazıp gönderin.",
           });
           return json({ success: true }, 200);
         }
@@ -63,7 +63,7 @@ export const Route = createFileRoute("/api/public/hooks/telegram")({
         } else {
            await sendTelegram({
              chatId,
-             text: "Anlaşılmadı. Eşleştirme yapmak için web sitesinden aldığınız kodu gönderin.",
+             text: "Anlaşılmadı.\n\nHesabınızı eşleştirmek için SiberLisans panelinden (Hesabım > Profil > Telegram Bildirimleri) aldığınız 6 haneli kodu doğrudan bana gönderebilirsiniz.",
            });
         }
 
