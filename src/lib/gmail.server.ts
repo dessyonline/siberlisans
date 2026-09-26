@@ -124,3 +124,37 @@ export async function sendPasswordResetEmail(to: string, link: string): Promise<
   }
   return true;
 }
+
+/** Kayıt e-posta doğrulaması. Gmail bağlantısı yapılandırılmamışsa açıkça başarısız döner. */
+export async function sendEmailVerificationCode(to: string, code: string): Promise<boolean> {
+  const apiKey = process.env["LOVABLE_API_KEY"];
+  const connectionKey = process.env["GOOGLE_MAIL_API_KEY_1"];
+  if (!apiKey || !connectionKey) {
+    console.error("Email verification cannot be sent: Gmail connection is not configured");
+    return false;
+  }
+  const text = `Siber Lisans e-posta doğrulama kodunuz: ${code}\n\nBu kod 15 dakika geçerlidir. Bu isteği siz yapmadıysanız e-postayı yok sayabilirsiniz.`;
+  const html = [
+    '<!doctype html><html lang="tr"><body style="margin:0;padding:24px;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#111">',
+    '<div style="max-width:520px;margin:0 auto;background:#fff;border-radius:8px;padding:24px">',
+    '<h1 style="font-size:20px;margin:0 0 16px">E-posta doğrulama</h1>',
+    '<p style="font-size:14px;line-height:22px;margin:0 0 16px">Siber Lisans hesabınızı etkinleştirmek için bu kodu girin:</p>',
+    `<p style="margin:0 0 20px;font-size:30px;font-weight:700;letter-spacing:8px">${escapeHtml(code)}</p>`,
+    '<p style="font-size:12px;line-height:20px;color:#555;margin:0">Kod 15 dakika geçerlidir. Bu isteği siz yapmadıysanız e-postayı yok sayabilirsiniz.</p>',
+    '</div></body></html>',
+  ].join("");
+  const response = await fetch(`${GMAIL_GATEWAY}/users/me/messages/send`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "X-Connection-Api-Key": connectionKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ raw: createRawEmail(to, "Siber Lisans e-posta doğrulama kodunuz", text, undefined, html) }),
+  });
+  if (!response.ok) {
+    console.error(`Email verification failed [${response.status}]: ${await response.text()}`);
+    return false;
+  }
+  return true;
+}

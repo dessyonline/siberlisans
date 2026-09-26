@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router"
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { useServerFn } from "@tanstack/react-start";
-import { signIn as signInFn, signUp as signUpFn } from "@/lib/auth.functions";
+import { signIn as signInFn, signUp as signUpFn, verifyEmailCode as verifyEmailCodeFn } from "@/lib/auth.functions";
 import { requestPasswordReset as requestPasswordResetFn } from "@/lib/password-reset.functions";
 import { getMe } from "@/lib/auth.functions";
 import { redirect } from "@tanstack/react-router";
@@ -78,6 +78,7 @@ function AuthPage() {
   const { user, acceptUser, signOut: ctxSignOut } = useAuth();
   const doSignIn = useServerFn(signInFn);
   const doSignUp = useServerFn(signUpFn);
+  const doVerifyEmail = useServerFn(verifyEmailCodeFn);
   const doReset = useServerFn(requestPasswordResetFn);
   const [resetInfo, setResetInfo] = useState<{ message: string; link: string | null } | null>(null);
 
@@ -89,6 +90,7 @@ function AuthPage() {
   const [captcha, setCaptcha] = useState(() => newCaptcha());
   const [captchaInput, setCaptchaInput] = useState("");
   const [signupSent, setSignupSent] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState("");
   const [telegram, setTelegram] = useState("");
   const [mfaMode, setMfaMode] = useState(false);
   const [manualRef, setManualRef] = useState("");
@@ -125,6 +127,23 @@ function AuthPage() {
     } catch {
       setLoading(false);
       toast.error("Giriş yapılamadı, tekrar deneyin.");
+    }
+  };
+
+  const verifyEmail = async () => {
+    if (!signupSent) return;
+    if (!/^\d{6}$/.test(verificationCode)) return toast.error("[!] 6 haneli doğrulama kodunu gir");
+    setLoading(true);
+    try {
+      const res = await doVerifyEmail({ data: { email: signupSent, code: verificationCode } });
+      if (!res.ok) return toast.error(res.error ?? "Doğrulama yapılamadı.");
+      toast.success("[✓] e-posta doğrulandı, şimdi giriş yapabilirsin");
+      setSignupSent(null);
+      setPassword("");
+    } catch {
+      toast.error("Doğrulama yapılamadı, tekrar deneyin.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -178,7 +197,8 @@ function AuthPage() {
         setCaptchaInput("");
         return toast.error(res.error);
       }
-      acceptUser(res.user);
+      setSignupSent(em);
+      setVerificationCode("");
     } catch {
       setLoading(false);
       setCaptcha(newCaptcha());
@@ -226,12 +246,23 @@ function AuthPage() {
               <MailCheck className="h-4 w-4" /> doğrulama e-postası gönderildi
             </div>
             <div className="text-muted-foreground text-xs leading-relaxed">
-              <span className="text-foreground">{signupSent}</span> adresine gelen bağlantıya tıklayarak
+              <span className="text-foreground">{signupSent}</span> adresine gönderilen 6 haneli kodu girerek
               hesabını doğrula. Doğrulamayı tamamlamadan giriş yapamazsın.
               <br />
               <br />
               spam/gereksiz klasörünü kontrol etmeyi unutma.
             </div>
+            <Input
+              value={verificationCode}
+              onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              placeholder="123456"
+              className="font-mono text-center tracking-[0.5em]"
+            />
+            <Button disabled={loading} onClick={verifyEmail} className="w-full font-mono neon-glow">
+              {"> "}kodu doğrula
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setSignupSent(null)} className="font-mono">
               &lt; geri dön
             </Button>

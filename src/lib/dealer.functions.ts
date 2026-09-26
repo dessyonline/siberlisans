@@ -244,12 +244,11 @@ export const adminReviewDealerApplication = createServerFn({ method: "POST" })
     }
 
     const adminNote = data.adminNote?.trim() || null;
-    await mysqlQuery(
-      "UPDATE dealer_applications SET status=?, admin_note=?, reviewed_by=?, reviewed_at=?, updated_at=? WHERE id=?",
-      [data.approve ? "approved" : "rejected", adminNote, context.userId, ts(), ts(), data.applicationId],
-    );
-
     if (data.approve) {
+      const tier = await mysqlOne<{ slug: string }>(
+        "SELECT slug FROM dealer_tiers ORDER BY sort_order ASC, slug ASC LIMIT 1",
+      );
+      if (!tier) throw new Error("Bayilik seviyeleri tanımlı değil. Önce bayi seviyelerini oluşturun.");
       let code = genDealerCode();
       for (let i = 0; i < 20; i++) {
         const existing = await mysqlOne<{ user_id: string }>("SELECT user_id FROM dealers WHERE code=?", [code]);
@@ -268,11 +267,19 @@ export const adminReviewDealerApplication = createServerFn({ method: "POST" })
       } else {
         await mysqlQuery(
           `INSERT INTO dealers (user_id, code, company_name, tier_slug, active, approved_by, approved_at, created_at, updated_at)
-           VALUES (?,?,?, 'bronze', 1, ?, ?, ?, ?)`,
-          [app.user_id, code, app.company_name, context.userId, ts(), ts(), ts()],
+           VALUES (?,?,?,?,1,?,?,?,?)`,
+          [app.user_id, code, app.company_name, tier.slug, context.userId, ts(), ts(), ts()],
         );
       }
     }
+
+    // Bayi satırı başarılı biçimde oluşturulmadan başvuruyu onaylı göstermeyiz.
+    // Böylece yabancı anahtar/altyapı hatası kullanıcıyı "onaylı ama panelsiz"
+    // durumda bırakmaz.
+    await mysqlQuery(
+      "UPDATE dealer_applications SET status=?, admin_note=?, reviewed_by=?, reviewed_at=?, updated_at=? WHERE id=?",
+      [data.approve ? "approved" : "rejected", adminNote, context.userId, ts(), ts(), data.applicationId],
+    );
 
     await mysqlQuery(
       "INSERT INTO notifications (id,user_id,type,title,body,link,created_at) VALUES (?,?,?,?,?,?,?)",

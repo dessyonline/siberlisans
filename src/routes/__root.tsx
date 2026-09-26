@@ -99,6 +99,9 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
         <p className="mt-2 text-sm text-muted-foreground">
           Beklenmedik bir hata oluştu. Yeniden dene veya anasayfaya dön.
         </p>
+        <div className="mt-4 rounded bg-destructive/10 border border-destructive/20 p-2 text-left">
+          <p className="font-mono text-[10px] text-destructive break-words">{error.message}</p>
+        </div>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <Button
             onClick={() => {

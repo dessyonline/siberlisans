@@ -39,8 +39,8 @@ function IpAdminPage() {
 
   const doBlock = useMutation({
     mutationFn: (v: { ip: string; reason?: string; hours: number }) => blockFn({ data: v }),
-    onSuccess: () => {
-      toast.success("IP bloklandı");
+    onSuccess: (result: { blocked_accounts: number }) => {
+      toast.success(`IP bloklandı${result.blocked_accounts ? ` · ${result.blocked_accounts} hesap engellendi` : ""}`);
       setIp(""); setReason("");
       qc.invalidateQueries({ queryKey: ["ip-blocked"] });
       qc.invalidateQueries({ queryKey: ["ip-suspicious"] });

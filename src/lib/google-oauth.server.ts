@@ -91,9 +91,10 @@ export async function sessionCookieForIdentity(
     const now = new Date().toISOString().slice(0, 19).replace("T", " ");
     const displayName = identity.name ?? identity.email.split("@")[0];
     const referralCode = `SP${id.replace(/-/g, "").slice(0, 8).toUpperCase()}`;
-    await mysqlQuery("INSERT INTO auth_users (id,email,password_hash,created_at) VALUES (?,?,NULL,?)", [
+    await mysqlQuery("INSERT INTO auth_users (id,email,password_hash,email_confirmed_at,created_at) VALUES (?,?,NULL,?,?)", [
       id,
       identity.email,
+      now,
       now,
     ]);
     await mysqlQuery(

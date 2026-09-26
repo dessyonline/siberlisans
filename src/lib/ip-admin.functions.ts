@@ -82,20 +82,35 @@ const blockInput = z.object({
 export const blockIp = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .inputValidator((d: unknown) => blockInput.parse(d))
-  .handler(async ({ data, context }): Promise<{ ok: true; blocked_until: string }> => {
+  .handler(async ({ data, context }): Promise<{ ok: true; blocked_until: string; blocked_accounts: number }> => {
     const until = mysqlDate(new Date(Date.now() + data.hours * 60 * 60 * 1000));
     await mysqlQuery(
       `INSERT INTO ip_blocks (ip, reason, blocked_until, created_at) VALUES (?, ?, ?, NOW())
        ON DUPLICATE KEY UPDATE reason=VALUES(reason), blocked_until=VALUES(blocked_until)`,
       [data.ip, data.reason ?? "manual", until],
     );
+    const [orders, topups, profiles] = await Promise.all([
+      mysqlQuery<{ user_id: string }>("SELECT DISTINCT user_id FROM orders WHERE client_ip=?", [data.ip]),
+      mysqlQuery<{ user_id: string }>("SELECT DISTINCT user_id FROM wallet_topups WHERE client_ip=?", [data.ip]),
+      mysqlQuery<{ id: string }>("SELECT id FROM profiles WHERE last_seen_ip=?", [data.ip]),
+    ]);
+    const userIds = [...new Set([...orders, ...topups].map((row) => row.user_id).concat(profiles.map((row) => row.id)))];
+    for (const userId of userIds) {
+      await mysqlQuery(
+        `INSERT INTO account_blocks (user_id, source_ip, reason, blocked_until, created_at)
+         VALUES (?,?,?,?,NOW())
+         ON DUPLICATE KEY UPDATE reason=VALUES(reason), source_ip=VALUES(source_ip), blocked_until=VALUES(blocked_until)`,
+        [userId, data.ip, data.reason ?? "IP engeli", until],
+      );
+      await mysqlQuery("DELETE FROM auth_sessions WHERE user_id=?", [userId]);
+    }
     await writeAuditLog(context, {
       action: "ip_block",
       entity_type: "ip",
       entity_id: data.ip,
       metadata: { hours: data.hours, reason: data.reason ?? null },
     });
-    return { ok: true, blocked_until: until };
+    return { ok: true, blocked_until: until, blocked_accounts: userIds.length };
   });
 
 const unblockInput = z.object({ ip: z.string().min(3).max(64) });
@@ -105,6 +120,7 @@ export const unblockIp = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => unblockInput.parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     await mysqlQuery("DELETE FROM ip_blocks WHERE ip=?", [data.ip]);
+    await mysqlQuery("DELETE FROM account_blocks WHERE source_ip=?", [data.ip]);
     await writeAuditLog(context, {
       action: "ip_unblock",
       entity_type: "ip",

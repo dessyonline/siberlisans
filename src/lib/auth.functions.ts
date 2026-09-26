@@ -9,6 +9,7 @@ const credentials = z.object({
   telegramUsername: z.string().max(120).optional(),
   referralCode: z.string().max(60).optional(),
 });
+const verificationCode = z.object({ email: z.string().email(), code: z.string().regex(/^\d{6}$/) });
 
 export type AuthUser = {
   id: string;
@@ -42,16 +43,21 @@ export const signIn = createServerFn({ method: "POST" })
           error: "Bu hesap için henüz şifre belirlenmemiş. 'Şifremi unuttum' ile yeni şifre oluşturun.",
         };
       }
+      if (!user.email_confirmed_at) {
+        return { ok: false, error: "E-posta adresinizi doğrulamanız gerekiyor. Kodu yeniden göndermek için kayıt ekranını kullanın." };
+      }
       if (!(await auth.verifyPassword(data.password, user.password_hash))) {
         return { ok: false, error: "E-posta veya şifre hatalı." };
       }
       const { token, expires } = await auth.createSession(user.id, getRequestIP() ?? null);
 
+      const isProd = process.env.NODE_ENV === "production";
       setCookie(auth.SESSION_COOKIE, token, {
         httpOnly: true,
         sameSite: "lax",
-        secure: true,
+        secure: isProd,
         path: "/",
+        maxAge: 30 * 24 * 60 * 60,
         expires,
       });
       const me: AuthUser = {
@@ -68,23 +74,56 @@ export const signIn = createServerFn({ method: "POST" })
     }
   });
 
+function mysqlDate(date = new Date()) {
+  return date.toISOString().slice(0, 19).replace("T", " ");
+}
+
+function randomCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+async function issueVerificationCode(userId: string, email: string) {
+  const { mysqlQuery } = await import("./mysql.server");
+  const { sendEmailVerificationCode } = await import("./gmail.server");
+  const code = randomCode();
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(code));
+  const codeHash = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+  await mysqlQuery("DELETE FROM auth_email_verifications WHERE user_id=?", [userId]);
+  await mysqlQuery(
+    "INSERT INTO auth_email_verifications (id,user_id,code_hash,expires_at,attempts,created_at) VALUES (?,?,?,?,0,?)",
+    [crypto.randomUUID(), userId, codeHash, mysqlDate(new Date(Date.now() + 15 * 60 * 1000)), mysqlDate()],
+  );
+  const sent = await sendEmailVerificationCode(email, code);
+  if (!sent) {
+    await mysqlQuery("DELETE FROM auth_email_verifications WHERE user_id=?", [userId]);
+    return false;
+  }
+  return true;
+}
+
 export const signUp = createServerFn({ method: "POST" })
   .validator((d: unknown) => credentials.parse(d))
-  .handler(async ({ data }): Promise<{ ok: true; user: AuthUser } | { ok: false; error: string }> => {
+  .handler(async ({ data }): Promise<{ ok: true; verificationRequired: true } | { ok: false; error: string }> => {
     const auth = await import("./auth.server");
     const { mysqlQuery } = await import("./mysql.server");
 
-    if (await auth.findUserByEmail(data.email)) {
-      return { ok: false, error: "Bu e-posta ile kayıtlı bir hesap zaten var." };
+    const email = data.email.trim().toLowerCase();
+    const existing = await auth.findUserByEmail(email);
+    if (existing) {
+      if (existing.email_confirmed_at) return { ok: false, error: "Bu e-posta ile kayıtlı bir hesap zaten var." };
+      const sent = await issueVerificationCode(existing.id, email);
+      return sent
+        ? { ok: true, verificationRequired: true }
+        : { ok: false, error: "Doğrulama e-postası gönderilemedi. Gmail bağlantısını kontrol edin." };
     }
 
     const id = crypto.randomUUID();
     const hash = await auth.hashPassword(data.password);
-    const now = new Date().toISOString().slice(0, 19).replace("T", " ");
+    const now = mysqlDate();
 
-    await mysqlQuery("INSERT INTO auth_users (id,email,password_hash,created_at) VALUES (?,?,?,?)", [
+    await mysqlQuery("INSERT INTO auth_users (id,email,password_hash,email_confirmed_at,created_at) VALUES (?,?,?,NULL,?)", [
       id,
-      data.email,
+      email,
       hash,
       now,
     ]);
@@ -104,8 +143,8 @@ export const signUp = createServerFn({ method: "POST" })
        VALUES (?,?,?,?,?,?,?)`,
       [
         id,
-        data.email,
-        data.displayName ?? data.email.split("@")[0],
+        email,
+        data.displayName ?? email.split("@")[0],
         now,
         now,
         refCode,
@@ -123,20 +162,35 @@ export const signUp = createServerFn({ method: "POST" })
       now,
     ]);
 
-    const { token, expires } = await auth.createSession(id, getRequestIP() ?? null);
-    setCookie(auth.SESSION_COOKIE, token, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: true,
-      path: "/",
-      expires,
-    });
-    const me = await auth.getUserByToken(token);
-    if (!me) {
-      await auth.destroySession(token);
-      return { ok: false, error: "Oturum oluşturulamadı. Lütfen tekrar deneyin." };
+    const sent = await issueVerificationCode(id, email);
+    return sent
+      ? { ok: true, verificationRequired: true }
+      : { ok: false, error: "Doğrulama e-postası gönderilemedi. Gmail bağlantısını kontrol edin." };
+  });
+
+export const verifyEmailCode = createServerFn({ method: "POST" })
+  .validator((d: unknown) => verificationCode.parse(d))
+  .handler(async ({ data }): Promise<{ ok: boolean; error?: string }> => {
+    const { mysqlOne, mysqlQuery } = await import("./mysql.server");
+    const email = data.email.trim().toLowerCase();
+    const user = await mysqlOne<{ id: string; email_confirmed_at: string | null }>(
+      "SELECT id,email_confirmed_at FROM auth_users WHERE LOWER(email)=? LIMIT 1", [email],
+    );
+    if (!user) return { ok: false, error: "Doğrulama isteği bulunamadı." };
+    if (user.email_confirmed_at) return { ok: true };
+    const record = await mysqlOne<{ code_hash: string; attempts: number }>(
+      "SELECT code_hash,attempts FROM auth_email_verifications WHERE user_id=? AND expires_at>NOW() LIMIT 1", [user.id],
+    );
+    if (!record || Number(record.attempts) >= 5) return { ok: false, error: "Kod geçersiz veya süresi dolmuş. Yeni kod isteyin." };
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(data.code));
+    const actual = Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+    if (actual !== record.code_hash) {
+      await mysqlQuery("UPDATE auth_email_verifications SET attempts=attempts+1 WHERE user_id=?", [user.id]);
+      return { ok: false, error: "Doğrulama kodu hatalı." };
     }
-    return { ok: true, user: me };
+    await mysqlQuery("UPDATE auth_users SET email_confirmed_at=? WHERE id=?", [mysqlDate(), user.id]);
+    await mysqlQuery("DELETE FROM auth_email_verifications WHERE user_id=?", [user.id]);
+    return { ok: true };
   });
 
 export const signOut = createServerFn({ method: "POST" }).handler(async () => {
