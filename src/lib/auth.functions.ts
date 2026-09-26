@@ -34,6 +34,8 @@ export const signIn = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<{ ok: true; user: AuthUser } | { ok: false; error: string }> => {
     try {
       const auth = await import("./auth.server");
+      const ipGuard = await import("./ip-guard.server");
+      if (await ipGuard.isIpBlocked(ipGuard.requestIp())) return { ok: false, error: ipGuard.IP_BLOCKED_MESSAGE };
       const user = await auth.findUserByEmail(data.email);
       if (!user) return { ok: false, error: "E-posta veya şifre hatalı." };
       if (!user.password_hash) {
