@@ -772,9 +772,15 @@ function ProfileTab({ userId, email, telegramHandle, onSignOut }: { userId: stri
           </p>
         ) : (
           <div className="mt-3 space-y-3">
-            <p className="font-mono text-xs text-muted-foreground">
-              Şifre sıfırlama, yeni sipariş veya admin mesajlarını doğrudan Telegram'dan alın.
-            </p>
+            <div className="rounded-md bg-primary/10 border border-primary/20 p-3 mb-4">
+              <p className="font-mono text-xs text-foreground font-semibold flex items-center gap-2">
+                <Gift className="h-4 w-4 text-primary" /> Telegram Bildirimlerini Açın!
+              </p>
+              <p className="font-mono text-[11px] text-muted-foreground mt-1.5 leading-relaxed">
+                Siparişleriniz teslim edildiğinde, şifrenizi sıfırladığınızda veya destek ekibimiz size yanıt verdiğinde 
+                anında haberdar olmak için Telegram hesabınızı eşleştirin. <strong className="text-primary/90">Bu özelliği şiddetle tavsiye ediyoruz!</strong>
+              </p>
+            </div>
             {tgStatus?.verify_code ? (
               <div className="rounded-md border border-primary/30 bg-primary/5 p-3">
                 <p className="font-mono text-xs text-muted-foreground mb-3">

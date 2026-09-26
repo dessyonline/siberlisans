@@ -546,6 +546,24 @@ function Payment() {
 
 
 
+          {order.status === "approved" && (
+            <div className="rounded-md border border-primary/30 bg-primary/5 p-4 mb-4">
+              <div className="flex items-start gap-3">
+                <Send className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="font-mono text-sm font-semibold neon-text">Siparişlerini Telegram'dan Al!</h3>
+                  <p className="mt-1 font-mono text-[11px] text-muted-foreground leading-relaxed">
+                    Telegram bildirimlerini açarak yeni siparişlerini ve lisanslarını anında cebine bildirim olarak alabilirsin. 
+                    <strong className="text-primary/90 ml-1">Kullanıcılarımızın %90'ı bu özelliği kullanıyor, şiddetle tavsiye ederiz!</strong>
+                  </p>
+                  <Button asChild size="sm" className="mt-3 font-mono neon-glow">
+                    <Link to="/hesabim">Hemen Eşleştir →</Link>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {order.status === "approved" && deliveredKeys.length > 0 && (
             <div className="space-y-3">
               {deliveredKeys.map((k, i) => {

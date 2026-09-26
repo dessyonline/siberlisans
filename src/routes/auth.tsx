@@ -347,8 +347,9 @@ function AuthPage() {
                   <div className="flex items-start gap-1.5 rounded bg-primary/5 p-2 border border-primary/20">
                     <Info className="h-3 w-3 text-primary shrink-0 mt-0.5" />
                     <p className="font-mono text-[9px] text-muted-foreground leading-tight">
-                      Destek, lisans teslimi ve acil bildirimler için gereklidir. Telegram kullanmıyorsanız 
-                      <span className="text-primary mx-1">'yok'</span> yazarak devam edebilirsiniz.
+                      Sipariş teslimatları, şifre sıfırlama, lisans yenileme ve destek mesajları anında Telegram'dan gelir.
+                      Bu yüzden <span className="text-primary font-bold">şiddetle tavsiye ediyoruz!</span> 
+                      Kullanmıyorsanız <span className="text-primary mx-1">'yok'</span> yazabilirsiniz.
                     </p>
                   </div>
                 </div>
