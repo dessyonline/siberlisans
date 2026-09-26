@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   adminListDealerApplications,
   adminReviewDealerApplication,
+  adminRepairApprovedDealers,
   adminListDealers,
   adminUpdateDealer,
 } from "@/lib/dealer.functions";
@@ -74,8 +75,10 @@ function AdminDealers() {
 function Applications({ qc }: { qc: ReturnType<typeof useQueryClient> }) {
   const listFn = useServerFn(adminListDealerApplications);
   const reviewFn = useServerFn(adminReviewDealerApplication);
+  const repairFn = useServerFn(adminRepairApprovedDealers);
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  const [repairing, setRepairing] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["admin-dealer-apps"],
@@ -96,10 +99,29 @@ function Applications({ qc }: { qc: ReturnType<typeof useQueryClient> }) {
     }
   };
 
+  const repairApproved = async () => {
+    setRepairing(true);
+    try {
+      const result = await repairFn();
+      toast.success(result.repaired ? `${result.repaired} bayi kaydı onarıldı` : "Onarılacak eksik bayi kaydı yok");
+      qc.invalidateQueries({ queryKey: ["admin-dealer-apps"] });
+      qc.invalidateQueries({ queryKey: ["admin-dealers"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Bayi kayıtları onarılamadı");
+    } finally {
+      setRepairing(false);
+    }
+  };
+
   if (isLoading) return <p className="font-mono text-sm text-muted-foreground">yükleniyor…</p>;
 
   return (
     <div className="space-y-3">
+      <div className="flex justify-end">
+        <Button size="sm" variant="outline" className="font-mono" disabled={repairing} onClick={repairApproved}>
+          {repairing ? "onarılıyor…" : "eksik onayları onar"}
+        </Button>
+      </div>
       {(data ?? []).length === 0 && (
         <p className="font-mono text-sm text-muted-foreground">başvuru yok</p>
       )}

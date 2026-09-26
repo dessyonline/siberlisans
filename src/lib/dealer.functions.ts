@@ -245,6 +245,12 @@ export const adminReviewDealerApplication = createServerFn({ method: "POST" })
 
     const adminNote = data.adminNote?.trim() || null;
     if (data.approve) {
+      // Eski/eksik kurulumlarda tier seed'i atlanmış olabilir. Onayı yabancı
+      // anahtar hatasına düşürmemek için varsayılan seviyeyi garanti ederiz.
+      await mysqlQuery(
+        `INSERT IGNORE INTO dealer_tiers (slug,name,min_volume_try,commission_percent,discount_percent,sort_order)
+         VALUES ('bronze','Bronz Bayi',0,8,3,1)`,
+      );
       const tier = await mysqlOne<{ slug: string }>(
         "SELECT slug FROM dealer_tiers ORDER BY sort_order ASC, slug ASC LIMIT 1",
       );
@@ -295,6 +301,41 @@ export const adminReviewDealerApplication = createServerFn({ method: "POST" })
     );
 
     return { ok: true };
+  });
+
+/** Geçmişte onaylanıp tier hatası nedeniyle bayi satırı oluşmayan başvuruları onarır. */
+export const adminRepairApprovedDealers = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .handler(async ({ context }): Promise<{ repaired: number }> => {
+    if (!context.isAdmin) throw new Error("Yetkisiz");
+    await mysqlQuery(
+      `INSERT IGNORE INTO dealer_tiers (slug,name,min_volume_try,commission_percent,discount_percent,sort_order)
+       VALUES ('bronze','Bronz Bayi',0,8,3,1)`,
+    );
+    const tier = await mysqlOne<{ slug: string }>("SELECT slug FROM dealer_tiers ORDER BY sort_order ASC, slug ASC LIMIT 1");
+    if (!tier) throw new Error("Bayilik seviyeleri oluşturulamadı.");
+    const rows = await mysqlQuery<{ user_id: string; company_name: string; reviewed_by: string | null; reviewed_at: string | null }>(
+      `SELECT a.user_id, a.company_name, a.reviewed_by, a.reviewed_at
+         FROM dealer_applications a
+         LEFT JOIN dealers d ON d.user_id=a.user_id
+        WHERE a.status='approved' AND d.user_id IS NULL`,
+    );
+    let repaired = 0;
+    for (const row of rows) {
+      let code = genDealerCode();
+      for (let i = 0; i < 20; i++) {
+        const found = await mysqlOne<{ user_id: string }>("SELECT user_id FROM dealers WHERE code=?", [code]);
+        if (!found) break;
+        code = genDealerCode();
+      }
+      await mysqlQuery(
+        `INSERT INTO dealers (user_id,code,company_name,tier_slug,active,approved_by,approved_at,created_at,updated_at)
+         VALUES (?,?,?,?,1,?,?,?,?)`,
+        [row.user_id, code, row.company_name, tier.slug, row.reviewed_by, row.reviewed_at ?? ts(), ts(), ts()],
+      );
+      repaired++;
+    }
+    return { repaired };
   });
 
 // ===================== ADMIN: DEALERS =====================
