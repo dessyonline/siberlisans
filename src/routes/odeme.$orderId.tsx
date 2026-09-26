@@ -219,6 +219,9 @@ function Payment() {
     quantity: number;
     unit_price_try: number;
     product_name_snapshot: string;
+    warranty: boolean;
+    warranty_price_try: number;
+    warranty_label: string | null;
     product: { name: string; slug?: string | null; image_url?: string | null; duration?: string | null; delivery_type: string; manual_fulfillment: boolean; unlimited_stock: boolean } | null;
   }>;
   const isCartOrder = orderItems.length > 0;
@@ -412,6 +415,8 @@ function Payment() {
                       duration: it.product?.duration ?? null,
                       unit: Number(it.unit_price_try),
                       qty: it.quantity,
+                      warranty: it.warranty,
+                      warrantyLabel: it.warranty_label,
                     }))
                   : [{
                       id: order.product!.slug,
@@ -422,6 +427,8 @@ function Payment() {
                       duration: (order.product as { duration?: string | null }).duration ?? null,
                       unit: Number(order.price_try),
                       qty: 1,
+                      warranty: false,
+                      warrantyLabel: null,
                     }]
                 ).map((it) => {
                   const itemOriginal = it.unit * it.qty;
@@ -442,6 +449,11 @@ function Payment() {
                       <div className="font-mono text-sm truncate">{it.name}</div>
                       <div className="mt-0.5 flex items-center gap-2 font-mono text-[11px] text-muted-foreground">
                         {it.duration && <span className="rounded border border-primary/20 bg-primary/5 px-1.5 py-0.5 text-primary/80">{it.duration}</span>}
+                        {it.warranty && (
+                          <span className="flex items-center gap-1 rounded border border-emerald-500/40 bg-emerald-500/10 px-1.5 py-0.5 text-emerald-400">
+                            <ShieldCheck className="h-3 w-3" /> garanti{it.warrantyLabel ? ` · ${it.warrantyLabel}` : ""}
+                          </span>
+                        )}
                         <span>₺{it.unit.toLocaleString("tr-TR")} × {it.qty}</span>
                         {itemDiscount > 0 && (
                           <span className="rounded border border-warn/40 bg-warn/10 px-1.5 py-0.5 text-warn">−₺{itemDiscount.toLocaleString("tr-TR")}</span>
@@ -1814,7 +1826,6 @@ function CrossSellOffer({ orderId, orderStatus, categories, excludeSlugs }: { or
     </section>
   );
 }
-
 
 
 

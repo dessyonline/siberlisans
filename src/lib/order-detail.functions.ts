@@ -63,6 +63,7 @@ export const getOrderDetail = createServerFn({ method: "GET" })
 
     const items = await mysqlQuery<Record<string, unknown>>(
       `SELECT oi.id, oi.product_id, oi.quantity, oi.unit_price_try, oi.product_name_snapshot,
+              oi.warranty, oi.warranty_price_try, oi.warranty_label,
               p.name AS p_name, p.slug AS p_slug, p.image_url AS p_image_url, p.duration AS p_duration,
               p.delivery_type AS p_delivery_type, p.manual_fulfillment AS p_manual_fulfillment,
               p.unlimited_stock AS p_unlimited_stock, p.shopier_url AS p_shopier_url,
@@ -108,6 +109,9 @@ export const getOrderDetail = createServerFn({ method: "GET" })
         quantity: Number(i.quantity ?? 1),
         unit_price_try: num(i.unit_price_try) ?? 0,
         product_name_snapshot: (i.product_name_snapshot as string) ?? null,
+        warranty: bool(i.warranty),
+        warranty_price_try: num(i.warranty_price_try) ?? 0,
+        warranty_label: (i.warranty_label as string) ?? null,
         product: i.p_name
           ? mapProduct({
               name: i.p_name,
