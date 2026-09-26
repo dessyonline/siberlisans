@@ -204,9 +204,9 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
           name: string | null;
           manual_fulfillment: unknown;
           unlimited_stock: unknown;
-          duration_days: unknown;
+          default_license_days: number | null;
         }>(
-          "SELECT name, manual_fulfillment, unlimited_stock, duration_days FROM products WHERE id=? LIMIT 1",
+          "SELECT name, manual_fulfillment, unlimited_stock, default_license_days FROM products WHERE id=? LIMIT 1",
           [order.product_id],
         )
       : null;
@@ -252,7 +252,7 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
     let activationToken: string | null = null;
     if (key) {
       const token = key.activation_token ?? crypto.randomUUID().replace(/-/g, "");
-      const days = num(product?.duration_days);
+      const days = num(product?.default_license_days);
       await mysqlQuery(
         `UPDATE license_keys
             SET status='assigned', assigned_order_id=?, assigned_at=?, activation_token=?,

@@ -14,6 +14,8 @@ export const Route = createFileRoute("/api/public/hooks/migrate")({
       await mysqlQuery("ALTER TABLE order_items ADD COLUMN IF NOT EXISTS warranty_price_try DECIMAL(12,2) NOT NULL DEFAULT 0");
       await mysqlQuery("ALTER TABLE order_items ADD COLUMN IF NOT EXISTS warranty_label VARCHAR(255) DEFAULT NULL");
       
+      await mysqlQuery("ALTER TABLE license_keys ADD COLUMN IF NOT EXISTS duration_days INT DEFAULT NULL");
+      
       await mysqlQuery(`
         CREATE TABLE IF NOT EXISTS site_settings (
           id VARCHAR(50) PRIMARY KEY,
