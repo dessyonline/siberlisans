@@ -1,9 +1,11 @@
-import { json } from "@tanstack/react-start";
-import { createAPIFileRoute } from "@tanstack/react-start/api";
+import { createFileRoute } from "@tanstack/react-router";
+
 import { mysqlQuery } from "../../../../lib/mysql.server";
 
-export const Route = createAPIFileRoute("/api/public/hooks/migrate")({
-  GET: async ({ request }) => {
+export const Route = createFileRoute("/api/public/hooks/migrate")({
+  server: {
+    handlers: {
+      GET: async ({ request }) => {
     try {
       await mysqlQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS warranty_price_try DECIMAL(12,2) DEFAULT NULL");
       await mysqlQuery("ALTER TABLE products ADD COLUMN IF NOT EXISTS warranty_label VARCHAR(255) DEFAULT NULL");
@@ -39,9 +41,17 @@ export const Route = createAPIFileRoute("/api/public/hooks/migrate")({
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
       `);
       
-      return json({ success: true, message: "Migration completed." }, 200);
+      return new Response(JSON.stringify({ success: true, message: "Migration completed." }), { 
+        status: 200,
+        headers: { "Content-Type": "application/json" }
+      });
     } catch (err: any) {
-      return json({ success: false, error: err.message }, 500);
+      return new Response(JSON.stringify({ success: false, error: err.message }), { 
+        status: 500,
+        headers: { "Content-Type": "application/json" }
+      });
     }
-  },
+  }
+  }
+  }
 });

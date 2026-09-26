@@ -1017,6 +1017,8 @@ const productInput = z.object({
   demo_video_url: z.union([z.string().url().max(500), z.string().max(0)]).optional().nullable(),
   grants_app: z.union([z.string().max(40), z.null()]).optional(),
   grants_app_days: z.union([z.number().int().min(0).max(36500), z.null()]).optional(),
+  warranty_price_try: z.number().min(0).max(1000000).optional().nullable(),
+  warranty_label: z.string().max(255).optional().nullable(),
 });
 
 type SqlVal = string | number | boolean | null;

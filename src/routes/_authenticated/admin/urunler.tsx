@@ -201,6 +201,8 @@ function ProductsAdmin() {
             editing.grants_app_days == null || Number.isNaN(Number(editing.grants_app_days))
               ? null
               : Number(editing.grants_app_days),
+          warranty_price_try: editing.warranty_price_try == null || Number.isNaN(Number(editing.warranty_price_try)) ? null : Number(editing.warranty_price_try),
+          warranty_label: editing.warranty_label && editing.warranty_label.trim() !== "" ? editing.warranty_label : null,
         },
       });
       toast.success("Kaydedildi");
@@ -246,6 +248,8 @@ function ProductsAdmin() {
           requires_email: p.requires_email,
           grants_app: p.grants_app ?? null,
           grants_app_days: p.grants_app_days ?? null,
+          warranty_price_try: p.warranty_price_try == null ? null : Number(p.warranty_price_try),
+          warranty_label: p.warranty_label ?? null,
         },
       });
       qc.invalidateQueries({ queryKey: ["admin-products"] });
@@ -787,12 +791,27 @@ function ProductsAdmin() {
                     </select>
                   </div>
                 </div>
-                <p className="font-mono text-[10px] text-muted-foreground">
+                <p className="font-mono text-[10px] text-muted-foreground mt-2">
                   {editing.delivery_type === "account" && "havuza her satıra 'email:sifre' formatında ekle"}
                   {editing.delivery_type === "link" && "havuza her satıra bir URL ekle"}
                   {editing.delivery_type === "link_token" && "havuza payload metnini ekle; sistem her sipariş için /aktivasyon/{token} üretecek"}
                   {(!editing.delivery_type || editing.delivery_type === "key") && "havuza her satıra bir lisans anahtarı ekle"}
                 </p>
+                <div className="border-t border-border/50 my-4"></div>
+                <div className="font-mono text-[10px] text-muted-foreground mb-2">Garantili alım: fiyat girersen ürün sayfasında "garanti ekle" kutucuğu çıkar. Boş bırakırsan gösterilmez.</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Field
+                    label="garanti ek fiyatı (₺)"
+                    value={editing.warranty_price_try == null ? "" : String(editing.warranty_price_try)}
+                    onChange={(v) => setEditing((p) => ({ ...p!, warranty_price_try: v === "" ? null : Number(v) }))}
+                    type="number"
+                  />
+                  <Field
+                    label="garanti bilgisi (18 ay garanti…)"
+                    value={editing.warranty_label ?? ""}
+                    onChange={(v) => setEditing((p) => ({ ...p!, warranty_label: v }))}
+                  />
+                </div>
               </Section>
 
               {/* SECTION: RETAIL PRICE (orijinal satıcı fiyatı) */}
@@ -817,20 +836,7 @@ function ProductsAdmin() {
                     onChange={(v) => setEditing((p) => ({ ...p!, retail_price_source_url: v }))}
                   />
                 </div>
-                <div className="font-mono text-[10px] text-muted-foreground">Garantili alım: fiyat girersen ürün sayfasında "garanti ekle" kutucuğu çıkar. Boş bırakırsan gösterilmez.</div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <Field
-                    label="garanti ek fiyatı (₺)"
-                    value={editing.warranty_price_try == null ? "" : String(editing.warranty_price_try)}
-                    onChange={(v) => setEditing((p) => ({ ...p!, warranty_price_try: v === "" ? null : Number(v) }))}
-                    type="number"
-                  />
-                  <Field
-                    label="garanti bilgisi (18 ay garanti…)"
-                    value={editing.warranty_label ?? ""}
-                    onChange={(v) => setEditing((p) => ({ ...p!, warranty_label: v }))}
-                  />
-                </div>
+
                 <div className="flex justify-end">
                   <Button
                     type="button"

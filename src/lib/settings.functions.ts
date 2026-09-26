@@ -63,14 +63,14 @@ export const updateSiteSettings = createServerFn({ method: "POST" })
         updated_at = NOW()
        WHERE id = 'global'`,
       [
-        data.site_name,
-        data.site_description,
-        data.maintenance_mode,
-        data.whatsapp_number,
-        data.telegram_url,
-        data.instagram_url,
-        data.announcement_text,
-        data.announcement_active,
+        data.site_name ?? null,
+        data.site_description ?? null,
+        data.maintenance_mode ?? null,
+        data.whatsapp_number ?? null,
+        data.telegram_url ?? null,
+        data.instagram_url ?? null,
+        data.announcement_text ?? null,
+        data.announcement_active ?? null,
       ]
     );
 
