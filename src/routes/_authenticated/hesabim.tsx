@@ -782,7 +782,7 @@ function ProfileTab({ userId, email, telegramHandle, onSignOut }: { userId: stri
                 </p>
                 <Button asChild size="sm" className="font-mono">
                   <a href={`https://t.me/siberlisans_infobot?start=${tgStatus.verify_code}`} target="_blank" rel="noreferrer">
-                    > Telegram'ı Aç
+                    &gt; Telegram'ı Aç
                   </a>
                 </Button>
                 <p className="mt-3 font-mono text-[10px] text-muted-foreground break-all">
