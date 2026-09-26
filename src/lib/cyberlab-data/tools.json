@@ -1,0 +1,1127 @@
+[
+  {
+    "cat": "recon",
+    "tag": "RECON",
+    "tool": "searchsploit",
+    "name": "Exploit Tarama Otomasyonu",
+    "desc": "Searchsploit kullanarak hedef yazılım veya versiyona ait exploit taraması gerçekleştirir.",
+    "cmd": "python3 siberphp.py --searchsploit {hedef/versiyon}",
+    "param": "Yazılım adı veya versiyon (örn: apache 2.4.49)"
+  },
+  {
+    "cat": "recon",
+    "tag": "RECON",
+    "tool": "nmap",
+    "name": "Port Tarama Aracı",
+    "desc": "NMAP otomasyonunu gelişmiş biçimde sağlar. Hızlı, tam, açık, servis, versiyon ve OS tarama seçenekleri sunar.",
+    "cmd": "python3 siberphp.py --nmap {hedef}",
+    "param": "IP adresi veya domain (örn: 192.168.1.1)"
+  },
+  {
+    "cat": "recon",
+    "tag": "RECON",
+    "tool": "wafw00f",
+    "name": "Güvenlik Duvarı Tespit Aracı",
+    "desc": "wafw00f ile hedef site üzerindeki WAF (Web Application Firewall) güvenlik duvarını tespit eder.",
+    "cmd": "python3 siberphp.py --wafw00f {hedef}",
+    "param": "Hedef URL (örn: https://example.com)"
+  },
+  {
+    "cat": "recon",
+    "tag": "RECON",
+    "tool": "nikto",
+    "name": "Zaafiyet Analiz Aracı (Nikto)",
+    "desc": "Nikto ile web sunucusuna yönelik kapsamlı zaafiyet analizi yapar.",
+    "cmd": "python3 siberphp.py --nikto {hedef}",
+    "param": "Hedef URL veya IP"
+  },
+  {
+    "cat": "recon",
+    "tag": "RECON",
+    "tool": "lynis",
+    "name": "Zaafiyet Analiz Aracı 2 (Lynis)",
+    "desc": "Lynis ile sistem genelinde derinlemesine güvenlik ve zaafiyet analizi yapar.",
+    "cmd": "python3 siberphp.py --lynis",
+    "param": "Parametre gerekmez"
+  },
+  {
+    "cat": "recon",
+    "tag": "RECON",
+    "tool": "ike-scan",
+    "name": "Hedef IP VPN Kontrol",
+    "desc": "ike-scan kullanarak hedef IP adresinde VPN/IPSec hizmetini kontrol eder.",
+    "cmd": "python3 siberphp.py --ike {hedef-ip}",
+    "param": "Hedef IP adresi"
+  },
+  {
+    "cat": "recon",
+    "tag": "RECON",
+    "tool": "whois",
+    "name": "WhoIs Sorgulama",
+    "desc": "Belirtilen domain adresinin WhoIs sorgu sonucunu getirir ve gösterir.",
+    "cmd": "python3 siberphp.py --whois {domain}",
+    "param": "Domain adı (örn: example.com)"
+  },
+  {
+    "cat": "recon",
+    "tag": "RECON",
+    "tool": "dns",
+    "name": "DNS Bilgi Toplama",
+    "desc": "Belirtilen domain adresinin DNS kayıtlarını (A, MX, NS, TXT vb.) getirir.",
+    "cmd": "python3 siberphp.py --dns {domain}",
+    "param": "Domain adı"
+  },
+  {
+    "cat": "recon",
+    "tag": "RECON",
+    "tool": "ssl",
+    "name": "SSL Analizi",
+    "desc": "Belirtilen sitenin SSL sertifika bilgilerini, geçerlilik tarihini ve zayıflıklarını gösterir.",
+    "cmd": "python3 siberphp.py --ssl {domain}",
+    "param": "Domain adı"
+  },
+  {
+    "cat": "recon",
+    "tag": "RECON",
+    "tool": "site-ip",
+    "name": "Site IP Bulma",
+    "desc": "Belirtilen sitenin IP adresini bulur.",
+    "cmd": "python3 siberphp.py --siteip {domain}",
+    "param": "Domain adı"
+  },
+  {
+    "cat": "recon",
+    "tag": "RECON",
+    "tool": "subdomain",
+    "name": "Subdomain Listeleyici",
+    "desc": "Wordlist kullanarak belirtilen domain üzerindeki alt domainleri dinamik olarak bulmaya çalışır.",
+    "cmd": "python3 siberphp.py --subdomain {domain}",
+    "param": "Domain adı"
+  },
+  {
+    "cat": "network",
+    "tag": "NETWORK",
+    "tool": "python3",
+    "name": "Anormal DNS Tespit Edici",
+    "desc": "Ağ üzerinde belirlediğiniz istek sınırını aşan kullanıcıları listeler.",
+    "cmd": "python3 siberphp.py --dns-detect {limit}",
+    "param": "İstek sınırı (örn: 100)"
+  },
+  {
+    "cat": "network",
+    "tag": "NETWORK",
+    "tool": "python3",
+    "name": "DNS Yönlendirici",
+    "desc": "Belirlediğiniz IP adresine DNS yönlendirme saldırısı yapar. Ağı dinleyebilirsiniz.",
+    "cmd": "python3 siberphp.py --dns-spoof {hedef-ip}",
+    "param": "Hedef IP adresi"
+  },
+  {
+    "cat": "network",
+    "tag": "NETWORK",
+    "tool": "scapy",
+    "name": "Wifi Dinleyicisi 1",
+    "desc": "Ağ üzerinde devamlı dinleme işlemi uygulayarak paket yönlendirmelerini listeler.",
+    "cmd": "python3 siberphp.py --sniff1 {interface}",
+    "param": "Ağ arayüzü (örn: wlan0)"
+  },
+  {
+    "cat": "network",
+    "tag": "NETWORK",
+    "tool": "scapy",
+    "name": "Wifi Dinleyicisi 2",
+    "desc": "İlk seçenekten farklı bir paket yakalama ve dinleme yöntemi uygular.",
+    "cmd": "python3 siberphp.py --sniff2 {interface}",
+    "param": "Ağ arayüzü (örn: eth0)"
+  },
+  {
+    "cat": "network",
+    "tag": "NETWORK",
+    "tool": "python3",
+    "name": "Network Reaper (Dinleyici)",
+    "desc": "Ağdaki paketlerin tümünü veya filtrelenmiş kısmını dinleyip dosyaya kaydeder. HTTP siteleri ve resimleri çözümlenir.",
+    "cmd": "python3 siberphp.py --network-reaper {interface}",
+    "param": "Ağ arayüzü"
+  },
+  {
+    "cat": "network",
+    "tag": "NETWORK",
+    "tool": "nmap",
+    "name": "Wifi Port Tarayıcı",
+    "desc": "WiFi ağı üzerindeki cihazlara port taraması yapar.",
+    "cmd": "python3 siberphp.py --wifi-portscan {subnet}",
+    "param": "Subnet (örn: 192.168.1.0/24)"
+  },
+  {
+    "cat": "network",
+    "tag": "NETWORK",
+    "tool": "ip-api",
+    "name": "IP Adresinden Bilgi Toplama",
+    "desc": "Belirtilen IP adresine bağlı konum, ISP ve detaylı bilgileri gösterir.",
+    "cmd": "python3 siberphp.py --ipinfo {ip}",
+    "param": "IP adresi"
+  },
+  {
+    "cat": "network",
+    "tag": "NETWORK",
+    "tool": "shodan-api",
+    "name": "IP Adresi Zafiyet Analizi",
+    "desc": "API kullanarak IP adresi üzerinden açık port ve zafiyet analizi gerçekleştirir.",
+    "cmd": "python3 siberphp.py --ipvuln {ip}",
+    "param": "IP adresi"
+  },
+  {
+    "cat": "network",
+    "tag": "NETWORK",
+    "tool": "mac-changer",
+    "name": "MAC Adresi Değiştirme",
+    "desc": "mac-changer ile 3 farklı MAC değiştirme seçeneğine erişir: rastgele, belirli ve orijinal.",
+    "cmd": "python3 siberphp.py --macchanger {interface}",
+    "param": "Ağ arayüzü (örn: eth0)"
+  },
+  {
+    "cat": "network",
+    "tag": "NETWORK",
+    "tool": "traceroute",
+    "name": "Traceroute",
+    "desc": "Bir paketin kaynaktan hedefe giden yolunu gösterir. Python ile yazılmış gelişmiş versiyon.",
+    "cmd": "python3 siberphp.py --traceroute {hedef}",
+    "param": "Hedef IP veya domain"
+  },
+  {
+    "cat": "wireless",
+    "tag": "WIRELESS",
+    "tool": "aircrack-ng",
+    "name": "Handshake Decrypter",
+    "desc": "aircrack-ng ile belirtilen wordlist ve handshake dosyalarını kullanarak WiFi şifresini bulmaya çalışır.",
+    "cmd": "python3 siberphp.py --handshake {handshake-file} {wordlist}",
+    "param": "Handshake dosyası yolu"
+  },
+  {
+    "cat": "wireless",
+    "tag": "WIRELESS",
+    "tool": "bluetooth",
+    "name": "Blue-Cough (Bluetooth)",
+    "desc": "Bluetooth cihazların port adreslerini tarar. İstenen cihazın sinyalini kesme ve gelişmiş Bluetooth saldırı seçenekleri sunar.",
+    "cmd": "python3 siberphp.py --bluecough",
+    "param": "Parametre gerekmez"
+  },
+  {
+    "cat": "wireless",
+    "tag": "WIRELESS",
+    "tool": "esp32/esp8266",
+    "name": "SiberPhp Twin (Evil Twin)",
+    "desc": "ESP32 veya ESP8266 kullanarak ağın ikizini oluşturur. Kullanıcılar oturum açmaya yönlendirilir ve veriler toplanır.",
+    "cmd": "python3 siberphp.py --twin {ssid}",
+    "param": "Hedef SSID adı"
+  },
+  {
+    "cat": "wireless",
+    "tag": "WIRELESS",
+    "tool": "raspberry-pico",
+    "name": "Raspberry Pi Pico Hack",
+    "desc": "Pi Pico'yu siber güvenlik aracına dönüştürür. WiFi şifre çekme, dosya indirtme, antivirüs kapatma, URL açma, cihaz kapatma payload'ları.",
+    "cmd": "python3 siberphp.py --pico {payload-no}",
+    "param": "Payload numarası (1-5)"
+  },
+  {
+    "cat": "web",
+    "tag": "WEB",
+    "tool": "sqlmap",
+    "name": "Veritabanı Çalma Aracı",
+    "desc": "SQLMap otomasyonu ile veritabanı çalma işlemi gerçekleştirir. Tablo ve sütun keşfi yapar.",
+    "cmd": "python3 siberphp.py --sqlmap {url}",
+    "param": "Hedef URL (form veya parametre içeren)"
+  },
+  {
+    "cat": "web",
+    "tag": "WEB",
+    "tool": "python3",
+    "name": "Admin Panel Tara (Statik)",
+    "desc": "Girilen sitenin admin panelinin sahip olabileceği yüzlerce linki listeler ve test eder.",
+    "cmd": "python3 siberphp.py --admin-static {url}",
+    "param": "Hedef URL"
+  },
+  {
+    "cat": "web",
+    "tag": "WEB",
+    "tool": "python3",
+    "name": "Admin Panel Bulucu (Dinamik)",
+    "desc": "Belirtilen sitenin admin panelini, en çok tercih edilen yolları deneyerek dinamik biçimde bulmaya çalışır.",
+    "cmd": "python3 siberphp.py --admin-dynamic {url}",
+    "param": "Hedef URL"
+  },
+  {
+    "cat": "web",
+    "tag": "WEB",
+    "tool": "python3",
+    "name": "Directory Fuzzer",
+    "desc": "Belirtilen wordlist içerisindeki yolların, hedef site üzerinde olup olmadığını deneyerek kontrol eder.",
+    "cmd": "python3 siberphp.py --dirfuzz {url} {wordlist}",
+    "param": "Hedef URL"
+  },
+  {
+    "cat": "web",
+    "tag": "WEB",
+    "tool": "python3",
+    "name": "Dizin Listeleyici",
+    "desc": "Wordlist kullanarak belirtilen sitedeki olası dizinleri tarar ve bulunanları detaylarıyla gösterir.",
+    "cmd": "python3 siberphp.py --dirlist {url}",
+    "param": "Hedef URL"
+  },
+  {
+    "cat": "web",
+    "tag": "WEB",
+    "tool": "python3",
+    "name": "Site Fuzzing Aracı (Rastgele)",
+    "desc": "Belirtilen siteye farklı rastgele parametreler göndererek nasıl yanıt verdiğini kontrol eder.",
+    "cmd": "python3 siberphp.py --sitefuzz {url}",
+    "param": "Hedef URL"
+  },
+  {
+    "cat": "web",
+    "tag": "WEB",
+    "tool": "beautifulsoup",
+    "name": "Sitedeki Linkleri Çekme",
+    "desc": "Belirtilen site üzerindeki tüm bağlantıları listeler.",
+    "cmd": "python3 siberphp.py --links {url}",
+    "param": "Hedef URL"
+  },
+  {
+    "cat": "web",
+    "tag": "WEB",
+    "tool": "beautifulsoup",
+    "name": "Sitedeki Yazıları Çekme",
+    "desc": "Belirtilen site üzerindeki paragrafları ve metin içeriklerini listeler.",
+    "cmd": "python3 siberphp.py --text {url}",
+    "param": "Hedef URL"
+  },
+  {
+    "cat": "web",
+    "tag": "WEB",
+    "tool": "beautifulsoup",
+    "name": "Sitedeki Resim Yollarını Çekme",
+    "desc": "Belirtilen site üzerindeki tüm resim URL ve yollarını listeler.",
+    "cmd": "python3 siberphp.py --images {url}",
+    "param": "Hedef URL"
+  },
+  {
+    "cat": "web",
+    "tag": "WEB",
+    "tool": "beautifulsoup",
+    "name": "Gelişmiş Web Scraper",
+    "desc": "Etiket filtreleme, etiket gösterme, sayfa içeriği kaydetme gibi gelişmiş özelliklerle web scraping yapar.",
+    "cmd": "python3 siberphp.py --scraper {url}",
+    "param": "Hedef URL"
+  },
+  {
+    "cat": "web",
+    "tag": "WEB",
+    "tool": "python3",
+    "name": "Site Kaynak Kodu Çekme",
+    "desc": "Belirtilen sitenin kaynak kodunu çekip kaydeder.",
+    "cmd": "python3 siberphp.py --source {url}",
+    "param": "Hedef URL"
+  },
+  {
+    "cat": "web",
+    "tag": "WEB",
+    "tool": "firebase",
+    "name": "Firebase Reaper",
+    "desc": "Belirtilen Firebase sunucusundan JSON türünde veri çeker ve kaydeder.",
+    "cmd": "python3 siberphp.py --firebase {firebase-url}",
+    "param": "Firebase URL"
+  },
+  {
+    "cat": "web",
+    "tag": "WEB",
+    "tool": "index-builder",
+    "name": "Index Oluşturucu",
+    "desc": "Kullanıcının yönergelerine göre web sayfası oluşturur.",
+    "cmd": "python3 siberphp.py --index-build",
+    "param": "Parametre gerekmez"
+  },
+  {
+    "cat": "web",
+    "tag": "WEB",
+    "tool": "is.gd/tinyurl",
+    "name": "Link Kısaltma Servisleri",
+    "desc": "is.gd veya TinyURL ile istenen linki kısaltır.",
+    "cmd": "python3 siberphp.py --shortlink {url}",
+    "param": "Kısaltılacak URL"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "api",
+    "name": "Telefon Numarasından Şehir Bulma",
+    "desc": "Yurt dışı telefon numaralarının bağlı olduğu şehri ve ülkeyi gösterir.",
+    "cmd": "python3 siberphp.py --phoneinfo {numara}",
+    "param": "Telefon numarası (ülke koduyla)"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "api",
+    "name": "Rastgele İnsan Verisi Üret",
+    "desc": "API kullanarak rastgele kişi verisi (isim, adres, email vb.) üretir.",
+    "cmd": "python3 siberphp.py --randomhuman",
+    "param": "Parametre gerekmez"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "api",
+    "name": "Rastgele İnsan Gönderisi Üret",
+    "desc": "API kullanarak rastgele sosyal medya gönderisi oluşturur.",
+    "cmd": "python3 siberphp.py --randompost",
+    "param": "Parametre gerekmez"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "api",
+    "name": "Mailin Geçerliliğini Kontrol",
+    "desc": "API kullanarak belirtilen mail adresini dinler ve geçerliliğini kontrol eder.",
+    "cmd": "python3 siberphp.py --mailcheck {email}",
+    "param": "E-posta adresi"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "sherlock",
+    "name": "Kullanıcı Adı ile Hesap Bulma (Statik)",
+    "desc": "Statik olarak kullanıcı adından sosyal medya hesabı taraması yapar.",
+    "cmd": "python3 siberphp.py --userfind-static {kullanici}",
+    "param": "Kullanıcı adı"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "sherlock",
+    "name": "Bilinen Kullanıcı Adını SM'de Arama (Dinamik)",
+    "desc": "Dinamik olarak hangi sitelerde belirtilen kullanıcı adıyla hesap açıldığını kontrol eder.",
+    "cmd": "python3 siberphp.py --userfind-dynamic {kullanici}",
+    "param": "Kullanıcı adı"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "openlibrary",
+    "name": "ISBN Numarasından Bilgi (OpenLibrary)",
+    "desc": "ISBN numarası üzerinden OpenLibrary servisi aracılığıyla kitap bilgisi toplar.",
+    "cmd": "python3 siberphp.py --isbn-open {isbn}",
+    "param": "ISBN numarası"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "google-books",
+    "name": "ISBN Numarasından Bilgi (Google)",
+    "desc": "Google Kitap API'si kullanarak ISBN numarasından detaylı kitap bilgisi toplar.",
+    "cmd": "python3 siberphp.py --isbn-google {isbn}",
+    "param": "ISBN numarası"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "circl-api",
+    "name": "CVE Numarasından Bilgi Toplama",
+    "desc": "Circl servisinin API anahtarını kullanarak CVE numarasından bilgi toplar ve okunaklı gösterir.",
+    "cmd": "python3 siberphp.py --cve {cve-no}",
+    "param": "CVE numarası (örn: CVE-2021-44228)"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "recon-ng",
+    "name": "Recon-ng Web Recon",
+    "desc": "Tam donanımlı web keşif (reconnaissance) çerçevesi. Veri toplama ve OSINT için kullanılır.",
+    "cmd": "python3 siberphp.py --recon-ng {hedef}",
+    "param": "Alan adı (örn: example.com)"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "h8mail",
+    "name": "h8mail Sızıntı Tarayıcı",
+    "desc": "Şifre sızıntıları (breach) ve OSINT veritabanları üzerinden e-posta taraması yapar.",
+    "cmd": "python3 siberphp.py --h8mail {hedef_email}",
+    "param": "E-posta adresi (örn: admin@example.com)"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "pwnedornot",
+    "name": "pwnedOrNot Şifre Keşfi",
+    "desc": "E-posta adresinin HaveIBeenPwned üzerinde sızdırılıp sızdırılmadığını kontrol eder ve sızdırılmışsa şifreleri bulur.",
+    "cmd": "python3 siberphp.py --pwnedornot {hedef_email}",
+    "param": "E-posta adresi (örn: admin@example.com)"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "email-analyzer",
+    "name": "Email Header Analyzer",
+    "desc": "Dışa aktarılan email başlıklarını daha okunaklı hale getirir ve ek bilgileri açığa çıkarır.",
+    "cmd": "python3 siberphp.py --emailheader {header-dosyasi}",
+    "param": "Email header dosyası yolu"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "exiftool",
+    "name": "Exif İşlem Aracı",
+    "desc": "Görsel dosyaların Exif verilerini görüntüler, düzenler ve siler.",
+    "cmd": "python3 siberphp.py --exif {dosya}",
+    "param": "Görsel dosya yolu"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "pdf-parser",
+    "name": "PDF Dosyasından Bilgi Topla",
+    "desc": "Seçilen PDF dosyasının metadata verilerini ve sayfalardaki tüm yazıları çıkarır. Metadata düzenleme destekler.",
+    "cmd": "python3 siberphp.py --pdfinfo {dosya.pdf}",
+    "param": "PDF dosyası yolu"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "xposedornot-api",
+    "name": "XposedOrNot — Sızdırılmış E-posta Kontrolü",
+    "desc": "XposedOrNot API kullanarak bir e-posta adresinin veri ihlallerinde sızdırılıp sızdırılmadığını ücretsiz olarak kontrol eder.",
+    "cmd": "python3 siberphp.py --xposedornot {email}",
+    "param": "E-posta adresi (örn: user@example.com)"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "ghunt",
+    "name": "GHunt — Google Hesap OSINT",
+    "desc": "Google hesapları üzerinde açık kaynak istihbaratı (OSINT) yapan araç. Gmail, Google Maps, Calendar gibi servislerden bilgi toplar.",
+    "cmd": "python3 siberphp.py --ghunt {gmail_adresi}",
+    "param": "Gmail adresi (örn: user@gmail.com)"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "holehe",
+    "name": "Holehe — E-posta OSINT",
+    "desc": "Bir e-posta adresinin Instagram, Twitter, Twitch, vb. 120+ sitede kayıtlı olup olmadığını tespit eder.",
+    "cmd": "python3 siberphp.py --holehe {email_adresi}",
+    "param": "E-posta adresi (örn: user@example.com)"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "maigret",
+    "name": "Maigret — Sosyal Medya OSINT",
+    "desc": "Bir kullanıcı adını 3000+ popüler site ve sosyal medya platformunda arayarak tüm profillerini bulur.",
+    "cmd": "python3 siberphp.py --maigret {kullanici_adi}",
+    "param": "Kullanıcı adı (örn: username)"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "email2phonenumber",
+    "name": "Email2PhoneNumber",
+    "desc": "Bir e-posta adresiyle ilişkili telefon numarasını bulmaya çalışan gelişmiş bir OSINT aracı.",
+    "cmd": "python3 siberphp.py --email2phonenumber {email_adresi}",
+    "param": "E-posta adresi (örn: user@example.com)"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "chiasmodon",
+    "name": "Chiasmodon",
+    "desc": "Etki alanıyla ilgili verileri, e-postaları ve alt alan adlarını arayan OSINT aracı.",
+    "cmd": "python3 siberphp.py --chiasmodon {domain}",
+    "param": "Hedef Domain (örn: example.com)"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "tookie-osint",
+    "name": "Tookie-osint",
+    "desc": "Gelişmiş OSINT sosyal medya hesabı bulma aracı.",
+    "cmd": "python3 siberphp.py --tookie-osint {kullanici_adi}",
+    "param": "Kullanıcı Adı (örn: username)"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "spiderfoot",
+    "name": "SpiderFoot",
+    "desc": "Kapsamlı otomatik OSINT bilgi toplama aracı.",
+    "cmd": "python3 siberphp.py --spiderfoot {hedef}",
+    "param": "IP, Domain veya E-posta"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "snoop",
+    "name": "Snoop",
+    "desc": "4000+ sitede kullanıcı adı araması yapan OSINT aracı.",
+    "cmd": "python3 siberphp.py --snoop {kullanici_adi}",
+    "param": "Kullanıcı Adı (örn: username)"
+  },
+  {
+    "cat": "osint",
+    "tag": "OSINT",
+    "tool": "blackbird",
+    "name": "Blackbird",
+    "desc": "Sosyal ağlarda kullanıcı adıyla hesap arayan OSINT aracı.",
+    "cmd": "python3 siberphp.py --blackbird {kullanici_adi}",
+    "param": "Kullanıcı Adı (örn: username)"
+  },
+  {
+    "cat": "recon",
+    "tag": "RECON",
+    "tool": "amass",
+    "name": "Amass",
+    "desc": "Kapsamlı saldırı yüzeyi haritalama ve asset keşif aracı.",
+    "cmd": "python3 siberphp.py --amass {domain}",
+    "param": "Hedef Domain"
+  },
+  {
+    "cat": "web",
+    "tag": "SECURITY",
+    "tool": "trufflehog",
+    "name": "TruffleHog",
+    "desc": "Git depolarında, dosya sistemlerinde ve S3 kovalarında şifre, gizli anahtar (secret) tarayan güçlü güvenlik aracı.",
+    "cmd": "python3 siberphp.py --trufflehog git {hedef_repo_url}",
+    "param": "Git Repo URL veya Local Yol"
+  },
+  {
+    "cat": "recon",
+    "tag": "SECURITY",
+    "tool": "git-dumper",
+    "name": "Git-Dumper",
+    "desc": "Açık unutulmuş .git klasörlerini tespit edip tüm kaynak kodları indiren araç.",
+    "cmd": "python3 siberphp.py --git-dumper {url} {hedef_klasor}",
+    "param": "Hedef URL ve İndirilecek Klasör"
+  },
+  {
+    "cat": "recon",
+    "tag": "SECURITY",
+    "tool": "gitminer",
+    "name": "GitMiner",
+    "desc": "GitHub üzerindeki açık kod depolarında gelişmiş siber güvenlik taraması ve veri madenciliği yapar.",
+    "cmd": "python3 siberphp.py --gitminer -q {kelime}",
+    "param": "Aranacak kelime veya sorgu"
+  },
+  {
+    "cat": "utilities",
+    "tag": "RESOURCES",
+    "tool": "payloads",
+    "name": "PayloadsAllTheThings",
+    "desc": "XSS, SQLi, LFI gibi siber güvenlik payload'larını içeren devasa depo.",
+    "cmd": "python3 siberphp.py --payloads {kelime}",
+    "param": "Aranacak kelime (örn: xss)"
+  },
+  {
+    "cat": "social",
+    "tag": "SOCIAL",
+    "tool": "setoolkit/ngrok",
+    "name": "Oltalama Araçları (3 Seçenek)",
+    "desc": "3 farklı phishing seçeneği sunar ve ngrok ile bir oltalama laboratuvarı oluşturur.",
+    "cmd": "python3 siberphp.py --phishing {1/2/3}",
+    "param": "Seçenek numarası (1-3)"
+  },
+  {
+    "cat": "social",
+    "tag": "SOCIAL",
+    "tool": "ngrok",
+    "name": "INDEX.PHP — Form Sayfası",
+    "desc": "Basit özelleştirilebilir form sayfası. Dışarıdan girilen bilgileri iletir.",
+    "cmd": "python3 siberphp.py --phishing 1",
+    "param": "Parametre gerekmez"
+  },
+  {
+    "cat": "social",
+    "tag": "SOCIAL",
+    "tool": "ngrok",
+    "name": "INDEX2.PHP — IP/UserAgent Toplayıcı",
+    "desc": "İstenen siteye yönlendirme yapan bağlantı oluşturur. Tıklayan kişilerin IP ve UserAgent bilgilerini iletir.",
+    "cmd": "python3 siberphp.py --phishing 2",
+    "param": "Yönlendirilecek URL"
+  },
+  {
+    "cat": "social",
+    "tag": "SOCIAL",
+    "tool": "ngrok",
+    "name": "INDEX3.PHP — Kamera Yayını",
+    "desc": "SAYSNEEZE sayfası oluşturur. Kamera izni veren kullanıcılardan saniyede 2 fotoğraf çeker ve depolar.",
+    "cmd": "python3 siberphp.py --phishing 3",
+    "param": "Parametre gerekmez"
+  },
+  {
+    "cat": "social",
+    "tag": "SOCIAL",
+    "tool": "sms-api",
+    "name": "Anonim SMS Gönderme",
+    "desc": "Belirlenen mesajı belirtilen numaraya anonim olarak gönderir (Türkiye dışı).",
+    "cmd": "python3 siberphp.py --anonSMS {numara} {mesaj}",
+    "param": "Numara ve mesaj"
+  },
+  {
+    "cat": "social",
+    "tag": "SOCIAL",
+    "tool": "sms-api",
+    "name": "SMS Bomb",
+    "desc": "Belirlenen numaraya farklı SMS servislerinden art arda mesaj gönderir.",
+    "cmd": "python3 siberphp.py --smsbomb {numara} {adet}",
+    "param": "Numara (örn: +901234567890)"
+  },
+  {
+    "cat": "social",
+    "tag": "SOCIAL",
+    "tool": "pyautogui",
+    "name": "Spambot",
+    "desc": "Belirlenen kelimeyi, belirlenen sayı kadar yazar. İstenen kişiye art arda mesaj göndermek için kullanılabilir.",
+    "cmd": "python3 siberphp.py --spambot {metin} {adet}",
+    "param": "Metin ve tekrar sayısı"
+  },
+  {
+    "cat": "social",
+    "tag": "SOCIAL",
+    "tool": "python3",
+    "name": "Panelsiz Mail (Statik)",
+    "desc": "Rastgele, yönetim paneli olmayan geçici mail adresi oluşturur.",
+    "cmd": "python3 siberphp.py --tempmail",
+    "param": "Parametre gerekmez"
+  },
+  {
+    "cat": "social",
+    "tag": "SOCIAL",
+    "tool": "instaloader",
+    "name": "Instagram Bot",
+    "desc": "Hesaplar dosyasındaki hesaplar üzerinden toplu takip et/takibi bırak işlemi yapar.",
+    "cmd": "python3 siberphp.py --instabot {hedef-kullanici}",
+    "param": "Hedef kullanıcı adı"
+  },
+  {
+    "cat": "social",
+    "tag": "SOCIAL",
+    "tool": "telethon",
+    "name": "Crawler-x11 (Telegram)",
+    "desc": "Telegram üzerinde hedef kullanıcının sizinle olan ve ortak gruptaki mesajlarını otomatik kaydeder.",
+    "cmd": "python3 siberphp.py --crawlerx11 {kullanici}",
+    "param": "Telegram kullanıcı adı veya ID"
+  },
+  {
+    "cat": "social",
+    "tag": "SOCIAL",
+    "tool": "telethon/ai",
+    "name": "Imitator-x11 (Kopyalama)",
+    "desc": "Belirtilen kişinin mesajlarını öğrenerek o kişinin bir kopyasını oluşturur.",
+    "cmd": "python3 siberphp.py --imitatorx11 {kullanici}",
+    "param": "Telegram kullanıcı adı"
+  },
+  {
+    "cat": "social",
+    "tag": "SOCIAL",
+    "tool": "telethon",
+    "name": "Telegram Kullanıcı Araçları",
+    "desc": "Telegram ID öğrenme, ID'den hesap tarihi görme ve bahsetme denetleyicisi özellikleri.",
+    "cmd": "python3 siberphp.py --telegramtools",
+    "param": "Parametre gerekmez"
+  },
+  {
+    "cat": "social",
+    "tag": "SOCIAL",
+    "tool": "requests",
+    "name": "UltraBot (Görüntüleme Hilesi)",
+    "desc": "Belirlenen siteye art arda giriş yaparak izlenme/indirme sayısını artırır.",
+    "cmd": "python3 siberphp.py --ultrabot {url} {adet}",
+    "param": "Hedef URL ve istek sayısı"
+  },
+  {
+    "cat": "social",
+    "tag": "SOCIAL",
+    "tool": "discord-api",
+    "name": "Etkinleştirme Kodu Oluşturucuları",
+    "desc": "Discord, PUBG, Google Play için etkinleştirme kodları oluşturmaya çalışır.",
+    "cmd": "python3 siberphp.py --actcode {discord/pubg/google}",
+    "param": "Platform seçin"
+  },
+  {
+    "cat": "exploit",
+    "tag": "EXPLOIT",
+    "tool": "searchsploit",
+    "name": "Exploit Arama (SearchSploit)",
+    "desc": "Searchsploit ile exploit-db veritabanından exploit arar ve indirmeye hazırlar.",
+    "cmd": "python3 siberphp.py --exploitsearch {yazilim}",
+    "param": "Yazılım adı veya versiyon"
+  },
+  {
+    "cat": "exploit",
+    "tag": "EXPLOIT",
+    "tool": "tc-algo",
+    "name": "TC Son 2 Hane Bulma",
+    "desc": "TC algoritmasını kullanarak matematiksel işlemlerle TC kimlik numarasının son 2 hanesini bulur.",
+    "cmd": "python3 siberphp.py --tc {ilk-9-hane}",
+    "param": "TC kimlik numarasının ilk 9 hanesi"
+  },
+  {
+    "cat": "exploit",
+    "tag": "EXPLOIT",
+    "tool": "strings",
+    "name": "Strings (Program Analizi)",
+    "desc": "Bir program üzerindeki dışa aktarılabilir metinleri çıkarır. Gizli yazılar, sunucu adresleri görülür.",
+    "cmd": "python3 siberphp.py --strings {dosya}",
+    "param": "Analiz edilecek dosya"
+  },
+  {
+    "cat": "exploit",
+    "tag": "EXPLOIT",
+    "tool": "python3",
+    "name": "Uzantı Sahteleyici",
+    "desc": "Reverse shell dosyasının sunucudan geçebilmesi için farklı gizleme teknikleriyle olası dosyalar oluşturur.",
+    "cmd": "python3 siberphp.py --ext-fake {dosya}",
+    "param": "Reverse shell dosyası yolu"
+  },
+  {
+    "cat": "exploit",
+    "tag": "EXPLOIT",
+    "tool": "python3",
+    "name": "Linux Bilgi Toplayıcı Dosya",
+    "desc": "Hedef sisteme atılıp çalıştırılacak betik. Sistem, kullanıcı, SSH, cron, bash geçmişi ve daha fazlasını toplar.",
+    "cmd": "python3 siberphp.py --linuxinfo-gen",
+    "param": "Parametre gerekmez"
+  },
+  {
+    "cat": "bruteforce",
+    "tag": "BRUTE",
+    "tool": "ncrack",
+    "name": "Kaba Kuvvet Saldırısı (ncrack)",
+    "desc": "11 farklı bağlantı türü için ncrack ile kaba kuvvet otomasyonu. SSH, FTP, RDP, HTTP vb.",
+    "cmd": "python3 siberphp.py --ncrack {hedef} {port} {wordlist}",
+    "param": "Hedef IP adresi"
+  },
+  {
+    "cat": "bruteforce",
+    "tag": "BRUTE",
+    "tool": "hydra",
+    "name": "Kaba Kuvvet v2 (Hydra - Mail)",
+    "desc": "Hydra ile Gmail ve Hotmail hesapları için kaba kuvvet saldırısı yapar.",
+    "cmd": "python3 siberphp.py --hydra-mail {email} {wordlist}",
+    "param": "Hedef email adresi"
+  },
+  {
+    "cat": "bruteforce",
+    "tag": "BRUTE",
+    "tool": "paramiko",
+    "name": "SSH Brute Force",
+    "desc": "Belirtilen SSH sunucusuna sözlük saldırısı uygular.",
+    "cmd": "python3 siberphp.py --ssh-brute {hedef} {kullanici} {wordlist}",
+    "param": "Hedef IP:Port"
+  },
+  {
+    "cat": "bruteforce",
+    "tag": "BRUTE",
+    "tool": "zip-cracker",
+    "name": "Zip Şifre Kırıcı",
+    "desc": "Zip dosyasının şifresini sözlük saldırısı ile kırar.",
+    "cmd": "python3 siberphp.py --zipcrack {dosya.zip} {wordlist}",
+    "param": "ZIP dosyası yolu"
+  },
+  {
+    "cat": "ddos",
+    "tag": "DDoS",
+    "tool": "python3",
+    "name": "DDoS Aracı (12 Saldırı Tipi)",
+    "desc": "12 farklı saldırı seçeneği: PING Flood, SYN Flood, UDP Flood, Slowloris ve daha fazlası. 6 tanesi farklı boyutlarda paket gönderir.",
+    "cmd": "python3 siberphp.py --ddos {hedef} {port} {tip}",
+    "param": "Hedef IP adresi"
+  },
+  {
+    "cat": "ddos",
+    "tag": "DDoS",
+    "tool": "python3",
+    "name": "Oto Tıklayıcı",
+    "desc": "Belirlenen saniye aralıklarıyla otomatik tıklama gerçekleştirir.",
+    "cmd": "python3 siberphp.py --autoclicker {saniye}",
+    "param": "Tıklama aralığı (saniye)"
+  },
+  {
+    "cat": "crypto",
+    "tag": "CRYPTO",
+    "tool": "hashlib",
+    "name": "Şifreleme Aracı (md5, sha...)",
+    "desc": "Metni md5, sha1, sha224, sha256, sha384, sha512 ve blake2b algoritmaları ile şifreler.",
+    "cmd": "python3 siberphp.py --hash-encode {metin}",
+    "param": "Şifrelenecek metin"
+  },
+  {
+    "cat": "crypto",
+    "tag": "CRYPTO",
+    "tool": "hashlib/wordlist",
+    "name": "Tersine Şifreleme (Hash Kır)",
+    "desc": "Sözlük saldırısı ile md5, sha1, sha256, sha512 gibi hash'leri çözmeye çalışır.",
+    "cmd": "python3 siberphp.py --hash-crack {hash} {wordlist}",
+    "param": "Hash değeri"
+  },
+  {
+    "cat": "crypto",
+    "tag": "CRYPTO",
+    "tool": "python3",
+    "name": "Hash Analizi",
+    "desc": "Girilen hash karmasını analiz eder ve hangi algoritmaya ait olduğunu gösterir.",
+    "cmd": "python3 siberphp.py --hash-identify {hash}",
+    "param": "Hash değeri"
+  },
+  {
+    "cat": "crypto",
+    "tag": "CRYPTO",
+    "tool": "stncrypt",
+    "name": "Gelişmiş Şifreleme 1 (StnCrypt Pre 1)",
+    "desc": "Metni veya dosyayı stncrypt pre 1 algoritması ile şifreler/çözer. SiberPhp'a özel.",
+    "cmd": "python3 siberphp.py --stncrypt1 {metin/dosya}",
+    "param": "Metin veya dosya yolu"
+  },
+  {
+    "cat": "crypto",
+    "tag": "CRYPTO",
+    "tool": "stncrypt",
+    "name": "Gelişmiş Şifreleme 2 (StnCrypt Pre 2)",
+    "desc": "Her karakter için rastgele şifreleme ve benzersiz anahtar oluşturur. Anahtarsız çözülemez.",
+    "cmd": "python3 siberphp.py --stncrypt2 {metin/dosya}",
+    "param": "Metin veya dosya yolu"
+  },
+  {
+    "cat": "crypto",
+    "tag": "CRYPTO",
+    "tool": "python3",
+    "name": "StnCrypt (Temel Şifreleme)",
+    "desc": "Python veya HTML için değiştirme mantığıyla basit şifreleme yapar.",
+    "cmd": "python3 siberphp.py --stncrypt {metin}",
+    "param": "Şifrelenecek metin"
+  },
+  {
+    "cat": "crypto",
+    "tag": "CRYPTO",
+    "tool": "python3",
+    "name": "Encode-Decode",
+    "desc": "URL, HTML, Base64, Base58, ASCII, HEX, OCTAL, BINARY türlerinde encoding ve decoding işlemleri yapar.",
+    "cmd": "python3 siberphp.py --encode {tip} {veri}",
+    "param": "Tip: base64/hex/url/ascii..."
+  },
+  {
+    "cat": "crypto",
+    "tag": "CRYPTO",
+    "tool": "base64",
+    "name": "Base64 ↔ Resim Dönüşümleri",
+    "desc": "Base64 formatındaki metni resme veya resmi Base64 formatına dönüştürür.",
+    "cmd": "python3 siberphp.py --img-convert {dosya/metin}",
+    "param": "Dosya yolu veya Base64 metni"
+  },
+  {
+    "cat": "crypto",
+    "tag": "CRYPTO",
+    "tool": "sklearn/ai",
+    "name": "Yapay Zeka Şifre Analizi",
+    "desc": "Wordlist ile özel AI modeli oluşturur. Girilen şifreleri önceki zayıf şifrelerle kıyaslayarak güç skorlar.",
+    "cmd": "python3 siberphp.py --ai-password {wordlist}",
+    "param": "Wordlist dosyası yolu"
+  },
+  {
+    "cat": "crypto",
+    "tag": "CRYPTO",
+    "tool": "python3",
+    "name": "Şifre Oluşturucu",
+    "desc": "Belirlenen uzunlukta, istenen karakter seti kullanılarak güçlü şifreler oluşturur.",
+    "cmd": "python3 siberphp.py --passgen {uzunluk}",
+    "param": "Uzunluk (örn: 16)"
+  },
+  {
+    "cat": "crypto",
+    "tag": "CRYPTO",
+    "tool": "python3",
+    "name": "Şifre Oluşturucu v2",
+    "desc": "Belirlenen uzunlukta otomatik olarak güçlü şifreler oluşturur.",
+    "cmd": "python3 siberphp.py --passgen2 {uzunluk}",
+    "param": "Uzunluk (örn: 20)"
+  },
+  {
+    "cat": "steganography",
+    "tag": "STEGO",
+    "tool": "PIL",
+    "name": "Steganografi (Resme Veri Gizle)",
+    "desc": "PNG görsellerinizin içine birçok dosyayı görünümü değiştirmeden gizler. İsteğe bağlı şifre koyulabilir.",
+    "cmd": "python3 siberphp.py --stego-hide {resim} {dosya}",
+    "param": "PNG dosyası yolu"
+  },
+  {
+    "cat": "steganography",
+    "tag": "STEGO",
+    "tool": "PIL",
+    "name": "Steganografi (Veriyi Çıkar)",
+    "desc": "Steganografiyle gizlenmiş PNG dosyasındaki veriyi çıkarır.",
+    "cmd": "python3 siberphp.py --stego-extract {resim}",
+    "param": "PNG dosyası yolu"
+  },
+  {
+    "cat": "steganography",
+    "tag": "STEGO",
+    "tool": "PIL",
+    "name": "FotoDit (Fotoğraf Düzenleme)",
+    "desc": "Terminal üzerinde renk değiştirme, arkaplan silme, iyileştirme ve daha fazla görüntü düzenleme özelliği.",
+    "cmd": "python3 siberphp.py --fotodOit {resim}",
+    "param": "Görsel dosya yolu"
+  },
+  {
+    "cat": "utilities",
+    "tag": "UTILS",
+    "tool": "crunch",
+    "name": "Wordlist Oluşturma (crunch)",
+    "desc": "crunch ile özelleştirilmiş wordlist oluşturur. Gerekli bilgileri alır ve uygun dosyayı verir.",
+    "cmd": "python3 siberphp.py --crunch {min} {max} {karakterler}",
+    "param": "Min ve max uzunluk"
+  },
+  {
+    "cat": "utilities",
+    "tag": "UTILS",
+    "tool": "python3",
+    "name": "Wordlist Oluşturucu (Özel Algo)",
+    "desc": "SiberPhp'un kendi wordlist oluşturma algoritması. Hedef bilgilerini alarak kişiselleştirilmiş liste üretir.",
+    "cmd": "python3 siberphp.py --wordlist-gen",
+    "param": "Hedef hakkında bilgi girin"
+  },
+  {
+    "cat": "utilities",
+    "tag": "UTILS",
+    "tool": "python3",
+    "name": "Derleme Aracı",
+    "desc": "Belirtilen Python dosyasını derleyerek kaynak koduna başkalarının erişmesini engeller.",
+    "cmd": "python3 siberphp.py --compile {dosya.py}",
+    "param": "Python dosyası yolu"
+  },
+  {
+    "cat": "utilities",
+    "tag": "UTILS",
+    "tool": "py-to-exe",
+    "name": "İş Görür Araçlar",
+    "desc": "Video-müzik dönüştürme, müzik/video indirme, .py→.exe dönüştürme, terminal müzik çalma.",
+    "cmd": "python3 siberphp.py --tools",
+    "param": "Parametre gerekmez"
+  },
+  {
+    "cat": "utilities",
+    "tag": "UTILS",
+    "tool": "python3",
+    "name": "Linux Asistanı",
+    "desc": "Linux üzerinde temel işlemleri otomatize eder. Yeni başlayanlar için idealdir.",
+    "cmd": "python3 siberphp.py --linux-assist",
+    "param": "Parametre gerekmez"
+  },
+  {
+    "cat": "utilities",
+    "tag": "UTILS",
+    "tool": "python3",
+    "name": "Xsnot (Not Alma)",
+    "desc": "SiberPhp üzerinde not alma, not silme ve not listeleme işlemleri yapar.",
+    "cmd": "python3 siberphp.py --xsnot",
+    "param": "Parametre gerekmez"
+  },
+  {
+    "cat": "utilities",
+    "tag": "UTILS",
+    "tool": "python3",
+    "name": "LikeGrep (Veri Ayıklama)",
+    "desc": "Bir dosyanın belirli satırlarını, kelimelerini ayıklamak için grep benzeri işlev sunar.",
+    "cmd": "python3 siberphp.py --likegrep {dosya} {kelime}",
+    "param": "Dosya yolu ve aranacak kelime"
+  },
+  {
+    "cat": "utilities",
+    "tag": "UTILS",
+    "tool": "python3",
+    "name": "Dosya İçerisinde Arama (Linux)",
+    "desc": "Dosya içerisinde belirlenen kelime/cümle ve bağlı metinleri listeler.",
+    "cmd": "python3 siberphp.py --file-search {dosya} {kelime}",
+    "param": "Dosya yolu ve kelime"
+  },
+  {
+    "cat": "utilities",
+    "tag": "UTILS",
+    "tool": "python3",
+    "name": "SiberPhpya Bağlan",
+    "desc": "SiberPhp için kurulum, paket yükleme, denetleme, güncelleme, silme, yeniden yükleme ve iletişim seçenekleri sunar.",
+    "cmd": "python3 siberphp.py --setup",
+    "param": "Parametre gerekmez"
+  },
+  {
+    "cat": "file-tools",
+    "tag": "FILE",
+    "tool": "chkrootkit",
+    "name": "Rootkit Tarama Aracı",
+    "desc": "chkrootkit ile sistemde rootkit varlığını tespit etmek için kapsamlı tarama başlatır.",
+    "cmd": "python3 siberphp.py --rootkit",
+    "param": "Parametre gerekmez"
+  },
+  {
+    "cat": "file-tools",
+    "tag": "FILE",
+    "tool": "python3",
+    "name": "Dosyalar Arası Veri Karşılaştırma",
+    "desc": "Belirtilen iki dosyanın birbiriyle tamamen aynı olup olmadığını kontrol eder.",
+    "cmd": "python3 siberphp.py --filecompare {dosya1} {dosya2}",
+    "param": "İki dosya yolu"
+  },
+  {
+    "cat": "file-tools",
+    "tag": "FILE",
+    "tool": "python3",
+    "name": "Dosya Analizi",
+    "desc": "Dosyanın hash değerlerini, oluşturulma detaylarını, izinlerini ve gerçek uzantısını gösterir.",
+    "cmd": "python3 siberphp.py --fileanalyze {dosya}",
+    "param": "Dosya yolu"
+  },
+  {
+    "cat": "file-tools",
+    "tag": "FILE",
+    "tool": "python3",
+    "name": "Dosya Hash Adresi Bulma",
+    "desc": "Belirtilen dosyanın md5, sha1 ve sha256 hash adreslerini gösterir.",
+    "cmd": "python3 siberphp.py --filehash {dosya}",
+    "param": "Dosya yolu"
+  },
+  {
+    "cat": "file-tools",
+    "tag": "FILE",
+    "tool": "python3",
+    "name": "Dosya İzleme Monitörü",
+    "desc": "Belirtilen dizindeki dosya değişikliklerini anlık olarak izler.",
+    "cmd": "python3 siberphp.py --filemonitor {dizin}",
+    "param": "İzlenecek dizin yolu"
+  },
+  {
+    "cat": "file-tools",
+    "tag": "FILE",
+    "tool": "python3",
+    "name": "Dosya Zaman Manipülasyonu",
+    "desc": "Belirtilen dosyanın oluşturulma tarihini istenen tarihe değiştirir.",
+    "cmd": "python3 siberphp.py --timestamp {dosya} {tarih}",
+    "param": "Dosya ve hedef tarih"
+  },
+  {
+    "cat": "malware",
+    "tag": "MALWARE",
+    "tool": "msfvenom",
+    "name": "Trojan Oluşturma Aracı",
+    "desc": "6 farklı payload seçeneği ile msfvenom otomasyonu sağlar (Windows, Android, Linux hedefler).",
+    "cmd": "python3 siberphp.py --msfvenom {hedef-os} {lhost} {lport}",
+    "param": "Hedef işletim sistemi ve IP"
+  },
+  {
+    "cat": "malware",
+    "tag": "MALWARE",
+    "tool": "python3",
+    "name": "Virüs Oluştur",
+    "desc": "4 farklı virüs oluşturma seçeneği sunar. Siber güvenlik eğitim amaçlıdır.",
+    "cmd": "python3 siberphp.py --virusmake {tip}",
+    "param": "Virüs tipi (1-4)"
+  }
+]

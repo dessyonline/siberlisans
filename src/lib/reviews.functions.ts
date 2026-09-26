@@ -140,7 +140,7 @@ export const getPendingReviewProducts = createServerFn({ method: "GET" })
       image_url: string | null;
       purchased_at: string | null;
     }>(
-      `SELECT product_id, name, slug, image_url, MAX(purchased_at) AS purchased_at
+      `SELECT product_id, name, slug, image_url, MAX(CAST(purchased_at AS CHAR(50))) AS purchased_at
          FROM (
            SELECT p.id AS product_id, p.name, p.slug, p.image_url, o.created_at AS purchased_at
              FROM orders o

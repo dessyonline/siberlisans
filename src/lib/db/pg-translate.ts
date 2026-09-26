@@ -111,7 +111,7 @@ const DATE_FMT: Record<string, string> = {
 };
 
 export function isDdl(sql: string): boolean {
-  return /^\s*(create|alter|drop)\s+(table|index|unique\s+index)\b/i.test(sql);
+  return false;
 }
 
 export function showColumnsTable(sql: string): string | null {
