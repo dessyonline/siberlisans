@@ -11,7 +11,7 @@ import { OrderDetailDrawer } from "@/components/admin/orders/OrderDetailDrawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { RefreshCw, Search, X, ChevronLeft, ChevronRight, Zap, Ban, Download } from "lucide-react";
+import { RefreshCw, Search, X, ChevronLeft, ChevronRight, Zap, Ban, Download, Store, Users } from "lucide-react";
 
 const STATUS_TABS: { value: string; label: string }[] = [
   { value: "all", label: "tümü" },
@@ -50,6 +50,7 @@ function AdminOrdersPage() {
   const [minAmount, setMinAmount] = useState("");
   const [maxAmount, setMaxAmount] = useState("");
   const [onlyMessage, setOnlyMessage] = useState(false);
+  const [orderType, setOrderType] = useState<"all" | "retail" | "dealer">("all");
   const [sort, setSort] = useState<SortKey>("created_at");
   const [dir, setDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
@@ -79,12 +80,13 @@ function AdminOrdersPage() {
       minAmount: minAmount ? Number(minAmount) : null,
       maxAmount: maxAmount ? Number(maxAmount) : null,
       onlyMessage,
+      orderType,
       sort,
       dir,
       page,
       perPage,
     }),
-    [status, range, term, productId, paidWith, minAmount, maxAmount, onlyMessage, sort, dir, page],
+    [status, range, term, productId, paidWith, minAmount, maxAmount, onlyMessage, orderType, sort, dir, page],
   );
 
   const { data, isFetching, refetch } = useQuery({
@@ -240,6 +242,7 @@ function AdminOrdersPage() {
     setMinAmount("");
     setMaxAmount("");
     setOnlyMessage(false);
+    setOrderType("all");
     setPage(1);
   };
 
@@ -286,6 +289,30 @@ function AdminOrdersPage() {
             {t.label}
           </button>
         ))}
+      </div>
+
+      {/* Order Type Toggle */}
+      <div className="flex flex-wrap gap-1.5">
+        {(["all", "retail", "dealer"] as const).map((t) => {
+          const label = t === "all" ? "tüm siparişler" : t === "retail" ? "müşteri" : "bayi";
+          const Icon = t === "dealer" ? Users : t === "retail" ? Store : null;
+          return (
+            <button
+              key={t}
+              onClick={() => { setOrderType(t); setPage(1); }}
+              className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 font-mono text-[11px] uppercase tracking-wider transition ${
+                orderType === t
+                  ? t === "dealer"
+                    ? "border-cyan-500/60 bg-cyan-500/10 text-cyan-400 neon-glow"
+                    : "border-primary/60 bg-primary/10 text-primary neon-glow"
+                  : "border-border/60 text-muted-foreground hover:border-primary/40 hover:text-foreground"
+              }`}
+            >
+              {Icon && <Icon className="h-3.5 w-3.5" />}
+              {label}
+            </button>
+          );
+        })}
       </div>
 
       <div className="glass-card rounded-xl p-4 space-y-3">

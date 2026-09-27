@@ -29,13 +29,15 @@ export type AdminOrderRow = {
   external_status: string | null; external_delivery_data: string | null; checkout_fields: Record<string, string> | null;
   product_id: string | null; product_name: string | null; product_source: string | null; manual_fulfillment: boolean;
   user_id: string | null; buyer_email: string | null; buyer_name: string | null;
+  order_source: string;
 };
 
 const listInput = z.object({
   status: z.string().default("reviewing"), range: z.enum(["today", "7d", "30d", "all"]).default("all"),
   q: z.string().default(""), productId: z.string().default(""), paidWith: z.string().default(""),
   minAmount: z.number().nullable().default(null), maxAmount: z.number().nullable().default(null),
-  onlyMessage: z.boolean().default(false), sort: z.enum(["created_at", "price_try", "status"]).default("created_at"),
+  onlyMessage: z.boolean().default(false), orderType: z.enum(["all", "retail", "dealer"]).default("all"),
+  sort: z.enum(["created_at", "price_try", "status"]).default("created_at"),
   dir: z.enum(["asc", "desc"]).default("desc"), page: z.number().int().min(1).default(1),
   perPage: z.number().int().min(10).max(200).default(50),
 });
@@ -52,6 +54,8 @@ export const listAdminOrders = createServerFn({ method: "POST" })
     if (data.minAmount != null) { where.push("o.price_try >= ?"); params.push(data.minAmount); }
     if (data.maxAmount != null) { where.push("o.price_try <= ?"); params.push(data.maxAmount); }
     if (data.onlyMessage) where.push("o.user_note IS NOT NULL AND o.user_note <> ''");
+    if (data.orderType === "dealer") { where.push("COALESCE(o.order_source,'retail') = 'dealer'"); }
+    else if (data.orderType === "retail") { where.push("COALESCE(o.order_source,'retail') = 'retail'"); }
     if (data.range !== "all") {
       const days = data.range === "today" ? 1 : data.range === "7d" ? 7 : 30;
       where.push("o.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)"); params.push(days);
@@ -70,6 +74,7 @@ export const listAdminOrders = createServerFn({ method: "POST" })
       `SELECT o.id, o.reference_code, o.status, o.price_try, o.paid_with, o.created_at, o.approved_at,
               o.user_note, o.admin_note, o.receipt_path, o.external_order_id, o.external_status,
               o.external_delivery_data, o.checkout_fields, o.product_id, o.user_id,
+              COALESCE(o.order_source,'retail') AS order_source,
               p.name product_name, p.source product_source, p.manual_fulfillment,
               pr.email buyer_email, pr.display_name buyer_name,
               COALESCE(d.discount_try,0) discount_try, d.discount_codes
@@ -98,6 +103,7 @@ export const listAdminOrders = createServerFn({ method: "POST" })
         product_name: (o.product_name as string | null) ?? null, product_source: (o.product_source as string | null) ?? null,
         manual_fulfillment: bool(o.manual_fulfillment), user_id: (o.user_id as string | null) ?? null,
         buyer_email: (o.buyer_email as string | null) ?? null, buyer_name: (o.buyer_name as string | null) ?? null,
+        order_source: String(o.order_source ?? 'retail'),
       };
     });
     return { rows: out, total: num(count?.total) ?? out.length, page: data.page, perPage: data.perPage };

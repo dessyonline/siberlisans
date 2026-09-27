@@ -708,8 +708,8 @@ export const dealerPurchaseProduct = createServerFn({ method: "POST" })
     })();
 
     await mysqlQuery(
-      `INSERT INTO orders (id,user_id,product_id,price_try,reference_code,status,item_count,user_note,created_at,updated_at)
-       VALUES (?,?,NULL,?,?,'pending',?,'Bayi toplu alım',?,?)`,
+      `INSERT INTO orders (id,user_id,product_id,price_try,reference_code,status,item_count,user_note,order_source,created_at,updated_at)
+       VALUES (?,?,NULL,?,?,'pending',?,'Bayi toplu alım','dealer',?,?)`,
       [orderId, userId, subtotal, reference, data.quantity, ts(), ts()],
     );
     await mysqlQuery(
@@ -802,7 +802,7 @@ export const getDealerOrders = createServerFn({ method: "GET" })
       `SELECT o.id, o.reference_code, o.status, o.price_try, o.item_count, o.created_at, p.name AS product_name
          FROM orders o
          LEFT JOIN products p ON p.id = o.product_id
-        WHERE o.user_id=?
+        WHERE o.user_id=? AND COALESCE(o.order_source,'retail')='dealer'
         ORDER BY o.created_at DESC LIMIT 200`,
       [userId],
     );

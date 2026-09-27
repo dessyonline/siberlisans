@@ -1,5 +1,5 @@
 import type { AdminOrderRow } from "@/lib/admin-orders.functions";
-import { Check, X, CheckSquare, Square, MessageCircle, Copy } from "lucide-react";
+import { Check, X, CheckSquare, Square, MessageCircle, Copy, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const STATUS_LABEL: Record<string, string> = {
@@ -101,6 +101,11 @@ export function OrdersTable({
                     >
                       <Copy className="h-3 w-3" /> {o.reference_code}
                     </button>
+                    {o.order_source === "dealer" && (
+                      <span className="ml-1.5 inline-flex items-center gap-0.5 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-1.5 py-0.5 text-[9px] font-mono uppercase text-cyan-400">
+                        <Users className="h-2.5 w-2.5" /> bayi
+                      </span>
+                    )}
                     {o.user_note && (
                       <span className="ml-2 inline-flex items-center gap-1 text-warn">
                         <MessageCircle className="h-3 w-3" />

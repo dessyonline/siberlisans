@@ -51,7 +51,7 @@ export const listMyOrders = createServerFn({ method: "GET" })
       `SELECT o.id, o.status, o.price_try, o.reference_code, o.created_at, o.product_id,
               p.name AS product_name, p.slug AS product_slug, p.delivery_type AS product_delivery_type
          FROM orders o LEFT JOIN products p ON p.id = o.product_id
-        WHERE o.user_id=? ORDER BY o.created_at DESC`,
+        WHERE o.user_id=? AND COALESCE(o.order_source,'retail')='retail' ORDER BY o.created_at DESC`,
       [userId],
     );
     if (orders.length === 0) return [];
