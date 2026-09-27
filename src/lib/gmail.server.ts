@@ -165,6 +165,15 @@ export async function sendEmailVerificationCode(to: string, code: string): Promi
     '<p style="font-size:12px;line-height:20px;color:#555;margin:0">Kod 15 dakika geçerlidir. Bu isteği siz yapmadıysanız e-postayı yok sayabilirsiniz.</p>',
     '</div></body></html>',
   ].join("");
+  const subject = "Siber Lisans e-posta doğrulama kodunuz";
+  if (await sendViaBridge(to, subject, text, html)) return true;
+
+  const apiKey = process.env["LOVABLE_API_KEY"];
+  const connectionKey = process.env["GOOGLE_MAIL_API_KEY_1"];
+  if (!apiKey || !connectionKey) {
+    console.error("Email verification cannot be sent: no mail transport configured");
+    return false;
+  }
   const response = await fetch(`${GMAIL_GATEWAY}/users/me/messages/send`, {
     method: "POST",
     headers: {
@@ -172,7 +181,7 @@ export async function sendEmailVerificationCode(to: string, code: string): Promi
       "X-Connection-Api-Key": connectionKey,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ raw: createRawEmail(to, "Siber Lisans e-posta doğrulama kodunuz", text, undefined, html) }),
+    body: JSON.stringify({ raw: createRawEmail(to, subject, text, undefined, html) }),
   });
   if (!response.ok) {
     console.error(`Email verification failed [${response.status}]: ${await response.text()}`);
