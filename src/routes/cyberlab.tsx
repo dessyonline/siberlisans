@@ -155,6 +155,17 @@ function CyberlabPage() {
             <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
               18 kapsamlı kurs, 322 adım adım ders, 125 gerçek siber güvenlik ve OSINT aracı, interaktif quizler ve CTF bayrak görevleri.
             </p>
+
+            {hasAccess && access?.launchUrl && (
+              <div className="pt-2">
+                <Button asChild size="lg" className="font-mono cursor-pointer shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all border border-primary/50">
+                  <Link to="/cyberlab/sso" search={{ token: access.launchUrl.split("token=")[1] } as any} target="_blank">
+                    <ExternalLink className="mr-2 h-4 w-4" />
+                    Kali Linux Laboratuvarına Bağlan
+                  </Link>
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Student Status HUD */}
@@ -264,6 +275,7 @@ function CyberlabPage() {
             courseId={selectedCourseId}
             lessonId={selectedLessonId}
             courses={coursesData?.courses ?? []}
+            access={access}
             onSelectLesson={(cId, lId) => {
               setSelectedCourseId(cId);
               setSelectedLessonId(lId);
@@ -395,11 +407,13 @@ function LessonRoomView({
   courseId,
   lessonId,
   courses,
+  access,
   onSelectLesson,
 }: {
   courseId: string;
   lessonId: string;
   courses: any[];
+  access?: any;
   onSelectLesson: (cId: string, lId: string) => void;
 }) {
   const qc = useQueryClient();
@@ -580,12 +594,24 @@ function LessonRoomView({
                 </div>
               </div>
 
-              <h2 className="text-2xl md:text-3xl font-black tracking-tight text-foreground">
-                {lesson.title}
-              </h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {lesson.summary}
-              </p>
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-black tracking-tight text-foreground">
+                    {lesson.title}
+                  </h2>
+                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                    {lesson.summary}
+                  </p>
+                </div>
+                {access?.active && access?.launchUrl && (
+                  <Button asChild size="sm" className="font-mono shrink-0 shadow-lg shadow-primary/20 border border-primary/50">
+                    <Link to="/cyberlab/sso" search={{ token: access.launchUrl.split("token=")[1] } as any} target="_blank">
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Kali Linux (Canlı Lab)
+                    </Link>
+                  </Button>
+                )}
+              </div>
             </div>
 
             {/* OUTCOMES & OBJECTIVES */}
