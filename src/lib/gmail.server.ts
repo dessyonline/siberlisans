@@ -1,7 +1,30 @@
 const GMAIL_GATEWAY = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
 
-const SENDER_EMAIL = "siberlisans@gmail.com";
+const SENDER_EMAIL = "info@siberlisans.com";
 const SENDER_NAME = "Siber Lisans";
+
+/** Hostinger köprüsü üzerinden info@siberlisans.com'dan gönderim. */
+async function sendViaBridge(to: string, subject: string, text: string, html?: string): Promise<boolean> {
+  const url = process.env["MYSQL_BRIDGE_URL"];
+  const token = process.env["MYSQL_BRIDGE_TOKEN"];
+  if (!url || !token) return false;
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Bridge-Token": token },
+      body: JSON.stringify({ operation: "send_mail", to, subject, text, html }),
+    });
+    if (!res.ok) {
+      console.error(`Bridge mail failed [${res.status}]: ${await res.text()}`);
+      return false;
+    }
+    const json = (await res.json()) as { ok?: boolean };
+    return json.ok === true;
+  } catch (e) {
+    console.error("Bridge mail error:", e);
+    return false;
+  }
+}
 
 function base64(value: string) {
   const bytes = new TextEncoder().encode(value);
