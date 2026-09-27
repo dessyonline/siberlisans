@@ -9,7 +9,7 @@ export function CartButton({ compact = false }: { compact?: boolean }) {
       onClick={open}
       aria-label={`Sepet (${count} ürün)`}
       className={`relative inline-flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 ${
-        compact ? "h-9 w-9" : "h-9 w-9 sm:w-auto sm:px-3"
+        compact ? "h-8 w-8 sm:h-9 sm:w-9" : "h-9 w-9 sm:w-auto sm:px-3"
       }`}
     >
       <ShoppingCart className="h-4 w-4" />

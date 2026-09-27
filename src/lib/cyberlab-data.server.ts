@@ -1,10 +1,6 @@
+import fs from "fs";
+import path from "path";
 import crypto from "crypto";
-
-// Import JSON files directly so Vite bundles them and they work in serverless/Vercel
-import coursesJson from "./cyberlab-data/courses.json";
-import quizzesJson from "./cyberlab-data/quizzes.json";
-import flagsJson from "./cyberlab-data/flags.json";
-import toolsJson from "./cyberlab-data/tools.json";
 
 export type CyberlabCourseSummary = {
   id: string;
@@ -64,10 +60,24 @@ let cachedFlags: Record<string, { hash: string; hint: string }> | null = null;
 let cachedTools: CyberlabTool[] | null = null;
 
 function loadData() {
-  if (!cachedCourses) cachedCourses = coursesJson;
-  if (!cachedQuizzes) cachedQuizzes = quizzesJson;
-  if (!cachedFlags) cachedFlags = flagsJson;
-  if (!cachedTools) cachedTools = toolsJson;
+  const dataDir = path.join(process.cwd(), "src/lib/cyberlab-data");
+
+  if (!cachedCourses) {
+    const raw = fs.readFileSync(path.join(dataDir, "courses.json"), "utf-8");
+    cachedCourses = JSON.parse(raw);
+  }
+  if (!cachedQuizzes) {
+    const raw = fs.readFileSync(path.join(dataDir, "quizzes.json"), "utf-8");
+    cachedQuizzes = JSON.parse(raw);
+  }
+  if (!cachedFlags) {
+    const raw = fs.readFileSync(path.join(dataDir, "flags.json"), "utf-8");
+    cachedFlags = JSON.parse(raw);
+  }
+  if (!cachedTools) {
+    const raw = fs.readFileSync(path.join(dataDir, "tools.json"), "utf-8");
+    cachedTools = JSON.parse(raw);
+  }
 }
 
 export function getAllCourses(): CyberlabCourseSummary[] {

@@ -17,6 +17,7 @@ const STATUS_TABS: { value: string; label: string }[] = [
   { value: "all", label: "tümü" },
   { value: "reviewing", label: "inceleniyor" },
   { value: "pending", label: "bekliyor" },
+  { value: "preparing", label: "hazırlanıyor" },
   { value: "approved", label: "onaylı" },
   { value: "rejected", label: "reddedildi" },
   { value: "failed", label: "başarısız" },

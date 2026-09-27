@@ -78,7 +78,7 @@ function NotFoundComponent() {
         <h2 className="mt-2 font-mono text-lg">SEGMENTATION_FAULT</h2>
         <p className="mt-2 text-sm text-muted-foreground">Aradığınız kaynak bu sunucuda mevcut değil.</p>
         <Link to="/" className="mt-6 inline-block font-mono text-primary underline">
-          {"> "}anasayfaya dön
+          { "> " }anasayfaya dön
         </Link>
       </div>
     </div>
@@ -100,18 +100,18 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           Beklenmedik bir hata oluştu. Yeniden dene veya anasayfaya dön.
         </p>
         <div className="mt-4 rounded bg-destructive/10 border border-destructive/20 p-2 text-left">
-          <p className="font-mono text-[10px] text-destructive break-words">{error.message}</p>
+          <p className="font-mono text-[10px] text-destructive break-words">{ error.message }</p>
         </div>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <Button
-            onClick={() => {
+            onClick={ () => {
               router.invalidate();
               reset();
-            }}
+            } }
             variant="default"
             className="font-mono"
           >
-            {"> "}yeniden dene
+            { "> " }yeniden dene
           </Button>
           <Button asChild variant="outline" className="font-mono">
             <a href="/">anasayfa</a>
@@ -199,9 +199,9 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
-        <script dangerouslySetInnerHTML={{ __html: MOBILE_MENU_SCRIPT }} />
-        {children}
+        <script dangerouslySetInnerHTML={ { __html: THEME_BOOT_SCRIPT } } />
+        <script dangerouslySetInnerHTML={ { __html: MOBILE_MENU_SCRIPT } } />
+        { children }
         <Scripts />
       </body>
     </html>
@@ -212,18 +212,18 @@ function SiteHeader() {
   const { user, isAdmin, loading, signOut } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 w-full pt-3 px-3 md:px-6 pointer-events-none">
+    <header className="sticky top-0 z-50 w-full pt-2 sm:pt-3 px-1.5 sm:px-3 md:px-6 pointer-events-none">
       <div className="relative group mx-auto max-w-6xl pointer-events-auto">
-        {/* glass refraction effect */}
+        {/* glass refraction effect */ }
         <div className="absolute inset-0 bg-primary/5 blur-3xl opacity-20 rounded-3xl pointer-events-none" />
 
-        <div className="relative flex items-center justify-between gap-3 md:gap-4 px-5 md:px-6 py-3 bg-background/60 backdrop-blur-2xl border border-primary/15 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300 hover:border-primary/30">
-          {/* animated bottom highlight */}
+        <div className="relative flex items-center justify-between gap-1 sm:gap-3 md:gap-4 px-3 sm:px-5 md:px-6 py-2 sm:py-3 bg-background/60 backdrop-blur-2xl border border-primary/15 rounded-xl sm:rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300 hover:border-primary/30">
+          {/* animated bottom highlight */ }
           <div className="absolute -bottom-px left-12 right-12 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
 
 
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 pr-3 md:pr-4 border-r border-primary/10 shrink-0 min-w-0">
+          <Link to="/" className="flex items-center gap-1.5 sm:gap-2 pr-2 sm:pr-3 md:pr-4 border-r border-primary/10 shrink-0 min-w-0">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
@@ -233,7 +233,7 @@ function SiteHeader() {
             </span>
           </Link>
 
-          {/* Desktop nav */}
+          {/* Desktop nav */ }
           <nav className="hidden 2xl:flex min-w-0 flex-1 items-center justify-center gap-3 xl:gap-4 font-mono text-xs">
             <NavLink to="/">anasayfa</NavLink>
             <NavLink to="/urunler">ürünler</NavLink>
@@ -241,7 +241,7 @@ function SiteHeader() {
             <NavLink to="/araclar">araçlar</NavLink>
             <NavLink to="/cekilis">çekiliş</NavLink>
             <NavLink to="/bayilik">bayilik</NavLink>
-            <DealerNavLink userId={user?.id} className="group/item shrink-0 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
+            <DealerNavLink userId={ user?.id } className="group/item shrink-0 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
             <CyberlabNavLink className="group/item shrink-0 flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors whitespace-nowrap" />
 
 
@@ -255,7 +255,7 @@ function SiteHeader() {
               <DropdownMenuContent align="end" className="font-mono text-xs bg-background/95 backdrop-blur-xl border-primary/20 min-w-44">
                 <span className="2xl:hidden">
                   <DropdownMenuItem asChild><Link to="/bayilik" className="cursor-pointer"><span className="text-primary/50">./</span>bayilik</Link></DropdownMenuItem>
-                  <DealerNavLink userId={user?.id} className="flex items-center gap-1 px-2 py-1.5 rounded-sm text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" />
+                  <DealerNavLink userId={ user?.id } className="flex items-center gap-1 px-2 py-1.5 rounded-sm text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors" />
                 </span>
                 <DropdownMenuItem asChild><Link to="/blog" className="cursor-pointer"><span className="text-primary/50">./</span>blog</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><Link to="/nasil-calisir" className="cursor-pointer"><span className="text-primary/50">./</span>nasıl-çalışır</Link></DropdownMenuItem>
@@ -265,7 +265,7 @@ function SiteHeader() {
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-1 md:gap-2 pl-3 md:pl-4 border-l border-primary/10 shrink-0">
+          <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2 pl-1 sm:pl-3 md:pl-4 border-l border-primary/10 shrink-0">
 
             <CartButton compact />
             <div className="hidden sm:block">
@@ -273,28 +273,28 @@ function SiteHeader() {
             </div>
             <ThemeToggle className="hidden sm:inline-flex" />
 
-            {loading ? (
+            { loading ? (
               <div className="h-8 w-20 animate-pulse rounded-md bg-primary/20" />
             ) : user ? (
               <>
-                {isAdmin && (
+                { isAdmin && (
                   <Button asChild size="sm" variant="outline" className="font-mono text-xs h-8 px-2 md:px-3 gap-1.5 border-primary/30 text-primary hover:bg-primary/10">
                     <Link to="/admin" aria-label="Admin">
                       <LayoutDashboard className="h-4 w-4" />
                       <span className="hidden md:inline">admin</span>
                     </Link>
                   </Button>
-                )}
+                ) }
                 <Button asChild size="sm" variant="ghost" className="font-mono text-xs h-8 px-2 gap-1.5 hover:bg-primary/10">
                   <Link to="/hesabim" aria-label="Hesabım" className="flex items-center gap-1.5">
-                    <HeaderUserBadge userId={user.id} />
+                    <HeaderUserBadge userId={ user.id } />
                     <span className="hidden lg:inline text-muted-foreground">hesabım</span>
                   </Link>
                 </Button>
                 <Button
                   size="sm"
                   variant="ghost"
-                  onClick={signOut}
+                  onClick={ signOut }
                   className="hidden md:inline-flex font-mono text-muted-foreground hover:text-primary hover:bg-primary/10 h-8 px-2"
                 >
                   <LogOut className="h-4 w-4" />
@@ -307,13 +307,13 @@ function SiteHeader() {
                   <span className="hidden sm:inline">giriş</span>
                 </Link>
               </Button>
-            )}
+            ) }
 
-            <MobileMenu user={user} isAdmin={isAdmin} signOut={signOut} />
+            <MobileMenu user={ user } isAdmin={ isAdmin } signOut={ signOut } />
           </div>
         </div>
 
-        {/* Environment label */}
+        {/* Environment label */ }
         <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 bg-background/80 border border-primary/20 rounded-sm">
           <p className="font-mono text-[9px] uppercase tracking-[0.2em] text-primary/60 leading-none">
             SiberLisans · LIVE
@@ -327,19 +327,19 @@ function SiteHeader() {
 function NavLink({ to, children }: { to: string; children: React.ReactNode }) {
   return (
     <Link
-      to={to}
+      to={ to }
       className="group/item shrink-0 flex items-center gap-1 text-xs transition-colors whitespace-nowrap"
     >
-      {({ isActive }) => (
+      { ({ isActive }) => (
         <>
-          <span className={cn("font-bold transition-colors", isActive ? "text-primary" : "text-primary/40 group-hover/item:text-primary")}>
+          <span className={ cn("font-bold transition-colors", isActive ? "text-primary" : "text-primary/40 group-hover/item:text-primary") }>
             ./
           </span>
-          <span className={cn("tracking-wide", isActive ? "text-primary" : "text-muted-foreground group-hover/item:text-primary")}>
-            {children}
+          <span className={ cn("tracking-wide", isActive ? "text-primary" : "text-muted-foreground group-hover/item:text-primary") }>
+            { children }
           </span>
         </>
-      )}
+      ) }
     </Link>
   );
 }
@@ -360,9 +360,9 @@ function HeaderUserBadge({ userId }: { userId: string }) {
   });
   return (
     <span className="flex shrink-0 items-center gap-1.5">
-      <UserAvatar id={data?.avatar_id} size={22} />
+      <UserAvatar id={ data?.avatar_id } size={ 22 } />
       <span className="hidden xl:inline font-mono text-[11px] text-primary whitespace-nowrap">
-        ₺{(data?.balance_try ?? 0).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
+        ₺{ (data?.balance_try ?? 0).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: 2 }) }
       </span>
     </span>
 
@@ -394,19 +394,19 @@ function MobileMenu({
         aria-label="Menü"
         aria-expanded="false"
         aria-controls="mobile-menu-panel"
-        className="2xl:hidden relative z-[110] inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none"
+        className="2xl:hidden relative z-[110] inline-flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 cursor-pointer select-none"
       >
         <Menu className="h-5 w-5 pointer-events-none" />
       </button>
 
-      {/* Backdrop */}
+      {/* Backdrop */ }
       <div
         data-mobile-menu-backdrop
         aria-hidden="true"
         className="2xl:hidden fixed inset-0 z-[90] bg-black/70"
       />
 
-      {/* Panel */}
+      {/* Panel */ }
       <div
         id="mobile-menu-panel"
         data-mobile-menu-panel
@@ -431,41 +431,41 @@ function MobileMenu({
           </button>
         </div>
         <nav className="flex flex-col gap-1 p-3 overflow-y-auto">
-          <Link to="/" data-mobile-menu-close className={linkCls}><Home className="h-4 w-4" />anasayfa</Link>
-          <Link to="/urunler" data-mobile-menu-close className={linkCls}><Package className="h-4 w-4" />ürünler</Link>
-          <Link to="/paketler" data-mobile-menu-close className={linkCls}><Boxes className="h-4 w-4" />paketler</Link>
-          <Link to="/cekilis" data-mobile-menu-close className={linkCls}><Ticket className="h-4 w-4" />çekiliş</Link>
-          <Link to="/araclar" data-mobile-menu-close className={linkCls}><Sparkles className="h-4 w-4" />araçlar</Link>
-          <Link to="/bayilik" data-mobile-menu-close className={linkCls}><Handshake className="h-4 w-4" />bayilik</Link>
-          <DealerNavLink userId={user?.id} className={linkCls} mobile />
-          <CyberlabNavLink className={linkCls} mobile />
-          <Link to="/blog" data-mobile-menu-close className={linkCls}><Newspaper className="h-4 w-4" />blog</Link>
-          <Link to="/nasil-calisir" data-mobile-menu-close className={linkCls}><BookOpen className="h-4 w-4" />nasıl çalışır</Link>
-          <Link to="/sss" data-mobile-menu-close className={linkCls}><HelpCircle className="h-4 w-4" />SSS</Link>
+          <Link to="/" data-mobile-menu-close className={ linkCls }><Home className="h-4 w-4" />anasayfa</Link>
+          <Link to="/urunler" data-mobile-menu-close className={ linkCls }><Package className="h-4 w-4" />ürünler</Link>
+          <Link to="/paketler" data-mobile-menu-close className={ linkCls }><Boxes className="h-4 w-4" />paketler</Link>
+          <Link to="/cekilis" data-mobile-menu-close className={ linkCls }><Ticket className="h-4 w-4" />çekiliş</Link>
+          <Link to="/araclar" data-mobile-menu-close className={ linkCls }><Sparkles className="h-4 w-4" />araçlar</Link>
+          <Link to="/bayilik" data-mobile-menu-close className={ linkCls }><Handshake className="h-4 w-4" />bayilik</Link>
+          <DealerNavLink userId={ user?.id } className={ linkCls } mobile />
+          <CyberlabNavLink className={ linkCls } mobile />
+          <Link to="/blog" data-mobile-menu-close className={ linkCls }><Newspaper className="h-4 w-4" />blog</Link>
+          <Link to="/nasil-calisir" data-mobile-menu-close className={ linkCls }><BookOpen className="h-4 w-4" />nasıl çalışır</Link>
+          <Link to="/sss" data-mobile-menu-close className={ linkCls }><HelpCircle className="h-4 w-4" />SSS</Link>
           <div className="my-2 border-t border-border/50" />
           <div className="flex items-center justify-between px-3 py-2 rounded-md border border-border/40">
             <span className="font-mono text-xs text-muted-foreground">tema</span>
             <ThemeToggle />
           </div>
           <div className="my-2 border-t border-border/50" />
-          {user ? (
+          { user ? (
             <>
-              <Link to="/hesabim" data-mobile-menu-close className={linkCls}><UserIcon className="h-4 w-4" />hesabım</Link>
-              {isAdmin && (
-                <Link to="/admin" data-mobile-menu-close className={linkCls}><LayoutDashboard className="h-4 w-4" />admin</Link>
-              )}
+              <Link to="/hesabim" data-mobile-menu-close className={ linkCls }><UserIcon className="h-4 w-4" />hesabım</Link>
+              { isAdmin && (
+                <Link to="/admin" data-mobile-menu-close className={ linkCls }><LayoutDashboard className="h-4 w-4" />admin</Link>
+              ) }
               <button
                 type="button"
                 data-mobile-menu-close
-                onClick={() => signOut()}
-                className={linkCls + " text-left w-full"}
+                onClick={ () => signOut() }
+                className={ linkCls + " text-left w-full" }
               >
                 <LogOut className="h-4 w-4" />çıkış
               </button>
             </>
           ) : (
-            <Link to="/auth" data-mobile-menu-close className={linkCls}><LogIn className="h-4 w-4" />giriş</Link>
-          )}
+            <Link to="/auth" data-mobile-menu-close className={ linkCls }><LogIn className="h-4 w-4" />giriş</Link>
+          ) }
         </nav>
       </div>
     </>
@@ -538,7 +538,7 @@ function SiteFooter() {
           </div>
         </div>
         <div className="mt-10 pt-6 border-t border-border/40 flex flex-col items-center gap-4 text-center text-muted-foreground text-[11px] md:flex-row md:items-center md:justify-between md:gap-8 md:text-left">
-          <div className="order-2 md:order-1">© {new Date().getFullYear()} SiberLisans — Tüm hakları saklıdır.</div>
+          <div className="order-2 md:order-1">© { new Date().getFullYear() } SiberLisans — Tüm hakları saklıdır.</div>
           <div className="order-1 flex items-center gap-3 md:order-2">
             <a
               href="https://youtube.com/@siberphp"
@@ -547,7 +547,7 @@ function SiteFooter() {
               aria-label="YouTube · @siberphp"
               className="rounded-md border border-border/50 bg-background/40 p-1.5 text-muted-foreground transition hover:text-red-500 hover:border-red-500/50 hover:shadow-[0_0_12px_rgba(239,68,68,0.35)]"
             >
-              <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.6 3.6 12 3.6 12 3.6s-7.6 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.8.5 9.4.5 9.4.5s7.6 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z"/></svg>
+              <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.6 3.6 12 3.6 12 3.6s-7.6 0-9.4.5A3 3 0 0 0 .5 6.2 31 31 0 0 0 0 12a31 31 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c1.8.5 9.4.5 9.4.5s7.6 0 9.4-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 24 12a31 31 0 0 0-.5-5.8zM9.6 15.6V8.4l6.3 3.6-6.3 3.6z" /></svg>
             </a>
             <a
               href="https://instagram.com/siber.php"
@@ -556,7 +556,7 @@ function SiteFooter() {
               aria-label="Instagram · @siber.php"
               className="rounded-md border border-border/50 bg-background/40 p-1.5 text-muted-foreground transition hover:text-pink-500 hover:border-pink-500/50 hover:shadow-[0_0_12px_rgba(236,72,153,0.35)]"
             >
-              <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden><path d="M12 2.2c3.2 0 3.6 0 4.8.1 1.2 0 1.9.2 2.3.4.6.2 1 .5 1.5 1s.8.9 1 1.5c.2.4.4 1.1.4 2.3 0 1.2.1 1.6.1 4.8s0 3.6-.1 4.8c0 1.2-.2 1.9-.4 2.3-.2.6-.5 1-1 1.5s-.9.8-1.5 1c-.4.2-1.1.4-2.3.4-1.2 0-1.6.1-4.8.1s-3.6 0-4.8-.1c-1.2 0-1.9-.2-2.3-.4a4 4 0 0 1-1.5-1 4 4 0 0 1-1-1.5c-.2-.4-.4-1.1-.4-2.3 0-1.2-.1-1.6-.1-4.8s0-3.6.1-4.8c0-1.2.2-1.9.4-2.3.2-.6.5-1 1-1.5s.9-.8 1.5-1c.4-.2 1.1-.4 2.3-.4 1.2 0 1.6-.1 4.8-.1zm0 2c-3.2 0-3.5 0-4.7.1-1.1.1-1.7.2-2.1.4-.5.2-.9.4-1.3.8-.4.4-.6.8-.8 1.3-.2.4-.3 1-.4 2.1 0 1.2-.1 1.5-.1 4.7s0 3.5.1 4.7c.1 1.1.2 1.7.4 2.1.2.5.4.9.8 1.3s.8.6 1.3.8c.4.2 1 .3 2.1.4 1.2 0 1.5.1 4.7.1s3.5 0 4.7-.1c1.1-.1 1.7-.2 2.1-.4.5-.2.9-.4 1.3-.8s.6-.8.8-1.3c.2-.4.3-1 .4-2.1 0-1.2.1-1.5.1-4.7s0-3.5-.1-4.7c-.1-1.1-.2-1.7-.4-2.1-.2-.5-.4-.9-.8-1.3s-.8-.6-1.3-.8c-.4-.2-1-.3-2.1-.4-1.2 0-1.5-.1-4.7-.1zm0 3.4a4.4 4.4 0 1 1 0 8.8 4.4 4.4 0 0 1 0-8.8zm0 7.3a2.9 2.9 0 1 0 0-5.8 2.9 2.9 0 0 0 0 5.8zm5.6-7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+              <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden><path d="M12 2.2c3.2 0 3.6 0 4.8.1 1.2 0 1.9.2 2.3.4.6.2 1 .5 1.5 1s.8.9 1 1.5c.2.4.4 1.1.4 2.3 0 1.2.1 1.6.1 4.8s0 3.6-.1 4.8c0 1.2-.2 1.9-.4 2.3-.2.6-.5 1-1 1.5s-.9.8-1.5 1c-.4.2-1.1.4-2.3.4-1.2 0-1.6.1-4.8.1s-3.6 0-4.8-.1c-1.2 0-1.9-.2-2.3-.4a4 4 0 0 1-1.5-1 4 4 0 0 1-1-1.5c-.2-.4-.4-1.1-.4-2.3 0-1.2-.1-1.6-.1-4.8s0-3.6.1-4.8c0-1.2.2-1.9.4-2.3.2-.6.5-1 1-1.5s.9-.8 1.5-1c.4-.2 1.1-.4 2.3-.4 1.2 0 1.6-.1 4.8-.1zm0 2c-3.2 0-3.5 0-4.7.1-1.1.1-1.7.2-2.1.4-.5.2-.9.4-1.3.8-.4.4-.6.8-.8 1.3-.2.4-.3 1-.4 2.1 0 1.2-.1 1.5-.1 4.7s0 3.5.1 4.7c.1 1.1.2 1.7.4 2.1.2.5.4.9.8 1.3s.8.6 1.3.8c.4.2 1 .3 2.1.4 1.2 0 1.5.1 4.7.1s3.5 0 4.7-.1c1.1-.1 1.7-.2 2.1-.4.5-.2.9-.4 1.3-.8s.6-.8.8-1.3c.2-.4.3-1 .4-2.1 0-1.2.1-1.5.1-4.7s0-3.5-.1-4.7c-.1-1.1-.2-1.7-.4-2.1-.2-.5-.4-.9-.8-1.3s-.8-.6-1.3-.8c-.4-.2-1-.3-2.1-.4-1.2 0-1.5-.1-4.7-.1zm0 3.4a4.4 4.4 0 1 1 0 8.8 4.4 4.4 0 0 1 0-8.8zm0 7.3a2.9 2.9 0 1 0 0-5.8 2.9 2.9 0 0 0 0 5.8zm5.6-7.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" /></svg>
             </a>
             <a
               href="https://tiktok.com/@siberphp"
@@ -565,7 +565,7 @@ function SiteFooter() {
               aria-label="TikTok · @siberphp"
               className="rounded-md border border-border/50 bg-background/40 p-1.5 text-muted-foreground transition hover:text-cyan-400 hover:border-cyan-400/50 hover:shadow-[0_0_12px_rgba(34,211,238,0.35)]"
             >
-              <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43V8.36a8.16 8.16 0 0 0 4.77 1.52V6.43a4.85 4.85 0 0 1-1.84-.35z"/></svg>
+              <svg viewBox="0 0 24 24" fill="currentColor" className="h-3.5 w-3.5" aria-hidden><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5.8 20.1a6.34 6.34 0 0 0 10.86-4.43V8.36a8.16 8.16 0 0 0 4.77 1.52V6.43a4.85 4.85 0 0 1-1.84-.35z" /></svg>
             </a>
           </div>
           <div className="order-3 text-primary/60">$ powered_by_secure_infra --v2</div>
@@ -597,9 +597,9 @@ function RootComponent() {
 
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={ queryClient }>
       <AuthProvider>
-        
+
         <div className="flex min-h-screen flex-col">
           <SiteHeader />
           <main className="flex-1">

@@ -12,20 +12,20 @@ function CyberlabSsoHandler() {
     const token = params.get("token");
 
     console.log("[SSO] Current URL:", window.location.href);
-    
+
     if (token) {
       console.log("[SSO] Token detected in URL, writing to localStorage...");
       localStorage.setItem("cyberlab_sso_token", token);
-      
-      // Navigate directly to the external CyberLab application
+
+      // Navigate to index.html directly
       window.location.href = "/cyberlab/index.html?token=" + encodeURIComponent(token);
     } else {
       // Fallback: check if it's already in localStorage
       const existing = localStorage.getItem("cyberlab_sso_token");
       if (existing) {
-         window.location.assign("/cyberlab/index.html");
+        window.location.assign("/cyberlab/index.html");
       } else {
-         window.location.assign("/cyberlab");
+        window.location.assign("/cyberlab");
       }
     }
   }, []);

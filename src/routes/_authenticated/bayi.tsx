@@ -299,6 +299,21 @@ function DealerPanel() {
         )}
       </div>
 
+      {!stats.telegram_chat_id && (
+        <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <MessageSquare className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+            <div>
+              <h4 className="text-sm font-semibold text-foreground">Telegram Bildirimleri Kapalı</h4>
+              <p className="text-xs text-muted-foreground mt-0.5">Siparişleriniz hazırlandığında veya teslim edildiğinde anında haberdar olmak için Telegram botumuzu bağlayın. Bu sayede manuel sipariş süreçlerini hızla takip edebilirsiniz.</p>
+            </div>
+          </div>
+          <Button asChild size="sm" variant="outline" className="shrink-0 font-mono text-xs">
+            <Link to="/hesabim">Telegram'ı Bağla</Link>
+          </Button>
+        </div>
+      )}
+
       {/* 4 HIGH IMPACT BENTO KPI CARDS */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* KPI 1 */}
@@ -391,7 +406,7 @@ function DealerPanel() {
       )}
 
       {/* MAIN NAVIGATION TABS */}
-      <div className="flex flex-wrap gap-2 rounded-2xl border border-border/70 bg-card/60 p-1.5 backdrop-blur-xl">
+      <div className="flex gap-2 rounded-2xl border border-border/70 bg-card/60 p-1.5 backdrop-blur-xl overflow-x-auto no-scrollbar mask-edges">
         {[
           { key: "ozet", label: "Finansal Özet", icon: BarChart3 },
           { key: "fiyat", label: "Toptan Ürün Kataloğu", icon: Package, badge: "İndirimli" },
@@ -407,7 +422,7 @@ function DealerPanel() {
             <button
               key={t.key}
               onClick={() => setTab(t.key as typeof tab)}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2.5 font-mono text-xs font-semibold transition-all duration-200 ${
+              className={`shrink-0 whitespace-nowrap flex items-center gap-2 rounded-xl px-4 py-2.5 font-mono text-xs font-semibold transition-all duration-200 ${
                 isActive
                   ? "border border-primary/40 bg-primary/15 text-primary shadow-sm shadow-primary/10"
                   : "text-muted-foreground hover:bg-card hover:text-foreground border border-transparent"
@@ -593,7 +608,7 @@ function MonthlyTable({ monthly, inviteUrl, stats }: { monthly: Stats["monthly"]
       </div>
 
       {/* MONTHLY BREAKDOWN TABLE */}
-      <div className="glass-card rounded-3xl border border-border/70 p-6 backdrop-blur-xl">
+      <div className="glass-card rounded-3xl border border-border/70 p-4 sm:p-6 backdrop-blur-xl">
         <h3 className="font-bold text-base mb-4">Aylık Finansal Detay Tablosu</h3>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[560px] text-sm">
@@ -978,7 +993,7 @@ function PriceList({ onOrdered, userBalance, discountPercent }: { onOrdered: () 
         </div>
       ) : (
         /* TABLE VIEW FOR POWER DEALERS */
-        <div className="glass-card rounded-3xl border border-border/70 p-5 backdrop-blur-xl overflow-x-auto shadow-xl">
+        <div className="glass-card rounded-3xl border border-border/70 p-3 sm:p-5 backdrop-blur-xl overflow-x-auto shadow-xl">
           <table className="w-full min-w-[780px] text-sm">
             <thead>
               <tr className="border-b border-border/70 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -1201,7 +1216,7 @@ function DealerOrders() {
                             : "border-warn/40 bg-warn/10 text-warn"
                         }`}
                       >
-                        {o.status === "approved" ? "Teslim Edildi" : o.status}
+                        {o.status === "approved" ? "Teslim Edildi" : o.status === "preparing" ? "Hazırlanıyor" : o.status}
                       </span>
                     </div>
                     <h4 className="font-semibold text-base text-foreground">

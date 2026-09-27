@@ -29,7 +29,7 @@ function genRef() {
   return out;
 }
 
-async function pushNotification(
+export async function pushNotification(
   userId: string,
   type: string,
   title: string,

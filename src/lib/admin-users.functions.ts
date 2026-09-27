@@ -155,7 +155,7 @@ export const recentUserActivity = createServerFn({ method: "GET" })
 
 const setRoleInput = z.object({
   userId: z.string().uuid(),
-  role: z.enum(["admin", "user"]),
+  role: z.enum(["admin", "user", "bayi"]),
   grant: z.boolean(),
 });
 

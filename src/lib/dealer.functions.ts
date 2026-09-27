@@ -479,6 +479,8 @@ export type DealerStatsResult = {
     discount_percent: number;
   } | null;
   monthly: { month: string; volume: number; commission: number; orders: number }[];
+  telegram_chat_id: string | null;
+  telegram_verify_code: string | null;
 } | null;
 
 export const getDealerStats = createServerFn({ method: "GET" })
@@ -550,6 +552,11 @@ export const getDealerStats = createServerFn({ method: "GET" })
       [userId],
     );
 
+    const profileRow = await mysqlOne<{ telegram_chat_id: string | null; telegram_verify_code: string | null }>(
+      "SELECT telegram_chat_id, telegram_verify_code FROM profiles WHERE id=? LIMIT 1",
+      [userId],
+    );
+
     return {
       code: d.code,
       company_name: d.company_name,
@@ -579,6 +586,8 @@ export const getDealerStats = createServerFn({ method: "GET" })
         commission: num(m.commission) ?? 0,
         orders: Number(m.orders ?? 0),
       })),
+      telegram_chat_id: profileRow?.telegram_chat_id ?? null,
+      telegram_verify_code: profileRow?.telegram_verify_code ?? null,
     };
   });
 
@@ -661,13 +670,14 @@ export const dealerPurchaseProduct = createServerFn({ method: "POST" })
       price_try: unknown;
       manual_fulfillment: number | null;
       unlimited_stock: number | null;
+      source: string | null;
     }>(
-      "SELECT id, name, price_try, manual_fulfillment, unlimited_stock FROM products WHERE id=? AND active=1 LIMIT 1",
+      "SELECT id, name, price_try, manual_fulfillment, unlimited_stock, source FROM products WHERE id=? AND active=1 LIMIT 1",
       [data.productId],
     );
     if (!product) throw new Error("Ürün bulunamadı");
 
-    if (!bool(product.manual_fulfillment) && !bool(product.unlimited_stock)) {
+    if (!bool(product.manual_fulfillment) && !bool(product.unlimited_stock) && product.source !== "uniquelisans") {
       const avail = await mysqlOne<{ c: number }>(
         "SELECT COUNT(*) c FROM license_keys WHERE product_id=? AND status='available'",
         [data.productId],
@@ -728,13 +738,38 @@ export const dealerPurchaseProduct = createServerFn({ method: "POST" })
        VALUES (?,?,?,?,?,?,?,?)`,
       [uid(), userId, "purchase", -final, balanceAfter, orderId, "Bayi toplu alım", ts()],
     );
-    await mysqlQuery(
-      "UPDATE orders SET status='approved', approved_at=?, paid_with='wallet', updated_at=? WHERE id=?",
-      [ts(), ts(), orderId],
-    );
 
-    const { assignKeyToOrder } = await import("./license-mysql.server");
-    await assignKeyToOrder(orderId).catch(() => {});
+    if (bool(product.manual_fulfillment) || product.source === "uniquelisans") {
+      // Bayi siparişi ve API sorunu yaşanmaması için "preparing" moduna alınıyor
+      await mysqlQuery(
+        "UPDATE orders SET status='preparing', paid_with='wallet', updated_at=? WHERE id=?",
+        [ts(), orderId],
+      );
+      try {
+        const { notifyTelegram } = await import("@/lib/telegram.server");
+        await notifyTelegram(`📦 YENİ BAYİ SİPARİŞİ (Manuel Teslimat Bekliyor)\n\nÜrün: ${product.name}\nAdet: ${data.quantity}\nReferans: ${reference}\nTutar: ₺${final}\n\nLütfen admin panelinden siparişi onaylayıp teslim ediniz.`);
+        
+        // Notify the reseller
+        const { pushNotification } = await import("@/lib/orders.functions");
+        await pushNotification(
+          userId,
+          "order_preparing",
+          "Siparişiniz Hazırlanıyor 📦",
+          `Ref: ${reference} kodlu siparişiniz işleme alındı ve en kısa sürede teslim edilecek.`,
+          "/bayi"
+        );
+      } catch (e) {
+        console.error("Telegram notification failed", e);
+      }
+    } else {
+      await mysqlQuery(
+        "UPDATE orders SET status='approved', approved_at=?, paid_with='wallet', updated_at=? WHERE id=?",
+        [ts(), ts(), orderId],
+      );
+  
+      const { assignKeyToOrder } = await import("./license-mysql.server");
+      await assignKeyToOrder(orderId).catch(() => {});
+    }
 
     return { order_id: orderId, total_try: final };
   });

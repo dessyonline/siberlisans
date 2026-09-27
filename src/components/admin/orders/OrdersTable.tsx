@@ -80,7 +80,7 @@ export function OrdersTable({
           </thead>
           <tbody>
             {rows.map((o) => {
-              const canAct = o.status === "reviewing" || o.status === "pending";
+              const canAct = o.status === "reviewing" || o.status === "pending" || o.status === "preparing";
               const isSel = selected.has(o.id);
               return (
                 <tr
