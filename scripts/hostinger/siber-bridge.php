@@ -45,9 +45,46 @@ if (!is_array($payload)) {
     fail(400, 'Invalid payload');
 }
 $operation = $payload['operation'] ?? 'query';
-if (!in_array($operation, ['query', 'reset_password'], true)) {
+if (!in_array($operation, ['query', 'reset_password', 'send_mail'], true)) {
     fail(400, 'Unknown operation');
 }
+
+// E-posta gonderimi: info@siberlisans.com uzerinden (Hostinger mail()).
+if ($operation === 'send_mail') {
+    $to = $payload['to'] ?? '';
+    $subject = $payload['subject'] ?? '';
+    $text = $payload['text'] ?? '';
+    $html = $payload['html'] ?? null;
+    if (!is_string($to) || !filter_var($to, FILTER_VALIDATE_EMAIL) ||
+        !is_string($subject) || $subject === '' || !is_string($text)) {
+        fail(400, 'Invalid mail payload');
+    }
+    // Baslik enjeksiyonunu engelle.
+    if (preg_match('/[\r\n]/', $to . $subject)) {
+        fail(400, 'Invalid mail headers');
+    }
+    $from = 'Siber Lisans <info@siberlisans.com>';
+    $encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+    $headers = [
+        'From: ' . $from,
+        'Reply-To: ' . $from,
+        'MIME-Version: 1.0',
+    ];
+    if (is_string($html) && $html !== '') {
+        $boundary = 'sl_' . bin2hex(random_bytes(8));
+        $headers[] = 'Content-Type: multipart/alternative; boundary="' . $boundary . '"';
+        $body = "--$boundary\r\nContent-Type: text/plain; charset=\"UTF-8\"\r\n\r\n$text\r\n"
+              . "--$boundary\r\nContent-Type: text/html; charset=\"UTF-8\"\r\n\r\n$html\r\n"
+              . "--$boundary--\r\n";
+    } else {
+        $headers[] = 'Content-Type: text/plain; charset="UTF-8"';
+        $body = $text;
+    }
+    $sent = mail($to, $encodedSubject, $body, implode("\r\n", $headers), '-f info@siberlisans.com');
+    echo json_encode(['ok' => (bool) $sent]);
+    exit;
+}
+
 if ($operation === 'query' && (!isset($payload['sql']) || !is_string($payload['sql']))) {
     fail(400, 'Invalid payload: { sql: string, params?: any[] }');
 }
