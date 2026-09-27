@@ -180,14 +180,7 @@ function DealerLanding() {
                     <span className="text-5xl font-black tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-foreground to-foreground/70 group-hover:from-primary group-hover:to-cyan-400 transition-all duration-300">%{Number(t.discount_percent)}</span>
                     <span className="text-sm font-mono text-muted-foreground">indirim</span>
                   </div>
-                  
-                  <div className="mt-8 pt-6 border-t border-white/10">
-                    <div className="text-sm text-muted-foreground mb-2">Gereken Aylık Ciro</div>
-                    <div className="text-lg font-mono font-semibold text-foreground">
-                      ₺{Number(t.min_volume_try).toLocaleString("tr-TR")}
-                    </div>
                   </div>
-                </div>
               </div>
             ))}
           </div>

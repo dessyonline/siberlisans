@@ -54,8 +54,8 @@ export const listAdminOrders = createServerFn({ method: "POST" })
     if (data.minAmount != null) { where.push("o.price_try >= ?"); params.push(data.minAmount); }
     if (data.maxAmount != null) { where.push("o.price_try <= ?"); params.push(data.maxAmount); }
     if (data.onlyMessage) where.push("o.user_note IS NOT NULL AND o.user_note <> ''");
-    if (data.orderType === "dealer") { where.push("COALESCE(o.order_source,'retail') = 'dealer'"); }
-    else if (data.orderType === "retail") { where.push("COALESCE(o.order_source,'retail') = 'retail'"); }
+    if (data.orderType === "dealer") { where.push("o.user_note = 'Bayi toplu al\u0131m'"); }
+    else if (data.orderType === "retail") { where.push("(o.user_note IS NULL OR o.user_note <> 'Bayi toplu al\u0131m')"); }
     if (data.range !== "all") {
       const days = data.range === "today" ? 1 : data.range === "7d" ? 7 : 30;
       where.push("o.created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)"); params.push(days);
@@ -74,7 +74,7 @@ export const listAdminOrders = createServerFn({ method: "POST" })
       `SELECT o.id, o.reference_code, o.status, o.price_try, o.paid_with, o.created_at, o.approved_at,
               o.user_note, o.admin_note, o.receipt_path, o.external_order_id, o.external_status,
               o.external_delivery_data, o.checkout_fields, o.product_id, o.user_id,
-              COALESCE(o.order_source,'retail') AS order_source,
+              CASE WHEN o.user_note='Bayi toplu al\u0131m' THEN 'dealer' ELSE 'retail' END AS order_source,
               p.name product_name, p.source product_source, p.manual_fulfillment,
               pr.email buyer_email, pr.display_name buyer_name,
               COALESCE(d.discount_try,0) discount_try, d.discount_codes
