@@ -1,14 +1,16 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "./ui/card";
-import { Bot, User, Send, ShieldAlert, Sparkles, Loader2, BrainCircuit } from "lucide-react";
+import { Bot, User, Send, ShieldAlert, Sparkles, Loader2, BrainCircuit, ImagePlus, X, AudioLines } from "lucide-react";
 import { askEvrenAI } from "@/lib/evren-ai.functions";
 import { cn } from "@/lib/utils";
 
 type Message = {
   role: "user" | "assistant";
   content: string;
+  image?: string;
+  audio?: string;
   modelUsed?: string;
   isError?: boolean;
 };
@@ -20,13 +22,39 @@ export function CyberLabAI() {
   const [input, setInput] = useState("");
   const [isDeepAnalysis, setIsDeepAnalysis] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [image, setImage] = useState<string | null>(null);
+  const [audio, setAudio] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const audioInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setImage(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAudioUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setAudio(reader.result as string);
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    if ((!input.trim() && !image && !audio) || isLoading) return;
 
-    const userMessage: Message = { role: "user", content: input };
+    const userMessage: Message = { role: "user", content: input, image: image || undefined, audio: audio || undefined };
     setMessages(prev => [...prev, userMessage]);
+    const currentImage = image;
+    const currentAudio = audio;
     setInput("");
+    setImage(null);
+    setAudio(null);
     setIsLoading(true);
 
     try {
@@ -38,7 +66,9 @@ export function CyberLabAI() {
         data: {
           prompt: userMessage.content,
           history,
-          isDeepAnalysis
+          isDeepAnalysis,
+          image: currentImage || undefined,
+          audio: currentAudio || undefined
         }
       });
 
@@ -91,6 +121,16 @@ export function CyberLabAI() {
                   ? "bg-destructive/10 text-destructive border border-destructive/20 rounded-tl-sm"
                   : "bg-card border border-border/50 text-foreground rounded-tl-sm"
             )}>
+              {msg.image && (
+                <div className="mb-2">
+                  <img src={msg.image} alt="Uploaded" className="max-w-[200px] rounded-md border border-border" />
+                </div>
+              )}
+              {msg.audio && (
+                <div className="mb-2">
+                  <audio src={msg.audio} controls className="max-w-[200px] h-8" />
+                </div>
+              )}
               {msg.content}
             </div>
             {msg.modelUsed && (
@@ -130,18 +170,62 @@ export function CyberLabAI() {
         </div>
         <form 
           onSubmit={(e) => { e.preventDefault(); handleSend(); }} 
-          className="flex w-full gap-2 items-center"
+          className="flex flex-col w-full gap-2"
         >
-          <Input 
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Bir soru sorun..."
-            className="flex-1 bg-background h-12 rounded-xl"
-            disabled={isLoading}
-          />
-          <Button type="submit" size="icon" className="h-12 w-12 rounded-xl" disabled={!input.trim() || isLoading}>
+          {image && (
+            <div className="relative inline-block w-max">
+              <img src={image} alt="Preview" className="h-20 w-auto rounded-md border border-border object-cover" />
+              <button
+                type="button"
+                onClick={() => setImage(null)}
+                className="absolute -top-2 -right-2 bg-background border border-border rounded-full p-0.5 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+          <div className="flex w-full gap-2 items-center">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="p-3 bg-background border border-border rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+              title="Görsel Yükle"
+            >
+              <ImagePlus className="h-5 w-5" />
+            </button>
+            <input 
+              type="file" 
+              accept="image/*" 
+              className="hidden" 
+              ref={fileInputRef} 
+              onChange={handleImageUpload} 
+            />
+            <button
+              type="button"
+              onClick={() => audioInputRef.current?.click()}
+              className="p-3 bg-background border border-border rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors shrink-0"
+              title="Ses Yükle"
+            >
+              <AudioLines className="h-5 w-5" />
+            </button>
+            <input 
+              type="file" 
+              accept="audio/*" 
+              className="hidden" 
+              ref={audioInputRef} 
+              onChange={handleAudioUpload} 
+            />
+            <Input 
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Bir soru sorun veya görsel yükleyin..."
+              className="flex-1 bg-background h-12 rounded-xl"
+              disabled={isLoading}
+            />
+          <Button type="submit" size="icon" className="h-12 w-12 rounded-xl" disabled={(!input.trim() && !image && !audio) || isLoading}>
             <Send className="h-4 w-4" />
           </Button>
+          </div>
         </form>
       </CardFooter>
     </div>

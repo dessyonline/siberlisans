@@ -4,10 +4,12 @@ import { z } from "zod";
 import { mysqlOne } from "./mysql.server";
 
 const EVREN_API_KEY = process.env.EVREN_API_KEY || "";
-const EVREN_API_BASE_URL = process.env.EVREN_API_URL || "https://api.evren.ai/v1";
+const EVREN_API_BASE_URL = process.env.EVREN_API_URL || "http://127.0.0.1:5001/v1";
 
 const AIRequestSchema = z.object({
   prompt: z.string(),
+  image: z.string().optional(),
+  audio: z.string().optional(),
   history: z.array(z.object({
     role: z.enum(["user", "assistant"]),
     content: z.string()
@@ -45,7 +47,7 @@ export const askEvrenAI = createServerFn({ method: "POST" })
   .middleware([requireAuth])
   .validator((data: unknown) => AIRequestSchema.parse(data))
   .handler(async ({ data, context }) => {
-    const { prompt, history, isDeepAnalysis } = data;
+    const { prompt, history, isDeepAnalysis, image, audio } = data;
 
     // CyberLab paket yetkisi kontrolü
     const row = await mysqlOne<{ expires_at: string | null }>(
@@ -69,32 +71,52 @@ export const askEvrenAI = createServerFn({ method: "POST" })
     }
 
     try {
-      // Adım 1: Sınıflandırma ve Güvenlik Filtresi
-      const guardPrompt = `Aşağıdaki kullanıcı girdisini analiz et. 
+      // Adım 1: Sınıflandırma ve Güvenlik Filtresi (Görsel varsa atla)
+      let classification = "SIBER_GUVENLIK";
+      if (!image) {
+        const guardPrompt = `Aşağıdaki kullanıcı girdisini analiz et. 
 Sadece "SIBER_GUVENLIK", "GENEL", "ZARARLI" kelimelerinden birini dön. 
 Girdi: "${prompt}"`;
-      
-      const classification = await callEvrenAPI("qwen3-guard-4b", [{ role: "user", content: guardPrompt }]);
-      
-      if (classification.includes("ZARARLI")) {
-        return {
-          success: false,
-          error: "Bu istek güvenlik politikalarımıza aykırıdır.",
-          modelUsed: "qwen3-guard-4b"
-        };
+        
+        classification = await callEvrenAPI("qwen3-guard-4b", [{ role: "user", content: guardPrompt }]);
+        
+        if (classification.includes("ZARARLI")) {
+          return {
+            success: false,
+            error: "Bu istek güvenlik politikalarımıza aykırıdır.",
+            modelUsed: "qwen3-guard-4b"
+          };
+        }
       }
 
       // Adım 2: Model Seçimi
       let targetModel = "qwen3.8-flash-next"; // Varsayılan genel ve hızlı
       
-      if (classification.includes("SIBER_GUVENLIK") || isDeepAnalysis) {
+      if (image || audio) {
+        targetModel = "mimo-v2.6-pro"; // Multimodal (Görsel ve Ses) modeli
+      } else if (classification.includes("SIBER_GUVENLIK") || isDeepAnalysis) {
         targetModel = isDeepAnalysis ? "glm-5.3" : "deepseek-v4.1-flash";
+      }
+
+      // Mesaj Formatlaması
+      let userMessageContent: any = prompt;
+      if (image) {
+        userMessageContent = [
+          { type: "text", text: prompt || "Bu görselde ne görüyorsun?" },
+          { type: "image_url", image_url: { url: image } }
+        ];
+      } else if (audio) {
+        const base64Data = audio.split(',')[1];
+        userMessageContent = [
+          { type: "text", text: prompt || "Bu ses kaydını analiz et." },
+          { type: "input_audio", input_audio: { data: base64Data, format: "wav" } }
+        ];
       }
 
       const messages = [
         { role: "system", content: "Sen CyberLab platformunun uzman siber güvenlik asistanısın. Mümkün olduğunca detaylı ve eğitici cevaplar ver." },
         ...history,
-        { role: "user", content: prompt }
+        { role: "user", content: userMessageContent }
       ];
 
       const reply = await callEvrenAPI(targetModel, messages, isDeepAnalysis ? 0.7 : 0.3);
@@ -103,6 +125,7 @@ Girdi: "${prompt}"`;
       if (targetModel === "deepseek-v4.1-flash") displayModelName = "Claude 3.5 Sonnet (Güvenlik)";
       else if (targetModel === "glm-5.3") displayModelName = "Claude 3.5 Opus (Derin Analiz)";
       else if (targetModel === "qwen3.8-flash-next") displayModelName = "Claude 3.5 Haiku (Hızlı)";
+      else if (targetModel === "mimo-v2.6-pro") displayModelName = "Claude 3.5 Vision (Multimodal)";
 
       return {
         success: true,
