@@ -34,6 +34,7 @@ import {
   Sparkles,
   ChevronDown,
   ChevronUp,
+  Bot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -82,7 +83,7 @@ export const Route = createFileRoute("/cyberlab")({
 function CyberlabPage() {
   const { user } = useAuth();
   const qc = useQueryClient();
-  const [activeTab, setActiveTab] = useState<"kurslar" | "ders" | "araclar" | "profil" | "paketler">("kurslar");
+  const [activeTab, setActiveTab] = useState<"kurslar" | "ders" | "araclar" | "profil" | "paketler" | "ai">("kurslar");
 
   // Selected Course and Lesson State
   const [selectedCourseId, setSelectedCourseId] = useState<string>("linux-basics");
@@ -225,6 +226,7 @@ function CyberlabPage() {
       {/* NAVIGATION TABS */}
       <div className="flex flex-wrap gap-2 rounded-2xl border border-border/70 bg-card/60 p-1.5 backdrop-blur-xl">
         {[
+          ...(access?.active ? [{ key: "ai", label: "Evren AI", icon: Bot, badge: "Asistan" }] : []),
           { key: "kurslar", label: "Eğitim Akademisi (18 Kurs)", icon: BookOpen },
           { key: "ders", label: "Etkileşimli Ders Odası", icon: Terminal, badge: "Canlı Lab" },
           { key: "araclar", label: "Siber Araç Kütüphanesi (125)", icon: Code },
@@ -293,10 +295,13 @@ function CyberlabPage() {
         {activeTab === "paketler" && (
           <PackagesView products={products ?? []} access={access} />
         )}
+        
+        {activeTab === "ai" && access?.active && (
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <CyberLabAI />
+          </div>
+        )}
       </div>
-      
-      {/* AI Asistan sadece yetkili kullanıcılara veya CyberLab sayfasında yüklensin */}
-      {access?.active && <CyberLabAI />}
     </div>
   );
 }
