@@ -18,14 +18,14 @@ function CyberlabSsoHandler() {
       localStorage.setItem("cyberlab_sso_token", token);
       
       // Navigate directly to the external CyberLab application
-      window.location.href = "http://127.0.0.1:5001/?token=" + encodeURIComponent(token);
+      window.location.href = "/cyberlab/index.html?token=" + encodeURIComponent(token);
     } else {
       // Fallback: check if it's already in localStorage
       const existing = localStorage.getItem("cyberlab_sso_token");
       if (existing) {
-         window.location.assign("http://127.0.0.1:5001/");
+         window.location.assign("/cyberlab/index.html");
       } else {
-         window.location.assign("/");
+         window.location.assign("/cyberlab");
       }
     }
   }, []);
