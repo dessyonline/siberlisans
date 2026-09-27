@@ -124,6 +124,13 @@ export async function sendPasswordResetEmail(to: string, link: string): Promise<
     "</div></body></html>",
   ].join("");
 
+  const subject = "Siber Lisans şifre sıfırlama bağlantınız";
+  if (await sendViaBridge(to, subject, text, html)) return true;
+
+  const apiKey = process.env["LOVABLE_API_KEY"];
+  const connectionKey = process.env["GOOGLE_MAIL_API_KEY_1"];
+  if (!apiKey || !connectionKey) return false;
+
   const response = await fetch(`${GMAIL_GATEWAY}/users/me/messages/send`, {
     method: "POST",
     headers: {
