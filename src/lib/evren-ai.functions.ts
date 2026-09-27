@@ -4,7 +4,7 @@ import { z } from "zod";
 import { mysqlOne } from "./mysql.server";
 
 const EVREN_API_KEY = process.env.EVREN_API_KEY || "";
-const EVREN_API_BASE_URL = process.env.EVREN_API_URL || "http://127.0.0.1:5001/v1";
+const EVREN_API_BASE_URL = process.env.EVREN_API_URL || "https://api.evren.ai/v1";
 
 const AIRequestSchema = z.object({
   prompt: z.string(),
