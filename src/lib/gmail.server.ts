@@ -95,9 +95,7 @@ export function createRawEmail(
 }
 
 export async function sendPasswordResetEmail(to: string, link: string): Promise<boolean> {
-  const apiKey = process.env["LOVABLE_API_KEY"];
-  const connectionKey = process.env["GOOGLE_MAIL_API_KEY_1"];
-  if (!apiKey || !connectionKey) return false;
+
 
   const text = [
     "Merhaba,",
@@ -155,14 +153,8 @@ export async function sendPasswordResetEmail(to: string, link: string): Promise<
   return true;
 }
 
-/** Kayıt e-posta doğrulaması. Gmail bağlantısı yapılandırılmamışsa açıkça başarısız döner. */
+/** Kayıt e-posta doğrulaması. Önce Hostinger köprüsü (info@siberlisans.com), olmazsa Gmail. */
 export async function sendEmailVerificationCode(to: string, code: string): Promise<boolean> {
-  const apiKey = process.env["LOVABLE_API_KEY"];
-  const connectionKey = process.env["GOOGLE_MAIL_API_KEY_1"];
-  if (!apiKey || !connectionKey) {
-    console.error("Email verification cannot be sent: Gmail connection is not configured");
-    return false;
-  }
   const text = `Siber Lisans e-posta doğrulama kodunuz: ${code}\n\nBu kod 15 dakika geçerlidir. Bu isteği siz yapmadıysanız e-postayı yok sayabilirsiniz.`;
   const html = [
     '<!doctype html><html lang="tr"><body style="margin:0;padding:24px;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#111">',
