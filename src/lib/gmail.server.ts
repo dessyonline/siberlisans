@@ -1,7 +1,30 @@
 const GMAIL_GATEWAY = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
 
-const SENDER_EMAIL = "siberlisans@gmail.com";
+const SENDER_EMAIL = "info@siberlisans.com";
 const SENDER_NAME = "Siber Lisans";
+
+/** Hostinger köprüsü üzerinden info@siberlisans.com'dan gönderim. */
+async function sendViaBridge(to: string, subject: string, text: string, html?: string): Promise<boolean> {
+  const url = process.env["MYSQL_BRIDGE_URL"];
+  const token = process.env["MYSQL_BRIDGE_TOKEN"];
+  if (!url || !token) return false;
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Bridge-Token": token },
+      body: JSON.stringify({ operation: "send_mail", to, subject, text, html }),
+    });
+    if (!res.ok) {
+      console.error(`Bridge mail failed [${res.status}]: ${await res.text()}`);
+      return false;
+    }
+    const json = (await res.json()) as { ok?: boolean };
+    return json.ok === true;
+  } catch (e) {
+    console.error("Bridge mail error:", e);
+    return false;
+  }
+}
 
 function base64(value: string) {
   const bytes = new TextEncoder().encode(value);
@@ -72,9 +95,7 @@ export function createRawEmail(
 }
 
 export async function sendPasswordResetEmail(to: string, link: string): Promise<boolean> {
-  const apiKey = process.env["LOVABLE_API_KEY"];
-  const connectionKey = process.env["GOOGLE_MAIL_API_KEY_1"];
-  if (!apiKey || !connectionKey) return false;
+
 
   const text = [
     "Merhaba,",
@@ -101,6 +122,13 @@ export async function sendPasswordResetEmail(to: string, link: string): Promise<
     "</div></body></html>",
   ].join("");
 
+  const subject = "Siber Lisans şifre sıfırlama bağlantınız";
+  if (await sendViaBridge(to, subject, text, html)) return true;
+
+  const apiKey = process.env["LOVABLE_API_KEY"];
+  const connectionKey = process.env["GOOGLE_MAIL_API_KEY_1"];
+  if (!apiKey || !connectionKey) return false;
+
   const response = await fetch(`${GMAIL_GATEWAY}/users/me/messages/send`, {
     method: "POST",
     headers: {
@@ -125,14 +153,8 @@ export async function sendPasswordResetEmail(to: string, link: string): Promise<
   return true;
 }
 
-/** Kayıt e-posta doğrulaması. Gmail bağlantısı yapılandırılmamışsa açıkça başarısız döner. */
+/** Kayıt e-posta doğrulaması. Önce Hostinger köprüsü (info@siberlisans.com), olmazsa Gmail. */
 export async function sendEmailVerificationCode(to: string, code: string): Promise<boolean> {
-  const apiKey = process.env["LOVABLE_API_KEY"];
-  const connectionKey = process.env["GOOGLE_MAIL_API_KEY_1"];
-  if (!apiKey || !connectionKey) {
-    console.error("Email verification cannot be sent: Gmail connection is not configured");
-    return false;
-  }
   const text = `Siber Lisans e-posta doğrulama kodunuz: ${code}\n\nBu kod 15 dakika geçerlidir. Bu isteği siz yapmadıysanız e-postayı yok sayabilirsiniz.`;
   const html = [
     '<!doctype html><html lang="tr"><body style="margin:0;padding:24px;background:#f5f5f5;font-family:Arial,Helvetica,sans-serif;color:#111">',
@@ -143,6 +165,15 @@ export async function sendEmailVerificationCode(to: string, code: string): Promi
     '<p style="font-size:12px;line-height:20px;color:#555;margin:0">Kod 15 dakika geçerlidir. Bu isteği siz yapmadıysanız e-postayı yok sayabilirsiniz.</p>',
     '</div></body></html>',
   ].join("");
+  const subject = "Siber Lisans e-posta doğrulama kodunuz";
+  if (await sendViaBridge(to, subject, text, html)) return true;
+
+  const apiKey = process.env["LOVABLE_API_KEY"];
+  const connectionKey = process.env["GOOGLE_MAIL_API_KEY_1"];
+  if (!apiKey || !connectionKey) {
+    console.error("Email verification cannot be sent: no mail transport configured");
+    return false;
+  }
   const response = await fetch(`${GMAIL_GATEWAY}/users/me/messages/send`, {
     method: "POST",
     headers: {
@@ -150,7 +181,7 @@ export async function sendEmailVerificationCode(to: string, code: string): Promi
       "X-Connection-Api-Key": connectionKey,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ raw: createRawEmail(to, "Siber Lisans e-posta doğrulama kodunuz", text, undefined, html) }),
+    body: JSON.stringify({ raw: createRawEmail(to, subject, text, undefined, html) }),
   });
   if (!response.ok) {
     console.error(`Email verification failed [${response.status}]: ${await response.text()}`);
