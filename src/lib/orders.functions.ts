@@ -1039,6 +1039,7 @@ export const upsertProduct = createServerFn({ method: "POST" })
     const cols = Object.keys(fields).filter((k) => fields[k as keyof typeof fields] !== undefined);
     const vals = cols.map((k) => toSqlValue(fields[k as keyof typeof fields]));
 
+    const productId = id ?? uid();
     if (id) {
       await mysqlQuery(
         `UPDATE products SET ${cols.map((c) => `${c}=?`).join(",")}, updated_at=? WHERE id=?`,
@@ -1048,25 +1049,16 @@ export const upsertProduct = createServerFn({ method: "POST" })
       await mysqlQuery(
         `INSERT INTO products (id,${cols.join(",")},created_at,updated_at)
          VALUES (?,${cols.map(() => "?").join(",")},?,?)`,
-        [uid(), ...vals, ts(), ts()],
+        [productId, ...vals, ts(), ts()],
       );
     }
 
-    if (isNew && data.active) {
+    if (data.active) {
       try {
-        const tg = await import("@/lib/telegram.server");
-        await tg.postToChannel(
-          tg.productAnnouncement({
-            name: data.name,
-            slug: data.slug,
-            priceTry: Number(data.price_try),
-            description: data.description ?? null,
-            category: data.category ?? null,
-            imageUrl: data.image_url ?? null,
-          }),
-        );
+        const { launchProducts } = await import("@/lib/product-launch.server");
+        await launchProducts([productId]);
       } catch (e) {
-        console.error("[notify] newProduct", (e as Error).message);
+        console.error("[launch] product", (e as Error).message);
       }
     }
     return { ok: true };
