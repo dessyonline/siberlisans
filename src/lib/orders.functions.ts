@@ -1034,7 +1034,6 @@ export const upsertProduct = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .validator((d: unknown) => productInput.parse(d))
   .handler(async ({ data }) => {
-    const isNew = !data.id;
     const { id, ...fields } = data;
     const cols = Object.keys(fields).filter((k) => fields[k as keyof typeof fields] !== undefined);
     const vals = cols.map((k) => toSqlValue(fields[k as keyof typeof fields]));

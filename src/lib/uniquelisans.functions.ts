@@ -206,6 +206,10 @@ export const ulImportProduct = createServerFn({ method: "POST" })
           ts(),
         ],
       );
+      if (data.active) {
+        const { launchProducts } = await import("./product-launch.server");
+        await launchProducts([id]).catch(() => {});
+      }
       return { ok: true as const, productId: id, updated: false, outOfStock };
     }
   });
