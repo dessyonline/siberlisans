@@ -278,7 +278,10 @@ function Index() {
       );
     });
 
-  const recent = useMemo(() => adminOrder(products).slice(0, 8), [products]);
+  const recent = useMemo(
+    () => [...products].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 8),
+    [products],
+  );
   const activeSorted = useMemo(() => adminOrder(products), [products]);
 
   const searchResults = useMemo(() => {
@@ -541,9 +544,10 @@ function Index() {
               </div>
               <Link
                 to="/urunler"
+                search={{ yeni: true }}
                 className="group inline-flex items-center gap-1 font-mono text-xs text-primary hover:underline transition-colors"
               >
-                tümünü listele
+                tüm yenileri gör
                 <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
@@ -556,7 +560,7 @@ function Index() {
                 const isNew =
                   (Date.now() - new Date((p as { created_at: string }).created_at).getTime()) /
                     86400000 <
-                  3;
+                  14;
                 return (
                   <Link
                     key={p.id}
@@ -855,7 +859,7 @@ function ProductCard({
   const stock = liveStock > 0 ? liveStock : (p.stock_hint ?? 0);
   const soldOut = !manual && !unlimited && stock === 0;
   const isNew = p.created_at
-    ? (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7
+    ? (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 14
     : false;
   const epic = p.tier === "epic";
 

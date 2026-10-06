@@ -9,6 +9,7 @@ export function RecentAdditionsBubble() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [lastSeen, setLastSeen] = useState<number | null>(null);
   const getRecent = useServerFn(getRecentActiveProducts);
 
   const { data } = useQuery({
@@ -18,9 +19,22 @@ export function RecentAdditionsBubble() {
   });
 
   useEffect(() => {
+    const v = Number(window.localStorage.getItem("siber-new-seen") || 0);
+    setLastSeen(v);
+  }, []);
+
+  const unseen = (data ?? []).filter((p) => new Date(p.created_at).getTime() > (lastSeen ?? Infinity)).length;
+
+  // Son ziyaretten beri yeni ürün varsa otomatik aç
+  useEffect(() => {
+    if (lastSeen === null || unseen === 0) return;
     const t = setTimeout(() => setOpen(true), 2500);
     return () => clearTimeout(t);
-  }, []);
+  }, [lastSeen, unseen]);
+
+  useEffect(() => {
+    if (open && data && data.length) window.localStorage.setItem("siber-new-seen", String(Date.now()));
+  }, [open, data]);
 
   // Ziyaretçi/public sayfalarda göster; admin/auth/ödeme/hesabım/aktivasyonda gizle
   const hide =
@@ -40,7 +54,11 @@ export function RecentAdditionsBubble() {
             <div className="flex items-center gap-2 text-xs">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
               <span className="neon-text">son eklenenler</span>
-              <span className="text-muted-foreground">({data.length})</span>
+              {unseen > 0 ? (
+                <span className="rounded-full bg-primary px-1.5 text-[10px] text-primary-foreground">{unseen} yeni</span>
+              ) : (
+                <span className="text-muted-foreground">({data.length})</span>
+              )}
             </div>
             <div className="flex items-center gap-1">
               <button
@@ -86,6 +104,7 @@ export function RecentAdditionsBubble() {
           </ul>
           <Link
             to="/urunler"
+            search={{ yeni: true }}
             className="mt-2 block text-center text-[11px] text-primary hover:underline"
           >
             tüm lisansları gör →
@@ -97,7 +116,7 @@ export function RecentAdditionsBubble() {
           className="glass-card rounded-full border border-primary/40 neon-glow px-3 py-2 flex items-center gap-2 text-xs hover:border-primary transition"
         >
           <KeyRound className="h-3.5 w-3.5 text-primary" />
-          <span>son eklenen {data.length} lisans</span>
+          <span>{unseen > 0 ? `${unseen} yeni lisans eklendi` : `son eklenen ${data.length} lisans`}</span>
           <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
         </button>
       )}

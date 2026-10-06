@@ -21,8 +21,9 @@ import {
 export const Route = createFileRoute("/urunler")({
   component: ProductsPage,
   loader: async () => ({ products: await listProducts() }),
-  validateSearch: (s: Record<string, unknown>): { q?: string } => ({
+  validateSearch: (s: Record<string, unknown>): { q?: string; yeni?: boolean } => ({
     q: typeof s.q === "string" && s.q.trim() ? s.q.trim().slice(0, 60) : undefined,
+    yeni: s.yeni === true || s.yeni === "true" || s.yeni === "1" || s.yeni === 1 ? true : undefined,
   }),
 
   head: () => ({
@@ -240,6 +241,8 @@ function groupOf(cat: string | null): string {
   return GROUPS.find((g) => g.cats.includes(c))?.key ?? "diger";
 }
 
+const NEW_DAYS = 14;
+const isNewProduct = (d: string) => (Date.now() - new Date(d).getTime()) / 86400000 < NEW_DAYS;
 type SortKey = "default" | "price_asc" | "price_desc" | "newest";
 const SORT_LABELS: Record<SortKey, string> = {
   default: "önerilen",
@@ -279,10 +282,11 @@ function ProductsPage() {
   }, [byCategory]);
 
   const [group, setGroup] = useState<string>("all");
-  const { q: initialQ } = Route.useSearch();
+  const { q: initialQ, yeni } = Route.useSearch();
   const [search, setSearch] = useState(initialQ ?? "");
-
-  const [sort, setSort] = useState<SortKey>("default");
+  const [newOnly, setNewOnly] = useState<boolean>(!!yeni);
+  const [sort, setSort] = useState<SortKey>(yeni ? "newest" : "default");
+  const newCount = useMemo(() => (data ?? []).filter((p) => isNewProduct(p.created_at)).length, [data]);
 
 
   // Ortak admin sıralaması: destansı → sıra → tarih
@@ -297,7 +301,10 @@ function ProductsPage() {
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
-  const recent = useMemo(() => adminOrder(data ?? []).slice(0, 8), [data]);
+  const recent = useMemo(
+    () => [...(data ?? [])].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 8),
+    [data],
+  );
 
   const hot = useMemo(() => {
     // En çok tercih edilenler: destansı olanlar > sıra > fiyat
@@ -328,7 +335,7 @@ function ProductsPage() {
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
     const entries = Array.from(byCategory.entries()).map(([cat, items]) => {
-      let list = items;
+      let list = newOnly ? items.filter((p) => isNewProduct(p.created_at)) : items;
       if (q) {
         list = list.filter(
           (p) =>
@@ -357,7 +364,7 @@ function ProductsPage() {
     const nonEmpty = filtered.filter(([, items]) => items.length > 0);
     // Kategoriler arası: GROUPS sırasına göre
     return nonEmpty.sort(([a], [b]) => catPriority(a) - catPriority(b));
-  }, [byCategory, group, search, sort]);
+  }, [byCategory, group, search, sort, newOnly]);
 
 
   return (
@@ -435,6 +442,16 @@ function ProductsPage() {
 
         {/* Sort bar */}
         <div className="mb-6 flex flex-wrap items-center gap-2 font-mono text-xs">
+          {newCount > 0 && (
+            <CatChip
+              label={`✦ yeni (${newCount})`}
+              active={newOnly}
+              onClick={() => {
+                setNewOnly((v) => !v);
+                if (!newOnly) setSort("newest");
+              }}
+            />
+          )}
           <span className="text-muted-foreground">sırala:</span>
           {(Object.keys(SORT_LABELS) as SortKey[]).map((k) => (
             <CatChip
@@ -559,7 +576,7 @@ function ProductCard({ product: p }: { product: Row }) {
   const flashSale = useActiveFlashSale(p.id);
   const { final, saved, percent, hasSale } = applyFlash(Number(p.price_try), flashSale);
 
-  const isNew = (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7;
+  const isNew = (Date.now() - new Date(p.created_at).getTime()) / 86400000 < NEW_DAYS;
   const epic = p.tier === "epic";
 
   return (
@@ -588,7 +605,7 @@ function ProductCard({ product: p }: { product: Row }) {
               </span>
             )}
             {isNew && !epic && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-cyan/50 bg-cyan/15 px-2 py-0.5 font-mono text-[9px] text-cyan uppercase tracking-wider">
+              <span className="inline-flex items-center gap-1 rounded-full border border-cyan/60 bg-cyan/20 px-2 py-0.5 font-mono text-[10px] font-semibold text-cyan uppercase tracking-wider animate-pulse shadow-lg">
                 <Sparkles className="h-3 w-3 shrink-0" /> yeni
               </span>
             )}
@@ -690,7 +707,7 @@ function ProductCard({ product: p }: { product: Row }) {
 }
 
 function HotCard({ product: p }: { product: Row }) {
-  const isNew = (Date.now() - new Date(p.created_at).getTime()) / 86400000 < 7;
+  const isNew = (Date.now() - new Date(p.created_at).getTime()) / 86400000 < NEW_DAYS;
   return (
     <Link
       to="/urun/$slug"
