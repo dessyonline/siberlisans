@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useCart } from "@/lib/cart-store";
 import { FavoriteButton } from "@/components/FavoriteButton";
+import { CategoryFollowButton } from "@/components/CategoryFollowButton";
 import { ReviewsSection } from "@/components/ReviewsSection";
 import { AlsoBoughtSection } from "@/components/AlsoBoughtSection";
 import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
@@ -570,6 +571,11 @@ function ProductDetail() {
               {soldOut && (
                 <div className="mt-4 hidden md:block">
                   <StockNotifyButton productId={product.id} productName={product.name} />
+                </div>
+              )}
+              {product.category && (
+                <div className="mt-3">
+                  <CategoryFollowButton category={product.category} />
                 </div>
               )}
               <p className="mt-3 font-mono text-[10px] text-muted-foreground text-center hidden md:block">

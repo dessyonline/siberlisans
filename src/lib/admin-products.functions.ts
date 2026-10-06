@@ -57,6 +57,10 @@ export const bulkUpdateProducts = createServerFn({ method: "POST" }).middleware(
     const placeholders = data.ids.map(() => "?").join(",");
     const values = entries.map(([, v]) => typeof v === "boolean" ? (v ? 1 : 0) : v ?? null);
     await mysqlQuery(`UPDATE products SET ${entries.map(([k]) => `${k}=?`).join(",")},updated_at=NOW() WHERE id IN (${placeholders})`, [...values, ...data.ids]);
+    if (data.patch.active === true) {
+      const { launchProducts } = await import("./product-launch.server");
+      await launchProducts(data.ids);
+    }
     return { updated: data.ids.length };
   });
 

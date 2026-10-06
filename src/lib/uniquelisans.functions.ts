@@ -206,6 +206,10 @@ export const ulImportProduct = createServerFn({ method: "POST" })
           ts(),
         ],
       );
+      if (data.active) {
+        const { launchProducts } = await import("./product-launch.server");
+        await launchProducts([id]).catch(() => {});
+      }
       return { ok: true as const, productId: id, updated: false, outOfStock };
     }
   });
@@ -378,6 +382,10 @@ export const ulUpdateImported = createServerFn({ method: "POST" })
     sets.push("updated_at=?"); params.push(ts());
     params.push(data.id);
     await mysqlQuery(`UPDATE products SET ${sets.join(", ")} WHERE id=?`, params);
+    if (data.active === true) {
+      const { launchProducts } = await import("./product-launch.server");
+      await launchProducts([data.id]).catch(() => {});
+    }
 
     await writeAuditLog(context, {
       action: "product.update",
