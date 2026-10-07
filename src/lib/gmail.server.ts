@@ -1,10 +1,10 @@
 const GMAIL_GATEWAY = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
 
-const SENDER_EMAIL = "info@siberlisans.com";
+const SENDER_EMAIL = "siberlisans@gmail.com";
 const SENDER_NAME = "Siber Lisans";
 
 /** Hostinger köprüsü üzerinden info@siberlisans.com'dan gönderim. */
-async function sendViaBridge(to: string, subject: string, text: string, html?: string): Promise<boolean> {
+export async function sendViaBridge(to: string, subject: string, text: string, html?: string): Promise<boolean> {
   const url = process.env["MYSQL_BRIDGE_URL"];
   const token = process.env["MYSQL_BRIDGE_TOKEN"];
   if (!url || !token) return false;
@@ -123,12 +123,10 @@ export async function sendPasswordResetEmail(to: string, link: string): Promise<
   ].join("");
 
   const subject = "Siber Lisans şifre sıfırlama bağlantınız";
-  const { sendAppEmail } = await import("./app-mail.server");
-  if (await sendAppEmail("password-reset-link", to, { link }, `reset-${link.slice(-16)}`)) return true;
-  if (await sendViaBridge(to, subject, text, html)) return true;
+  void subject;
 
   const apiKey = process.env["LOVABLE_API_KEY"];
-  const connectionKey = process.env["GOOGLE_MAIL_API_KEY_1"];
+  const connectionKey = process.env["GOOGLE_MAIL_API_KEY_1"] ?? process.env["GOOGLE_MAIL_API_KEY"];
   if (!apiKey || !connectionKey) return false;
 
   const response = await fetch(`${GMAIL_GATEWAY}/users/me/messages/send`, {
@@ -168,12 +166,9 @@ export async function sendEmailVerificationCode(to: string, code: string): Promi
     '</div></body></html>',
   ].join("");
   const subject = "Siber Lisans e-posta doğrulama kodunuz";
-  const { sendAppEmail } = await import("./app-mail.server");
-  if (await sendAppEmail("verification-code", to, { code }, `verify-${to}-${code}`)) return true;
-  if (await sendViaBridge(to, subject, text, html)) return true;
 
   const apiKey = process.env["LOVABLE_API_KEY"];
-  const connectionKey = process.env["GOOGLE_MAIL_API_KEY_1"];
+  const connectionKey = process.env["GOOGLE_MAIL_API_KEY_1"] ?? process.env["GOOGLE_MAIL_API_KEY"];
   if (!apiKey || !connectionKey) {
     console.error("Email verification cannot be sent: no mail transport configured");
     return false;
