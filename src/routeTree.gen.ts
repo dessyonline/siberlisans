@@ -27,6 +27,7 @@ import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as SifreBelirleRouteImport } from './routes/sifre-belirle'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SssRouteImport } from './routes/sss'
+import { Route as UnsubscribeRouteImport } from './routes/unsubscribe'
 import { Route as UrunlerRouteImport } from './routes/urunler'
 import { Route as AuthenticatedAdminRouteRouteImport } from './routes/_authenticated/admin/route'
 import { Route as AuthenticatedAraclarRouteRouteImport } from './routes/_authenticated/araclar/route'
@@ -250,6 +251,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const SssRoute = SssRouteImport.update({
   id: '/sss',
   path: '/sss',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UnsubscribeRoute = UnsubscribeRouteImport.update({
+  id: '/unsubscribe',
+  path: '/unsubscribe',
   getParentRoute: () => rootRouteImport,
 } as any)
 const UrunlerRoute = UrunlerRouteImport.update({
@@ -1019,6 +1025,7 @@ export interface FileRoutesByFullPath {
   '/sifre-belirle': typeof SifreBelirleRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/urunler': typeof UrunlerRoute
   '/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/araclar': typeof AuthenticatedAraclarRouteRouteWithChildren
@@ -1173,6 +1180,7 @@ export interface FileRoutesByTo {
   '/sifre-belirle': typeof SifreBelirleRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/urunler': typeof UrunlerRoute
   '/bayi': typeof AuthenticatedBayiRoute
   '/bildirimler': typeof AuthenticatedBildirimlerRoute
@@ -1327,6 +1335,7 @@ export interface FileRoutesById {
   '/sifre-belirle': typeof SifreBelirleRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sss': typeof SssRoute
+  '/unsubscribe': typeof UnsubscribeRoute
   '/urunler': typeof UrunlerRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteRouteWithChildren
   '/_authenticated/araclar': typeof AuthenticatedAraclarRouteRouteWithChildren
@@ -1483,6 +1492,7 @@ export interface FileRouteTypes {
     | '/sifre-belirle'
     | '/sitemap.xml'
     | '/sss'
+    | '/unsubscribe'
     | '/urunler'
     | '/admin'
     | '/araclar'
@@ -1637,6 +1647,7 @@ export interface FileRouteTypes {
     | '/sifre-belirle'
     | '/sitemap.xml'
     | '/sss'
+    | '/unsubscribe'
     | '/urunler'
     | '/bayi'
     | '/bildirimler'
@@ -1790,6 +1801,7 @@ export interface FileRouteTypes {
     | '/sifre-belirle'
     | '/sitemap.xml'
     | '/sss'
+    | '/unsubscribe'
     | '/urunler'
     | '/_authenticated/admin'
     | '/_authenticated/araclar'
@@ -1946,6 +1958,7 @@ export interface RootRouteChildren {
   SifreBelirleRoute: typeof SifreBelirleRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SssRoute: typeof SssRoute
+  UnsubscribeRoute: typeof UnsubscribeRoute
   UrunlerRoute: typeof UrunlerRoute
   AktivasyonTokenRoute: typeof AktivasyonTokenRoute
   ApiActivateRoute: typeof ApiActivateRoute
@@ -2132,6 +2145,13 @@ declare module '@tanstack/react-router' {
       path: '/sss'
       fullPath: '/sss'
       preLoaderRoute: typeof SssRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/unsubscribe': {
+      id: '/unsubscribe'
+      path: '/unsubscribe'
+      fullPath: '/unsubscribe'
+      preLoaderRoute: typeof UnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/urunler': {
@@ -3311,6 +3331,7 @@ const rootRouteChildren: RootRouteChildren = {
   SifreBelirleRoute: SifreBelirleRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SssRoute: SssRoute,
+  UnsubscribeRoute: UnsubscribeRoute,
   UrunlerRoute: UrunlerRoute,
   AktivasyonTokenRoute: AktivasyonTokenRoute,
   ApiActivateRoute: ApiActivateRoute,
