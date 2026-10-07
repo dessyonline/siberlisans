@@ -123,6 +123,8 @@ export async function sendPasswordResetEmail(to: string, link: string): Promise<
   ].join("");
 
   const subject = "Siber Lisans şifre sıfırlama bağlantınız";
+  const { sendAppEmail } = await import("./app-mail.server");
+  if (await sendAppEmail("password-reset-link", to, { link }, `reset-${link.slice(-16)}`)) return true;
   if (await sendViaBridge(to, subject, text, html)) return true;
 
   const apiKey = process.env["LOVABLE_API_KEY"];
@@ -166,6 +168,8 @@ export async function sendEmailVerificationCode(to: string, code: string): Promi
     '</div></body></html>',
   ].join("");
   const subject = "Siber Lisans e-posta doğrulama kodunuz";
+  const { sendAppEmail } = await import("./app-mail.server");
+  if (await sendAppEmail("verification-code", to, { code }, `verify-${to}-${code}`)) return true;
   if (await sendViaBridge(to, subject, text, html)) return true;
 
   const apiKey = process.env["LOVABLE_API_KEY"];

@@ -1,3 +1,5 @@
+import { template as passwordResetLink } from './password-reset-link'
+import { template as verificationCode } from './verification-code'
 import type { ComponentType } from 'react'
 
 export interface TemplateEntry {
@@ -18,6 +20,8 @@ export interface TemplateEntry {
  *   // then add to TEMPLATES: 'welcome': welcomeTemplate
  */
 export const TEMPLATES: Record<string, TemplateEntry> = {
+  'password-reset-link': passwordResetLink,
+  'verification-code': verificationCode,
   // Add templates here as they are created, e.g.:
   // 'welcome': welcomeTemplate,
 }
