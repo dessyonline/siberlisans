@@ -72,7 +72,8 @@ export async function sendAppEmail(
         text,
         purpose: "transactional",
         label: templateName,
-        idempotency_key: idempotencyKey,
+        // Her gönderim talebi benzersiz: aynı bağlantı tekrar istense de yeni mail gider.
+        idempotency_key: `${idempotencyKey}-${messageId}`,
         unsubscribe_token: unsub,
         queued_at: new Date().toISOString(),
       },
