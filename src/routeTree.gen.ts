@@ -59,6 +59,7 @@ import { Route as BakiyeYukleTopupIdRouteImport } from './routes/bakiye-yukle.$t
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 import { Route as CyberlabSsoRouteImport } from './routes/cyberlab/sso'
+import { Route as EmailUnsubscribeRouteImport } from './routes/email/unsubscribe'
 import { Route as OdemeOrderIdRouteImport } from './routes/odeme.$orderId'
 import { Route as PCodeRouteImport } from './routes/p.$code'
 import { Route as PaketlerIndexRouteImport } from './routes/paketler.index'
@@ -137,6 +138,7 @@ import { Route as ApiPublicCatalogDotxmlRouteImport } from './routes/api/public/
 import { Route as ApiPublicEmbedDotjsRouteImport } from './routes/api/public/embed[.]js'
 import { Route as ApiPublicLoginRouteImport } from './routes/api/public/login'
 import { Route as ApiPublicSitemapDotxmlRouteImport } from './routes/api/public/sitemap[.]xml'
+import { Route as LovableEmailSuppressionRouteImport } from './routes/lovable/email/suppression'
 import { Route as ApiPublicCyberlabProxyRouteImport } from './routes/api/public/cyberlab/proxy'
 import { Route as ApiPublicCyberlabVerifyRouteImport } from './routes/api/public/cyberlab/verify'
 import { Route as ApiPublicDealerSplatRouteImport } from './routes/api/public/dealer/$'
@@ -155,6 +157,8 @@ import { Route as ApiV1AuthVerifyRouteImport } from './routes/api/v1/auth/verify
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
+import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
 import { Route as ApiPublicAuthGoogleCallbackRouteImport } from './routes/api/public/auth/google/callback'
 import { Route as ApiPublicAuthGoogleStartRouteImport } from './routes/api/public/auth/google/start'
 import { Route as ApiPublicV1AuthVerifyRouteImport } from './routes/api/public/v1/auth/verify'
@@ -411,6 +415,11 @@ const CyberlabSsoRoute = CyberlabSsoRouteImport.update({
   id: '/sso',
   path: '/sso',
   getParentRoute: () => CyberlabRoute,
+} as any)
+const EmailUnsubscribeRoute = EmailUnsubscribeRouteImport.update({
+  id: '/email/unsubscribe',
+  path: '/email/unsubscribe',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const OdemeOrderIdRoute = OdemeOrderIdRouteImport.update({
   id: '/odeme/$orderId',
@@ -858,6 +867,11 @@ const ApiPublicSitemapDotxmlRoute = ApiPublicSitemapDotxmlRouteImport.update({
   path: '/api/public/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LovableEmailSuppressionRoute = LovableEmailSuppressionRouteImport.update({
+  id: '/lovable/email/suppression',
+  path: '/lovable/email/suppression',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCyberlabProxyRoute = ApiPublicCyberlabProxyRouteImport.update({
   id: '/api/public/cyberlab/proxy',
   path: '/api/public/cyberlab/proxy',
@@ -957,6 +971,18 @@ const LovableEmailQueueProcessRoute =
     path: '/lovable/email/queue/process',
     getParentRoute: () => rootRouteImport,
   } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalSendRoute =
+  LovableEmailTransactionalSendRouteImport.update({
+    id: '/lovable/email/transactional/send',
+    path: '/lovable/email/transactional/send',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicAuthGoogleCallbackRoute =
   ApiPublicAuthGoogleCallbackRouteImport.update({
     id: '/api/public/auth/google/callback',
@@ -1024,6 +1050,7 @@ export interface FileRoutesByFullPath {
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/cyberlab/sso': typeof CyberlabSsoRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/p/$code': typeof PCodeRoute
   '/paketler/$slug': typeof PaketlerSlugRoute
@@ -1101,6 +1128,7 @@ export interface FileRoutesByFullPath {
   '/api/public/embed.js': typeof ApiPublicEmbedDotjsRoute
   '/api/public/login': typeof ApiPublicLoginRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
   '/araclar/': typeof AuthenticatedAraclarIndexRoute
   '/api/public/cyberlab/proxy': typeof ApiPublicCyberlabProxyRoute
@@ -1121,6 +1149,8 @@ export interface FileRoutesByFullPath {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/public/auth/google/callback': typeof ApiPublicAuthGoogleCallbackRoute
   '/api/public/auth/google/start': typeof ApiPublicAuthGoogleStartRoute
   '/api/public/v1/auth/verify': typeof ApiPublicV1AuthVerifyRoute
@@ -1172,6 +1202,7 @@ export interface FileRoutesByTo {
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/cyberlab/sso': typeof CyberlabSsoRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/p/$code': typeof PCodeRoute
   '/paketler/$slug': typeof PaketlerSlugRoute
@@ -1249,6 +1280,7 @@ export interface FileRoutesByTo {
   '/api/public/embed.js': typeof ApiPublicEmbedDotjsRoute
   '/api/public/login': typeof ApiPublicLoginRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
   '/araclar': typeof AuthenticatedAraclarIndexRoute
   '/api/public/cyberlab/proxy': typeof ApiPublicCyberlabProxyRoute
@@ -1269,6 +1301,8 @@ export interface FileRoutesByTo {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/public/auth/google/callback': typeof ApiPublicAuthGoogleCallbackRoute
   '/api/public/auth/google/start': typeof ApiPublicAuthGoogleStartRoute
   '/api/public/v1/auth/verify': typeof ApiPublicV1AuthVerifyRoute
@@ -1324,6 +1358,7 @@ export interface FileRoutesById {
   '/bakiye-yukle/$topupId': typeof BakiyeYukleTopupIdRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/cyberlab/sso': typeof CyberlabSsoRoute
+  '/email/unsubscribe': typeof EmailUnsubscribeRoute
   '/odeme/$orderId': typeof OdemeOrderIdRoute
   '/p/$code': typeof PCodeRoute
   '/paketler/$slug': typeof PaketlerSlugRoute
@@ -1401,6 +1436,7 @@ export interface FileRoutesById {
   '/api/public/embed.js': typeof ApiPublicEmbedDotjsRoute
   '/api/public/login': typeof ApiPublicLoginRoute
   '/api/public/sitemap.xml': typeof ApiPublicSitemapDotxmlRoute
+  '/lovable/email/suppression': typeof LovableEmailSuppressionRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
   '/_authenticated/araclar/': typeof AuthenticatedAraclarIndexRoute
   '/api/public/cyberlab/proxy': typeof ApiPublicCyberlabProxyRoute
@@ -1421,6 +1457,8 @@ export interface FileRoutesById {
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
+  '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
   '/api/public/auth/google/callback': typeof ApiPublicAuthGoogleCallbackRoute
   '/api/public/auth/google/start': typeof ApiPublicAuthGoogleStartRoute
   '/api/public/v1/auth/verify': typeof ApiPublicV1AuthVerifyRoute
@@ -1476,6 +1514,7 @@ export interface FileRouteTypes {
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
     | '/cyberlab/sso'
+    | '/email/unsubscribe'
     | '/odeme/$orderId'
     | '/p/$code'
     | '/paketler/$slug'
@@ -1553,6 +1592,7 @@ export interface FileRouteTypes {
     | '/api/public/embed.js'
     | '/api/public/login'
     | '/api/public/sitemap.xml'
+    | '/lovable/email/suppression'
     | '/admin/'
     | '/araclar/'
     | '/api/public/cyberlab/proxy'
@@ -1573,6 +1613,8 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
     | '/api/public/auth/google/callback'
     | '/api/public/auth/google/start'
     | '/api/public/v1/auth/verify'
@@ -1624,6 +1666,7 @@ export interface FileRouteTypes {
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
     | '/cyberlab/sso'
+    | '/email/unsubscribe'
     | '/odeme/$orderId'
     | '/p/$code'
     | '/paketler/$slug'
@@ -1701,6 +1744,7 @@ export interface FileRouteTypes {
     | '/api/public/embed.js'
     | '/api/public/login'
     | '/api/public/sitemap.xml'
+    | '/lovable/email/suppression'
     | '/admin'
     | '/araclar'
     | '/api/public/cyberlab/proxy'
@@ -1721,6 +1765,8 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
     | '/api/public/auth/google/callback'
     | '/api/public/auth/google/start'
     | '/api/public/v1/auth/verify'
@@ -1775,6 +1821,7 @@ export interface FileRouteTypes {
     | '/bakiye-yukle/$topupId'
     | '/blog/$slug'
     | '/cyberlab/sso'
+    | '/email/unsubscribe'
     | '/odeme/$orderId'
     | '/p/$code'
     | '/paketler/$slug'
@@ -1852,6 +1899,7 @@ export interface FileRouteTypes {
     | '/api/public/embed.js'
     | '/api/public/login'
     | '/api/public/sitemap.xml'
+    | '/lovable/email/suppression'
     | '/_authenticated/admin/'
     | '/_authenticated/araclar/'
     | '/api/public/cyberlab/proxy'
@@ -1872,6 +1920,8 @@ export interface FileRouteTypes {
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
     | '/lovable/email/queue/process'
+    | '/lovable/email/transactional/preview'
+    | '/lovable/email/transactional/send'
     | '/api/public/auth/google/callback'
     | '/api/public/auth/google/start'
     | '/api/public/v1/auth/verify'
@@ -1914,6 +1964,7 @@ export interface RootRouteChildren {
   BCodeRoute: typeof BCodeRoute
   BakiyeYukleTopupIdRoute: typeof BakiyeYukleTopupIdRoute
   BlogSlugRoute: typeof BlogSlugRoute
+  EmailUnsubscribeRoute: typeof EmailUnsubscribeRoute
   OdemeOrderIdRoute: typeof OdemeOrderIdRoute
   PCodeRoute: typeof PCodeRoute
   PaketlerSlugRoute: typeof PaketlerSlugRoute
@@ -1929,6 +1980,7 @@ export interface RootRouteChildren {
   ApiPublicEmbedDotjsRoute: typeof ApiPublicEmbedDotjsRoute
   ApiPublicLoginRoute: typeof ApiPublicLoginRoute
   ApiPublicSitemapDotxmlRoute: typeof ApiPublicSitemapDotxmlRoute
+  LovableEmailSuppressionRoute: typeof LovableEmailSuppressionRoute
   ApiPublicCyberlabProxyRoute: typeof ApiPublicCyberlabProxyRoute
   ApiPublicCyberlabVerifyRoute: typeof ApiPublicCyberlabVerifyRoute
   ApiPublicDealerSplatRoute: typeof ApiPublicDealerSplatRoute
@@ -1947,6 +1999,8 @@ export interface RootRouteChildren {
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
+  LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
   ApiPublicAuthGoogleCallbackRoute: typeof ApiPublicAuthGoogleCallbackRoute
   ApiPublicAuthGoogleStartRoute: typeof ApiPublicAuthGoogleStartRoute
   ApiPublicV1AuthVerifyRoute: typeof ApiPublicV1AuthVerifyRoute
@@ -2303,6 +2357,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/cyberlab/sso'
       preLoaderRoute: typeof CyberlabSsoRouteImport
       parentRoute: typeof CyberlabRoute
+    }
+    '/email/unsubscribe': {
+      id: '/email/unsubscribe'
+      path: '/email/unsubscribe'
+      fullPath: '/email/unsubscribe'
+      preLoaderRoute: typeof EmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/odeme/$orderId': {
       id: '/odeme/$orderId'
@@ -2850,6 +2911,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/suppression': {
+      id: '/lovable/email/suppression'
+      path: '/lovable/email/suppression'
+      fullPath: '/lovable/email/suppression'
+      preLoaderRoute: typeof LovableEmailSuppressionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cyberlab/proxy': {
       id: '/api/public/cyberlab/proxy'
       path: '/api/public/cyberlab/proxy'
@@ -2974,6 +3042,20 @@ declare module '@tanstack/react-router' {
       path: '/lovable/email/queue/process'
       fullPath: '/lovable/email/queue/process'
       preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lovable/email/transactional/send': {
+      id: '/lovable/email/transactional/send'
+      path: '/lovable/email/transactional/send'
+      fullPath: '/lovable/email/transactional/send'
+      preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/auth/google/callback': {
@@ -3247,6 +3329,7 @@ const rootRouteChildren: RootRouteChildren = {
   BCodeRoute: BCodeRoute,
   BakiyeYukleTopupIdRoute: BakiyeYukleTopupIdRoute,
   BlogSlugRoute: BlogSlugRoute,
+  EmailUnsubscribeRoute: EmailUnsubscribeRoute,
   OdemeOrderIdRoute: OdemeOrderIdRoute,
   PCodeRoute: PCodeRoute,
   PaketlerSlugRoute: PaketlerSlugRoute,
@@ -3262,6 +3345,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicEmbedDotjsRoute: ApiPublicEmbedDotjsRoute,
   ApiPublicLoginRoute: ApiPublicLoginRoute,
   ApiPublicSitemapDotxmlRoute: ApiPublicSitemapDotxmlRoute,
+  LovableEmailSuppressionRoute: LovableEmailSuppressionRoute,
   ApiPublicCyberlabProxyRoute: ApiPublicCyberlabProxyRoute,
   ApiPublicCyberlabVerifyRoute: ApiPublicCyberlabVerifyRoute,
   ApiPublicDealerSplatRoute: ApiPublicDealerSplatRoute,
@@ -3282,6 +3366,8 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
+  LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
   ApiPublicAuthGoogleCallbackRoute: ApiPublicAuthGoogleCallbackRoute,
   ApiPublicAuthGoogleStartRoute: ApiPublicAuthGoogleStartRoute,
   ApiPublicV1AuthVerifyRoute: ApiPublicV1AuthVerifyRoute,
