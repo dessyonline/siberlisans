@@ -5,7 +5,8 @@ import { TEMPLATES } from "@/lib/email-templates/registry";
 
 const SITE_NAME = "Siber Lisans";
 const SENDER_DOMAIN = "notify.siberlisans.com";
-const FROM_DOMAIN = "siberlisans.com";
+// Gönderen adresi doğrulanmış alt alan adıyla birebir eşleşsin (Gmail güven/teslim için).
+const FROM_DOMAIN = "notify.siberlisans.com";
 
 function token() {
   const b = new Uint8Array(32);
