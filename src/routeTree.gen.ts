@@ -160,6 +160,8 @@ import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/em
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 import { Route as LovableEmailTransactionalSendRouteImport } from './routes/lovable/email/transactional/send'
+import { Route as ApiPublicAuthAppleCallbackRouteImport } from './routes/api/public/auth/apple/callback'
+import { Route as ApiPublicAuthAppleStartRouteImport } from './routes/api/public/auth/apple/start'
 import { Route as ApiPublicAuthGoogleCallbackRouteImport } from './routes/api/public/auth/google/callback'
 import { Route as ApiPublicAuthGoogleStartRouteImport } from './routes/api/public/auth/google/start'
 import { Route as ApiPublicV1AuthVerifyRouteImport } from './routes/api/public/v1/auth/verify'
@@ -989,6 +991,17 @@ const LovableEmailTransactionalSendRoute =
     path: '/lovable/email/transactional/send',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicAuthAppleCallbackRoute =
+  ApiPublicAuthAppleCallbackRouteImport.update({
+    id: '/api/public/auth/apple/callback',
+    path: '/api/public/auth/apple/callback',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicAuthAppleStartRoute = ApiPublicAuthAppleStartRouteImport.update({
+  id: '/api/public/auth/apple/start',
+  path: '/api/public/auth/apple/start',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicAuthGoogleCallbackRoute =
   ApiPublicAuthGoogleCallbackRouteImport.update({
     id: '/api/public/auth/google/callback',
@@ -1158,6 +1171,8 @@ export interface FileRoutesByFullPath {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/api/public/auth/apple/callback': typeof ApiPublicAuthAppleCallbackRoute
+  '/api/public/auth/apple/start': typeof ApiPublicAuthAppleStartRoute
   '/api/public/auth/google/callback': typeof ApiPublicAuthGoogleCallbackRoute
   '/api/public/auth/google/start': typeof ApiPublicAuthGoogleStartRoute
   '/api/public/v1/auth/verify': typeof ApiPublicV1AuthVerifyRoute
@@ -1311,6 +1326,8 @@ export interface FileRoutesByTo {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/api/public/auth/apple/callback': typeof ApiPublicAuthAppleCallbackRoute
+  '/api/public/auth/apple/start': typeof ApiPublicAuthAppleStartRoute
   '/api/public/auth/google/callback': typeof ApiPublicAuthGoogleCallbackRoute
   '/api/public/auth/google/start': typeof ApiPublicAuthGoogleStartRoute
   '/api/public/v1/auth/verify': typeof ApiPublicV1AuthVerifyRoute
@@ -1468,6 +1485,8 @@ export interface FileRoutesById {
   '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
   '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
   '/lovable/email/transactional/send': typeof LovableEmailTransactionalSendRoute
+  '/api/public/auth/apple/callback': typeof ApiPublicAuthAppleCallbackRoute
+  '/api/public/auth/apple/start': typeof ApiPublicAuthAppleStartRoute
   '/api/public/auth/google/callback': typeof ApiPublicAuthGoogleCallbackRoute
   '/api/public/auth/google/start': typeof ApiPublicAuthGoogleStartRoute
   '/api/public/v1/auth/verify': typeof ApiPublicV1AuthVerifyRoute
@@ -1625,6 +1644,8 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/api/public/auth/apple/callback'
+    | '/api/public/auth/apple/start'
     | '/api/public/auth/google/callback'
     | '/api/public/auth/google/start'
     | '/api/public/v1/auth/verify'
@@ -1778,6 +1799,8 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/api/public/auth/apple/callback'
+    | '/api/public/auth/apple/start'
     | '/api/public/auth/google/callback'
     | '/api/public/auth/google/start'
     | '/api/public/v1/auth/verify'
@@ -1934,6 +1957,8 @@ export interface FileRouteTypes {
     | '/lovable/email/queue/process'
     | '/lovable/email/transactional/preview'
     | '/lovable/email/transactional/send'
+    | '/api/public/auth/apple/callback'
+    | '/api/public/auth/apple/start'
     | '/api/public/auth/google/callback'
     | '/api/public/auth/google/start'
     | '/api/public/v1/auth/verify'
@@ -2014,6 +2039,8 @@ export interface RootRouteChildren {
   LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
   LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
   LovableEmailTransactionalSendRoute: typeof LovableEmailTransactionalSendRoute
+  ApiPublicAuthAppleCallbackRoute: typeof ApiPublicAuthAppleCallbackRoute
+  ApiPublicAuthAppleStartRoute: typeof ApiPublicAuthAppleStartRoute
   ApiPublicAuthGoogleCallbackRoute: typeof ApiPublicAuthGoogleCallbackRoute
   ApiPublicAuthGoogleStartRoute: typeof ApiPublicAuthGoogleStartRoute
   ApiPublicV1AuthVerifyRoute: typeof ApiPublicV1AuthVerifyRoute
@@ -3078,6 +3105,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LovableEmailTransactionalSendRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/auth/apple/callback': {
+      id: '/api/public/auth/apple/callback'
+      path: '/api/public/auth/apple/callback'
+      fullPath: '/api/public/auth/apple/callback'
+      preLoaderRoute: typeof ApiPublicAuthAppleCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/auth/apple/start': {
+      id: '/api/public/auth/apple/start'
+      path: '/api/public/auth/apple/start'
+      fullPath: '/api/public/auth/apple/start'
+      preLoaderRoute: typeof ApiPublicAuthAppleStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/auth/google/callback': {
       id: '/api/public/auth/google/callback'
       path: '/api/public/auth/google/callback'
@@ -3389,6 +3430,8 @@ const rootRouteChildren: RootRouteChildren = {
   LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
   LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
   LovableEmailTransactionalSendRoute: LovableEmailTransactionalSendRoute,
+  ApiPublicAuthAppleCallbackRoute: ApiPublicAuthAppleCallbackRoute,
+  ApiPublicAuthAppleStartRoute: ApiPublicAuthAppleStartRoute,
   ApiPublicAuthGoogleCallbackRoute: ApiPublicAuthGoogleCallbackRoute,
   ApiPublicAuthGoogleStartRoute: ApiPublicAuthGoogleStartRoute,
   ApiPublicV1AuthVerifyRoute: ApiPublicV1AuthVerifyRoute,

@@ -19,6 +19,7 @@ import { MfaChallenge } from "@/components/security/MfaChallenge";
 const authSearch = z.object({
   ref: z.string().max(20).optional(),
   google: z.enum(["unconfigured", "state", "identity", "account"]).optional(),
+  apple: z.enum(["unconfigured", "state", "identity", "account"]).optional(),
 });
 
 export const Route = createFileRoute("/auth")({
@@ -115,6 +116,17 @@ function AuthPage() {
     };
     toast.error(messages[search.google] ?? "Google girişi başarısız");
   }, [search.google]);
+
+  useEffect(() => {
+    if (!search.apple) return;
+    const messages: Record<string, string> = {
+      unconfigured: "Apple girişi henüz yapılandırılmadı.",
+      state: "Apple girişi doğrulanamadı, tekrar deneyin.",
+      identity: "Apple hesabında doğrulanmış e-posta bulunamadı.",
+      account: "Hesap oluşturulamadı, tekrar deneyin.",
+    };
+    toast.error(messages[search.apple] ?? "Apple girişi başarısız");
+  }, [search.apple]);
 
   useEffect(() => {
     if (user && !mfaMode) navigate({ to: "/hesabim" });
@@ -284,6 +296,15 @@ function AuthPage() {
             >
               <a href="https://siberlisans.com/api/public/auth/google/start">
                 <GoogleIcon /> <span className="ml-2">google ile devam et</span>
+              </a>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="mt-2 w-full font-mono border-primary/30 hover:bg-primary/10"
+            >
+              <a href="https://siberlisans.com/api/public/auth/apple/start">
+                <AppleIcon /> <span className="ml-2">apple ile devam et</span>
               </a>
             </Button>
             <div className="my-4 flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
