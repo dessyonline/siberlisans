@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { approveTopup, rejectTopup, adminAdjustWallet } from "@/lib/wallet.functions";
-import { adminListTopups, adminListWallets } from "@/lib/wallet-read.functions";
+import { adminListTopups, adminListWallets, adminListWalletTxns } from "@/lib/wallet-read.functions";
 import { listUsers } from "@/lib/admin-users.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +43,27 @@ function AdminWallet() {
 
 
 
+
+  const txnsFn = useServerFn(adminListWalletTxns);
+  const { data: txns } = useQuery({
+    queryKey: ["admin-wallet-txns"],
+    queryFn: () => txnsFn(),
+    refetchInterval: 10000,
+  });
+  const [histQ, setHistQ] = useState("");
+  const [histKind, setHistKind] = useState("all");
+  const histRows = useMemo(() => {
+    const q = histQ.toLowerCase().trim();
+    return (txns ?? []).filter((x) =>
+      (histKind === "all" || x.kind === histKind) &&
+      (!q || (x.email ?? "").toLowerCase().includes(q) || x.user_id.startsWith(q) || (x.note ?? "").toLowerCase().includes(q)),
+    );
+  }, [txns, histQ, histKind]);
+  const dupTopups = useMemo(() => {
+    const c: Record<string, number> = {};
+    (txns ?? []).forEach((x) => { if (x.topup_id) c[x.topup_id] = (c[x.topup_id] ?? 0) + 1; });
+    return new Set(Object.keys(c).filter((k) => c[k] > 1));
+  }, [txns]);
 
   const listUsersFn = useServerFn(listUsers);
   const { data: emails } = useQuery({
@@ -127,6 +148,7 @@ function AdminWallet() {
       {/* Bakiye ayarla */}
       <AdjustPanel emails={emails ?? {}} onDone={() => {
         qc.invalidateQueries({ queryKey: ["admin-wallets"] });
+        qc.invalidateQueries({ queryKey: ["admin-wallet-txns"] });
       }} adjustFn={adjustFn} />
 
       {/* Bakiyeler */}
@@ -151,7 +173,7 @@ function AdminWallet() {
       <section className="glass-card rounded-lg p-4">
         <div className="mb-3 font-mono text-xs text-muted-foreground">geçmiş yüklemeler</div>
         <div className="space-y-1">
-          {others.slice(0, 50).map((t) => (
+          {others.map((t) => (
             <div key={t.id} className="flex items-center justify-between gap-3 py-1.5 border-b border-border/30 last:border-0">
               <div className="font-mono text-[11px] text-muted-foreground">{t.reference_code}</div>
               <div className="text-xs truncate flex-1 mx-2">{emails?.[t.user_id] ?? t.user_id.slice(0, 8)}</div>
@@ -159,6 +181,45 @@ function AdminWallet() {
                 {t.status}
               </div>
               <div className="font-mono text-sm">{fmt(Number(t.amount_try))} TL</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Tüm bakiye hareketleri */}
+      <section className="glass-card rounded-lg p-4">
+        <div className="mb-3 font-mono text-xs text-muted-foreground">
+          tüm bakiye hareketleri ({histRows.length})
+          {dupTopups.size > 0 && (
+            <span className="ml-2 text-destructive font-bold">⚠ {dupTopups.size} talep birden fazla kez eklenmiş</span>
+          )}
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 mb-3">
+          <Input value={histQ} onChange={(e) => setHistQ(e.target.value)} placeholder="email / not ara…" />
+          <select value={histKind} onChange={(e) => setHistKind(e.target.value)}
+            className="rounded-md border border-input bg-background px-2 py-2 text-sm font-mono">
+            <option value="all">hepsi</option>
+            <option value="topup">yükleme</option>
+            <option value="adjustment">manuel</option>
+            <option value="purchase">satın alma</option>
+            <option value="refund">iade</option>
+          </select>
+        </div>
+        <div className="space-y-1 max-h-[600px] overflow-y-auto">
+          {histRows.map((x) => (
+            <div key={x.id} className={`flex flex-wrap items-center gap-2 py-1.5 border-b border-border/30 last:border-0 ${x.topup_id && dupTopups.has(x.topup_id) ? "bg-destructive/10" : ""}`}>
+              <div className="font-mono text-[10px] text-muted-foreground w-32 shrink-0">
+                {x.created_at ? new Date(x.created_at).toLocaleString("tr-TR") : "-"}
+              </div>
+              <div className="text-xs truncate flex-1 min-w-0">
+                {x.email ?? emails?.[x.user_id] ?? x.user_id.slice(0, 8)}
+                {x.note ? <span className="text-muted-foreground"> · {x.note}</span> : null}
+              </div>
+              <div className="font-mono text-[11px] text-muted-foreground">{x.kind}</div>
+              <div className={`font-mono text-sm w-24 text-right ${x.amount_try >= 0 ? "text-primary" : "text-destructive"}`}>
+                {x.amount_try >= 0 ? "+" : ""}{fmt(x.amount_try)}
+              </div>
+              <div className="font-mono text-[11px] text-muted-foreground w-24 text-right">= {fmt(x.balance_after)}</div>
             </div>
           ))}
         </div>
