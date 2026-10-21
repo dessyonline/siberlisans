@@ -150,3 +150,31 @@ export const adminListWallets = createServerFn({ method: "GET" })
     );
     return rows.map((r) => ({ ...r, balance_try: num(r.balance_try) ?? 0 }));
   });
+
+export const adminListWalletTxns = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async () => {
+    const { mysqlQuery, num } = await import("./mysql.server");
+    const rows = await mysqlQuery<{
+      id: string;
+      user_id: string;
+      kind: string;
+      amount_try: unknown;
+      balance_after: unknown;
+      note: string | null;
+      topup_id: string | null;
+      created_at: string | null;
+      email: string | null;
+    }>(
+      `SELECT x.id, x.user_id, x.kind, x.amount_try, x.balance_after, x.note, x.topup_id, x.created_at, p.email
+         FROM wallet_transactions x
+         LEFT JOIN profiles p ON p.id = x.user_id
+        ORDER BY x.created_at DESC
+        LIMIT 1000`,
+    );
+    return rows.map((r) => ({
+      ...r,
+      amount_try: num(r.amount_try) ?? 0,
+      balance_after: num(r.balance_after) ?? 0,
+    }));
+  });

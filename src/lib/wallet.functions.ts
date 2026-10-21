@@ -336,7 +336,7 @@ export const approveTopup = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .validator((d: unknown) => topupIdInput.parse(d))
   .handler(async ({ data }) => {
-    const { mysqlQuery, mysqlOne, num } = await import("./mysql.server");
+    const { mysqlQuery, mysqlOne, mysqlExec, num } = await import("./mysql.server");
     const t = await mysqlOne<{
       id: string;
       user_id: string;
@@ -348,16 +348,25 @@ export const approveTopup = createServerFn({ method: "POST" })
     ]);
     if (!t) throw new Error("Talep bulunamadı.");
     if (t.status === "approved") throw new Error("Bu talep zaten onaylandı.");
+    if (t.status === "rejected") throw new Error("Reddedilmiş talep onaylanamaz.");
+
+    // Önce talebi atomik olarak kilitle: aynı talep iki kez bakiye ekleyemez.
+    const locked = await mysqlExec(
+      "UPDATE wallet_topups SET status='approved', approved_at=?, updated_at=? WHERE id=? AND status IN ('pending','reviewing')",
+      [ts(), ts(), data.topupId],
+    );
+    if (locked === 0) throw new Error("Bu talep zaten işlendi.");
+    const already = await mysqlOne<{ c: unknown }>(
+      "SELECT COUNT(*) AS c FROM wallet_transactions WHERE topup_id=?",
+      [t.id],
+    );
+    if ((num(already?.c) ?? 0) > 0) throw new Error("Bu talep için bakiye zaten eklenmiş.");
 
     const amount = num(t.amount_try) ?? 0;
     await mysqlQuery(
       `INSERT INTO wallets (user_id,balance_try,updated_at) VALUES (?,?,?)
        ON DUPLICATE KEY UPDATE balance_try = balance_try + VALUES(balance_try), updated_at = VALUES(updated_at)`,
       [t.user_id, amount, ts()],
-    );
-    await mysqlQuery(
-      "UPDATE wallet_topups SET status='approved', approved_at=?, updated_at=? WHERE id=?",
-      [ts(), ts(), data.topupId],
     );
     const w = await mysqlOne<{ balance_try: unknown }>(
       "SELECT balance_try FROM wallets WHERE user_id=?",
@@ -458,12 +467,29 @@ export const adminAdjustWallet = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .validator((d: unknown) => adjustInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { mysqlQuery, mysqlOne, num } = await import("./mysql.server");
-    await mysqlQuery(
-      `INSERT INTO wallets (user_id,balance_try,updated_at) VALUES (?,?,?)
-       ON DUPLICATE KEY UPDATE balance_try = balance_try + VALUES(balance_try), updated_at = VALUES(updated_at)`,
-      [data.userId, data.delta, ts()],
-    );
+    const { mysqlQuery, mysqlOne, mysqlExec, num } = await import("./mysql.server");
+    if (data.delta < 0) {
+      const amt = Math.abs(data.delta);
+      const cur = await mysqlOne<{ balance_try: unknown }>(
+        "SELECT balance_try FROM wallets WHERE user_id=?",
+        [data.userId],
+      );
+      const curBal = num(cur?.balance_try) ?? 0;
+      if (curBal < amt) {
+        throw new Error(`Yetersiz bakiye: kullanıcının bakiyesi ${curBal.toFixed(2)} TL, ${amt.toFixed(2)} TL düşülemez.`);
+      }
+      const n = await mysqlExec(
+        "UPDATE wallets SET balance_try = balance_try - ?, updated_at=? WHERE user_id=? AND balance_try >= ?",
+        [amt, ts(), data.userId, amt],
+      );
+      if (n === 0) throw new Error("Yetersiz bakiye, işlem yapılmadı.");
+    } else {
+      await mysqlQuery(
+        `INSERT INTO wallets (user_id,balance_try,updated_at) VALUES (?,?,?)
+         ON DUPLICATE KEY UPDATE balance_try = balance_try + VALUES(balance_try), updated_at = VALUES(updated_at)`,
+        [data.userId, data.delta, ts()],
+      );
+    }
     const w = await mysqlOne<{ balance_try: unknown }>(
       "SELECT balance_try FROM wallets WHERE user_id=?",
       [data.userId],
