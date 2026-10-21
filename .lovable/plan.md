@@ -1,23 +1,19 @@
-# Giriş Sonrası SYSTEM_HALT Hatası
+# Manuel bakiye hatası ve görünmeyen manuel yüklemeler
 
-## Amaç
-Girişten sonra hesabın hata ekranına düşmeden açılmasını sağlamak; mevcut görünümü ve MySQL altyapısını korumak.
-
-## Doğrulanan durum
-- Paylaşılan ekran SYSTEM_HALT hata ekranını gösteriyor; kullanıcı bunun girişten sonra çıktığını belirtti.
-- Giriş işlemi oturum çerezi oluşturuyor; ardından kullanıcı bilgisi yenilenip `/hesabim` sayfasına geçiliyor.
-- Korunan sayfalara geçerken oturum ayrıca kontrol ediliyor.
-- Kesin hata nedeni henüz doğrulanmadı. Önceki düzeltmenin bu durumu çözdüğü varsayılmayacak.
+## Sorun
+Manuel ekle/düş işlemi önce bakiyeyi değiştiriyor, sonra geçmişe "adjustment" türüyle kayıt yazmaya çalışıyor. Veritabanı yalnızca `admin_credit` / `admin_debit` türlerini kabul ettiği için kayıt reddediliyor:
+- Ekranda "köprü hatası" çıkıyor ama bakiye zaten değişmiş oluyor.
+- Geçmişe hiçbir kayıt düşmediği için manuel yüklemeler hiçbir yerde görünmüyor.
 
 ## Yapılacaklar
-1. Giriş → oturum kontrolü → hesap sayfası akışını tarayıcıda yeniden üretip ilk gerçek hatayı ve başarısız isteği belirlemek. Önizleme ile canlı site farkını ayırmak.
-2. Hesap sayfasının veri isteklerini ve giriş sonrası çalışan güvenlik kontrollerini incelemek; oturum, MySQL verisi veya tarayıcı dosyası yükleme hatasından hangisinin ekranı tetiklediğini doğrulamak.
-3. Yalnızca doğrulanan nedeni düzeltmek. Yetki kontrollerini kaldırmamak, hatayı gizleyerek başarılı giriş göstermemek ve tasarımı değiştirmemek.
-4. Giriş, hesap sayfasını yenileme, çıkış ve yeniden giriş akışlarını sınamak. Şifre yenileme sonrası girişte aynı hatanın tekrarlanmadığını kontrol etmek.
-5. Sonucu yalnızca gözlenen testlerle bildirmek; canlıya yayınlanmadan canlı sitenin düzeldiğini iddia etmemek.
+1. Manuel işlemde tür: artı ise `admin_credit`, eksi ise `admin_debit`.
+2. Önce geçmiş kaydı hazırlanıp bakiye ile birlikte tek adımda yazılsın; kayıt yazılamazsa bakiye değişmesin (yarım işlem olmasın).
+3. Admin cüzdan geçmişi filtresine "manuel ekleme" ve "manuel düşme" seçenekleri; listede türler Türkçe etiketle gösterilsin.
+4. Geçmişte kayıtsız kalmış manuel işlemleri bulmak için: bakiye ile hareket toplamı uyuşmayan kullanıcıları admin sayfasında "kayıtsız fark" uyarısıyla listele (veriyi değiştirmeden).
+5. Müşteri cüzdan sayfası zaten `admin_credit/admin_debit` etiketlerini tanıyor; değişiklik gerekmez.
 
-## Teknik inceleme alanları
-`auth.functions.ts`, `auth-context.tsx`, korunan sayfa geçidi, `/hesabim` veri çağrıları ve kök hata sınırı birlikte incelenecek. Bildirilen dinamik modül yükleme hatası ayrı bir önizleme sorunu olabilir; günlüklerle ilişkilendirilmeden giriş hatasının nedeni sayılmayacak.
-
-## Kabul ölçütü
-Geçerli girişten sonra hesap sayfası açılır, yenilemede oturum korunur ve SYSTEM_HALT görülmez. Gerçek hesapla doğrulama mümkün olmazsa bu sınırlama açıkça belirtilir.
+## Teknik
+- `src/lib/wallet.functions.ts` `adminAdjustWallet`: kind düzeltmesi; bakiye güncelleme + insert'i tek SQL/RPC (var olan `admin_adjust_wallet` fonksiyonu veya CTE) ile atomik yap.
+- `src/lib/wallet-read.functions.ts`: kullanıcı başına bakiye − hareket toplamı farkı sorgusu.
+- `src/routes/_authenticated/admin/cuzdan.tsx`: filtre seçenekleri, etiketler, fark uyarı bölümü.
+- Test: manuel ekle/düş sonrası tek hareket kaydı ve doğru tür.
