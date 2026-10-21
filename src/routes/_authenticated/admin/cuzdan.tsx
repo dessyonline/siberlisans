@@ -200,7 +200,8 @@ function AdminWallet() {
             className="rounded-md border border-input bg-background px-2 py-2 text-sm font-mono">
             <option value="all">hepsi</option>
             <option value="topup">yükleme</option>
-            <option value="adjustment">manuel</option>
+            <option value="admin_credit">manuel ekleme</option>
+            <option value="admin_debit">manuel düşme</option>
             <option value="purchase">satın alma</option>
             <option value="refund">iade</option>
           </select>
@@ -215,7 +216,7 @@ function AdminWallet() {
                 {x.email ?? emails?.[x.user_id] ?? x.user_id.slice(0, 8)}
                 {x.note ? <span className="text-muted-foreground"> · {x.note}</span> : null}
               </div>
-              <div className="font-mono text-[11px] text-muted-foreground">{x.kind}</div>
+              <div className="font-mono text-[11px] text-muted-foreground">{({ topup: "yükleme", admin_credit: "manuel ekleme", admin_debit: "manuel düşme", purchase: "satın alma", refund: "iade", referral_bonus: "referans" } as Record<string, string>)[x.kind] ?? x.kind}</div>
               <div className={`font-mono text-sm w-24 text-right ${x.amount_try >= 0 ? "text-primary" : "text-destructive"}`}>
                 {x.amount_try >= 0 ? "+" : ""}{fmt(x.amount_try)}
               </div>

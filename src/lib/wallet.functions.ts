@@ -495,19 +495,28 @@ export const adminAdjustWallet = createServerFn({ method: "POST" })
       [data.userId],
     );
     const balance = num(w?.balance_try) ?? 0;
-    await mysqlQuery(
-      `INSERT INTO wallet_transactions (id,user_id,kind,amount_try,balance_after,note,created_by,created_at)
-       VALUES (?,?,?,?,?,?,?,?)`,
-      [
-        crypto.randomUUID(),
-        data.userId,
-        "adjustment",
-        data.delta,
-        balance,
-        data.note ?? "",
-        context.userId,
-        ts(),
-      ],
-    );
+    try {
+      await mysqlQuery(
+        `INSERT INTO wallet_transactions (id,user_id,kind,amount_try,balance_after,note,created_by,created_at)
+         VALUES (?,?,?,?,?,?,?,?)`,
+        [
+          crypto.randomUUID(),
+          data.userId,
+          data.delta > 0 ? "admin_credit" : "admin_debit",
+          data.delta,
+          balance,
+          data.note || "Admin düzeltmesi",
+          context.userId,
+          ts(),
+        ],
+      );
+    } catch (e) {
+      // Kayıt yazılamadı: bakiyeyi geri al ki yarım işlem kalmasın
+      await mysqlExec(
+        "UPDATE wallets SET balance_try = balance_try - ?, updated_at=? WHERE user_id=?",
+        [data.delta, ts(), data.userId],
+      );
+      throw new Error("İşlem kaydedilemedi, bakiye değiştirilmedi: " + (e as Error).message);
+    }
     return { ok: true, balance };
   });
