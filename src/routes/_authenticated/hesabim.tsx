@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { toast } from "sonner";
-import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck, RefreshCw, Users, Trophy, Palette, Sparkles, Film, LayoutDashboard } from "lucide-react";
+import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck, RefreshCw, Users, Trophy, Palette, Sparkles, Film, LayoutDashboard, ArrowUpRight, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { AccountHero } from "@/components/account/AccountHero";
 import { ActivityFeed } from "@/components/account/ActivityFeed";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -59,6 +59,7 @@ function MyAccount() {
   const subFn = useServerFn(getMyAiSubscription);
   const jobsFn = useServerFn(listMyAiJobs);
   const ordersFn = useServerFn(listMyOrders);
+  const walletFn = useServerFn(getMyWalletBalance);
   const { data: orders, isLoading, isError: ordersFailed, refetch: retryOrders } = useQuery({
     queryKey: ["my-orders", user?.id],
     enabled: !!user,
@@ -70,6 +71,26 @@ function MyAccount() {
     queryKey: ["my-ai-sub", user?.id],
     enabled: !!user,
     queryFn: () => subFn(),
+    retry: 2,
+  });
+
+  const { data: wallet } = useQuery({
+    queryKey: ["wallet", user?.id],
+    enabled: !!user,
+    queryFn: () => walletFn(),
+    refetchInterval: 30000,
+    retry: 2,
+  });
+
+  const {
+    data: aiJobs = [],
+    isLoading: aiJobsLoading,
+    isError: aiJobsFailed,
+  } = useQuery({
+    queryKey: ["my-ai-jobs", user?.id],
+    enabled: !!user,
+    queryFn: () => jobsFn() as Promise<AiJob[]>,
+    refetchInterval: 15000,
     retry: 2,
   });
 
@@ -95,6 +116,14 @@ function MyAccount() {
         ),
     [orders],
   );
+
+  const videoJobs = useMemo(
+    () => aiJobs.filter((job) => (job.kind ?? "").toLowerCase().startsWith("video")),
+    [aiJobs],
+  );
+  const activeVideoJobs = videoJobs.filter((job) =>
+    ["queued", "processing"].includes((job.status ?? "").toLowerCase()),
+  ).length;
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6 md:py-12">
@@ -152,48 +181,16 @@ function MyAccount() {
         </TabsList>
 
         <TabsContent value="overview" className="mt-6 space-y-4">
-          <ReviewPromptCard />
-          {/* hızlı erişim */}
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 font-mono">
-            <div className="glass-card rounded-md px-3 py-2.5">
-              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">sipariş</div>
-              <div className="text-lg neon-text leading-tight">{orders?.length ?? 0}</div>
-            </div>
-            <div className="glass-card rounded-md px-3 py-2.5">
-              <div className="text-muted-foreground text-[10px] uppercase tracking-wider">anahtar</div>
-              <div className="text-lg neon-text leading-tight">{approvedKeys.length}</div>
-            </div>
-            <Link
-              to="/hesabim/lisanslar"
-              className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
-            >
-              <KeyRound className="h-4 w-4 text-primary shrink-0" />
-              <div className="min-w-0">
-                <div className="text-muted-foreground text-[10px] uppercase tracking-wider">lisanslarım</div>
-                <div className="text-primary text-sm truncate">$ HWID & süre →</div>
-              </div>
-            </Link>
-            <Link
-              to="/favorilerim"
-              className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
-            >
-              <Heart className="h-4 w-4 text-destructive fill-destructive shrink-0" />
-              <div className="min-w-0">
-                <div className="text-muted-foreground text-[10px] uppercase tracking-wider">favoriler</div>
-                <div className="text-primary text-sm truncate">$ favorilerin →</div>
-              </div>
-            </Link>
-            <Link
-              to="/davet"
-              className="glass-card corner-cut flex items-center gap-3 rounded-md px-3 py-2.5 hover:neon-glow transition"
-            >
-              <Gift className="h-4 w-4 text-primary shrink-0" />
-              <div className="min-w-0">
-                <div className="text-muted-foreground text-[10px] uppercase tracking-wider">davet et & ₺25 kazan</div>
-                <div className="text-primary text-sm truncate">$ arkadaşını davet et →</div>
-              </div>
-            </Link>
-          </div>
+          <CustomerDashboard
+            walletBalance={wallet?.balance_try ?? null}
+            aiSub={aiSub}
+            jobs={videoJobs}
+            jobsLoading={aiJobsLoading}
+            jobsFailed={aiJobsFailed}
+            activeJobCount={activeVideoJobs}
+            orderCount={orders?.length ?? 0}
+            approvedKeyCount={approvedKeys.length}
+          />
 
           <div className="grid gap-3 md:grid-cols-2">
             <TierCard />
@@ -260,6 +257,244 @@ function MyAccount() {
   );
 }
 
+
+
+type AiSubscriptionSummary = {
+  plan_slug: string;
+  billing: string;
+  credits_total: number;
+  credits_remaining: number;
+  expires_at: string;
+};
+
+function aiJobStatusMeta(rawStatus: string) {
+  const status = rawStatus.toLowerCase();
+  if (status === "done" || status === "completed") {
+    return { label: "hazır", className: "bg-primary/15 text-primary", icon: "ready" };
+  }
+  if (status === "failed" || status === "canceled" || status === "cancelled") {
+    return { label: "başarısız", className: "bg-destructive/15 text-destructive", icon: "error" };
+  }
+  if (status === "refunded") {
+    return { label: "iade edildi", className: "bg-cyan/15 text-cyan", icon: "refund" };
+  }
+  return { label: "üretiliyor", className: "bg-warn/15 text-warn", icon: "active" };
+}
+
+function CustomerDashboard({
+  walletBalance,
+  aiSub,
+  jobs,
+  jobsLoading,
+  jobsFailed,
+  activeJobCount,
+  orderCount,
+  approvedKeyCount,
+}: {
+  walletBalance: number | null;
+  aiSub: AiSubscriptionSummary | null | undefined;
+  jobs: AiJob[];
+  jobsLoading: boolean;
+  jobsFailed: boolean;
+  activeJobCount: number;
+  orderCount: number;
+  approvedKeyCount: number;
+}) {
+  const creditTotal = Number(aiSub?.credits_total ?? 0);
+  const creditRemaining = Number(aiSub?.credits_remaining ?? 0);
+  const creditPercent =
+    creditTotal > 0 ? Math.max(0, Math.min(100, (creditRemaining / creditTotal) * 100)) : 0;
+  const planName = aiSub?.plan_slug
+    ? aiSub.plan_slug === "starter"
+      ? "Başlangıç"
+      : aiSub.plan_slug === "pro"
+        ? "Üretici"
+        : aiSub.plan_slug === "studio"
+          ? "Stüdyo"
+          : aiSub.plan_slug
+    : null;
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
+        <div className="glass-card corner-cut rounded-md p-3">
+          <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+            <Wallet className="h-3.5 w-3.5 text-primary" /> cüzdan
+          </div>
+          <div className="mt-1 font-mono text-lg neon-text">
+            {walletBalance == null
+              ? "—"
+              : \`₺\${Number(walletBalance).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\`}
+          </div>
+          <Link to="/cuzdan" className="mt-1 inline-flex items-center text-[10px] font-mono text-primary hover:underline">
+            bakiye yönetimi <ArrowUpRight className="ml-0.5 h-3 w-3" />
+          </Link>
+        </div>
+
+        <div className="glass-card corner-cut rounded-md p-3">
+          <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+            <Sparkles className="h-3.5 w-3.5 text-primary" /> ai kredisi
+          </div>
+          <div className="mt-1 font-mono text-lg neon-text">
+            {aiSub ? \`\${creditRemaining.toLocaleString("tr-TR")} / \${creditTotal.toLocaleString("tr-TR")}\` : "—"}
+          </div>
+          <div className="mt-1 text-[10px] font-mono text-muted-foreground">
+            {aiSub ? \`\${planName} · \${aiSub.billing === "yearly" ? "yıllık" : "aylık"}\` : "aktif paket yok"}
+          </div>
+        </div>
+
+        <div className="glass-card corner-cut rounded-md p-3">
+          <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+            <Film className="h-3.5 w-3.5 text-primary" /> aktif üretim
+          </div>
+          <div className="mt-1 font-mono text-lg neon-text">{activeJobCount}</div>
+          <div className="mt-1 text-[10px] font-mono text-muted-foreground">kuyrukta veya işleniyor</div>
+        </div>
+
+        <div className="glass-card corner-cut rounded-md p-3">
+          <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+            <KeyRound className="h-3.5 w-3.5 text-primary" /> teslim edilen
+          </div>
+          <div className="mt-1 font-mono text-lg neon-text">{approvedKeyCount}</div>
+          <div className="mt-1 text-[10px] font-mono text-muted-foreground">{orderCount} toplam sipariş</div>
+        </div>
+      </div>
+
+      <div className="grid gap-3 lg:grid-cols-[1.08fr_.92fr]">
+        <div className="glass-card corner-cut rounded-lg p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-primary">$ control-center</div>
+              <h2 className="mt-1 font-mono text-base font-semibold">Müşteri paneli</h2>
+            </div>
+            <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
+          </div>
+
+          {aiSub ? (
+            <div className="mt-4">
+              <div className="flex items-center justify-between gap-2 font-mono text-xs">
+                <span className="text-muted-foreground">AI kullanım bakiyesi</span>
+                <span className="text-primary">{creditRemaining.toLocaleString("tr-TR")} kredi</span>
+              </div>
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-border/40">
+                <div className="h-full rounded-full bg-primary transition-all" style={{ width: creditPercent + "%" }} />
+              </div>
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-muted-foreground">
+                <span>{planName} · {aiSub.billing === "yearly" ? "yıllık" : "aylık"} paket</span>
+                <span>{new Date(aiSub.expires_at).toLocaleDateString("tr-TR")} tarihine kadar</span>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-4 rounded-md border border-warn/30 bg-warn/5 p-3 font-mono text-xs">
+              <div className="text-warn">aktif AI paketin bulunmuyor.</div>
+              <div className="mt-1 text-muted-foreground">Video üretmeye başlamak için bir paket seçebilirsin.</div>
+            </div>
+          )}
+
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Button asChild size="sm" className="font-mono">
+              <Link to="/araclar/video"><Film className="mr-1.5 h-3.5 w-3.5" /> video üret</Link>
+            </Button>
+            <Button asChild size="sm" variant="outline" className="font-mono">
+              <Link to="/paketler/ai"><Sparkles className="mr-1.5 h-3.5 w-3.5" /> paketleri gör</Link>
+            </Button>
+          </div>
+        </div>
+
+        <div className="glass-card corner-cut rounded-lg p-4">
+          <div className="flex items-center justify-between gap-2">
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">$ quick-actions</div>
+              <h2 className="mt-1 font-mono text-base font-semibold">Hızlı işlemler</h2>
+            </div>
+            <ArrowUpRight className="h-5 w-5 text-primary" />
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <Link to="/cuzdan" className="rounded-md border border-border/60 bg-background/30 p-2.5 font-mono text-xs transition hover:border-primary/60 hover:bg-primary/5">
+              <Wallet className="mb-1 h-4 w-4 text-primary" />
+              <span className="block">bakiye yükle</span>
+            </Link>
+            <Link to="/hesabim/lisanslar" className="rounded-md border border-border/60 bg-background/30 p-2.5 font-mono text-xs transition hover:border-primary/60 hover:bg-primary/5">
+              <KeyRound className="mb-1 h-4 w-4 text-primary" />
+              <span className="block">lisanslarım</span>
+            </Link>
+            <Link to="/favorilerim" className="rounded-md border border-border/60 bg-background/30 p-2.5 font-mono text-xs transition hover:border-primary/60 hover:bg-primary/5">
+              <Heart className="mb-1 h-4 w-4 fill-destructive text-destructive" />
+              <span className="block">favorilerim</span>
+            </Link>
+            <Link to="/davet" className="rounded-md border border-border/60 bg-background/30 p-2.5 font-mono text-xs transition hover:border-primary/60 hover:bg-primary/5">
+              <Gift className="mb-1 h-4 w-4 text-primary" />
+              <span className="block">davet & kazan</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="glass-card corner-cut rounded-lg p-4">
+        <div className="flex items-center justify-between gap-2">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">$ latest-generations</div>
+            <h2 className="mt-1 font-mono text-base font-semibold">Son AI üretimleri</h2>
+          </div>
+          <Link to="/araclar/video" className="inline-flex items-center font-mono text-xs text-primary hover:underline">
+            tümünü gör <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        {jobsFailed ? (
+          <div className="mt-3 flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 font-mono text-xs text-destructive">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            Video geçmişi yüklenemedi. Videolar sekmesinden yeniden deneyebilirsin.
+          </div>
+        ) : jobsLoading && jobs.length === 0 ? (
+          <div className="mt-3 animate-pulse rounded-md border border-border/50 bg-background/30 p-4 font-mono text-xs text-muted-foreground">
+            üretim geçmişi yükleniyor…
+          </div>
+        ) : jobs.length === 0 ? (
+          <div className="mt-3 rounded-md border border-dashed border-border/60 p-4 text-center font-mono text-xs text-muted-foreground">
+            henüz video üretmedin · <Link to="/araclar/video" className="text-primary hover:underline">ilk videonu üret →</Link>
+          </div>
+        ) : (
+          <div className="mt-3 space-y-2">
+            {jobs.slice(0, 4).map((job) => {
+              const meta = aiJobStatusMeta(job.status ?? "");
+              const normalizedStatus = (job.status ?? "").toLowerCase();
+              const ready = normalizedStatus === "done" || normalizedStatus === "completed";
+              return (
+                <div key={job.id} className="rounded-md border border-border/50 bg-background/25 p-3 font-mono text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
+                      {meta.icon === "ready" ? (
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-primary" />
+                      ) : meta.icon === "error" ? (
+                        <AlertCircle className="h-3.5 w-3.5 shrink-0 text-destructive" />
+                      ) : meta.icon === "refund" ? (
+                        <RefreshCw className="h-3.5 w-3.5 shrink-0 text-cyan" />
+                      ) : (
+                        <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-warn" />
+                      )}
+                      <span className="truncate text-foreground/90">{job.prompt}</span>
+                    </div>
+                    <span className={\`shrink-0 rounded-full px-2 py-0.5 text-[10px] \${meta.className}\`}>{meta.label}</span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[10px] text-muted-foreground">
+                    <span>{job.params?.duration ?? "-"}s · {job.params?.quality ?? "-"} · ₺{Number(job.cost_try ?? 0).toFixed(2)} · {new Date(job.created_at).toLocaleDateString("tr-TR")}</span>
+                    {ready && job.result_url ? (
+                      <a href={job.result_url} target="_blank" rel="noreferrer" className="text-primary hover:underline">videoyu aç ↗</a>
+                    ) : meta.icon === "refund" ? (
+                      <span className="text-cyan">bakiye iade edildi</span>
+                    ) : null}
+                  </div>
+                  {job.error ? <div className="mt-2 line-clamp-2 text-[10px] text-destructive">hata: {job.error}</div> : null}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function OrdersTab({ orders, isLoading }: { orders: Order[]; isLoading: boolean }) {
   const [q, setQ] = useState("");
