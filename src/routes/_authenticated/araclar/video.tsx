@@ -47,27 +47,27 @@ type Dur = 5 | 10;
 type Quality = "fast" | "hd" | "cinematic";
 
 const DEFAULT_PRICES: Record<Quality, Record<number, number>> = {
-  fast: { 5: 10, 10: 20 },
-  hd: { 5: 25, 10: 50 },
-  cinematic: { 5: 50, 10: 100 },
+  fast: { 5: 79, 10: 149 },
+  hd: { 5: 179, 10: 349 },
+  cinematic: { 5: 229, 10: 449 },
 };
 
 const QUALITY_META: Record<Quality, { label: string; desc: string; icon: typeof Zap; color: string }> = {
   fast: {
     label: "Hızlı",
-    desc: "~1 dk · sosyal medya için ideal",
+    desc: "~1 dk · uygun maliyetli sosyal medya",
     icon: Zap,
     color: "text-primary border-primary/40 bg-primary/5",
   },
   hd: {
     label: "HD",
-    desc: "~2-3 dk · yüksek kalite",
+    desc: "~2-3 dk · Seedance HD",
     icon: Award,
     color: "text-blue-400 border-blue-400/40 bg-blue-400/5",
   },
   cinematic: {
     label: "Sinematik",
-    desc: "~5 dk · profesyonel prodüksiyon",
+    desc: "~5 dk · tutarlı ve sinematik",
     icon: Crown,
     color: "text-yellow-400 border-yellow-400/40 bg-yellow-400/5",
   },
