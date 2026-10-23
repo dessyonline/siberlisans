@@ -324,7 +324,7 @@ function CustomerDashboard({
           <div className="mt-1 font-mono text-lg neon-text">
             {walletBalance == null
               ? "—"
-              : \`₺\${Number(walletBalance).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\`}
+              : `₺${Number(walletBalance).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
           </div>
           <Link to="/cuzdan" className="mt-1 inline-flex items-center text-[10px] font-mono text-primary hover:underline">
             bakiye yönetimi <ArrowUpRight className="ml-0.5 h-3 w-3" />
@@ -336,10 +336,10 @@ function CustomerDashboard({
             <Sparkles className="h-3.5 w-3.5 text-primary" /> ai kredisi
           </div>
           <div className="mt-1 font-mono text-lg neon-text">
-            {aiSub ? \`\${creditRemaining.toLocaleString("tr-TR")} / \${creditTotal.toLocaleString("tr-TR")}\` : "—"}
+            {aiSub ? `${creditRemaining.toLocaleString("tr-TR")} / ${creditTotal.toLocaleString("tr-TR")}` : "—"}
           </div>
           <div className="mt-1 text-[10px] font-mono text-muted-foreground">
-            {aiSub ? \`\${planName} · \${aiSub.billing === "yearly" ? "yıllık" : "aylık"}\` : "aktif paket yok"}
+            {aiSub ? `${planName} · ${aiSub.billing === "yearly" ? "yıllık" : "aylık"}` : "aktif paket yok"}
           </div>
         </div>
 
@@ -475,7 +475,7 @@ function CustomerDashboard({
                       )}
                       <span className="truncate text-foreground/90">{job.prompt}</span>
                     </div>
-                    <span className={\`shrink-0 rounded-full px-2 py-0.5 text-[10px] \${meta.className}\`}>{meta.label}</span>
+                    <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] ${meta.className}`}>{meta.label}</span>
                   </div>
                   <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-[10px] text-muted-foreground">
                     <span>{job.params?.duration ?? "-"}s · {job.params?.quality ?? "-"} · ₺{Number(job.cost_try ?? 0).toFixed(2)} · {new Date(job.created_at).toLocaleDateString("tr-TR")}</span>
