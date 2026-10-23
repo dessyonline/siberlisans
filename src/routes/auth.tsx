@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Gift, MailCheck, Send, Info, ShieldCheck, Sparkles } from "lucide-react";
+import { Terminal, Gift, MailCheck, Send, Info } from "lucide-react";
 import { MfaChallenge } from "@/components/security/MfaChallenge";
 import { MIN_PASSWORD_LENGTH, passwordConfirmationError, passwordError } from "@/lib/password-policy";
 
@@ -237,53 +237,29 @@ function AuthPage() {
   };
 
   return (
-    <div className="auth-page-shell">
-      <div className="auth-page-grid">
-        <section className="auth-brand-panel">
-          <div className="auth-brand-top">
-            <div className="auth-brand-logo"><ShieldCheck className="h-5 w-5" /></div>
-            <span>SiberLisans</span>
-          </div>
-          <div className="auth-brand-copy">
-            <p className="auth-kicker">GÜVENLİ ERİŞİM</p>
-            <h1>Hesabını yönet.<br /><em>Lisanslarını koru.</em></h1>
-            <p>Satın aldığın lisanslara, bakiyene ve destek merkezine tek güvenli noktadan ulaş.</p>
-          </div>
-          <div className="auth-hero-art" aria-hidden="true">
-            <div className="auth-art-glow" />
-            <div className="auth-art-orbit auth-art-orbit-one" />
-            <div className="auth-art-orbit auth-art-orbit-two" />
-            <div className="auth-art-shield">
-              <ShieldCheck className="h-20 w-20" strokeWidth={1.4} />
-              <span>protected</span>
-            </div>
-            <Sparkles className="auth-art-spark auth-art-spark-one" />
-            <Sparkles className="auth-art-spark auth-art-spark-two" />
-            <div className="auth-art-dot auth-art-dot-one" />
-            <div className="auth-art-dot auth-art-dot-two" />
-          </div>
-          <div className="auth-brand-foot">
-            <span><span className="auth-status-dot" /> 7/24 güvenli destek</span>
-            <span>v.2026</span>
-          </div>
-        </section>
-
-        <section className="auth-form-card">
-          <div className="auth-mobile-brand">
-            <div className="auth-brand-logo"><ShieldCheck className="h-4 w-4" /></div>
-            <span>SiberLisans</span>
-          </div>
-
-          {!mfaMode && !signupSent ? (
-            <div className="auth-form-head">
-              <p className="auth-kicker">HESABIN VAR MI?</p>
-              <h2>Hoş geldin.</h2>
-              <p>Giriş yap veya birkaç saniyede hesabını oluştur.</p>
-            </div>
-          ) : null}
+    <div className="mx-auto max-w-md px-4 py-16">
+      <div className="glass-card rounded-lg p-6 sm:p-8">
+        <div className="flex items-center gap-2 font-mono text-sm text-muted-foreground">
+          <Terminal className="h-4 w-4 text-primary" />
+          $ ./auth --secure
+        </div>
+        <div className="auth-yeti" aria-hidden="true">
+          <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="60" cy="60" r="55" fill="currentColor" opacity="0.12" />
+            <path d="M28 94C31 77 41 69 60 69C79 69 89 77 92 94" fill="white" stroke="currentColor" strokeWidth="3" />
+            <path d="M37 57C35 42 44 25 60 25C76 25 85 42 83 57C81 72 72 81 60 81C48 81 39 72 37 57Z" fill="white" stroke="currentColor" strokeWidth="3" />
+            <path d="M42 37L48 25L53 34L60 22L66 34L73 25L78 38" fill="white" stroke="currentColor" strokeWidth="3" strokeLinejoin="round" />
+            <path d="M34 51C28 48 26 54 31 58M86 51C92 48 94 54 89 58" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            <circle cx="50" cy="53" r="3" fill="currentColor" />
+            <circle cx="70" cy="53" r="3" fill="currentColor" />
+            <path d="M53 64C57 68 63 68 67 64" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            <path d="M45 87C51 91 69 91 75 87" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.35" />
+          </svg>
+        </div>
+        <h1 className="mt-2 font-mono text-2xl neon-text">Hesabına Giriş</h1>
 
         {mfaMode ? (
-          <div className="auth-flow-panel">
+          <div className="mt-6">
             <MfaChallenge
               title="iki adımlı doğrulama"
               onCancel={async () => {
@@ -301,13 +277,13 @@ function AuthPage() {
                 await ctxSignOut();
                 setMfaMode(false);
               }}
-              className="auth-forgot-link mt-3"
+              className="mt-3 font-mono text-[10px] text-muted-foreground hover:text-primary"
             >
               ← farklı hesapla giriş yap
             </button>
           </div>
         ) : signupSent ? (
-          <div className="auth-flow-panel space-y-3">
+          <div className="mt-6 space-y-3 rounded-md border border-primary/40 bg-primary/5 p-4 font-mono text-sm">
             <div className="flex items-center gap-2 text-primary">
               <MailCheck className="h-4 w-4" /> doğrulama e-postası gönderildi
             </div>
@@ -324,12 +300,12 @@ function AuthPage() {
               inputMode="numeric"
               autoComplete="one-time-code"
               placeholder="123456"
-              className="auth-input auth-code-input text-center tracking-[0.5em]"
+              className="font-mono text-center tracking-[0.5em]"
             />
-            <Button disabled={loading} onClick={verifyEmail} className="auth-submit">
+            <Button disabled={loading} onClick={verifyEmail} className="w-full font-mono neon-glow">
               {"> "}kodu doğrula
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setSignupSent(null)} className="auth-secondary-button">
+            <Button variant="outline" size="sm" onClick={() => setSignupSent(null)} className="font-mono">
               &lt; geri dön
             </Button>
           </div>
@@ -338,7 +314,7 @@ function AuthPage() {
             <Button
               asChild
               variant="outline"
-              className="auth-social-button"
+              className="mt-6 w-full font-mono border-primary/30 hover:bg-primary/10"
             >
               <a href="https://siberlisans.com/api/public/auth/google/start">
                 <GoogleIcon /> <span className="ml-2">google ile devam et</span>
@@ -347,26 +323,26 @@ function AuthPage() {
             <Button
               asChild
               variant="outline"
-              className="auth-social-button auth-social-button-secondary"
+              className="mt-2 w-full font-mono border-primary/30 hover:bg-primary/10"
             >
               <a href="https://siberlisans.com/api/public/auth/apple/start">
                 <AppleIcon /> <span className="ml-2">apple ile devam et</span>
               </a>
             </Button>
-            <div className="auth-divider">
-              <span className="auth-divider-line" />
+            <div className="my-4 flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
+              <span className="h-px flex-1 bg-border/60" />
               <span>veya e-posta ile</span>
-              <span className="auth-divider-line" />
+              <span className="h-px flex-1 bg-border/60" />
             </div>
 
             <Tabs defaultValue="signin">
-              <TabsList className="auth-tabs">
-                <TabsTrigger value="signin" className="auth-tab-trigger">giriş yap</TabsTrigger>
-                <TabsTrigger value="signup" className="auth-tab-trigger">kayıt ol</TabsTrigger>
+              <TabsList className="w-full font-mono">
+                <TabsTrigger value="signin" className="flex-1">giriş</TabsTrigger>
+                <TabsTrigger value="signup" className="flex-1">kayıt</TabsTrigger>
               </TabsList>
-              <TabsContent value="signin" className="auth-tab-content">
+              <TabsContent value="signin" className="space-y-4 mt-4">
                 <form
-                  className="auth-form-stack"
+                  className="space-y-4"
                   onSubmit={(event) => {
                     event.preventDefault();
                     void signIn();
@@ -374,7 +350,7 @@ function AuthPage() {
                 >
                   <Field id="signin-email" label="e-posta" value={email} onChange={setEmail} type="email" autoComplete="email" />
                   <Field id="signin-password" label="şifre" value={password} onChange={setPassword} type="password" autoComplete="current-password" />
-                  <Button type="submit" disabled={loading} className="auth-submit">
+                  <Button type="submit" disabled={loading} className="w-full font-mono neon-glow">
                     {loading ? "… giriş yapılıyor" : "> giriş yap"}
                   </Button>
                 </form>
@@ -382,20 +358,20 @@ function AuthPage() {
                   type="button"
                   onClick={forgotPassword}
                   disabled={loading}
-                  className="auth-forgot-link"
+                  className="w-full text-center font-mono text-[11px] text-muted-foreground hover:text-primary"
                 >
                   şifremi unuttum / ilk şifremi belirle
                 </button>
                 {resetInfo ? (
-                  <div className="auth-inline-message p-3 text-[11px] leading-relaxed">
+                  <div className="rounded-md border border-primary/40 bg-primary/5 p-3 font-mono text-[11px] leading-relaxed">
                     <div className="text-muted-foreground">{resetInfo.message}</div>
                   </div>
                 ) : null}
               </TabsContent>
 
-              <TabsContent value="signup" className="auth-tab-content auth-form-stack">
+              <TabsContent value="signup" className="space-y-4 mt-4">
                 {refCode ? (
-                  <div className="auth-inline-message flex items-center gap-2 p-2.5 text-xs">
+                  <div className="flex items-center gap-2 rounded-md border border-primary/40 bg-primary/5 p-2.5 text-xs font-mono text-primary">
                     <Gift className="h-4 w-4 shrink-0" />
                     <span>
                       Davet kodu: <span className="font-bold">{refCode}</span> · 300₺+ ilk siparişinde ikinize de ₺10 bakiye
@@ -408,7 +384,7 @@ function AuthPage() {
                 <Field id="signup-confirm-password" label="şifre (tekrar)" value={confirmPassword} onChange={setConfirmPassword} type="password" autoComplete="new-password" />
                 
                 <div className="space-y-1.5">
-                  <Label className="auth-label flex items-center justify-between">
+                  <Label className="font-mono text-xs text-muted-foreground flex items-center justify-between">
                     <span className="flex items-center gap-1.5">
                       <Send className="h-3 w-3 text-primary" /> telegram adresi
                     </span>
@@ -418,11 +394,11 @@ function AuthPage() {
                     value={telegram}
                     onChange={(e) => setTelegram(e.target.value)}
                     placeholder="@kullaniciadi veya 'yok'"
-                    className="auth-input"
+                    className="font-mono"
                   />
-                  <div className="auth-support-note flex items-start gap-1.5 border p-2">
+                  <div className="flex items-start gap-1.5 rounded bg-primary/5 p-2 border border-primary/20">
                     <Info className="h-3 w-3 text-primary shrink-0 mt-0.5" />
-                    <p className="text-[10px] text-muted-foreground leading-tight">
+                    <p className="font-mono text-[9px] text-muted-foreground leading-tight">
                       Sipariş teslimatları, şifre sıfırlama, lisans yenileme ve destek mesajları anında Telegram'dan gelir.
                       Bu yüzden <span className="text-primary font-bold">şiddetle tavsiye ediyoruz!</span> 
                       Kullanmıyorsanız <span className="text-primary mx-1">'yok'</span> yazabilirsiniz.
@@ -431,7 +407,7 @@ function AuthPage() {
                 </div>
                 {!urlRef && (
                   <div className="space-y-1.5">
-                    <Label className="auth-label flex items-center gap-1.5">
+                    <Label className="font-mono text-xs text-muted-foreground flex items-center gap-1.5">
                       <Gift className="h-3 w-3 text-primary" />
                       davet kodu <span className="text-muted-foreground/60">(opsiyonel)</span>
                     </Label>
@@ -440,14 +416,14 @@ function AuthPage() {
                       onChange={(e) => setManualRef(e.target.value.toUpperCase())}
                       placeholder="örn: SIBER123"
                       maxLength={20}
-                      className="auth-input uppercase tracking-wider"
+                      className="font-mono uppercase tracking-wider"
                     />
                   </div>
                 )}
 
                 {/* CAPTCHA */}
                 <div className="space-y-1.5">
-                  <Label className="auth-label">güvenlik doğrulaması</Label>
+                  <Label className="font-mono text-xs text-muted-foreground">güvenlik doğrulaması</Label>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 rounded-md border border-border/60 bg-background/50 px-3 py-2 font-mono text-sm">
                       <span className="text-muted-foreground">$</span>{" "}
@@ -459,32 +435,31 @@ function AuthPage() {
                       inputMode="numeric"
                       value={captchaInput}
                       onChange={(e) => setCaptchaInput(e.target.value)}
-                      className="auth-input w-20 text-center"
+                      className="w-20 font-mono text-center"
                       placeholder="?"
                     />
                     <button
                       type="button"
                       onClick={() => { setCaptcha(newCaptcha()); setCaptchaInput(""); }}
-                      className="auth-forgot-link"
+                      className="font-mono text-[10px] text-muted-foreground hover:text-primary"
                     >
                       yenile
                     </button>
                   </div>
                 </div>
 
-                <div className="auth-inline-message p-2 text-[10px] leading-relaxed">
+                <div className="rounded-md border border-border/40 bg-background/30 p-2 font-mono text-[10px] text-muted-foreground leading-relaxed">
                   · doğrulama linki e-postana gönderilir<br />
                   · geçici / disposable mailler kabul edilmez
                 </div>
 
-                <Button disabled={loading} onClick={signUp} className="auth-submit">
+                <Button disabled={loading} onClick={signUp} className="w-full font-mono neon-glow">
                   {"> "}hesap oluştur
                 </Button>
               </TabsContent>
             </Tabs>
           </>
         )}
-        </section>
       </div>
     </div>
   );
@@ -508,13 +483,13 @@ function Field({
   const inputId = id ?? `auth-${label.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}`;
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={inputId} className="auth-label">{label}</Label>
+      <Label htmlFor={inputId} className="font-mono text-xs text-muted-foreground">{label}</Label>
       <Input
         id={inputId}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="auth-input"
+        className="font-mono"
         autoComplete={autoComplete}
       />
     </div>
