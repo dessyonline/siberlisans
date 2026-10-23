@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAuth } from "./auth-middleware.server";
-import { mysqlQuery, mysqlOne, num } from "./mysql.server";
+import { mysqlQuery, mysqlOne, mysqlExec, num } from "./mysql.server";
 
 export type ToolKey = "chat" | "translate" | "code" | "summary" | "slogan";
 export const TOOL_KEYS: ToolKey[] = ["chat", "translate", "code", "summary", "slogan"];
@@ -32,37 +32,56 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const cost = PRICES[data.quality]?.[data.duration];
+    // Fiyat her zaman sunucuda, kullanıcının seviyesine göre hesaplanır (istemciye güvenilmez).
+    const cost = await priceFor(context.userId, data.quality, data.duration);
     if (!cost) throw new Error("Fiyat bulunamadı.");
 
+    // Kötüye kullanım koruması: aynı anda en fazla 2 aktif iş, saatte en fazla 10 iş.
+    const active = await mysqlOne<{ c: string | number }>(
+      "SELECT COUNT(*) AS c FROM ai_jobs WHERE user_id=? AND kind='video' AND status IN ('queued','processing')",
+      [context.userId],
+    );
+    if ((num(active?.c) ?? 0) >= MAX_ACTIVE_JOBS)
+      throw new Error("Aynı anda en fazla 2 video oluşturabilirsin. Mevcut videoların bitmesini bekle.");
+    const hourly = await mysqlOne<{ c: string | number }>(
+      "SELECT COUNT(*) AS c FROM ai_jobs WHERE user_id=? AND kind='video' AND created_at > ?",
+      [context.userId, ts(new Date(Date.now() - 60 * 60 * 1000))],
+    );
+    if ((num(hourly?.c) ?? 0) >= MAX_JOBS_PER_HOUR)
+      throw new Error("Saatlik video sınırına ulaştın. Biraz sonra tekrar dene.");
+
+    // Abonelik kredisi: koşullu (atomik) düşüm — eşzamanlı isteklerde eksiye düşmez.
     let fromSub = 0;
     const sub = await mysqlOne<{ id: string; credits_remaining: string | number }>(
       "SELECT id,credits_remaining FROM ai_subscriptions WHERE user_id=? AND status='active' AND expires_at > NOW() ORDER BY expires_at DESC LIMIT 1",
       [context.userId],
     );
-    if (sub) {
-      const remaining = num(sub.credits_remaining) ?? 0;
-      if (remaining > 0) {
-        fromSub = Math.min(cost, remaining);
-        await mysqlQuery("UPDATE ai_subscriptions SET credits_remaining=credits_remaining-? WHERE id=?", [
-          fromSub,
-          sub.id,
-        ]);
-      }
+    const remaining = num(sub?.credits_remaining) ?? 0;
+    if (sub && remaining > 0) {
+      const take = Math.min(cost, remaining);
+      const n = await mysqlExec(
+        "UPDATE ai_subscriptions SET credits_remaining=credits_remaining-? WHERE id=? AND credits_remaining >= ?",
+        [take, sub.id, take],
+      );
+      if (n === 1) fromSub = take;
     }
+
+    // Cüzdan: yalnızca bakiye yeterliyse düşen tek koşullu UPDATE.
     const fromWallet = cost - fromSub;
     if (fromWallet > 0) {
-      const wallet = await mysqlOne<{ balance_try: string | number | null }>(
-        "SELECT balance_try FROM wallets WHERE user_id=?",
-        [context.userId],
+      const n = await mysqlExec(
+        "UPDATE wallets SET balance_try=balance_try-?, updated_at=? WHERE user_id=? AND balance_try >= ?",
+        [fromWallet, ts(), context.userId, fromWallet],
       );
-      const balance = num(wallet?.balance_try) ?? 0;
-      if (balance < fromWallet) throw new Error("Yetersiz bakiye.");
-      await mysqlQuery(
-        `INSERT INTO wallets (user_id,balance_try,updated_at) VALUES (?,?,?)
-         ON DUPLICATE KEY UPDATE balance_try=balance_try-VALUES(balance_try), updated_at=VALUES(updated_at)`,
-        [context.userId, fromWallet, ts()],
-      );
+      if (n !== 1) {
+        if (fromSub > 0) {
+          await mysqlExec("UPDATE ai_subscriptions SET credits_remaining=credits_remaining+? WHERE id=?", [
+            fromSub,
+            sub!.id,
+          ]);
+        }
+        throw new Error("Yetersiz bakiye.");
+      }
       const w2 = await mysqlOne<{ balance_try: string | number | null }>(
         "SELECT balance_try FROM wallets WHERE user_id=?",
         [context.userId],
@@ -82,23 +101,41 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
         context.userId,
         "video",
         data.prompt,
-        JSON.stringify({ duration: data.duration, aspect: data.aspect, quality: data.quality, from_sub: fromSub, from_wallet: fromWallet }),
+        JSON.stringify({
+          duration: data.duration,
+          aspect: data.aspect,
+          quality: data.quality,
+          from_sub: fromSub,
+          from_wallet: fromWallet,
+          sub_id: fromSub > 0 ? sub!.id : null,
+        }),
         cost,
         ts(),
         ts(),
         ts(),
       ],
     );
-    return { jobId };
+    return { jobId, cost };
   });
+
+const MAX_ACTIVE_JOBS = 2;
+const MAX_JOBS_PER_HOUR = 10;
+
+async function tierDiscount(userId: string) {
+  const profile = await mysqlOne<{ tier: string | null }>("SELECT tier FROM profiles WHERE id=?", [userId]);
+  return ["gold", "platinum"].includes((profile?.tier ?? "").toLowerCase()) ? 0.8 : 1;
+}
+
+async function priceFor(userId: string, quality: string, duration: number) {
+  const base = PRICES[quality]?.[duration];
+  if (!base) return null;
+  return Math.round(base * (await tierDiscount(userId)));
+}
 
 export const getAiVideoPrices = createServerFn({ method: "GET" })
   .middleware([requireAuth])
   .handler(async ({ context }) => {
-    const profile = await mysqlOne<{ tier: string | null }>("SELECT tier FROM profiles WHERE id=?", [
-      context.userId,
-    ]);
-    const discount = ["gold", "platinum"].includes((profile?.tier ?? "").toLowerCase()) ? 0.8 : 1;
+    const discount = await tierDiscount(context.userId);
     const map: Record<string, Record<number, number>> = {};
     for (const [quality, byDuration] of Object.entries(PRICES)) {
       map[quality] = {};
