@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Terminal, Gift, MailCheck, Send, Info } from "lucide-react";
 import { MfaChallenge } from "@/components/security/MfaChallenge";
+import { MIN_PASSWORD_LENGTH, passwordError } from "@/lib/password-policy";
 
 const authSearch = z.object({
   ref: z.string().max(20).optional(),
@@ -89,7 +90,7 @@ function AuthPage() {
   const doSignUp = useServerFn(signUpFn);
   const doVerifyEmail = useServerFn(verifyEmailCodeFn);
   const doReset = useServerFn(requestPasswordResetFn);
-  const [resetInfo, setResetInfo] = useState<{ message: string; link: string | null } | null>(null);
+  const [resetInfo, setResetInfo] = useState<{ message: string } | null>(null);
 
   const search = useSearch({ from: "/auth" });
   const [loading, setLoading] = useState(false);
@@ -135,6 +136,8 @@ function AuthPage() {
   const emailValid = useMemo(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()), [email]);
 
   const signIn = async () => {
+    if (!emailValid) return toast.error("[!] geçerli bir e-posta gir");
+    if (!password) return toast.error("[!] şifreni gir");
     setLoading(true);
     try {
       const res = await doSignIn({ data: { email: email.trim(), password } });
@@ -173,7 +176,7 @@ function AuthPage() {
     setLoading(true);
     try {
       const res = await doReset({ data: { email: em } });
-      setResetInfo({ message: res.message, link: res.link ?? null });
+      setResetInfo({ message: res.message });
       if (!res.ok) return toast.error(res.message);
       toast.success("[✓] talebin alındı");
     } catch {
@@ -192,7 +195,8 @@ function AuthPage() {
     if (isDisposableEmail(em)) {
       return toast.error("[!] geçici mailler veya alias (kullanici+spam@...) kabul edilmiyor");
     }
-    if (password.length < 6) return toast.error("[!] şifre en az 6 karakter olmalı");
+    const passwordProblem = passwordError(password);
+    if (passwordProblem) return toast.error(`[!] ${passwordProblem}`);
     if (!telegram.trim()) return toast.error("[!] telegram adresi zorunludur (yoksa 'yok' yazın)");
     if (parseInt(captchaInput, 10) !== captcha.answer) {
       setCaptcha(newCaptcha());
@@ -319,11 +323,19 @@ function AuthPage() {
                 <TabsTrigger value="signup" className="flex-1">kayıt</TabsTrigger>
               </TabsList>
               <TabsContent value="signin" className="space-y-4 mt-4">
-                <Field label="e-posta" value={email} onChange={setEmail} type="email" autoComplete="email" />
-                <Field label="şifre" value={password} onChange={setPassword} type="password" autoComplete="current-password" />
-                <Button disabled={loading} onClick={signIn} className="w-full font-mono neon-glow">
-                  {"> "}giriş yap
-                </Button>
+                <form
+                  className="space-y-4"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    void signIn();
+                  }}
+                >
+                  <Field id="signin-email" label="e-posta" value={email} onChange={setEmail} type="email" autoComplete="email" />
+                  <Field id="signin-password" label="şifre" value={password} onChange={setPassword} type="password" autoComplete="current-password" />
+                  <Button type="submit" disabled={loading} className="w-full font-mono neon-glow">
+                    {loading ? "… giriş yapılıyor" : "> giriş yap"}
+                  </Button>
+                </form>
                 <button
                   type="button"
                   onClick={forgotPassword}
@@ -333,16 +345,8 @@ function AuthPage() {
                   şifremi unuttum / ilk şifremi belirle
                 </button>
                 {resetInfo ? (
-                  <div className="space-y-2 rounded-md border border-primary/40 bg-primary/5 p-3 font-mono text-[11px] leading-relaxed">
+                  <div className="rounded-md border border-primary/40 bg-primary/5 p-3 font-mono text-[11px] leading-relaxed">
                     <div className="text-muted-foreground">{resetInfo.message}</div>
-                    {resetInfo.link ? (
-                      <a
-                        href={resetInfo.link}
-                        className="block break-all text-primary underline"
-                      >
-                        {"> "}şifre belirleme sayfasına git
-                      </a>
-                    ) : null}
                   </div>
                 ) : null}
               </TabsContent>
@@ -356,9 +360,9 @@ function AuthPage() {
                     </span>
                   </div>
                 ) : null}
-                <Field label="görünen ad" value={displayName} onChange={setDisplayName} />
-                <Field label="e-posta" value={email} onChange={setEmail} type="email" autoComplete="email" />
-                <Field label="şifre (min 6)" value={password} onChange={setPassword} type="password" autoComplete="new-password" />
+                <Field id="signup-name" label="görünen ad" value={displayName} onChange={setDisplayName} />
+                <Field id="signup-email" label="e-posta" value={email} onChange={setEmail} type="email" autoComplete="email" />
+                <Field id="signup-password" label={`şifre (min ${MIN_PASSWORD_LENGTH})`} value={password} onChange={setPassword} type="password" autoComplete="new-password" />
                 
                 <div className="space-y-1.5">
                   <Label className="font-mono text-xs text-muted-foreground flex items-center justify-between">
@@ -443,22 +447,26 @@ function AuthPage() {
 }
 
 function Field({
+  id,
   label,
   value,
   onChange,
   type = "text",
   autoComplete,
 }: {
+  id?: string;
   label: string;
   value: string;
   onChange: (v: string) => void;
   type?: string;
   autoComplete?: string;
 }) {
+  const inputId = id ?? `auth-${label.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}`;
   return (
     <div className="space-y-1.5">
-      <Label className="font-mono text-xs text-muted-foreground">{label}</Label>
+      <Label htmlFor={inputId} className="font-mono text-xs text-muted-foreground">{label}</Label>
       <Input
+        id={inputId}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}

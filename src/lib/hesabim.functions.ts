@@ -3,6 +3,7 @@ import { z } from "zod";
 import { getCookie } from "@tanstack/react-start/server";
 import { requireAuth } from "@/lib/auth-middleware.server";
 import { mysqlQuery, mysqlOne, num } from "@/lib/mysql.server";
+import { passwordError } from "@/lib/password-policy";
 
 export type MyOrderProductRef = { name: string; slug: string; delivery_type: string } | null;
 
@@ -166,13 +167,15 @@ export const updateMyTelegramHandle = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-const passwordInput = z.object({ password: z.string().min(6).max(200) });
+const passwordInput = z.object({ password: z.string().min(1).max(200) });
 
 /** Şifre değiştirme. Kullanıcının doğrulanmış 2FA'sı varsa bu oturum aal2 olmalı. */
 export const changeMyPassword = createServerFn({ method: "POST" })
   .middleware([requireAuth])
   .inputValidator((d: unknown) => passwordInput.parse(d))
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
+    const passwordProblem = passwordError(data.password);
+    if (passwordProblem) throw new Error(passwordProblem);
     const { getMfaRow } = await import("@/lib/totp.server");
     const { SESSION_COOKIE, hashPassword } = await import("@/lib/auth.server");
     const mfaRow = await getMfaRow(context.userId);

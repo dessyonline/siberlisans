@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Terminal, KeyRound } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { MIN_PASSWORD_LENGTH, passwordError } from "@/lib/password-policy";
 
 export const Route = createFileRoute("/sifre-belirle")({
   component: SetPasswordPage,
@@ -36,7 +37,8 @@ function SetPasswordPage() {
 
   const save = async () => {
     if (!token) return toast.error("[!] geçersiz bağlantı");
-    if (password.length < 6) return toast.error("[!] şifre en az 6 karakter olmalı");
+    const passwordProblem = passwordError(password);
+    if (passwordProblem) return toast.error(`[!] ${passwordProblem}`);
     if (password !== again) return toast.error("[!] şifreler eşleşmiyor");
     setLoading(true);
     try {
@@ -64,7 +66,7 @@ function SetPasswordPage() {
         <div className="mt-6 space-y-4">
           <div className="space-y-2">
             <Label htmlFor="pw" className="font-mono text-xs">
-              yeni şifre
+              yeni şifre (min {MIN_PASSWORD_LENGTH} karakter)
             </Label>
             <Input
               id="pw"
@@ -72,11 +74,12 @@ function SetPasswordPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="font-mono"
+              autoComplete="new-password"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="pw2" className="font-mono text-xs">
-              yeni şifre (tekrar)
+              yeni şifre (tekrar — min {MIN_PASSWORD_LENGTH} karakter)
             </Label>
             <Input
               id="pw2"
@@ -84,6 +87,7 @@ function SetPasswordPage() {
               value={again}
               onChange={(e) => setAgain(e.target.value)}
               className="font-mono"
+              autoComplete="new-password"
             />
           </div>
           <Button onClick={save} disabled={loading} className="w-full font-mono neon-glow">

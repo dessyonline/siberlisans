@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { MIN_PASSWORD_LENGTH, passwordError } from "@/lib/password-policy";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -921,7 +922,8 @@ function ProfileTab({ userId, email, telegramHandle, onSignOut }: { userId: stri
   };
 
   const changePw = async () => {
-    if (pw.length < 6) return toast.error("[!] şifre en az 6 karakter olmalı");
+    const passwordProblem = passwordError(pw);
+    if (passwordProblem) return toast.error(`[!] ${passwordProblem}`);
     if (pw !== pw2) return toast.error("[!] şifreler eşleşmiyor");
     setSaving(true);
     try {
@@ -1080,7 +1082,7 @@ function ProfileTab({ userId, email, telegramHandle, onSignOut }: { userId: stri
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
           <Input
             type="password"
-            placeholder="yeni şifre"
+            placeholder={`yeni şifre (min ${MIN_PASSWORD_LENGTH} karakter)`}
             value={pw}
             onChange={(e) => setPw(e.target.value)}
             className="font-mono text-sm"

@@ -1,10 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestIP, setCookie } from "@tanstack/react-start/server";
 import { z } from "zod";
+import { passwordError } from "./password-policy";
 
 const schema = z.object({
   token: z.string().regex(/^[a-f0-9]{32,64}$/),
-  password: z.string().min(6).max(200),
+  password: z.string().min(1).max(200),
 });
 
 const requestSchema = z.object({ email: z.string().email() });
@@ -24,7 +25,7 @@ function mysqlDate(d: Date) {
 /** Şifre belirleme / sıfırlama talebi. Bağlantı yalnızca kayıtlı e-postaya gider. */
 export const requestPasswordReset = createServerFn({ method: "POST" })
   .validator((d: unknown) => requestSchema.parse(d))
-  .handler(async ({ data }): Promise<{ ok: boolean; link?: string; message: string }> => {
+  .handler(async ({ data }): Promise<{ ok: boolean; message: string }> => {
     const { mysqlQuery, mysqlOne } = await import("./mysql.server");
     const { sendPasswordResetEmail } = await import("./gmail.server");
 
@@ -79,6 +80,8 @@ export const requestPasswordReset = createServerFn({ method: "POST" })
 export const setPasswordWithToken = createServerFn({ method: "POST" })
   .validator((d: unknown) => schema.parse(d))
   .handler(async ({ data }): Promise<{ ok: boolean; signedIn?: boolean; error?: string }> => {
+    const passwordProblem = passwordError(data.password);
+    if (passwordProblem) return { ok: false, error: passwordProblem };
     const { resetPasswordAtomically } = await import("./password-reset.server");
     const { createSession, hashPassword, SESSION_COOKIE } = await import("./auth.server");
     const { mysqlOne } = await import("./mysql.server");
