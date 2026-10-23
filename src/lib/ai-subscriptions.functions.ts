@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAuth } from "./auth-middleware.server";
-import { mysqlQuery, mysqlOne, num } from "./mysql.server";
+import { mysqlQuery, mysqlOne, mysqlExec, num } from "./mysql.server";
 
 function ts(d: Date = new Date()) {
   return d.toISOString().slice(0, 19).replace("T", " ");
@@ -172,11 +172,11 @@ export const purchaseAiSubscription = createServerFn({ method: "POST" })
     const balance = num(wallet?.balance_try) ?? 0;
     if (balance < price) throw new Error("Yetersiz bakiye.");
 
-    await mysqlQuery(
-      `INSERT INTO wallets (user_id,balance_try,updated_at) VALUES (?,?,?)
-       ON DUPLICATE KEY UPDATE balance_try=balance_try-VALUES(balance_try), updated_at=VALUES(updated_at)`,
-      [context.userId, price, ts()],
+    const debit = await mysqlExec(
+      "UPDATE wallets SET balance_try=balance_try-?, updated_at=? WHERE user_id=? AND balance_try>=?",
+      [price, ts(), context.userId, price],
     );
+    if (debit !== 1) throw new Error("Yetersiz bakiye.");
     const w2 = await mysqlOne<{ balance_try: string | number | null }>(
       "SELECT balance_try FROM wallets WHERE user_id=?",
       [context.userId],

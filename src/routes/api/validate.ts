@@ -6,6 +6,7 @@ import {
   signPayload,
   clientIp,
 } from "@/lib/license-api.server";
+import { guardReplayMysql } from "@/lib/license-mysql.server";
 import { mysqlQuery, mysqlOne } from "@/lib/mysql.server";
 
 function ts(d: Date = new Date()) {
@@ -13,31 +14,6 @@ function ts(d: Date = new Date()) {
 }
 function uid() {
   return crypto.randomUUID();
-}
-
-const REPLAY_WINDOW_MS = 5 * 60 * 1000;
-
-async function guardReplayMysql(license_key: string, tsVal: unknown, nonce: unknown): Promise<Response | null> {
-  const tsNum = Number(tsVal);
-  if (!Number.isFinite(tsNum) || Math.abs(Date.now() - tsNum) > REPLAY_WINDOW_MS) {
-    return json({ valid: false, error: "Geçersiz istek." }, 400);
-  }
-  const n = (nonce ?? "").toString().trim();
-  if (!n || n.length < 6 || n.length > 128) {
-    return json({ valid: false, error: "Geçersiz istek." }, 400);
-  }
-  const dup = await mysqlOne<{ id: string }>("SELECT id FROM license_nonces WHERE nonce=?", [n]);
-  if (dup) {
-    return json({ valid: false, error: "Geçersiz istek." }, 409);
-  }
-  try {
-    await mysqlQuery("INSERT INTO license_nonces (id,nonce,license_key,created_at) VALUES (?,?,?,?)", [
-      uid(), n, license_key, ts(),
-    ]);
-  } catch (e) {
-    console.error("[license-api] nonce insert failed", (e as Error).message);
-  }
-  return null;
 }
 
 async function logEventMysql(entry: {

@@ -1,6 +1,6 @@
 // Bearer ADMIN_TOKEN korumalı: yeni lisans anahtarı üretir.
 import { createFileRoute } from "@tanstack/react-router";
-import { CORS, json, clientIp } from "@/lib/license-api.server";
+import { CORS, json, clientIp, isAuthorizedAdminRequest } from "@/lib/license-api.server";
 import { mysqlOne, mysqlQuery } from "@/lib/mysql.server";
 import { logEventMysql } from "@/lib/license-mysql-log.server";
 
@@ -13,12 +13,7 @@ export const Route = createFileRoute("/api/admin/create")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       POST: async ({ request }) => {
-        const expected = process.env.LICENSE_ADMIN_TOKEN;
-        const auth = request.headers.get("authorization") ?? "";
-        const token = auth.toLowerCase().startsWith("bearer ")
-          ? auth.slice(7).trim()
-          : "";
-        if (!expected || !token || token !== expected) {
+        if (!isAuthorizedAdminRequest(request)) {
           return json({ success: false, error: "Yetkisiz." }, 401);
         }
 

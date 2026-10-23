@@ -172,7 +172,7 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
   .middleware([requireAuth])
   .validator((d: unknown) => orderIdInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { mysqlQuery, mysqlOne, num, bool } = await import("./mysql.server");
+    const { mysqlQuery, mysqlOne, mysqlExec, num, bool } = await import("./mysql.server");
     const userId = context.userId;
     const fail = (error: string) => ({
       ok: false as const,
@@ -233,20 +233,16 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
     if (balance < price) return fail("Bakiyeniz yetersiz. Lütfen önce bakiye yükleyin.");
 
     // Bakiyeyi koşullu düş: aynı anda iki ödeme olursa ikincisi 0 satır günceller.
-    const debit = await mysqlQuery<Record<string, unknown>>(
+    const debit = await mysqlExec(
       "UPDATE wallets SET balance_try = balance_try - ?, updated_at=? WHERE user_id=? AND balance_try >= ?",
       [price, ts(), userId, price],
     );
-    void debit;
+    if (debit !== 1) return fail("Ödeme işlenemedi, lütfen tekrar deneyin.");
     const after = await mysqlOne<{ balance_try: unknown }>(
       "SELECT balance_try FROM wallets WHERE user_id=? LIMIT 1",
       [userId],
     );
     const balanceAfter = num(after?.balance_try) ?? 0;
-    if (balanceAfter > balance - price + 0.001 && balanceAfter >= balance) {
-      return fail("Ödeme işlenemedi, lütfen tekrar deneyin.");
-    }
-
     // Anahtarı koşullu ata (başkası kapmışsa 0 satır).
     let assignedKey: string | null = null;
     let activationToken: string | null = null;
@@ -277,10 +273,18 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
       activationToken = token;
     }
 
-    await mysqlQuery(
-      "UPDATE orders SET status='approved', paid_with='wallet', approved_at=?, updated_at=? WHERE id=?",
-      [ts(), ts(), data.orderId],
+    const approved = await mysqlExec(
+      "UPDATE orders SET status='approved', paid_with='wallet', approved_at=?, updated_at=? WHERE id=? AND user_id=? AND status='pending'",
+      [ts(), ts(), data.orderId, userId],
     );
+    if (approved !== 1) {
+      await mysqlExec("UPDATE wallets SET balance_try = balance_try + ?, updated_at=? WHERE user_id=?", [
+        price,
+        ts(),
+        userId,
+      ]);
+      return fail("Sipariş zaten işleniyor veya tamamlandı.");
+    }
     await mysqlQuery(
       `INSERT INTO wallet_transactions (id,user_id,kind,amount_try,balance_after,order_id,note,created_at)
        VALUES (?,?,?,?,?,?,?,?)`,

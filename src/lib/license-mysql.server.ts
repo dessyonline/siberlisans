@@ -1,6 +1,6 @@
 // Shared MySQL helpers for the license-related public endpoints and hooks.
 // Server-only.
-import { mysqlQuery, mysqlOne, bool } from "@/lib/mysql.server";
+import { mysqlQuery, mysqlOne, mysqlExec, bool } from "@/lib/mysql.server";
 import { json } from "@/lib/license-api.server";
 
 const REPLAY_WINDOW_MS = 5 * 60 * 1000;
@@ -38,19 +38,23 @@ export async function guardReplayMysql(
   if (!n || n.length < 6 || n.length > 128) {
     return json({ success: false, valid: false, error: "Geçersiz istek." }, 400);
   }
-  const dup = await mysqlOne<{ id: string }>("SELECT id FROM license_nonces WHERE nonce=?", [n]);
-  if (dup) {
-    return json({ success: false, valid: false, error: "Geçersiz istek." }, 409);
-  }
   try {
-    await mysqlQuery("INSERT INTO license_nonces (id,nonce,license_key,created_at) VALUES (?,?,?,?)", [
+    const inserted = await mysqlExec("INSERT INTO license_nonces (id,nonce,license_key,created_at) VALUES (?,?,?,?)", [
       uid(),
       n,
       license_key,
       ts(),
     ]);
+    if (inserted !== 1) {
+      return json({ success: false, valid: false, error: "Doğrulama geçici olarak kullanılamıyor." }, 503);
+    }
   } catch (e) {
-    console.error("[license-mysql] nonce insert failed", (e as Error).message);
+    const message = e instanceof Error ? e.message : "unknown";
+    if (/duplicate|unique|primary/i.test(message)) {
+      return json({ success: false, valid: false, error: "Geçersiz istek." }, 409);
+    }
+    console.error("[license-mysql] nonce insert failed", message);
+    return json({ success: false, valid: false, error: "Doğrulama geçici olarak kullanılamıyor." }, 503);
   }
   return null;
 }
