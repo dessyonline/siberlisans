@@ -10,11 +10,11 @@ const FAL_BASE = "https://queue.fal.run";
 
 type Quality = "fast" | "hd" | "cinematic" | "audio" | "audio_premium";
 
-// Model eşlemesi — fal.ai maliyet/kalite dengesi (fiyatlar ai-tools.functions.ts'de).
+// Model eşlemesi — fiyatlar ai-tools.functions.ts ile aynı katmanda tutulur.
 const MODEL_MAP: Record<Quality, string> = {
-  fast: "fal-ai/bytedance/seedance/v1/lite/text-to-video",
-  hd: "fal-ai/bytedance/seedance/v1/pro/fast/text-to-video",
-  cinematic: "fal-ai/bytedance/seedance/v1/pro/text-to-video",
+  fast: "fal-ai/kling-video/v2.5-turbo/pro/text-to-video",
+  hd: "bytedance/seedance-2.0/fast/text-to-video",
+  cinematic: "bytedance/seedance-2.5/text-to-video",
   audio: "fal-ai/veo3.1/fast",
   audio_premium: "fal-ai/veo3.1",
 };
@@ -29,12 +29,20 @@ function buildInput(q: Quality, prompt: string, aspect: string, duration: number
       generate_audio: true,
     };
   }
-  return {
+
+  const clipDuration = duration === 10 ? 10 : 5;
+  const base = {
     prompt,
     aspect_ratio: aspectRatioForFal(aspect),
-    duration: String(duration === 10 ? 10 : 5),
-    resolution: q === "fast" ? "720p" : "1080p",
+    duration: String(clipDuration),
+    resolution: "720p",
   };
+
+  // Kling hızlı katmanda sesi kapalı tutarak maliyeti öngörülebilir tutar.
+  if (q === "fast") return base;
+
+  // Seedance katmanlarında senkron ses üretimi aynı akışta çalışır.
+  return { ...base, generate_audio: true };
 }
 
 function ts(d: Date = new Date()): string {
