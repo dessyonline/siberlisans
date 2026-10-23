@@ -72,11 +72,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const ensureUser = useCallback(async () => {
     if (user) return user;
-    try {
-      return await refresh();
-    } catch {
-      return null;
+    // Geçici servis hatasında "giriş yok" sayıp kullanıcıyı /auth'a atma;
+    // birkaç kez dene, yine olmazsa hata fırlat (yönlendirme yapılmaz).
+    let lastErr: unknown;
+    for (let i = 0; i < 3; i++) {
+      try {
+        return await refresh();
+      } catch (err) {
+        lastErr = err;
+        await new Promise((r) => setTimeout(r, 400 * (i + 1)));
+      }
     }
+    const { toast } = await import("sonner");
+    toast.error("Bağlantı sorunu — oturumunuz açık, lütfen tekrar deneyin.");
+    throw lastErr instanceof Error ? lastErr : new Error("Oturum doğrulanamadı");
   }, [user, refresh]);
 
   const roles = (user?.roles ?? []) as Role[];
