@@ -196,6 +196,7 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
 
     const fromCredits = cost - fromSub;
     const jobId = uid();
+    let reservedCredits = 0;
     try {
       if (fromCredits > 0) {
         const n = await mysqlExec(
@@ -205,6 +206,7 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
         if (n !== 1) {
           throw new Error("Yetersiz kredi.");
         }
+        reservedCredits = fromCredits;
         await mysqlQuery(
           "INSERT INTO ai_credit_transactions (id,user_id,kind,amount,balance_after,job_id,note,created_at) VALUES (?,?,?,?,?,?,?,?)",
           [uid(), context.userId, "spend", -fromCredits, await creditBalance(context.userId), jobId, `video:${data.quality}:${data.duration}s`, ts()],
@@ -239,7 +241,7 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
           context.userId,
           fromSub,
           fromSub > 0 ? sub!.id : null,
-          fromCredits,
+          reservedCredits,
           "video kuyruğa alınamadı — otomatik iade",
         );
       } catch (refundError) {
