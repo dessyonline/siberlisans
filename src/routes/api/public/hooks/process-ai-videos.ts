@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { mysqlQuery, mysqlOne, num } from "@/lib/mysql.server";
+import { mysqlQuery, mysqlOne, mysqlExec, num } from "@/lib/mysql.server";
 import { requireCron } from "@/lib/cron-auth.server";
 
 // Fal.ai queue-based video generation worker.
