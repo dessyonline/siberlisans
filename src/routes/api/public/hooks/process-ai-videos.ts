@@ -91,10 +91,13 @@ async function claimAiJobs(limit: number) {
     "SELECT id, params, prompt FROM ai_jobs WHERE status='queued' AND kind='video' ORDER BY created_at ASC LIMIT ?",
     [limit],
   );
+  const claimed: typeof jobs = [];
   for (const j of jobs) {
-    await mysqlQuery("UPDATE ai_jobs SET status='processing', updated_at=? WHERE id=? AND status='queued'", [ts(), j.id]);
+    // Yalnızca bu çalıştırma gerçekten sahiplendiyse işle (çift gönderim olmasın).
+    const n = await mysqlExec("UPDATE ai_jobs SET status='processing', updated_at=? WHERE id=? AND status='queued'", [ts(), j.id]);
+    if (n === 1) claimed.push(j);
   }
-  return jobs;
+  return claimed;
 }
 
 /** Ports `worker_pending_ai_jobs` RPC to MySQL. */
@@ -131,19 +134,37 @@ async function completeAiJob(jobId: string, url: string) {
 
 /** Ports `worker_fail_ai_job` RPC to MySQL. */
 async function failAiJob(jobId: string, reason: string, refund = true) {
-  const job = await mysqlOne<{ user_id: string; cost_try: string | number }>("SELECT user_id, cost_try FROM ai_jobs WHERE id=?", [jobId]);
+  // Önce durumu koşullu değiştir: iade yalnızca bir kez yapılır.
+  const n = await mysqlExec(
+    "UPDATE ai_jobs SET status=?, error=?, updated_at=? WHERE id=? AND status IN ('queued','processing')",
+    [refund ? "refunded" : "failed", reason, ts(), jobId],
+  );
+  if (n !== 1 || !refund) return;
+  const job = await mysqlOne<{ user_id: string; params: unknown }>("SELECT user_id, params FROM ai_jobs WHERE id=?", [jobId]);
   if (!job) return;
-  if (refund) {
-    const cost = num(job.cost_try) ?? 0;
-    await mysqlQuery("UPDATE wallets SET balance_try = balance_try + ? WHERE user_id=?", [cost, job.user_id]);
-    await mysqlQuery(
-      "INSERT INTO wallet_transactions (id,user_id,direction,amount_try,reason,meta,created_at) VALUES (?,?,?,?,?,?,?)",
-      [uid(), job.user_id, "credit", cost, "ai_video_refund", JSON.stringify({ job: jobId }), ts()],
-    );
-    await mysqlQuery("UPDATE ai_jobs SET status='refunded', error=?, updated_at=? WHERE id=?", [reason, ts(), jobId]);
-  } else {
-    await mysqlQuery("UPDATE ai_jobs SET status='failed', error=?, updated_at=? WHERE id=?", [reason, ts(), jobId]);
+  const p = parseParams(job.params) as { from_wallet?: number; from_sub?: number; sub_id?: string | null };
+  const fromWallet = Number(p.from_wallet ?? 0);
+  const fromSub = Number(p.from_sub ?? 0);
+  if (fromSub > 0 && p.sub_id) {
+    await mysqlExec("UPDATE ai_subscriptions SET credits_remaining=credits_remaining+? WHERE id=?", [fromSub, p.sub_id]);
   }
+  if (fromWallet > 0) {
+    await mysqlExec("UPDATE wallets SET balance_try = balance_try + ?, updated_at=? WHERE user_id=?", [fromWallet, ts(), job.user_id]);
+    const w = await mysqlOne<{ balance_try: unknown }>("SELECT balance_try FROM wallets WHERE user_id=?", [job.user_id]);
+    await mysqlQuery(
+      "INSERT INTO wallet_transactions (id,user_id,kind,amount_try,balance_after,order_id,note,created_at) VALUES (?,?,?,?,?,?,?,?)",
+      [uid(), job.user_id, "refund", fromWallet, num(w?.balance_try) ?? 0, null, `ai_video_refund:${jobId}`, ts()],
+    );
+  }
+}
+
+/** Gönderimi yarıda kalmış (sağlayıcı kimliği yazılamamış) işleri 15 dk sonra iade et. */
+async function failStuckJobs() {
+  const stuck = await mysqlQuery<{ id: string }>(
+    "SELECT id FROM ai_jobs WHERE kind='video' AND status='processing' AND provider_request_id IS NULL AND updated_at < ? LIMIT 20",
+    [ts(new Date(Date.now() - 15 * 60 * 1000))],
+  );
+  for (const j of stuck) await failAiJob(j.id, "stuck_without_provider_request", true);
 }
 
 async function persistToStorage(sourceUrl: string, userId: string, jobId: string): Promise<string> {
@@ -235,6 +256,7 @@ export const Route = createFileRoute("/api/public/hooks/process-ai-videos")({
         try {
           const submitted = await processQueued(key);
           const pending = await processPending(key);
+          await failStuckJobs();
           return new Response(
             JSON.stringify({ ok: true, submitted, pending }),
             { headers: { "Content-Type": "application/json" } },

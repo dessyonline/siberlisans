@@ -135,10 +135,7 @@ async function priceFor(userId: string, quality: string, duration: number) {
 export const getAiVideoPrices = createServerFn({ method: "GET" })
   .middleware([requireAuth])
   .handler(async ({ context }) => {
-    const profile = await mysqlOne<{ tier: string | null }>("SELECT tier FROM profiles WHERE id=?", [
-      context.userId,
-    ]);
-    const discount = ["gold", "platinum"].includes((profile?.tier ?? "").toLowerCase()) ? 0.8 : 1;
+    const discount = await tierDiscount(context.userId);
     const map: Record<string, Record<number, number>> = {};
     for (const [quality, byDuration] of Object.entries(PRICES)) {
       map[quality] = {};
