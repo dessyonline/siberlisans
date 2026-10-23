@@ -293,9 +293,13 @@ function CampaignsAdmin() {
                 {testResult.memberError && <div className="text-red-400">member hata: {testResult.memberError}</div>}
                 {(testResult.memberStatus === "administrator" || testResult.memberStatus === "creator") && testResult.canPostMessages === true ? (
                   <div className="text-primary">✓ Bot bu kanalda admin ve Post Messages yetkisi açık. Gönderim çalışmalı.</div>
-                ) : testResult.memberStatus === "administrator" || testResult.memberStatus === "creator" ? (
+                ) : (testResult.memberStatus === "administrator" || testResult.memberStatus === "creator") && testResult.canPostMessages === false ? (
                   <div className="text-red-400">
                     ✗ Bot admin, ancak <b>Post Messages</b> yetkisi kapalı. Kanal ayarlarından bu yetkiyi aç.
+                  </div>
+                ) : testResult.memberStatus === "administrator" || testResult.memberStatus === "creator" ? (
+                  <div className="text-yellow-400">
+                    ⚠ Bot admin olarak doğrulandı; Telegram Post Messages alanını döndürmedi. Kanalda bu yetkinin açık olduğundan emin ol.
                   </div>
                 ) : testResult.memberStatus === "unknown" ? (
                   <div className="text-yellow-400">
