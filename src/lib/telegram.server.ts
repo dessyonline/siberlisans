@@ -28,6 +28,12 @@ export async function sendTelegram(p: SendPayload): Promise<SendResult> {
 
   try {
     if (p.photoUrl) {
+      // Telegram captions are limited to 1024 characters. Do not slice HTML
+      // in the middle of a tag/entity; send the complete campaign as text
+      // instead so a long announcement is never lost or rejected.
+      if (p.text.length > 1024) {
+        return sendTelegram({ ...p, photoUrl: null });
+      }
       const res = await fetch(API(token, "sendPhoto"), {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -88,7 +94,7 @@ export async function postToChannel(p: Omit<SendPayload, "chatId">): Promise<Sen
 
 /* ============ helpers ============ */
 
-const SITE_URL = "https://siberlisans.lovable.app";
+const SITE_URL = "https://siberlisans.com";
 
 function esc(s: string | number | null | undefined): string {
   return String(s ?? "")
@@ -271,12 +277,33 @@ export function campaignPayload(c: {
   body?: string | null;
   imageUrl?: string | null;
   productSlug?: string | null;
+  promo?: {
+    code: string;
+    discountType: "percent" | "fixed";
+    discountValue: number;
+    minAmount?: number | null;
+    expiresAt?: string | null;
+    maxUses?: number | null;
+    productSlug?: string | null;
+  } | null;
 }): Omit<SendPayload, "chatId"> {
   const parts = [`📣 <b>${esc(c.title)}</b>`];
+  const linkedProductSlug = c.productSlug ?? c.promo?.productSlug ?? null;
   if (c.body) parts.push("", esc(c.body));
+  if (c.promo) {
+    const discount = c.promo.discountType === "percent" ? `%${c.promo.discountValue}` : `₺${c.promo.discountValue}`;
+    parts.push(
+      "",
+      `🎁 Kod: <code>${esc(c.promo.code)}</code>`,
+      `💸 İndirim: <b>${esc(discount)}</b>`,
+      ...(c.promo.minAmount && c.promo.minAmount > 0 ? [`🧾 Min. sepet: ₺${esc(c.promo.minAmount)}`] : []),
+      ...(c.promo.maxUses ? [`👥 Kullanım limiti: ${esc(c.promo.maxUses)}`] : []),
+      ...(c.promo.expiresAt ? [`⏰ Bitiş: ${esc(new Date(c.promo.expiresAt).toLocaleString("tr-TR"))}`] : []),
+    );
+  }
   return {
     text: parts.join("\n"),
     photoUrl: c.imageUrl ?? null,
-    buttons: c.productSlug ? productButtons(c.productSlug) : siteButtons("kampanya"),
+    buttons: linkedProductSlug ? productButtons(linkedProductSlug) : siteButtons("kampanya"),
   };
 }

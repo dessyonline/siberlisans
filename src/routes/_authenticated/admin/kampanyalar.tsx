@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Megaphone, Plus, Send, Trash2, Pencil, Clock, CheckCircle2, AlertTriangle, FileText, Radio } from "lucide-react";
+import { Megaphone, Plus, Send, Trash2, Pencil, Eye, Clock, CheckCircle2, AlertTriangle, FileText, Radio } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/admin/kampanyalar")({
   component: CampaignsAdmin,
@@ -39,6 +39,7 @@ const EMPTY: Draft = {
 const STATUS_META: Record<string, { label: string; cls: string; icon: typeof Clock }> = {
   draft: { label: "taslak", cls: "text-muted-foreground border-border bg-muted/20", icon: FileText },
   scheduled: { label: "zamanlandı", cls: "text-yellow-400 border-yellow-400/40 bg-yellow-400/10", icon: Clock },
+  sending: { label: "gönderiliyor", cls: "text-blue-400 border-blue-400/40 bg-blue-400/10", icon: Clock },
   sent: { label: "gönderildi", cls: "text-primary border-primary/40 bg-primary/10", icon: CheckCircle2 },
   failed: { label: "hata", cls: "text-red-400 border-red-400/40 bg-red-400/10", icon: AlertTriangle },
 };
@@ -53,6 +54,7 @@ function CampaignsAdmin() {
   const productsFn = useServerFn(listCampaignProductOptions);
   const promosFn = useServerFn(listCampaignPromoOptions);
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [preview, setPreview] = useState<Draft | null>(null);
   const [testResult, setTestResult] = useState<Awaited<ReturnType<typeof testTelegramChannel>> | null>(null);
   const [testing, setTesting] = useState(false);
 
@@ -82,6 +84,20 @@ function CampaignsAdmin() {
     queryKey: ["admin-campaigns-promos"],
     queryFn: () => promosFn(),
   });
+
+  const previewPromo = preview ? (promos ?? []).find((p) => p.id === preview.promo_code_id) : null;
+  const previewProduct = preview ? (products ?? []).find((p) => p.id === preview.product_id) : null;
+  const previewLines = preview
+    ? [
+        `📣 ${preview.title || "Kampanya başlığı"}`,
+        preview.body.trim(),
+        previewPromo
+          ? `🎁 Kod: ${previewPromo.code} · ${previewPromo.discountType === "percent" ? `%${previewPromo.discountValue}` : `₺${previewPromo.discountValue}`}`
+          : "",
+        previewPromo?.expiresAt ? `⏰ Bitiş: ${new Date(previewPromo.expiresAt).toLocaleString("tr-TR")}` : "",
+        previewProduct ? `🛒 Ürün: ${previewProduct.name}` : "",
+      ].filter(Boolean)
+    : [];
 
   const save = async (opts: { sendNow?: boolean } = {}) => {
     if (!draft) return;
@@ -187,7 +203,11 @@ function CampaignsAdmin() {
                       className="w-full rounded-md border border-border bg-input px-3 py-2 font-mono text-sm"
                     >
                       <option value="">(yok)</option>
-                      {(promos ?? []).map((p) => (<option key={p.id} value={p.id}>{p.code}</option>))}
+                      {(promos ?? []).map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.code} · {p.discountType === "percent" ? `%${p.discountValue}` : `₺${p.discountValue}`}
+                        </option>
+                      ))}
                     </select>
                   </div>
                 </div>
@@ -203,11 +223,37 @@ function CampaignsAdmin() {
             )}
             <DialogFooter className="gap-2">
               <Button variant="ghost" onClick={() => setDraft(null)}>iptal</Button>
+              <Button variant="outline" onClick={() => draft && setPreview({ ...draft })}>
+                <Eye className="h-4 w-4 mr-1" /> önizle
+              </Button>
               <Button variant="outline" onClick={() => save()}>kaydet</Button>
               <Button onClick={() => save({ sendNow: true })}>
                 <Send className="h-4 w-4 mr-1" /> şimdi gönder
               </Button>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={!!preview} onOpenChange={(v) => !v && setPreview(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Telegram önizlemesi</DialogTitle>
+            </DialogHeader>
+            <div className="rounded-xl border border-primary/20 bg-black/30 p-4">
+              {preview?.image_url && (
+                <img
+                  src={preview.image_url}
+                  alt="Kampanya görseli"
+                  className="mb-3 max-h-56 w-full rounded-lg object-cover"
+                />
+              )}
+              <pre className="whitespace-pre-wrap break-words font-mono text-sm text-foreground">
+                {previewLines.join("\n") || "Başlık ve metin girin."}
+              </pre>
+              <div className="mt-4 border-t border-border pt-3 text-xs text-muted-foreground">
+                {previewProduct ? "🛒 Ürün sayfası butonu" : "🌐 Siteyi aç butonu"}
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
@@ -227,7 +273,7 @@ function CampaignsAdmin() {
             {"botUsername" in testResult && testResult.botUsername && (
               <div>bot: <span className="text-primary">@{testResult.botUsername}</span></div>
             )}
-            <div>secret (TELEGRAM_CHANNEL_ID): <span className="text-foreground">{testResult.channelIdConfigured ?? "—"}</span></div>
+            <div>hedef kanal (TELEGRAM_CHANNEL_ID): <span className="text-foreground">{testResult.channelIdConfigured ?? "—"}</span></div>
             {testResult.ok ? (
               <>
                 <div>kanal başlığı: <span className="text-foreground">{testResult.chatTitle}</span></div>
@@ -272,7 +318,7 @@ function CampaignsAdmin() {
           const meta = STATUS_META[c.status] ?? STATUS_META.draft;
           const Icon = meta.icon;
           const product = c.product as { name: string; slug: string } | null;
-          const promo = c.promo as { code: string } | null;
+          const promo = c.promo;
           return (
             <div key={c.id} className="glass-card rounded-xl p-5 flex flex-wrap items-start gap-4">
               <div className="flex-1 min-w-0">
@@ -292,7 +338,7 @@ function CampaignsAdmin() {
                 </div>
               </div>
               <div className="flex gap-2">
-                {c.status !== "sent" && (
+                {c.status !== "sent" && c.status !== "sending" && (
                   <Button size="sm" variant="default" onClick={() => sendOne(c.id)} title="Şimdi gönder">
                     <Send className="h-3.5 w-3.5" />
                   </Button>
