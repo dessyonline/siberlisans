@@ -13,11 +13,93 @@ function uid() {
   return crypto.randomUUID();
 }
 
-const PRICES: Record<string, Record<number, number>> = {
-  fast: { 5: 10, 10: 20 },
-  hd: { 5: 25, 10: 50 },
-  cinematic: { 5: 50, 10: 100 },
+/**
+ * AI video fiyatları — KREDİ cinsinden (1 kredi = ₺1, müşteri krediyi cüzdan bakiyesiyle alır).
+ * Maliyet (fal.ai, 1$≈₺50): seedance lite 720p ~₺5/10sn ~₺11, pro-fast 1080p ~₺12/₺24,
+ * pro 1080p ~₺30/₺60, veo3.1 fast 8sn ~₺60, veo3.1 8sn ~₺159. Gold %20 indirimde bile kârlı kalmalı.
+ */
+export const VIDEO_PRICES: Record<VideoQuality, Record<number, number>> = {
+  fast: { 5: 15, 10: 25 },
+  hd: { 5: 30, 10: 55 },
+  cinematic: { 5: 60, 10: 120 },
+  audio: { 8: 120 },
+  audio_premium: { 8: 300 },
 };
+export type VideoQuality = "fast" | "hd" | "cinematic" | "audio" | "audio_premium";
+const PRICES = VIDEO_PRICES;
+
+/** Tek seferde alınabilecek kredi aralığı. */
+export const CREDIT_MIN = 10;
+export const CREDIT_MAX = 5000;
+
+async function creditBalance(userId: string) {
+  const r = await mysqlOne<{ credits: unknown }>("SELECT credits FROM ai_credit_wallets WHERE user_id=?", [userId]);
+  return num(r?.credits) ?? 0;
+}
+
+export const getMyAiCredits = createServerFn({ method: "GET" })
+  .middleware([requireAuth])
+  .handler(async ({ context }) => {
+    const credits = await creditBalance(context.userId);
+    const history = await mysqlQuery<Record<string, unknown>>(
+      "SELECT id, kind, amount, balance_after, note, created_at FROM ai_credit_transactions WHERE user_id=? ORDER BY created_at DESC LIMIT 30",
+      [context.userId],
+    );
+    return {
+      credits,
+      history: history.map((h) => ({
+        id: String(h.id),
+        kind: String(h.kind),
+        amount: num(h.amount) ?? 0,
+        balance_after: num(h.balance_after) ?? 0,
+        note: (h.note as string | null) ?? null,
+        created_at: String(h.created_at),
+      })),
+    };
+  });
+
+/** Cüzdan bakiyesiyle kredi satın al (1 kredi = ₺1, süresiz). */
+export const buyAiCredits = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ credits: z.number().int().min(CREDIT_MIN).max(CREDIT_MAX) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const priceTry = data.credits; // 1 kredi = ₺1
+    const n = await mysqlExec(
+      "UPDATE wallets SET balance_try=balance_try-?, updated_at=? WHERE user_id=? AND balance_try >= ?",
+      [priceTry, ts(), context.userId, priceTry],
+    );
+    if (n !== 1) throw new Error("Yetersiz bakiye.");
+    try {
+      await mysqlQuery(
+        `INSERT INTO ai_credit_wallets (user_id,credits,updated_at) VALUES (?,?,?)
+         ON DUPLICATE KEY UPDATE credits=credits+VALUES(credits), updated_at=VALUES(updated_at)`,
+        [context.userId, data.credits, ts()],
+      );
+    } catch (e) {
+      // Kredi yazılamadıysa parayı geri ver.
+      await mysqlExec("UPDATE wallets SET balance_try=balance_try+?, updated_at=? WHERE user_id=?", [
+        priceTry,
+        ts(),
+        context.userId,
+      ]);
+      throw e;
+    }
+    const credits = await creditBalance(context.userId);
+    const w = await mysqlOne<{ balance_try: unknown }>("SELECT balance_try FROM wallets WHERE user_id=?", [
+      context.userId,
+    ]);
+    await mysqlQuery(
+      "INSERT INTO wallet_transactions (id,user_id,kind,amount_try,balance_after,order_id,note,created_at) VALUES (?,?,?,?,?,?,?,?)",
+      [uid(), context.userId, "purchase", -priceTry, num(w?.balance_try) ?? 0, null, `ai_kredi:${data.credits}`, ts()],
+    );
+    await mysqlQuery(
+      "INSERT INTO ai_credit_transactions (id,user_id,kind,amount,balance_after,job_id,note,created_at) VALUES (?,?,?,?,?,?,?,?)",
+      [uid(), context.userId, "purchase", data.credits, credits, null, "cüzdandan satın alındı", ts()],
+    );
+    return { credits };
+  });
 
 export const createAiVideoJob = createServerFn({ method: "POST" })
   .middleware([requireAuth])
@@ -25,18 +107,20 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
     z
       .object({
         prompt: z.string().min(3).max(1000),
-        duration: z.union([z.literal(5), z.literal(10)]),
+        duration: z.union([z.literal(5), z.literal(8), z.literal(10)]),
         aspect: z.enum(["16:9", "9:16", "1:1"]),
-        quality: z.enum(["fast", "hd", "cinematic"]).default("fast"),
+        quality: z.enum(["fast", "hd", "cinematic", "audio", "audio_premium"]).default("fast"),
       })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    // Fiyat her zaman sunucuda, kullanıcının seviyesine göre hesaplanır (istemciye güvenilmez).
+    // Fiyat her zaman sunucuda hesaplanır (istemciye güvenilmez).
     const cost = await priceFor(context.userId, data.quality, data.duration);
-    if (!cost) throw new Error("Fiyat bulunamadı.");
+    if (!cost) throw new Error("Bu kalite için bu süre seçilemez.");
+    if (data.quality.startsWith("audio") && data.aspect === "1:1")
+      throw new Error("Sesli videolar yalnızca 16:9 veya 9:16 olabilir.");
 
-    // Kötüye kullanım koruması: aynı anda en fazla 2 aktif iş, saatte en fazla 10 iş.
+    // Kötüye kullanım koruması.
     const active = await mysqlOne<{ c: string | number }>(
       "SELECT COUNT(*) AS c FROM ai_jobs WHERE user_id=? AND kind='video' AND status IN ('queued','processing')",
       [context.userId],
@@ -50,7 +134,7 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
     if ((num(hourly?.c) ?? 0) >= MAX_JOBS_PER_HOUR)
       throw new Error("Saatlik video sınırına ulaştın. Biraz sonra tekrar dene.");
 
-    // Abonelik kredisi: koşullu (atomik) düşüm — eşzamanlı isteklerde eksiye düşmez.
+    // Önce abonelik kredisi, sonra satın alınmış kredi — ikisi de koşullu (atomik) düşüm.
     let fromSub = 0;
     const sub = await mysqlOne<{ id: string; credits_remaining: string | number }>(
       "SELECT id,credits_remaining FROM ai_subscriptions WHERE user_id=? AND status='active' AND expires_at > NOW() ORDER BY expires_at DESC LIMIT 1",
@@ -58,20 +142,22 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
     );
     const remaining = num(sub?.credits_remaining) ?? 0;
     if (sub && remaining > 0) {
-      const take = Math.min(cost, remaining);
-      const n = await mysqlExec(
-        "UPDATE ai_subscriptions SET credits_remaining=credits_remaining-? WHERE id=? AND credits_remaining >= ?",
-        [take, sub.id, take],
-      );
-      if (n === 1) fromSub = take;
+      const take = Math.min(cost, Math.floor(remaining));
+      if (take > 0) {
+        const n = await mysqlExec(
+          "UPDATE ai_subscriptions SET credits_remaining=credits_remaining-? WHERE id=? AND credits_remaining >= ?",
+          [take, sub.id, take],
+        );
+        if (n === 1) fromSub = take;
+      }
     }
 
-    // Cüzdan: yalnızca bakiye yeterliyse düşen tek koşullu UPDATE.
-    const fromWallet = cost - fromSub;
-    if (fromWallet > 0) {
+    const fromCredits = cost - fromSub;
+    const jobId = uid();
+    if (fromCredits > 0) {
       const n = await mysqlExec(
-        "UPDATE wallets SET balance_try=balance_try-?, updated_at=? WHERE user_id=? AND balance_try >= ?",
-        [fromWallet, ts(), context.userId, fromWallet],
+        "UPDATE ai_credit_wallets SET credits=credits-?, updated_at=? WHERE user_id=? AND credits >= ?",
+        [fromCredits, ts(), context.userId, fromCredits],
       );
       if (n !== 1) {
         if (fromSub > 0) {
@@ -80,19 +166,14 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
             sub!.id,
           ]);
         }
-        throw new Error("Yetersiz bakiye.");
+        throw new Error("Yetersiz kredi.");
       }
-      const w2 = await mysqlOne<{ balance_try: string | number | null }>(
-        "SELECT balance_try FROM wallets WHERE user_id=?",
-        [context.userId],
-      );
       await mysqlQuery(
-        "INSERT INTO wallet_transactions (id,user_id,kind,amount_try,balance_after,order_id,note,created_at) VALUES (?,?,?,?,?,?,?,?)",
-        [uid(), context.userId, "purchase", -fromWallet, num(w2?.balance_try) ?? 0, null, "ai_video", ts()],
+        "INSERT INTO ai_credit_transactions (id,user_id,kind,amount,balance_after,job_id,note,created_at) VALUES (?,?,?,?,?,?,?,?)",
+        [uid(), context.userId, "spend", -fromCredits, await creditBalance(context.userId), jobId, `video:${data.quality}:${data.duration}s`, ts()],
       );
     }
 
-    const jobId = uid();
     await mysqlQuery(
       `INSERT INTO ai_jobs (id,user_id,kind,prompt,params,cost_try,status,expires_at,provider,created_at,updated_at)
        VALUES (?,?,?,?,?,?,'queued',DATE_ADD(?, INTERVAL 30 DAY),'fal',?,?)`,
@@ -106,7 +187,7 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
           aspect: data.aspect,
           quality: data.quality,
           from_sub: fromSub,
-          from_wallet: fromWallet,
+          from_credits: fromCredits,
           sub_id: fromSub > 0 ? sub!.id : null,
         }),
         cost,
@@ -127,7 +208,7 @@ async function tierDiscount(userId: string) {
 }
 
 async function priceFor(userId: string, quality: string, duration: number) {
-  const base = PRICES[quality]?.[duration];
+  const base = PRICES[quality as VideoQuality]?.[duration];
   if (!base) return null;
   return Math.round(base * (await tierDiscount(userId)));
 }
