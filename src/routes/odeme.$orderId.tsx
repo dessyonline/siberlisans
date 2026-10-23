@@ -892,7 +892,7 @@ function TransferBlock({
           />
           <div className="pt-2">
             <div className="text-[10px] tracking-widest text-muted-foreground mb-1">
-              açıklama / referans kodu
+              referans kodu (destek için)
             </div>
             <button
               onClick={() => copy(reference, "Referans")}
@@ -902,8 +902,8 @@ function TransferBlock({
               <Copy className="h-4 w-4 opacity-70 group-hover:opacity-100" />
             </button>
             <p className="mt-2 text-[11px] text-muted-foreground">
-              → Bu referansı açıklamaya <span className="text-primary">birebir</span> yazmadan
-              transfer yapmayın; otomatik eşleşme başarısız olur.
+              → Havale <span className="text-primary">açıklama alanını boş bırakın</span> —
+              referans, isim veya not yazmayın.
             </p>
           </div>
         </dl>
