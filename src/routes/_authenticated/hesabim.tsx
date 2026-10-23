@@ -1226,16 +1226,11 @@ function MyVideosTab({ fetchJobs }: { fetchJobs: () => Promise<AiJob[]> }) {
 
       <div className="grid gap-3 md:grid-cols-2">
         {videos.map((j) => {
-          const badge =
-            j.status === "completed"
-              ? "bg-primary/20 text-primary"
-              : j.status === "failed"
-                ? "bg-destructive/20 text-destructive"
-                : "bg-warn/20 text-warn";
+          const meta = aiJobStatusMeta(j.status ?? "");
           return (
             <div key={j.id} className="glass-card rounded-lg p-3 font-mono text-xs space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className={`px-1.5 py-0.5 rounded text-[10px] ${badge}`}>{j.status}</span>
+                <span className={`px-1.5 py-0.5 rounded text-[10px] ${meta.className}`}>{meta.label}</span>
                 <span className="text-muted-foreground">
                   {new Date(j.created_at).toLocaleString("tr-TR")}
                 </span>
@@ -1281,6 +1276,10 @@ function MyVideosTab({ fetchJobs }: { fetchJobs: () => Promise<AiJob[]> }) {
 
               {j.error && (
                 <div className="text-destructive text-[11px]">hata: {j.error}</div>
+              )}
+
+              {meta.icon === "refund" && (
+                <div className="text-cyan text-[11px]">[✓] üretim başarısız olduğu için bakiye iade edildi.</div>
               )}
 
               {(j.status === "queued" || j.status === "processing") && !j.result_url && (
