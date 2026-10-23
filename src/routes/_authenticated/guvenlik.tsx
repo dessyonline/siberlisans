@@ -9,6 +9,7 @@ import { ShieldCheck, ShieldAlert, Trash2, ArrowLeft, Terminal, MonitorSmartphon
 import { MfaEnroll } from "@/components/security/MfaEnroll";
 import { MfaChallenge } from "@/components/security/MfaChallenge";
 import { getMfaStatus, mfaDisable, signOutOtherSessions, type MfaStatus } from "@/lib/mfa.functions";
+import { checkMyEmailBreach, type EmailBreachResult } from "@/lib/breach-check.functions";
 import {
   trustedDeviceExpiry,
   untrustDevice,
@@ -84,12 +85,15 @@ function SecurityPage() {
   const { user, isAdmin } = useAuth();
   const mfaStatusFn = useServerFn(getMfaStatus);
   const signOutOthersFn = useServerFn(signOutOtherSessions);
+  const checkEmailBreachFn = useServerFn(checkMyEmailBreach);
   const [status, setStatus] = useState<MfaStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<"idle" | "enroll" | "verify-remove" | "step-up">("idle");
   const [trustedUntil, setTrustedUntil] = useState<Date | null>(null);
   const [devices, setDevices] = useState<TrustedDeviceRow[]>([]);
   const [currentDeviceId, setCurrentDeviceId] = useState<string | null>(null);
+  const [emailBreach, setEmailBreach] = useState<EmailBreachResult | null>(null);
+  const [emailBreachLoading, setEmailBreachLoading] = useState(false);
 
   const userId = user?.id ?? null;
 
@@ -132,6 +136,21 @@ function SecurityPage() {
     }
   };
 
+  const checkEmail = async () => {
+    setEmailBreachLoading(true);
+    try {
+      setEmailBreach(await checkEmailBreachFn());
+    } catch {
+      setEmailBreach({
+        status: "unavailable",
+        breaches: [],
+        message: "İhlal servisine şu anda ulaşılamıyor.",
+      });
+    } finally {
+      setEmailBreachLoading(false);
+    }
+  };
+
   return (
     <div className="mx-auto max-w-2xl px-4 py-6 space-y-4">
       <div className="flex items-center justify-between">
@@ -144,6 +163,53 @@ function SecurityPage() {
         <Link to="/hesabim" className="font-mono text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1">
           <ArrowLeft className="h-3 w-3" /> hesabım
         </Link>
+      </div>
+
+      {/* E-posta ihlal kontrolü */}
+      <div className="glass-card rounded-lg p-5 space-y-3">
+        <div className="flex items-start gap-3">
+          <div className="rounded-md p-2 bg-primary/10 text-primary">
+            <ShieldCheck className="h-5 w-5" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-mono text-sm font-semibold">E-posta İhlal Kontrolü</div>
+            <div className="mt-0.5 font-mono text-[11px] text-muted-foreground leading-relaxed">
+              Hesabındaki e-posta adresi bilinen veri ihlallerinde yer almış mı kontrol et.
+              Bu kontrol giriş sırasında otomatik çalışmaz ve hesabını kilitlemez.
+              Ham e-posta yerine yalnızca anonim hash aralığı sorgulanır.
+            </div>
+          </div>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="font-mono"
+          onClick={checkEmail}
+          disabled={emailBreachLoading}
+        >
+          {emailBreachLoading ? "kontrol ediliyor…" : "> e-postamı kontrol et"}
+        </Button>
+        {emailBreach?.status === "found" && (
+          <div className="rounded-md border border-warn/40 bg-warn/5 p-3 font-mono text-[11px] leading-relaxed text-warn">
+            [!] E-posta adresin {emailBreach.breaches.length} bilinen ihlalde görünüyor: {emailBreach.breaches.join(", ")}
+            <div className="mt-1 text-muted-foreground">
+              Bu servis sonucu kesin güvenlik kanıtı değildir; şifreni değiştirip 2FA kullanmanı öneririz.
+            </div>
+          </div>
+        )}
+        {emailBreach?.status === "clear" && (
+          <div className="rounded-md border border-primary/30 bg-primary/5 p-3 font-mono text-[11px] text-primary">
+            [✓] Bilinen ihlallerde eşleşme bulunamadı.
+          </div>
+        )}
+        {emailBreach?.status === "unavailable" && (
+          <div className="rounded-md border border-border/50 bg-background/30 p-3 font-mono text-[11px] text-muted-foreground">
+            [·] {emailBreach.message}
+          </div>
+        )}
+        <div className="font-mono text-[10px] text-muted-foreground/70">
+          Kaynak: <a href="https://haveibeenpwned.com/" target="_blank" rel="noreferrer" className="underline hover:text-primary">Have I Been Pwned</a>
+        </div>
       </div>
 
       {/* Admin uyarısı */}

@@ -60,6 +60,10 @@ export async function upgradePasswordHash(userId: string, password: string, stor
   await mysqlQuery("UPDATE auth_users SET password_hash=? WHERE id=?", [fresh, userId]);
 }
 
+export async function recordSuccessfulSignIn(userId: string) {
+  await mysqlQuery("UPDATE auth_users SET last_sign_in_at=? WHERE id=?", [mysqlDate(new Date()), userId]);
+}
+
 
 export const SESSION_COOKIE = "siber_session";
 const SESSION_DAYS = 30;

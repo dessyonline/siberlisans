@@ -2,10 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { getCookie, setCookie, deleteCookie, getRequestIP } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireAuth } from "./auth-middleware.server";
+import { passwordError } from "./password-policy";
+import { pwnedPasswordError } from "./pwned-passwords.server";
 
 const credentials = z.object({
   email: z.string().email(),
-  password: z.string().min(6).max(200),
+  password: z.string().min(1).max(200),
   displayName: z.string().max(120).optional(),
   telegramUsername: z.string().max(120).optional(),
   referralCode: z.string().max(60).optional(),
@@ -41,7 +43,8 @@ export const signIn = createServerFn({ method: "POST" })
       const ip = ipGuard.requestIp();
       if (await ipGuard.isIpBlocked(ip)) return { ok: false, error: ipGuard.IP_BLOCKED_MESSAGE };
       
-      const user = await auth.findUserByEmail(data.email);
+      const email = data.email.trim().toLowerCase();
+      const user = await auth.findUserByEmail(email);
       if (!user) {
         await ipGuard.recordFailedAttempt(ip);
         return { ok: false, error: "E-posta veya şifre hatalı." };
@@ -64,6 +67,18 @@ export const signIn = createServerFn({ method: "POST" })
       
       // Başarılı giriş
       await ipGuard.resetFailedAttempts(ip);
+      // Eski bcrypt hesaplarını giriş sırasında yeni PBKDF2 formatına yükselt.
+      try {
+        await auth.upgradePasswordHash(user.id, data.password, user.password_hash);
+      } catch (error) {
+        console.error("password hash upgrade failed", error instanceof Error ? error.message : String(error));
+      }
+      try {
+        await auth.recordSuccessfulSignIn(user.id);
+      } catch (error) {
+        // Son giriş tarihi yardımcı bir telemetri alanıdır; oturum açmayı engellememeli.
+        console.error("last sign-in update failed", error instanceof Error ? error.message : String(error));
+      }
       const { token, expires } = await auth.createSession(user.id, ip);
 
       const isProd = process.env.NODE_ENV === "production";
@@ -133,6 +148,11 @@ export const signUp = createServerFn({ method: "POST" })
     const auth = await import("./auth.server");
     const ipGuard = await import("./ip-guard.server");
     const { mysqlQuery } = await import("./mysql.server");
+
+    const passwordProblem = passwordError(data.password);
+    if (passwordProblem) return { ok: false, error: passwordProblem };
+    const breachProblem = await pwnedPasswordError(data.password);
+    if (breachProblem) return { ok: false, error: breachProblem };
     
     const ip = ipGuard.requestIp();
     if (await ipGuard.isIpBlocked(ip)) return { ok: false, error: ipGuard.IP_BLOCKED_MESSAGE };
