@@ -111,3 +111,17 @@ Telegram webhook endpoint'i yalnızca `TELEGRAM_WEBHOOK_SECRET` ortam değişken
 eşleşen `X-Telegram-Bot-Api-Secret-Token` başlığını kabul eder. Canlı ortamda bu
 değişkeni güçlü, rastgele bir değerle ayarlayın ve Telegram webhook'unu aynı
 `secret_token` değeriyle yeniden tanımlayın.
+
+### Telegram kampanyaları
+
+Admin panelindeki `Kampanyalar` bölümü, `TELEGRAM_CHANNEL_ID` kanalına manuel
+veya zamanlanmış gönderi yollar. Gerekli sunucu değişkenleri:
+
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHANNEL_ID`
+- `CRON_SECRET` (zamanlanmış görev endpoint'i için)
+
+Zamanlanmış gönderiler için Supabase Vault'a `campaign_cron_secret` adıyla
+`CRON_SECRET` ile aynı değeri ekleyin. `20261023090000_telegram_campaign_cron.sql`
+migration'ı pg_cron job'unu dakikada bir çalıştırır. Botun kanalda yönetici ve
+`Post Messages` yetkisine sahip olması gerekir.

@@ -1,10 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAdmin } from "@/lib/auth-middleware.server";
-import { mysqlQuery, mysqlOne } from "@/lib/mysql.server";
+import { mysqlExec, mysqlQuery, mysqlOne } from "@/lib/mysql.server";
 
-function ts() {
-  return new Date().toISOString().slice(0, 19).replace("T", " ");
+function ts(d: Date = new Date()) {
+  return d.toISOString().slice(0, 19).replace("T", " ");
 }
 
 const upsertInput = z.object({
@@ -32,7 +32,16 @@ export type CampaignRow = {
   error: string | null;
   created_at: string;
   product: { id: string; name: string; slug: string; image_url: string | null } | null;
-  promo: { id: string; code: string } | null;
+  promo: {
+    id: string;
+    code: string;
+    discountType: "percent" | "fixed";
+    discountValue: number;
+    minAmount: number;
+    expiresAt: string | null;
+    maxUses: number | null;
+    productSlug: string | null;
+  } | null;
 };
 
 export const listCampaigns = createServerFn({ method: "GET" })
@@ -57,14 +66,24 @@ export const listCampaigns = createServerFn({ method: "GET" })
       p_image_url: string | null;
       pr_id: string | null;
       pr_code: string | null;
+      pr_discount_type: string | null;
+      pr_discount_value: number | string | null;
+      pr_min_amount: number | string | null;
+      pr_expires_at: string | null;
+      pr_max_uses: number | string | null;
+      pr_product_slug: string | null;
     }>(
       `SELECT c.id, c.title, c.body, c.image_url, c.product_id, c.promo_code_id, c.scheduled_at, c.sent_at,
               c.telegram_message_id, c.status, c.error, c.created_at,
               p.id as p_id, p.name as p_name, p.slug as p_slug, p.image_url as p_image_url,
-              pr.id as pr_id, pr.code as pr_code
+              pr.id as pr_id, pr.code as pr_code, pr.discount_type as pr_discount_type,
+              pr.discount_value as pr_discount_value, pr.min_amount as pr_min_amount,
+              pr.expires_at as pr_expires_at, pr.max_uses as pr_max_uses,
+              pr_product.slug as pr_product_slug
          FROM campaigns c
          LEFT JOIN products p ON p.id = c.product_id
          LEFT JOIN promo_codes pr ON pr.id = c.promo_code_id
+         LEFT JOIN products pr_product ON pr_product.id = pr.product_id
         ORDER BY c.created_at DESC
         LIMIT 200`,
     );
@@ -82,7 +101,18 @@ export const listCampaigns = createServerFn({ method: "GET" })
       error: r.error,
       created_at: r.created_at,
       product: r.p_id ? { id: r.p_id, name: r.p_name ?? "", slug: r.p_slug ?? "", image_url: r.p_image_url } : null,
-      promo: r.pr_id ? { id: r.pr_id, code: r.pr_code ?? "" } : null,
+      promo: r.pr_id
+        ? {
+            id: r.pr_id,
+            code: r.pr_code ?? "",
+            discountType: r.pr_discount_type === "fixed" ? "fixed" : "percent",
+            discountValue: Number(r.pr_discount_value ?? 0),
+            minAmount: Number(r.pr_min_amount ?? 0),
+            expiresAt: r.pr_expires_at,
+            maxUses: r.pr_max_uses == null ? null : Number(r.pr_max_uses),
+            productSlug: r.pr_product_slug,
+          }
+        : null,
     }));
   });
 
@@ -138,38 +168,75 @@ export const sendCampaignNow = createServerFn({ method: "POST" })
       p_name: string | null;
       p_slug: string | null;
       p_image_url: string | null;
+      pr_code: string | null;
+      pr_discount_type: string | null;
+      pr_discount_value: number | string | null;
+      pr_min_amount: number | string | null;
+      pr_expires_at: string | null;
+      pr_max_uses: number | string | null;
+      pr_product_slug: string | null;
     }>(
       `SELECT c.id, c.title, c.body, c.image_url, c.product_id, c.status,
-              p.name as p_name, p.slug as p_slug, p.image_url as p_image_url
+              p.name as p_name, p.slug as p_slug, p.image_url as p_image_url,
+              pr.code as pr_code, pr.discount_type as pr_discount_type,
+              pr.discount_value as pr_discount_value, pr.min_amount as pr_min_amount,
+              pr.expires_at as pr_expires_at, pr.max_uses as pr_max_uses,
+              pr_product.slug as pr_product_slug
          FROM campaigns c
          LEFT JOIN products p ON p.id = c.product_id
+         LEFT JOIN promo_codes pr ON pr.id = c.promo_code_id
+         LEFT JOIN products pr_product ON pr_product.id = pr.product_id
         WHERE c.id=?`,
       [data.id],
     );
     if (!c) throw new Error("Bulunamadı");
+    if (c.status === "sent") throw new Error("Bu kampanya zaten gönderilmiş");
 
-    const tg = await import("@/lib/telegram.server");
-    const payload = tg.campaignPayload({
-      title: c.title,
-      body: c.body,
-      imageUrl: c.image_url ?? c.p_image_url ?? null,
-      productSlug: c.p_slug ?? null,
-    });
-    const r = await tg.postToChannel(payload);
-    if (r.ok) {
+    const staleBefore = ts(new Date(Date.now() - 10 * 60_000));
+    const claimed = await mysqlExec(
+      `UPDATE campaigns
+          SET status='sending', error=NULL, updated_at=?
+        WHERE id=?
+          AND (status IN ('draft','scheduled','failed') OR (status='sending' AND updated_at < ?))`,
+      [ts(), data.id, staleBefore],
+    );
+    if (claimed !== 1) throw new Error("Kampanya başka bir gönderimde; birkaç saniye sonra tekrar deneyin.");
+
+    try {
+      const tg = await import("@/lib/telegram.server");
+      const payload = tg.campaignPayload({
+        title: c.title,
+        body: c.body,
+        imageUrl: c.image_url ?? c.p_image_url ?? null,
+        productSlug: c.p_slug ?? null,
+        promo: c.pr_code
+          ? {
+              code: c.pr_code,
+              discountType: c.pr_discount_type === "fixed" ? "fixed" : "percent",
+              discountValue: Number(c.pr_discount_value ?? 0),
+              minAmount: Number(c.pr_min_amount ?? 0),
+              expiresAt: c.pr_expires_at,
+              maxUses: c.pr_max_uses == null ? null : Number(c.pr_max_uses),
+              productSlug: c.pr_product_slug,
+            }
+          : null,
+      });
+      const r = await tg.postToChannel(payload);
+      if (!r.ok) throw new Error(r.error ?? "Gönderim başarısız");
+
       await mysqlQuery(
-        "UPDATE campaigns SET status='sent', sent_at=?, telegram_message_id=?, error=NULL, updated_at=? WHERE id=?",
+        "UPDATE campaigns SET status='sent', sent_at=?, telegram_message_id=?, error=NULL, updated_at=? WHERE id=? AND status='sending'",
         [ts(), r.messageId ?? null, ts(), data.id],
       );
-    } else {
-      await mysqlQuery("UPDATE campaigns SET status='failed', error=?, updated_at=? WHERE id=?", [
-        r.error ?? "bilinmeyen hata",
+      return { ok: true, messageId: r.messageId ?? null };
+    } catch (e) {
+      await mysqlQuery("UPDATE campaigns SET status='failed', error=?, updated_at=? WHERE id=? AND status='sending'", [
+        (e as Error).message || "Gönderim başarısız",
         ts(),
         data.id,
-      ]);
-      throw new Error(r.error ?? "Gönderim başarısız");
+      ]).catch(() => undefined);
+      throw e;
     }
-    return { ok: true, messageId: r.messageId ?? null };
   });
 
 export type TelegramTestResult =
@@ -258,9 +325,21 @@ export const listCampaignProductOptions = createServerFn({ method: "GET" })
 
 export const listCampaignPromoOptions = createServerFn({ method: "GET" })
   .middleware([requireAdmin])
-  .handler(async (): Promise<{ id: string; code: string }[]> => {
-    const rows = await mysqlQuery<{ id: string; code: string }>(
-      "SELECT id, code FROM promo_codes WHERE active=1 ORDER BY code",
+  .handler(async (): Promise<{ id: string; code: string; discountType: "percent" | "fixed"; discountValue: number; expiresAt: string | null }[]> => {
+    const rows = await mysqlQuery<{
+      id: string;
+      code: string;
+      discount_type: string;
+      discount_value: number | string;
+      expires_at: string | null;
+    }>(
+      "SELECT id, code, discount_type, discount_value, expires_at FROM promo_codes WHERE active=1 ORDER BY code",
     );
-    return rows.map((r) => ({ id: String(r.id), code: String(r.code) }));
+    return rows.map((r) => ({
+      id: String(r.id),
+      code: String(r.code),
+      discountType: r.discount_type === "fixed" ? "fixed" : "percent",
+      discountValue: Number(r.discount_value ?? 0),
+      expiresAt: r.expires_at,
+    }));
   });
