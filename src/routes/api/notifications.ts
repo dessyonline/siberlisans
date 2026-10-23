@@ -32,7 +32,7 @@ export const Route = createFileRoute("/api/notifications")({
         let userId: string | null = null;
         if (licenseKey) {
           const lk = await mysqlOne<{ id: string }>(
-            "SELECT id FROM license_keys WHERE key_value=? LIMIT 1",
+            "SELECT id FROM license_keys WHERE UPPER(key_value)=? AND COALESCE(revoked,0)=0 AND COALESCE(status,'') <> 'revoked' LIMIT 1",
             [licenseKey],
           );
           if (lk?.id) {

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { mysqlOne, mysqlQuery } from "@/lib/mysql.server";
+import { isAuthorizedAdminRequest } from "@/lib/license-api.server";
+import { mysqlOne, mysqlExec } from "@/lib/mysql.server";
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -20,6 +21,10 @@ export const Route = createFileRoute("/api/revoke")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       POST: async ({ request }) => {
+        if (!isAuthorizedAdminRequest(request)) {
+          return json({ ok: false, error: "Yetkisiz." }, 401);
+        }
+
         let payload: { hwid?: string; reason?: string };
         try {
           payload = await request.json();
@@ -38,13 +43,12 @@ export const Route = createFileRoute("/api/revoke")({
             [hwid],
           );
           const count = Number(before?.c ?? 0);
-          await mysqlQuery("UPDATE license_keys SET revoked=1 WHERE hwid=?", [hwid]);
+          await mysqlExec("UPDATE license_keys SET revoked=1 WHERE hwid=?", [hwid]);
           console.log("[api/revoke] revoked licenses", { hwid, reason, count });
           return json({ ok: true, revoked_count: count });
         } catch (e) {
-          const msg = e instanceof Error ? e.message : "unknown";
-          console.error("[api/revoke] exception", { reason, error: msg });
-          return json({ ok: false, error: msg }, 500);
+          console.error("[api/revoke] exception", { reason, error: e instanceof Error ? e.message : "unknown" });
+          return json({ ok: false, error: "İşlem başarısız." }, 500);
         }
       },
     },

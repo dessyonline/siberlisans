@@ -2,10 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import {
   CORS,
   clientIp,
+  isAuthorizedAdminRequest,
   json,
 } from "@/lib/license-api.server";
 import { logEventMysql } from "@/lib/license-mysql-log.server";
-import { mysqlQuery } from "@/lib/mysql.server";
+import { mysqlExec } from "@/lib/mysql.server";
 
 function ts(d: Date = new Date()) {
   return d.toISOString().slice(0, 19).replace("T", " ");
@@ -16,6 +17,8 @@ export const Route = createFileRoute("/api/tampering-report")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       POST: async ({ request }) => {
+        const canAutoRevoke = isAuthorizedAdminRequest(request);
+
         let payload: {
           license_key?: string;
           hwid?: string;
@@ -59,9 +62,9 @@ export const Route = createFileRoute("/api/tampering-report")({
           "honeypot_triggered",
         ].includes(reason);
 
-        if (autoRevoke) {
+        if (autoRevoke && canAutoRevoke) {
           try {
-            await mysqlQuery(
+            await mysqlExec(
               "UPDATE license_keys SET revoked=1, revoked_at=? WHERE UPPER(key_value)=?",
               [ts(), license_key],
             );

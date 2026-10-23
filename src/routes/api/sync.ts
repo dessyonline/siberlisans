@@ -1,14 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { isAuthorizedAdminRequest } from "@/lib/license-api.server";
 import { mysqlQuery } from "@/lib/mysql.server";
+
+const CORS = {
+  "Access-Control-Allow-Origin": "https://siberlisans.com",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "Access-Control-Max-Age": "86400",
+};
 
 export const Route = createFileRoute("/api/sync")({
   server: {
     handlers: {
-      GET: async () => {
-    let log = "Sync started...\n";
-    try {
-      log += "Creating site_settings...\n";
-      await mysqlQuery(`
+      OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
+      POST: async ({ request }) => {
+        if (!isAuthorizedAdminRequest(request)) {
+          return new Response("Yetkisiz.", { status: 401, headers: CORS });
+        }
+        let log = "Sync started...\n";
+        try {
+          log += "Creating site_settings...\n";
+          await mysqlQuery(`
         CREATE TABLE IF NOT EXISTS site_settings (
           id VARCHAR(255) PRIMARY KEY,
           settings_json JSON NOT NULL,
@@ -16,25 +28,39 @@ export const Route = createFileRoute("/api/sync")({
           updated_by VARCHAR(255) NULL
         )
       `);
-      log += "site_settings created.\n";
+          log += "site_settings created.\n";
 
-      log += "Adding duration_days to license_keys...\n";
-      await mysqlQuery(`ALTER TABLE license_keys ADD COLUMN duration_days INT NULL`).catch(e => log += e.message + "\n");
-      log += "Adding duration_minutes to license_keys...\n";
-      await mysqlQuery(`ALTER TABLE license_keys ADD COLUMN duration_minutes INT NULL`).catch(e => log += e.message + "\n");
-      log += "Adding last_validated_at to license_keys...\n";
-      await mysqlQuery(`ALTER TABLE license_keys ADD COLUMN last_validated_at TIMESTAMP NULL`).catch(e => log += e.message + "\n");
-      log += "Adding duration_label to products...\n";
-      await mysqlQuery(`ALTER TABLE products ADD COLUMN duration_label VARCHAR(255) NULL`).catch(e => log += e.message + "\n");
-      log += "Adding min_volume_try to dealer_tiers...\n";
-      await mysqlQuery(`ALTER TABLE dealer_tiers ADD COLUMN min_volume_try DECIMAL(10,2) DEFAULT 0 NOT NULL`).catch(e => log += e.message + "\n");
-      log += "Adding commission_percent to dealer_tiers...\n";
-      await mysqlQuery(`ALTER TABLE dealer_tiers ADD COLUMN commission_percent DECIMAL(5,2) DEFAULT 0 NOT NULL`).catch(e => log += e.message + "\n");
-      log += "Adding discount_percent to dealer_tiers...\n";
-      await mysqlQuery(`ALTER TABLE dealer_tiers ADD COLUMN discount_percent DECIMAL(5,2) DEFAULT 0 NOT NULL`).catch(e => log += e.message + "\n");
+          log += "Adding duration_days to license_keys...\n";
+          await mysqlQuery(`ALTER TABLE license_keys ADD COLUMN duration_days INT NULL`).catch(
+            (e) => (log += e.message + "\n"),
+          );
+          log += "Adding duration_minutes to license_keys...\n";
+          await mysqlQuery(`ALTER TABLE license_keys ADD COLUMN duration_minutes INT NULL`).catch(
+            (e) => (log += e.message + "\n"),
+          );
+          log += "Adding last_validated_at to license_keys...\n";
+          await mysqlQuery(
+            `ALTER TABLE license_keys ADD COLUMN last_validated_at TIMESTAMP NULL`,
+          ).catch((e) => (log += e.message + "\n"));
+          log += "Adding duration_label to products...\n";
+          await mysqlQuery(
+            `ALTER TABLE products ADD COLUMN duration_label VARCHAR(255) NULL`,
+          ).catch((e) => (log += e.message + "\n"));
+          log += "Adding min_volume_try to dealer_tiers...\n";
+          await mysqlQuery(
+            `ALTER TABLE dealer_tiers ADD COLUMN min_volume_try DECIMAL(10,2) DEFAULT 0 NOT NULL`,
+          ).catch((e) => (log += e.message + "\n"));
+          log += "Adding commission_percent to dealer_tiers...\n";
+          await mysqlQuery(
+            `ALTER TABLE dealer_tiers ADD COLUMN commission_percent DECIMAL(5,2) DEFAULT 0 NOT NULL`,
+          ).catch((e) => (log += e.message + "\n"));
+          log += "Adding discount_percent to dealer_tiers...\n";
+          await mysqlQuery(
+            `ALTER TABLE dealer_tiers ADD COLUMN discount_percent DECIMAL(5,2) DEFAULT 0 NOT NULL`,
+          ).catch((e) => (log += e.message + "\n"));
 
-      log += "Creating cyberlab tables...\n";
-      await mysqlQuery(`
+          log += "Creating cyberlab tables...\n";
+          await mysqlQuery(`
         CREATE TABLE IF NOT EXISTS cyberlab_user_progress (
           user_id VARCHAR(255) NOT NULL,
           lesson_key VARCHAR(255) NOT NULL,
@@ -42,9 +68,9 @@ export const Route = createFileRoute("/api/sync")({
           completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           PRIMARY KEY (user_id, lesson_key)
         )
-      `).catch(e => log += e.message + "\n");
+      `).catch((e) => (log += e.message + "\n"));
 
-      await mysqlQuery(`
+          await mysqlQuery(`
         CREATE TABLE IF NOT EXISTS cyberlab_quiz_attempts (
           user_id VARCHAR(255) NOT NULL,
           lesson_key VARCHAR(255) NOT NULL,
@@ -53,33 +79,33 @@ export const Route = createFileRoute("/api/sync")({
           passed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           PRIMARY KEY (user_id, lesson_key)
         )
-      `).catch(e => log += e.message + "\n");
+      `).catch((e) => (log += e.message + "\n"));
 
-      await mysqlQuery(`
+          await mysqlQuery(`
         CREATE TABLE IF NOT EXISTS cyberlab_user_flags (
           user_id VARCHAR(255) NOT NULL,
           lesson_key VARCHAR(255) NOT NULL,
           captured_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           PRIMARY KEY (user_id, lesson_key)
         )
-      `).catch(e => log += e.message + "\n");
+      `).catch((e) => (log += e.message + "\n"));
 
-      await mysqlQuery(`
+          await mysqlQuery(`
         CREATE TABLE IF NOT EXISTS cyberlab_user_badges (
           user_id VARCHAR(255) NOT NULL,
           badge_id VARCHAR(64) NOT NULL,
           earned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
           PRIMARY KEY (user_id, badge_id)
         )
-      `).catch(e => log += e.message + "\n");
+      `).catch((e) => (log += e.message + "\n"));
 
-      log += "Sync complete!";
-    } catch (err: any) {
-      log += "Error: " + err.message;
-    }
-    return new Response(log, {
-      headers: { "Content-Type": "text/plain; charset=utf-8" },
-    });
+          log += "Sync complete!";
+        } catch (err: unknown) {
+          log += "Error: " + (err instanceof Error ? err.message : "unknown");
+        }
+        return new Response(log, {
+          headers: { "Content-Type": "text/plain; charset=utf-8", ...CORS },
+        });
       },
     },
   },

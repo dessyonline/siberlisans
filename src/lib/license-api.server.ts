@@ -1,6 +1,6 @@
 // Server-only helpers for the public license API endpoints.
 // Central place for HMAC signing, replay/nonce guard and event logging.
-import { createHmac } from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 
 const REPLAY_WINDOW_MS = 5 * 60 * 1000;
 
@@ -16,6 +16,18 @@ export function json(body: unknown, status = 200) {
     status,
     headers: { "Content-Type": "application/json", ...CORS },
   });
+}
+
+/** Server-side bearer check for administrative license endpoints. */
+export function isAuthorizedAdminRequest(request: Request): boolean {
+  const expected = process.env.LICENSE_ADMIN_TOKEN;
+  const auth = request.headers.get("authorization") ?? "";
+  const token = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7).trim() : "";
+  if (!expected || !token) return false;
+
+  const provided = Buffer.from(token);
+  const configured = Buffer.from(expected);
+  return provided.length === configured.length && timingSafeEqual(provided, configured);
 }
 
 /** Deterministic canonical JSON for HMAC input. */
@@ -78,8 +90,9 @@ export async function guardReplay(
     if (error.code === "23505") {
       return json({ success: false, valid: false, error: "Geçersiz istek." }, 409);
     }
-    // If insert fails for other reasons, do not silently allow — but do not fatal.
+    // Any storage failure must fail closed; otherwise replay protection is bypassed.
     console.error("[license-api] nonce insert failed", error.message);
+    return json({ success: false, valid: false, error: "Doğrulama geçici olarak kullanılamıyor." }, 503);
   }
   return null;
 }
