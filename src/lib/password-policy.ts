@@ -19,3 +19,7 @@ export function passwordError(password: string): string | null {
   if (common.has(normalized)) return "Daha güçlü ve tahmin edilmesi zor bir şifre seç.";
   return null;
 }
+
+export function passwordConfirmationError(password: string, confirmation: string): string | null {
+  return password === confirmation ? null : "Şifreler eşleşmiyor.";
+}

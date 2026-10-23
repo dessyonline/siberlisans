@@ -1,5 +1,5 @@
 import { afterEach, expect, test } from "bun:test";
-import { MIN_PASSWORD_LENGTH, passwordError } from "../src/lib/password-policy";
+import { MIN_PASSWORD_LENGTH, passwordConfirmationError, passwordError } from "../src/lib/password-policy";
 import { checkPwnedPassword } from "../src/lib/pwned-passwords.server";
 
 const originalFetch = globalThis.fetch;
@@ -16,6 +16,11 @@ test("requires a longer password for new credentials", () => {
 test("rejects trivial repeated and common passwords", () => {
   expect(passwordError("aaaaaaaaaa")).toContain("tekrarından");
   expect(passwordError("1234567890")).toContain("tahmin");
+});
+
+test("requires matching password confirmation", () => {
+  expect(passwordConfirmationError("secret1", "secret2")).toBe("Şifreler eşleşmiyor.");
+  expect(passwordConfirmationError("secret1", "secret1")).toBeNull();
 });
 
 test("checks only a hash prefix and detects an exposed password", async () => {
