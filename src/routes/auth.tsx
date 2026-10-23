@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Terminal, Gift, MailCheck, Send, Info } from "lucide-react";
 import { MfaChallenge } from "@/components/security/MfaChallenge";
-import { MIN_PASSWORD_LENGTH, passwordError } from "@/lib/password-policy";
+import { MIN_PASSWORD_LENGTH, passwordConfirmationError, passwordError } from "@/lib/password-policy";
 
 const authSearch = z.object({
   ref: z.string().max(20).optional(),
@@ -96,6 +96,7 @@ function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [captcha, setCaptcha] = useState(() => newCaptcha());
   const [captchaInput, setCaptchaInput] = useState("");
@@ -163,6 +164,7 @@ function AuthPage() {
       toast.success("[✓] e-posta doğrulandı, şimdi giriş yapabilirsin");
       setSignupSent(null);
       setPassword("");
+      setConfirmPassword("");
     } catch {
       toast.error("Doğrulama yapılamadı, tekrar deneyin.");
     } finally {
@@ -197,6 +199,8 @@ function AuthPage() {
     }
     const passwordProblem = passwordError(password);
     if (passwordProblem) return toast.error(`[!] ${passwordProblem}`);
+    const confirmationProblem = passwordConfirmationError(password, confirmPassword);
+    if (confirmationProblem) return toast.error(`[!] ${confirmationProblem}`);
     if (!telegram.trim()) return toast.error("[!] telegram adresi zorunludur (yoksa 'yok' yazın)");
     if (parseInt(captchaInput, 10) !== captcha.answer) {
       setCaptcha(newCaptcha());
@@ -210,6 +214,7 @@ function AuthPage() {
         data: {
           email: em,
           password,
+          confirmPassword,
           displayName: displayName || em.split("@")[0],
           telegramUsername: telegram.trim(),
           ...(refCode ? { referralCode: refCode } : {}),
@@ -363,6 +368,7 @@ function AuthPage() {
                 <Field id="signup-name" label="görünen ad" value={displayName} onChange={setDisplayName} />
                 <Field id="signup-email" label="e-posta" value={email} onChange={setEmail} type="email" autoComplete="email" />
                 <Field id="signup-password" label={`şifre (min ${MIN_PASSWORD_LENGTH})`} value={password} onChange={setPassword} type="password" autoComplete="new-password" />
+                <Field id="signup-confirm-password" label="şifre (tekrar)" value={confirmPassword} onChange={setConfirmPassword} type="password" autoComplete="new-password" />
                 
                 <div className="space-y-1.5">
                   <Label className="font-mono text-xs text-muted-foreground flex items-center justify-between">

@@ -2,12 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { getCookie, setCookie, deleteCookie, getRequestIP } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireAuth } from "./auth-middleware.server";
-import { passwordError } from "./password-policy";
+import { passwordConfirmationError, passwordError } from "./password-policy";
 import { pwnedPasswordError } from "./pwned-passwords.server";
 
 const credentials = z.object({
   email: z.string().email(),
   password: z.string().min(1).max(200),
+  confirmPassword: z.string().min(1).max(200),
   displayName: z.string().max(120).optional(),
   telegramUsername: z.string().max(120).optional(),
   referralCode: z.string().max(60).optional(),
@@ -151,6 +152,8 @@ export const signUp = createServerFn({ method: "POST" })
 
     const passwordProblem = passwordError(data.password);
     if (passwordProblem) return { ok: false, error: passwordProblem };
+    const confirmationProblem = passwordConfirmationError(data.password, data.confirmPassword);
+    if (confirmationProblem) return { ok: false, error: confirmationProblem };
     const breachProblem = await pwnedPasswordError(data.password);
     if (breachProblem) return { ok: false, error: breachProblem };
     
