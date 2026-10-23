@@ -1,4 +1,4 @@
-export const MIN_PASSWORD_LENGTH = 10;
+export const MIN_PASSWORD_LENGTH = 6;
 
 /** Yeni şifrelerde ortak ve kolay tahmin edilen kalıpları engeller. */
 export function passwordError(password: string): string | null {
