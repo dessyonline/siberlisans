@@ -15,15 +15,17 @@ function uid() {
 
 /**
  * AI video fiyatları — KREDİ cinsinden (1 kredi = ₺1, müşteri krediyi cüzdan bakiyesiyle alır).
- * Maliyet (fal.ai, 1$≈₺50): seedance lite 720p ~₺5/10sn ~₺11, pro-fast 1080p ~₺12/₺24,
- * pro 1080p ~₺30/₺60, veo3.1 fast 8sn ~₺60, veo3.1 8sn ~₺159. Gold %20 indirimde bile kârlı kalmalı.
+ * Fiyatlar sağlayıcı API maliyeti, kur/altyapı rezervi ve final render payı içerir.
+ * fast düşük maliyetli Kling, hd Seedance, cinematic Seedance 2.5,
+ * audio/audio_premium ise Veo 3.1 katmanlarını kullanır.
+ * Gold/Platinum indirimi sonrasında da kârlı kalacak şekilde belirlenmiştir.
  */
 export const VIDEO_PRICES: Record<VideoQuality, Record<number, number>> = {
-  fast: { 5: 15, 10: 25 },
-  hd: { 5: 30, 10: 55 },
-  cinematic: { 5: 60, 10: 120 },
-  audio: { 8: 120 },
-  audio_premium: { 8: 300 },
+  fast: { 5: 79, 10: 149 },
+  hd: { 5: 179, 10: 349 },
+  cinematic: { 5: 229, 10: 449 },
+  audio: { 8: 229 },
+  audio_premium: { 8: 449 },
 };
 export type VideoQuality = "fast" | "hd" | "cinematic" | "audio" | "audio_premium";
 const PRICES = VIDEO_PRICES;
