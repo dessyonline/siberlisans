@@ -108,9 +108,12 @@ function TopupPayment() {
                   <Row label="alıcı" value={bank.holder_name ?? ""} />
                   <Row label="iban" value={bank.iban ?? ""} mono />
                   <Row label="tutar" value={`${amount} TL`} />
-                  <Row label="açıklama" value={topup.reference_code ?? ""} mono highlight />
-                  <div className="text-[11px] text-warn font-mono mt-1">
-                    ⚠︎ açıklamaya mutlaka referansı yaz — eşleşmezse onaylanmaz
+                  <div className="rounded-md border border-warn/40 bg-warn/10 p-3">
+                    <div className="font-mono text-[11px] uppercase text-warn">açıklama</div>
+                    <div className="mt-0.5 text-base font-bold text-warn">boş bırakın</div>
+                    <div className="mt-1 text-[11px] text-muted-foreground font-mono">
+                      ⚠︎ açıklama alanına hiçbir şey yazmayın — referans, isim veya not girmeyin
+                    </div>
                   </div>
                 </div>
                 <img src={enparaQr} alt="Ödeme için Enpara QR kodu" className="h-32 w-32 rounded border border-border object-cover" />
