@@ -209,7 +209,7 @@ function Page() {
               className="inline-flex items-center gap-1 rounded border border-yellow-400/50 bg-yellow-400/10 px-2 py-0.5 text-yellow-400 hover:bg-yellow-400/20"
             >
               <Sparkles className="h-3 w-3" />
-              Pakete geç · ₺149/ay ile ~50 video →
+              Pakete geç · daha avantajlı kredi paketleri →
             </Link>
           )}
           {isDiscount && (
