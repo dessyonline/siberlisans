@@ -18,25 +18,30 @@ export const listAdminProducts = createServerFn({ method: "GET" })
          ) k ON k.product_id=p.id
         ORDER BY p.sort_order DESC, p.created_at DESC`,
     );
-    return rows.map((p) => ({
-      ...p,
-      id: String(p.id), name: String(p.name), slug: String(p.slug),
-      description: (p.description as string | null) ?? null,
-      duration: String(p.duration ?? "monthly"), delivery_type: String(p.delivery_type ?? "key"),
-      price_try: num(p.price_try) ?? 0, cost_try: num(p.cost_try), active: bool(p.active),
-      category: (p.category as string | null) ?? null, manual_fulfillment: bool(p.manual_fulfillment),
-      stock_hint: num(p.stock_hint), low_stock_threshold: num(p.low_stock_threshold) ?? 5,
-      featured: bool(p.featured), unlimited_stock: bool(p.unlimited_stock), sort_order: num(p.sort_order) ?? 0,
-      tier: String(p.tier ?? "standard"), image_url: (p.image_url as string | null) ?? null,
-      shopier_url: (p.shopier_url as string | null) ?? null, demo_video_url: (p.demo_video_url as string | null) ?? null,
-      requires_email: bool(p.requires_email), retail_price_try: num(p.retail_price_try),
-      retail_price_source_url: (p.retail_price_source_url as string | null) ?? null,
-      duration_label: (p.duration_label as string | null) ?? null, grants_app: (p.grants_app as string | null) ?? null,
-      grants_app_days: num(p.grants_app_days),
-      warranty_price_try: num(p.warranty_price_try), warranty_label: (p.warranty_label as string | null) ?? null,
-      available_count: num(p.available_count) ?? 0,
-      total_count: num(p.total_count) ?? 0,
-    }));
+    return rows.map((p) => {
+      // Legacy Shopier data may still exist in the database, but it is no longer
+      // exposed to the application or returned to the admin panel.
+      const { shopier_url: _legacyShopierUrl, ...product } = p;
+      return {
+        ...product,
+        id: String(p.id), name: String(p.name), slug: String(p.slug),
+        description: (p.description as string | null) ?? null,
+        duration: String(p.duration ?? "monthly"), delivery_type: String(p.delivery_type ?? "key"),
+        price_try: num(p.price_try) ?? 0, cost_try: num(p.cost_try), active: bool(p.active),
+        category: (p.category as string | null) ?? null, manual_fulfillment: bool(p.manual_fulfillment),
+        stock_hint: num(p.stock_hint), low_stock_threshold: num(p.low_stock_threshold) ?? 5,
+        featured: bool(p.featured), unlimited_stock: bool(p.unlimited_stock), sort_order: num(p.sort_order) ?? 0,
+        tier: String(p.tier ?? "standard"), image_url: (p.image_url as string | null) ?? null,
+        demo_video_url: (p.demo_video_url as string | null) ?? null,
+        requires_email: bool(p.requires_email), retail_price_try: num(p.retail_price_try),
+        retail_price_source_url: (p.retail_price_source_url as string | null) ?? null,
+        duration_label: (p.duration_label as string | null) ?? null, grants_app: (p.grants_app as string | null) ?? null,
+        grants_app_days: num(p.grants_app_days),
+        warranty_price_try: num(p.warranty_price_try), warranty_label: (p.warranty_label as string | null) ?? null,
+        available_count: num(p.available_count) ?? 0,
+        total_count: num(p.total_count) ?? 0,
+      };
+    });
   });
 
 const idsInput = z.array(z.string().uuid()).min(1).max(500);

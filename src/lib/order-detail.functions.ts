@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireAuth } from "./auth-middleware.server";
 
 const PRODUCT_COLS =
-  "id, name, slug, duration, image_url, delivery_type, manual_fulfillment, unlimited_stock, tier, source, required_fields, shopier_url, requires_email, category";
+  "id, name, slug, duration, image_url, delivery_type, manual_fulfillment, unlimited_stock, tier, source, required_fields, requires_email, category";
 
 type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
 
@@ -46,7 +46,6 @@ export const getOrderDetail = createServerFn({ method: "GET" })
             delivery_type: s(p.delivery_type),
             tier: s(p.tier),
             source: s(p.source),
-            shopier_url: s(p.shopier_url),
             category: s(p.category),
             manual_fulfillment: bool(p.manual_fulfillment),
             unlimited_stock: bool(p.unlimited_stock),
@@ -66,7 +65,7 @@ export const getOrderDetail = createServerFn({ method: "GET" })
               oi.warranty, oi.warranty_price_try, oi.warranty_label,
               p.name AS p_name, p.slug AS p_slug, p.image_url AS p_image_url, p.duration AS p_duration,
               p.delivery_type AS p_delivery_type, p.manual_fulfillment AS p_manual_fulfillment,
-              p.unlimited_stock AS p_unlimited_stock, p.shopier_url AS p_shopier_url,
+              p.unlimited_stock AS p_unlimited_stock,
               p.requires_email AS p_requires_email, p.required_fields AS p_required_fields,
               p.category AS p_category
          FROM order_items oi
@@ -121,7 +120,6 @@ export const getOrderDetail = createServerFn({ method: "GET" })
               delivery_type: i.p_delivery_type,
               manual_fulfillment: i.p_manual_fulfillment,
               unlimited_stock: i.p_unlimited_stock,
-              shopier_url: i.p_shopier_url,
               requires_email: i.p_requires_email,
               required_fields: i.p_required_fields,
               category: i.p_category,

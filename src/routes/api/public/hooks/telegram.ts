@@ -1,12 +1,33 @@
+import { timingSafeEqual } from "crypto";
 import { createFileRoute } from "@tanstack/react-router";
-import { json } from "@/lib/license-api.server";
+import { clientIp, json } from "@/lib/license-api.server";
+import { rateLimitShared } from "@/lib/license-feature.server";
 import { mysqlOne, mysqlQuery } from "@/lib/mysql.server";
 import { sendTelegram } from "@/lib/telegram.server";
+
+function matchesSecret(provided: string, expected: string): boolean {
+  const a = Buffer.from(provided);
+  const b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
 
 export const Route = createFileRoute("/api/public/hooks/telegram")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET ?? "";
+        const providedSecret = request.headers.get("x-telegram-bot-api-secret-token") ?? "";
+        if (!expectedSecret) {
+          console.error("[telegram-webhook] TELEGRAM_WEBHOOK_SECRET missing — request rejected");
+          return json({ success: false, error: "Webhook yapılandırılmadı." }, 503);
+        }
+        if (!matchesSecret(providedSecret, expectedSecret)) {
+          return json({ success: false, error: "Yetkisiz." }, 401);
+        }
+        if (!(await rateLimitShared(`telegram:webhook:${clientIp(request)}`, 30, 60_000))) {
+          return json({ success: false, error: "Çok fazla istek." }, 429);
+        }
+
         let payload: any;
         try {
           payload = await request.json();

@@ -106,7 +106,6 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { to: "/admin/cuzdan", label: "cüzdan", icon: Wallet },
       { to: "/admin/kripto", label: "kripto", icon: Bitcoin },
-      { to: "/admin/shopier", label: "shopier", icon: Wallet },
     ],
   },
   {

@@ -1,16 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CORS, cleanProxyBody, gate, json } from "@/lib/license-feature.server";
+import { PRIVATE_CORS, cleanProxyBody, gate, privateJson } from "@/lib/license-feature.server";
 
-const CORS_ALL = { ...CORS, "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
+const CORS_ALL = { ...PRIVATE_CORS, "Access-Control-Allow-Methods": "GET, POST, OPTIONS" };
 export const Route = createFileRoute("/api/source-code")({
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS_ALL }),
-      GET: async () => json({ ok: true, files: [] }),
+      GET: async () => privateJson({ ok: true, files: [] }, 200, CORS_ALL),
       POST: async ({ request }) => {
         const g = await gate(request, {
           eventName: "source_code",
           rateLimit: { limit: 10, windowMs: 60_000 },
+          cors: CORS_ALL,
         });
         if ("response" in g) return g.response;
         const { body } = g;
@@ -20,10 +21,10 @@ export const Route = createFileRoute("/api/source-code")({
           .replace(/\/(api\/)?projects$/i, "")
           .replace(/\/api$/i, "");
         if (!sourceBase) {
-          return json({ ok: true, files: [] });
+          return privateJson({ ok: true, files: [] }, 200, CORS_ALL);
         }
         const projectId = (body.projectId as string | undefined) ?? "";
-        if (!projectId) return json({ ok: false, error: "projectId gerekli." });
+        if (!projectId) return privateJson({ ok: false, error: "projectId gerekli." }, 400, CORS_ALL);
         const target = `${sourceBase}/projects/${projectId}/source-code`;
         const upstreamBody = cleanProxyBody(body);
         try {
@@ -36,11 +37,11 @@ export const Route = createFileRoute("/api/source-code")({
             | { files?: Array<{ path: string; content: string }> }
             | null;
           if (!upstream.ok || !data) {
-            return json({ ok: false, error: "Kaynak kod alınamadı." });
+            return privateJson({ ok: false, error: "Kaynak kod alınamadı." }, 502, CORS_ALL);
           }
-          return json({ ok: true, files: data.files ?? [] });
+          return privateJson({ ok: true, files: data.files ?? [] }, 200, CORS_ALL);
         } catch (e) {
-          return json({ ok: false, error: (e as Error).message });
+          return privateJson({ ok: false, error: (e as Error).message }, 502, CORS_ALL);
         }
       },
     },

@@ -94,7 +94,6 @@ import { Route as AuthenticatedAdminPartnerRouteImport } from './routes/_authent
 import { Route as AuthenticatedAdminPopulerRouteImport } from './routes/_authenticated/admin/populer'
 import { Route as AuthenticatedAdminPromosyonlarRouteImport } from './routes/_authenticated/admin/promosyonlar'
 import { Route as AuthenticatedAdminRaporRouteImport } from './routes/_authenticated/admin/rapor'
-import { Route as AuthenticatedAdminShopierRouteImport } from './routes/_authenticated/admin/shopier'
 import { Route as AuthenticatedAdminSiparislerRouteImport } from './routes/_authenticated/admin/siparisler'
 import { Route as AuthenticatedAdminSorularRouteImport } from './routes/_authenticated/admin/sorular'
 import { Route as AuthenticatedAdminTedarikciLogRouteImport } from './routes/_authenticated/admin/tedarikci-log'
@@ -148,7 +147,6 @@ import { Route as ApiPublicHooksCampaignTickRouteImport } from './routes/api/pub
 import { Route as ApiPublicHooksCatalogWebhooksRouteImport } from './routes/api/public/hooks/catalog-webhooks'
 import { Route as ApiPublicHooksProcessAiVideosRouteImport } from './routes/api/public/hooks/process-ai-videos'
 import { Route as ApiPublicHooksPushTickRouteImport } from './routes/api/public/hooks/push-tick'
-import { Route as ApiPublicHooksShopierRouteImport } from './routes/api/public/hooks/shopier'
 import { Route as ApiPublicHooksSubscriptionsRenewRouteImport } from './routes/api/public/hooks/subscriptions-renew'
 import { Route as ApiPublicHooksSyncUniquelisansRouteImport } from './routes/api/public/hooks/sync-uniquelisans'
 import { Route as ApiPublicHooksTelegramRouteImport } from './routes/api/public/hooks/telegram'
@@ -616,12 +614,6 @@ const AuthenticatedAdminRaporRoute = AuthenticatedAdminRaporRouteImport.update({
   path: '/rapor',
   getParentRoute: () => AuthenticatedAdminRouteRoute,
 } as any)
-const AuthenticatedAdminShopierRoute =
-  AuthenticatedAdminShopierRouteImport.update({
-    id: '/shopier',
-    path: '/shopier',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
 const AuthenticatedAdminSiparislerRoute =
   AuthenticatedAdminSiparislerRouteImport.update({
     id: '/siparisler',
@@ -924,11 +916,6 @@ const ApiPublicHooksPushTickRoute = ApiPublicHooksPushTickRouteImport.update({
   path: '/api/public/hooks/push-tick',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicHooksShopierRoute = ApiPublicHooksShopierRouteImport.update({
-  id: '/api/public/hooks/shopier',
-  path: '/api/public/hooks/shopier',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiPublicHooksSubscriptionsRenewRoute =
   ApiPublicHooksSubscriptionsRenewRouteImport.update({
     id: '/api/public/hooks/subscriptions-renew',
@@ -1104,7 +1091,6 @@ export interface FileRoutesByFullPath {
   '/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
   '/admin/rapor': typeof AuthenticatedAdminRaporRoute
-  '/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
   '/admin/sorular': typeof AuthenticatedAdminSorularRoute
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
@@ -1159,7 +1145,6 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/catalog-webhooks': typeof ApiPublicHooksCatalogWebhooksRoute
   '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
-  '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/subscriptions-renew': typeof ApiPublicHooksSubscriptionsRenewRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
   '/api/public/hooks/telegram': typeof ApiPublicHooksTelegramRoute
@@ -1259,7 +1244,6 @@ export interface FileRoutesByTo {
   '/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
   '/admin/rapor': typeof AuthenticatedAdminRaporRoute
-  '/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
   '/admin/sorular': typeof AuthenticatedAdminSorularRoute
   '/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
@@ -1314,7 +1298,6 @@ export interface FileRoutesByTo {
   '/api/public/hooks/catalog-webhooks': typeof ApiPublicHooksCatalogWebhooksRoute
   '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
-  '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/subscriptions-renew': typeof ApiPublicHooksSubscriptionsRenewRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
   '/api/public/hooks/telegram': typeof ApiPublicHooksTelegramRoute
@@ -1418,7 +1401,6 @@ export interface FileRoutesById {
   '/_authenticated/admin/populer': typeof AuthenticatedAdminPopulerRoute
   '/_authenticated/admin/promosyonlar': typeof AuthenticatedAdminPromosyonlarRoute
   '/_authenticated/admin/rapor': typeof AuthenticatedAdminRaporRoute
-  '/_authenticated/admin/shopier': typeof AuthenticatedAdminShopierRoute
   '/_authenticated/admin/siparisler': typeof AuthenticatedAdminSiparislerRoute
   '/_authenticated/admin/sorular': typeof AuthenticatedAdminSorularRoute
   '/_authenticated/admin/tedarikci-log': typeof AuthenticatedAdminTedarikciLogRoute
@@ -1473,7 +1455,6 @@ export interface FileRoutesById {
   '/api/public/hooks/catalog-webhooks': typeof ApiPublicHooksCatalogWebhooksRoute
   '/api/public/hooks/process-ai-videos': typeof ApiPublicHooksProcessAiVideosRoute
   '/api/public/hooks/push-tick': typeof ApiPublicHooksPushTickRoute
-  '/api/public/hooks/shopier': typeof ApiPublicHooksShopierRoute
   '/api/public/hooks/subscriptions-renew': typeof ApiPublicHooksSubscriptionsRenewRoute
   '/api/public/hooks/sync-uniquelisans': typeof ApiPublicHooksSyncUniquelisansRoute
   '/api/public/hooks/telegram': typeof ApiPublicHooksTelegramRoute
@@ -1577,7 +1558,6 @@ export interface FileRouteTypes {
     | '/admin/populer'
     | '/admin/promosyonlar'
     | '/admin/rapor'
-    | '/admin/shopier'
     | '/admin/siparisler'
     | '/admin/sorular'
     | '/admin/tedarikci-log'
@@ -1632,7 +1612,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/catalog-webhooks'
     | '/api/public/hooks/process-ai-videos'
     | '/api/public/hooks/push-tick'
-    | '/api/public/hooks/shopier'
     | '/api/public/hooks/subscriptions-renew'
     | '/api/public/hooks/sync-uniquelisans'
     | '/api/public/hooks/telegram'
@@ -1732,7 +1711,6 @@ export interface FileRouteTypes {
     | '/admin/populer'
     | '/admin/promosyonlar'
     | '/admin/rapor'
-    | '/admin/shopier'
     | '/admin/siparisler'
     | '/admin/sorular'
     | '/admin/tedarikci-log'
@@ -1787,7 +1765,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/catalog-webhooks'
     | '/api/public/hooks/process-ai-videos'
     | '/api/public/hooks/push-tick'
-    | '/api/public/hooks/shopier'
     | '/api/public/hooks/subscriptions-renew'
     | '/api/public/hooks/sync-uniquelisans'
     | '/api/public/hooks/telegram'
@@ -1890,7 +1867,6 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/populer'
     | '/_authenticated/admin/promosyonlar'
     | '/_authenticated/admin/rapor'
-    | '/_authenticated/admin/shopier'
     | '/_authenticated/admin/siparisler'
     | '/_authenticated/admin/sorular'
     | '/_authenticated/admin/tedarikci-log'
@@ -1945,7 +1921,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/catalog-webhooks'
     | '/api/public/hooks/process-ai-videos'
     | '/api/public/hooks/push-tick'
-    | '/api/public/hooks/shopier'
     | '/api/public/hooks/subscriptions-renew'
     | '/api/public/hooks/sync-uniquelisans'
     | '/api/public/hooks/telegram'
@@ -2027,7 +2002,6 @@ export interface RootRouteChildren {
   ApiPublicHooksCatalogWebhooksRoute: typeof ApiPublicHooksCatalogWebhooksRoute
   ApiPublicHooksProcessAiVideosRoute: typeof ApiPublicHooksProcessAiVideosRoute
   ApiPublicHooksPushTickRoute: typeof ApiPublicHooksPushTickRoute
-  ApiPublicHooksShopierRoute: typeof ApiPublicHooksShopierRoute
   ApiPublicHooksSubscriptionsRenewRoute: typeof ApiPublicHooksSubscriptionsRenewRoute
   ApiPublicHooksSyncUniquelisansRoute: typeof ApiPublicHooksSyncUniquelisansRoute
   ApiPublicHooksTelegramRoute: typeof ApiPublicHooksTelegramRoute
@@ -2643,13 +2617,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminRaporRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
-    '/_authenticated/admin/shopier': {
-      id: '/_authenticated/admin/shopier'
-      path: '/shopier'
-      fullPath: '/admin/shopier'
-      preLoaderRoute: typeof AuthenticatedAdminShopierRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
     '/_authenticated/admin/siparisler': {
       id: '/_authenticated/admin/siparisler'
       path: '/siparisler'
@@ -3021,13 +2988,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPushTickRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/shopier': {
-      id: '/api/public/hooks/shopier'
-      path: '/api/public/hooks/shopier'
-      fullPath: '/api/public/hooks/shopier'
-      preLoaderRoute: typeof ApiPublicHooksShopierRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/hooks/subscriptions-renew': {
       id: '/api/public/hooks/subscriptions-renew'
       path: '/api/public/hooks/subscriptions-renew'
@@ -3169,7 +3129,6 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminPopulerRoute: typeof AuthenticatedAdminPopulerRoute
   AuthenticatedAdminPromosyonlarRoute: typeof AuthenticatedAdminPromosyonlarRoute
   AuthenticatedAdminRaporRoute: typeof AuthenticatedAdminRaporRoute
-  AuthenticatedAdminShopierRoute: typeof AuthenticatedAdminShopierRoute
   AuthenticatedAdminSiparislerRoute: typeof AuthenticatedAdminSiparislerRoute
   AuthenticatedAdminSorularRoute: typeof AuthenticatedAdminSorularRoute
   AuthenticatedAdminTedarikciLogRoute: typeof AuthenticatedAdminTedarikciLogRoute
@@ -3205,7 +3164,6 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminPopulerRoute: AuthenticatedAdminPopulerRoute,
     AuthenticatedAdminPromosyonlarRoute: AuthenticatedAdminPromosyonlarRoute,
     AuthenticatedAdminRaporRoute: AuthenticatedAdminRaporRoute,
-    AuthenticatedAdminShopierRoute: AuthenticatedAdminShopierRoute,
     AuthenticatedAdminSiparislerRoute: AuthenticatedAdminSiparislerRoute,
     AuthenticatedAdminSorularRoute: AuthenticatedAdminSorularRoute,
     AuthenticatedAdminTedarikciLogRoute: AuthenticatedAdminTedarikciLogRoute,
@@ -3417,7 +3375,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksCatalogWebhooksRoute: ApiPublicHooksCatalogWebhooksRoute,
   ApiPublicHooksProcessAiVideosRoute: ApiPublicHooksProcessAiVideosRoute,
   ApiPublicHooksPushTickRoute: ApiPublicHooksPushTickRoute,
-  ApiPublicHooksShopierRoute: ApiPublicHooksShopierRoute,
   ApiPublicHooksSubscriptionsRenewRoute: ApiPublicHooksSubscriptionsRenewRoute,
   ApiPublicHooksSyncUniquelisansRoute: ApiPublicHooksSyncUniquelisansRoute,
   ApiPublicHooksTelegramRoute: ApiPublicHooksTelegramRoute,

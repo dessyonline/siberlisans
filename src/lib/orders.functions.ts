@@ -1012,7 +1012,6 @@ const productInput = z.object({
     .union([z.string().url().max(500), z.string().max(0), z.string().regex(/^\/[\w\-\/.]+$/)])
     .optional()
     .nullable(),
-  shopier_url: z.union([z.string().url().max(500), z.string().max(0)]).optional().nullable(),
   requires_email: z.boolean().optional(),
   demo_video_url: z.union([z.string().url().max(500), z.string().max(0)]).optional().nullable(),
   grants_app: z.union([z.string().max(40), z.null()]).optional(),
