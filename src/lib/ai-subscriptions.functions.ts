@@ -10,6 +10,67 @@ function uid() {
   return crypto.randomUUID();
 }
 
+type AiPlanRow = {
+  slug: string;
+  price_try: string | number;
+  credits: number;
+  yearly_price_try: string | number | null;
+  yearly_credits: number | null;
+};
+
+type SafePlanFloor = {
+  name: string;
+  price_try: number;
+  credits: number;
+  yearly_price_try: number;
+  yearly_credits: number;
+  perks: string[];
+};
+
+const SAFE_PLAN_FLOORS: Record<string, SafePlanFloor> = {
+  starter: {
+    name: "Başlangıç",
+    price_try: 500,
+    credits: 500,
+    yearly_price_try: 5700,
+    yearly_credits: 6000,
+    perks: ["~6 hızlı video", "~2 HD video", "30 gün geçerli", "Başarısız işlerde otomatik iade"],
+  },
+  pro: {
+    name: "Üretici",
+    price_try: 1500,
+    credits: 1500,
+    yearly_price_try: 16200,
+    yearly_credits: 18000,
+    perks: ["~18 hızlı video", "~8 HD video", "~6 sinematik video", "30 gün geçerli"],
+  },
+  studio: {
+    name: "Stüdyo",
+    price_try: 5000,
+    credits: 5000,
+    yearly_price_try: 51000,
+    yearly_credits: 60000,
+    perks: ["~63 hızlı video", "~27 HD video", "~21 sinematik video", "Öncelikli multi-scene kullanım"],
+  },
+};
+
+function safePlanValues(slug: string, row: AiPlanRow) {
+  const floor = SAFE_PLAN_FLOORS[slug];
+  const monthlyPrice = num(row.price_try) ?? 0;
+  const monthlyCredits = Number(row.credits) || 0;
+  const yearlyPrice = num(row.yearly_price_try) ?? monthlyPrice * 12;
+  const yearlyCredits = Number(row.yearly_credits) || monthlyCredits * 12;
+
+  return {
+    name: floor?.name,
+    price_try: Math.max(monthlyPrice, floor?.price_try ?? 0),
+    credits: Math.max(monthlyCredits, floor?.credits ?? 0),
+    yearly_price_try: Math.max(yearlyPrice, floor?.yearly_price_try ?? 0),
+    yearly_credits: Math.max(yearlyCredits, floor?.yearly_credits ?? 0),
+    perks: floor?.perks,
+  };
+}
+
 export const listAiPlans = createServerFn({ method: "GET" }).handler(async () => {
   const rows = await mysqlQuery<{
     slug: string;
@@ -24,23 +85,26 @@ export const listAiPlans = createServerFn({ method: "GET" }).handler(async () =>
     `SELECT slug,name,price_try,credits,yearly_price_try,yearly_credits,perks,sort_order
        FROM ai_subscription_plans WHERE is_active=1 ORDER BY sort_order`,
   );
-  return rows.map((r) => ({
-    slug: r.slug,
-    name: r.name,
-    price_try: num(r.price_try) ?? 0,
-    credits: Number(r.credits),
-    yearly_price_try: r.yearly_price_try == null ? null : num(r.yearly_price_try),
-    yearly_credits: r.yearly_credits == null ? null : Number(r.yearly_credits),
-    perks: (() => {
-      if (!r.perks) return [];
-      try {
-        const parsed = typeof r.perks === "string" ? JSON.parse(r.perks) : r.perks;
-        return Array.isArray(parsed) ? parsed : [];
-      } catch {
-        return [];
-      }
-    })(),
-  }));
+  return rows.map((r) => {
+    const safe = safePlanValues(r.slug, r);
+    return {
+      slug: r.slug,
+      name: safe.name ?? r.name,
+      price_try: safe.price_try,
+      credits: safe.credits,
+      yearly_price_try: safe.yearly_price_try,
+      yearly_credits: safe.yearly_credits,
+      perks: safe.perks ?? (() => {
+        if (!r.perks) return [];
+        try {
+          const parsed = typeof r.perks === "string" ? JSON.parse(r.perks) : r.perks;
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      })(),
+    };
+  });
 });
 
 export const getMyAiSubscription = createServerFn({ method: "GET" })
@@ -96,8 +160,9 @@ export const purchaseAiSubscription = createServerFn({ method: "POST" })
     );
     if (!plan) throw new Error("Plan bulunamadı.");
 
-    const price = data.billing === "yearly" ? num(plan.yearly_price_try) ?? (num(plan.price_try) ?? 0) * 12 : num(plan.price_try) ?? 0;
-    const credits = data.billing === "yearly" ? plan.yearly_credits ?? plan.credits * 12 : plan.credits;
+    const safe = safePlanValues(plan.slug, plan);
+    const price = data.billing === "yearly" ? safe.yearly_price_try : safe.price_try;
+    const credits = data.billing === "yearly" ? safe.yearly_credits : safe.credits;
     const days = data.billing === "yearly" ? 365 : 30;
 
     const wallet = await mysqlOne<{ balance_try: string | number | null }>(
