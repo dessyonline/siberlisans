@@ -370,7 +370,11 @@ function CustomerDashboard({
             <ShieldCheck className="h-5 w-5 text-primary shrink-0" />
           </div>
 
-          {aiSub ? (
+          {aiSub === undefined ? (
+            <div className="mt-4 animate-pulse rounded-md border border-border/50 bg-background/30 p-3 font-mono text-xs text-muted-foreground">
+              AI paket bilgisi yükleniyor…
+            </div>
+          ) : aiSub ? (
             <div className="mt-4">
               <div className="flex items-center justify-between gap-2 font-mono text-xs">
                 <span className="text-muted-foreground">AI kullanım bakiyesi</span>
