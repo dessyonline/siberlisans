@@ -13,9 +13,9 @@ export const Route = createFileRoute("/paketler/ai")({
   head: () => ({
     meta: [
       { title: "AI Video Paketleri — En Uygun Fiyat | SiberPHP" },
-      { name: "description", content: "AI video üretimi için aylık paketler. Yurtdışı platformlardan çok daha uygun, TL fiyatlama, 30 gün kredi havuzu." },
+      { name: "description", content: "AI video üretimi için kredi paketleri. TL fiyatlama, model bazlı kullanım ve 30 gün kredi havuzu." },
       { property: "og:title", content: "AI Video Paketleri — SiberPHP" },
-      { property: "og:description", content: "₺149'dan başlayan aylık AI video paketleri. Video başına ₺3'ten fiyatlar." },
+      { property: "og:description", content: "₺500'dan başlayan AI video paketleri. Hızlı üretimler ₺79'dan başlar." },
     ],
   }),
 });
@@ -93,7 +93,7 @@ function Page() {
         <h1 className="font-mono text-3xl sm:text-5xl neon-text">AI Video Paketleri</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
           Tek kredi havuzu — <span className="text-primary font-semibold">video + görsel + HD upscale</span> aynı paketten harcanır.
-          <span className="text-primary font-semibold"> ₺149'dan başlıyor, kullanmasan tek seferlik de alabilirsin</span>. Abonelik zorunlu değil.
+          <span className="text-primary font-semibold"> ₺500'dan başlıyor; abonelik zorunlu değil, tek seferlik kredi de alabilirsin</span>. Abonelik zorunlu değil.
         </p>
 
 
@@ -108,7 +108,7 @@ function Page() {
             onClick={() => setBilling("yearly")}
             className={`px-4 py-1.5 rounded font-mono text-sm ${billing === "yearly" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
           >
-            Yıllık <span className="ml-1 text-[10px] opacity-80">-%17</span>
+            Yıllık <span className="ml-1 text-[10px] opacity-80">avantajlı</span>
           </button>
         </div>
       </div>
@@ -132,7 +132,7 @@ function Page() {
           const Icon = ICONS[p.slug] ?? Zap;
           const price = billing === "yearly" ? p.yearly_price_try ?? p.price_try * 12 : p.price_try;
           const credits = billing === "yearly" ? p.yearly_credits ?? p.credits * 12 : p.credits;
-          const perVideo = (price / (credits / 10)).toFixed(1);
+          const fastVideos = Math.floor(credits / 79);
           const popular = p.slug === "pro";
           return (
             <div
@@ -153,7 +153,7 @@ function Page() {
                 <span className="text-muted-foreground text-sm">/{billing === "yearly" ? "yıl" : "ay"}</span>
               </div>
               <div className="text-xs text-muted-foreground mb-4">
-                ~₺{perVideo} · Hızlı video başına
+                ~{fastVideos} hızlı 5 sn video
               </div>
               <div className="text-xs font-mono text-primary mb-3">
                 {credits} kredi · 30 gün {billing === "yearly" ? "× 12" : ""}
@@ -193,9 +193,9 @@ function Page() {
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-border/40"><td className="py-2 pr-4">🎬 Fast Video (5sn)</td><td className="text-primary">10 kredi</td><td className="text-muted-foreground text-xs">Kling/Luma turbo</td></tr>
-              <tr className="border-b border-border/40"><td className="py-2 pr-4">🎬 HD Video (5sn)</td><td className="text-primary">25 kredi</td><td className="text-muted-foreground text-xs">1080p</td></tr>
-              <tr className="border-b border-border/40"><td className="py-2 pr-4">🎬 Cinematic Video</td><td className="text-primary">50 kredi</td><td className="text-muted-foreground text-xs">Sinematik kalite</td></tr>
+              <tr className="border-b border-border/40"><td className="py-2 pr-4">🎬 Fast Video (5sn)</td><td className="text-primary">79 kredi</td><td className="text-muted-foreground text-xs">Kling 2.5 Turbo</td></tr>
+              <tr className="border-b border-border/40"><td className="py-2 pr-4">🎬 HD Video (5sn)</td><td className="text-primary">179 kredi</td><td className="text-muted-foreground text-xs">Seedance 2.0 Fast · 720p</td></tr>
+              <tr className="border-b border-border/40"><td className="py-2 pr-4">🎬 Cinematic Video (5sn)</td><td className="text-primary">229 kredi</td><td className="text-muted-foreground text-xs">Seedance 2.5 · 720p</td></tr>
               <tr className="border-b border-border/40"><td className="py-2 pr-4">🖼️ HD Upscale / İyileştir</td><td className="text-primary">5 kredi</td><td className="text-muted-foreground text-xs">Gemini 3 Pro Image</td></tr>
               <tr className="border-b border-border/40"><td className="py-2 pr-4">🖼️ Restore / Renklendir</td><td className="text-primary">8 kredi</td><td className="text-muted-foreground text-xs">Eski foto onarımı</td></tr>
               <tr className="border-b border-border/40"><td className="py-2 pr-4">🖼️ Özel Prompt Görsel</td><td className="text-primary">6 kredi</td><td className="text-muted-foreground text-xs">Serbest talimat</td></tr>
@@ -232,8 +232,8 @@ function Page() {
             <tbody>
               <tr className="border-b border-border/40 bg-primary/5">
                 <td className="py-2 pr-4 text-primary font-semibold">SiberPHP (biz)</td>
-                <td className="py-2 pr-4">₺149/ay veya ₺10 tek</td>
-                <td className="py-2 pr-4 text-primary">₺3-10</td>
+                <td className="py-2 pr-4">₺500/ay veya ₺79 tek</td>
+                <td className="py-2 pr-4 text-primary">₺79-449</td>
                 <td className="py-2">Hayır ✓</td>
               </tr>
               <tr className="border-b border-border/40">
