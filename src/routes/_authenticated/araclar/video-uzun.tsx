@@ -33,9 +33,9 @@ type Quality = "fast" | "hd" | "cinematic";
 type Dur = 5 | 10;
 
 const DEFAULT_PRICES: Record<Quality, Record<number, number>> = {
-  fast: { 5: 10, 10: 20 },
-  hd: { 5: 25, 10: 50 },
-  cinematic: { 5: 50, 10: 100 },
+  fast: { 5: 79, 10: 149 },
+  hd: { 5: 179, 10: 349 },
+  cinematic: { 5: 229, 10: 449 },
 };
 
 const QUALITY_META: Record<Quality, { label: string; desc: string; icon: typeof Zap }> = {
