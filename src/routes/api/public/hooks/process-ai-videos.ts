@@ -8,14 +8,34 @@ import { requireCron } from "@/lib/cron-auth.server";
 
 const FAL_BASE = "https://queue.fal.run";
 
-type Quality = "fast" | "hd" | "cinematic";
+type Quality = "fast" | "hd" | "cinematic" | "audio" | "audio_premium";
 
-// Model mapping — chosen for cost/quality balance on fal.ai
+// Model eşlemesi — fal.ai maliyet/kalite dengesi (fiyatlar ai-tools.functions.ts'de).
 const MODEL_MAP: Record<Quality, string> = {
-  fast: "fal-ai/ltx-video",
-  hd: "fal-ai/kling-video/v1.6/standard/text-to-video",
-  cinematic: "fal-ai/kling-video/v2/master/text-to-video",
+  fast: "fal-ai/bytedance/seedance/v1/lite/text-to-video",
+  hd: "fal-ai/bytedance/seedance/v1/pro/fast/text-to-video",
+  cinematic: "fal-ai/bytedance/seedance/v1/pro/text-to-video",
+  audio: "fal-ai/veo3.1/fast",
+  audio_premium: "fal-ai/veo3.1",
 };
+
+function buildInput(q: Quality, prompt: string, aspect: string, duration: number): Record<string, unknown> {
+  if (q === "audio" || q === "audio_premium") {
+    return {
+      prompt,
+      aspect_ratio: aspect === "9:16" ? "9:16" : "16:9",
+      duration: "8s",
+      resolution: "720p",
+      generate_audio: true,
+    };
+  }
+  return {
+    prompt,
+    aspect_ratio: aspectRatioForFal(aspect),
+    duration: String(duration === 10 ? 10 : 5),
+    resolution: q === "fast" ? "720p" : "1080p",
+  };
+}
 
 function ts(d: Date = new Date()): string {
   return d.toISOString().slice(0, 19).replace("T", " ");
@@ -142,8 +162,21 @@ async function failAiJob(jobId: string, reason: string, refund = true) {
   if (n !== 1 || !refund) return;
   const job = await mysqlOne<{ user_id: string; params: unknown }>("SELECT user_id, params FROM ai_jobs WHERE id=?", [jobId]);
   if (!job) return;
-  const p = parseParams(job.params) as { from_wallet?: number; from_sub?: number; sub_id?: string | null };
-  const fromWallet = Number(p.from_wallet ?? 0);
+  const p = parseParams(job.params) as { from_wallet?: number; from_credits?: number; from_sub?: number; sub_id?: string | null };
+  const fromWallet = Number(p.from_wallet ?? 0); // eski (₺) işler
+  const fromCredits = Number(p.from_credits ?? 0);
+  if (fromCredits > 0) {
+    await mysqlQuery(
+      `INSERT INTO ai_credit_wallets (user_id,credits,updated_at) VALUES (?,?,?)
+       ON DUPLICATE KEY UPDATE credits=credits+VALUES(credits), updated_at=VALUES(updated_at)`,
+      [job.user_id, fromCredits, ts()],
+    );
+    const c = await mysqlOne<{ credits: unknown }>("SELECT credits FROM ai_credit_wallets WHERE user_id=?", [job.user_id]);
+    await mysqlQuery(
+      "INSERT INTO ai_credit_transactions (id,user_id,kind,amount,balance_after,job_id,note,created_at) VALUES (?,?,?,?,?,?,?,?)",
+      [uid(), job.user_id, "refund", fromCredits, num(c?.credits) ?? 0, jobId, "video başarısız — iade", ts()],
+    );
+  }
   const fromSub = Number(p.from_sub ?? 0);
   if (fromSub > 0 && p.sub_id) {
     await mysqlExec("UPDATE ai_subscriptions SET credits_remaining=credits_remaining+? WHERE id=?", [fromSub, p.sub_id]);
@@ -183,11 +216,7 @@ async function processQueued(key: string): Promise<{ submitted: number; errors: 
     const params = parseParams(job.params) as { quality?: Quality; aspect?: string; duration?: number };
     const q = params.quality ?? "fast";
     const model = MODEL_MAP[q] ?? MODEL_MAP.fast;
-    const input: Record<string, unknown> = {
-      prompt: job.prompt,
-      aspect_ratio: aspectRatioForFal(params.aspect ?? "16:9"),
-      duration: String(params.duration ?? 5),
-    };
+    const input = buildInput(MODEL_MAP[q] ? q : "fast", job.prompt, params.aspect ?? "16:9", params.duration ?? 5);
     try {
       const r = await falSubmit(model, input, key);
       await setProviderRequest(job.id, r.request_id, model);
