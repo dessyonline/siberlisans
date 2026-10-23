@@ -285,9 +285,22 @@ function CampaignsAdmin() {
                     {testResult.memberStatus}
                   </span>
                 </div>
+                <div>
+                  Post Messages: <span className={testResult.canPostMessages === true ? "text-primary" : testResult.canPostMessages === false ? "text-red-400" : "text-yellow-400"}>
+                    {testResult.canPostMessages === true ? "açık" : testResult.canPostMessages === false ? "kapalı" : "doğrulanamadı"}
+                  </span>
+                </div>
                 {testResult.memberError && <div className="text-red-400">member hata: {testResult.memberError}</div>}
-                {(testResult.memberStatus === "administrator" || testResult.memberStatus === "creator") ? (
-                  <div className="text-primary">✓ Bot bu kanalda admin. Gönderim çalışmalı.</div>
+                {(testResult.memberStatus === "administrator" || testResult.memberStatus === "creator") && testResult.canPostMessages === true ? (
+                  <div className="text-primary">✓ Bot bu kanalda admin ve Post Messages yetkisi açık. Gönderim çalışmalı.</div>
+                ) : testResult.memberStatus === "administrator" || testResult.memberStatus === "creator" ? (
+                  <div className="text-red-400">
+                    ✗ Bot admin, ancak <b>Post Messages</b> yetkisi kapalı. Kanal ayarlarından bu yetkiyi aç.
+                  </div>
+                ) : testResult.memberStatus === "unknown" ? (
+                  <div className="text-yellow-400">
+                    ⚠ Botun adminliği doğrulanamadı. <b>{testResult.botUsername}</b> token’ının ait olduğu botun, <b>{testResult.chatUsername ?? testResult.chatTitle}</b> kanalına admin olarak eklendiğini ve Post Messages yetkisinin açık olduğunu kontrol et. Bu hata bot yalnızca üye olduğunda veya Telegram yönetici listesini gizlediğinde görülebilir.
+                  </div>
                 ) : (
                   <div className="text-red-400">
                     ✗ Bot bu kanalda admin değil. @{testResult.botUsername} kullanıcısını <b>{testResult.chatUsername ?? testResult.chatTitle}</b> kanalına admin olarak ekle (Post Messages yetkisiyle).

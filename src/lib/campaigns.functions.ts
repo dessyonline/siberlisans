@@ -249,6 +249,7 @@ export type TelegramTestResult =
       chatUsername: string | null;
       chatType: string;
       memberStatus: string;
+      canPostMessages: boolean | null;
       memberError: string | null;
     };
 
@@ -267,13 +268,14 @@ export const testTelegramChannel = createServerFn({ method: "POST" })
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
       });
-      return (await r.json().catch(() => ({}))) as { ok?: boolean; result?: Record<string, unknown>; description?: string };
+      return (await r.json().catch(() => ({}))) as { ok?: boolean; result?: unknown; description?: string };
     };
 
     const me = await call("getMe");
     if (!me.ok) return { ok: false, step: "getMe", channelIdConfigured: channelId, error: me.description ?? "getMe hatası" };
-    const botUsername = (me.result?.username as string) ?? "?";
-    const botId = me.result?.id as number | undefined;
+    const botInfo = me.result as { username?: string; id?: number } | undefined;
+    const botUsername = botInfo?.username ?? "?";
+    const botId = botInfo?.id;
 
     const chat = await call("getChat", { chat_id: channelId });
     if (!chat.ok) {
@@ -288,16 +290,41 @@ export const testTelegramChannel = createServerFn({ method: "POST" })
           : undefined,
       };
     }
-    const chatTitle = (chat.result?.title as string) ?? "?";
-    const chatUsername = (chat.result?.username as string) ?? null;
-    const chatType = (chat.result?.type as string) ?? "?";
+    const chatInfo = chat.result as { title?: string; username?: string; type?: string } | undefined;
+    const chatTitle = chatInfo?.title ?? "?";
+    const chatUsername = chatInfo?.username ?? null;
+    const chatType = chatInfo?.type ?? "?";
 
     let memberStatus = "unknown";
+    let canPostMessages: boolean | null = null;
     let memberError: string | null = null;
     if (botId) {
-      const mem = await call("getChatMember", { chat_id: channelId, user_id: botId });
-      if (mem.ok) memberStatus = (mem.result?.status as string) ?? "unknown";
-      else memberError = mem.description ?? "getChatMember hatası";
+      // getChatMember is not a reliable admin check here: Telegram only guarantees
+      // it for other users when the bot is already an administrator. Asking for the
+      // administrator list lets us distinguish "not admin" from "could not verify".
+      const admins = await call("getChatAdministrators", { chat_id: channelId, return_bots: true });
+      if (admins.ok && Array.isArray(admins.result)) {
+        const botMember = admins.result.find((member) => {
+          const entry = member as { user?: { id?: number } };
+          return entry.user?.id === botId;
+        }) as { status?: string; can_post_messages?: boolean } | undefined;
+
+        if (botMember) {
+          memberStatus = botMember.status ?? "unknown";
+          canPostMessages = botMember.can_post_messages ?? null;
+        } else {
+          memberStatus = "not_admin";
+          memberError = "Bot, Telegram'ın kanal yöneticileri listesinde bulunamadı.";
+        }
+      } else {
+        const mem = await call("getChatMember", { chat_id: channelId, user_id: botId });
+        if (mem.ok) {
+          const member = mem.result as { status?: string; can_post_messages?: boolean } | undefined;
+          memberStatus = member?.status ?? "unknown";
+          canPostMessages = member?.can_post_messages ?? null;
+        }
+        memberError = mem.description ?? admins.description ?? "Kanal yöneticiliği doğrulanamadı";
+      }
     }
 
     return {
@@ -308,6 +335,7 @@ export const testTelegramChannel = createServerFn({ method: "POST" })
       chatUsername: chatUsername ? "@" + chatUsername : null,
       chatType,
       memberStatus,
+      canPostMessages,
       memberError,
     };
   });
