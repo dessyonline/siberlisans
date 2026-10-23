@@ -243,6 +243,19 @@ function AuthPage() {
           <Terminal className="h-4 w-4 text-primary" />
           $ ./auth --secure
         </div>
+        <div className="auth-yeti" aria-hidden="true">
+          <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="60" cy="60" r="55" fill="currentColor" opacity="0.12" />
+            <path d="M28 94C31 77 41 69 60 69C79 69 89 77 92 94" fill="white" stroke="currentColor" strokeWidth="3" />
+            <path d="M37 57C35 42 44 25 60 25C76 25 85 42 83 57C81 72 72 81 60 81C48 81 39 72 37 57Z" fill="white" stroke="currentColor" strokeWidth="3" />
+            <path d="M42 37L48 25L53 34L60 22L66 34L73 25L78 38" fill="white" stroke="currentColor" strokeWidth="3" strokeLinejoin="round" />
+            <path d="M34 51C28 48 26 54 31 58M86 51C92 48 94 54 89 58" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            <circle cx="50" cy="53" r="3" fill="currentColor" />
+            <circle cx="70" cy="53" r="3" fill="currentColor" />
+            <path d="M53 64C57 68 63 68 67 64" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            <path d="M45 87C51 91 69 91 75 87" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.35" />
+          </svg>
+        </div>
         <h1 className="mt-2 font-mono text-2xl neon-text">Hesabına Giriş</h1>
 
         {mfaMode ? (

@@ -808,3 +808,22 @@ body > iframe[src*="lovable"],
 html.mm-open [data-mobile-menu-panel] { display: flex; }
 html.mm-open [data-mobile-menu-backdrop] { display: block; }
 html.mm-open body { overflow: hidden; }
+
+/* Small Yeti anchor for the existing auth card; the surrounding layout stays unchanged. */
+.auth-yeti {
+  width: 86px;
+  height: 86px;
+  margin: 14px auto 4px;
+  display: grid;
+  place-items: center;
+  border: 1px solid hsl(var(--primary) / 0.35);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, hsl(var(--primary) / 0.2), transparent 68%);
+  color: hsl(var(--primary));
+  box-shadow: 0 0 24px hsl(var(--primary) / 0.12);
+}
+
+.auth-yeti svg {
+  width: 76px;
+  height: 76px;
+}
