@@ -35,14 +35,14 @@ function buildInput(q: Quality, prompt: string, aspect: string, duration: number
     prompt,
     aspect_ratio: aspectRatioForFal(aspect),
     duration: String(clipDuration),
-    resolution: "720p",
   };
 
-  // Kling hızlı katmanda sesi kapalı tutarak maliyeti öngörülebilir tutar.
+  // Kling 2.5 Turbo Pro kendi varsayılan çözünürlüğünü kullanır.
+  // Hızlı katmanda sesi kapalı tutarak maliyeti öngörülebilir tutar.
   if (q === "fast") return base;
 
   // Seedance katmanlarında senkron ses üretimi aynı akışta çalışır.
-  return { ...base, generate_audio: true };
+  return { ...base, resolution: "720p", generate_audio: true };
 }
 
 function ts(d: Date = new Date()): string {
