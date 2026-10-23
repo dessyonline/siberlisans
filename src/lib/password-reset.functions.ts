@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestIP, setCookie } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { passwordError } from "./password-policy";
+import { pwnedPasswordError } from "./pwned-passwords.server";
 
 const schema = z.object({
   token: z.string().regex(/^[a-f0-9]{32,64}$/),
@@ -82,6 +83,8 @@ export const setPasswordWithToken = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<{ ok: boolean; signedIn?: boolean; error?: string }> => {
     const passwordProblem = passwordError(data.password);
     if (passwordProblem) return { ok: false, error: passwordProblem };
+    const breachProblem = await pwnedPasswordError(data.password);
+    if (breachProblem) return { ok: false, error: breachProblem };
     const { resetPasswordAtomically } = await import("./password-reset.server");
     const { createSession, hashPassword, SESSION_COOKIE } = await import("./auth.server");
     const { mysqlOne } = await import("./mysql.server");

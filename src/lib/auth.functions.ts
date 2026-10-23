@@ -3,6 +3,7 @@ import { getCookie, setCookie, deleteCookie, getRequestIP } from "@tanstack/reac
 import { z } from "zod";
 import { requireAuth } from "./auth-middleware.server";
 import { passwordError } from "./password-policy";
+import { pwnedPasswordError } from "./pwned-passwords.server";
 
 const credentials = z.object({
   email: z.string().email(),
@@ -150,6 +151,8 @@ export const signUp = createServerFn({ method: "POST" })
 
     const passwordProblem = passwordError(data.password);
     if (passwordProblem) return { ok: false, error: passwordProblem };
+    const breachProblem = await pwnedPasswordError(data.password);
+    if (breachProblem) return { ok: false, error: breachProblem };
     
     const ip = ipGuard.requestIp();
     if (await ipGuard.isIpBlocked(ip)) return { ok: false, error: ipGuard.IP_BLOCKED_MESSAGE };

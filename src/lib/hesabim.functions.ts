@@ -4,6 +4,7 @@ import { getCookie } from "@tanstack/react-start/server";
 import { requireAuth } from "@/lib/auth-middleware.server";
 import { mysqlQuery, mysqlOne, num } from "@/lib/mysql.server";
 import { passwordError } from "@/lib/password-policy";
+import { pwnedPasswordError } from "@/lib/pwned-passwords.server";
 
 export type MyOrderProductRef = { name: string; slug: string; delivery_type: string } | null;
 
@@ -176,6 +177,8 @@ export const changeMyPassword = createServerFn({ method: "POST" })
   .handler(async ({ data, context }): Promise<{ ok: true }> => {
     const passwordProblem = passwordError(data.password);
     if (passwordProblem) throw new Error(passwordProblem);
+    const breachProblem = await pwnedPasswordError(data.password);
+    if (breachProblem) throw new Error(breachProblem);
     const { getMfaRow } = await import("@/lib/totp.server");
     const { SESSION_COOKIE, hashPassword } = await import("@/lib/auth.server");
     const mfaRow = await getMfaRow(context.userId);
