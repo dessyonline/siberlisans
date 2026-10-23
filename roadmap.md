@@ -62,3 +62,13 @@
 - [ ] Yayından hemen önce son veri kopyası (canlı site yayına kadar Hostinger'a yazıyor)
 - [x] Giriş/kayıt/admin testleri (önizlemede geçti)
 - [ ] Yayın (kullanıcı onayı bekliyor)
+
+## Gelişim listesi (23 Ekim 2026)
+- [x] Oturum açıkken geçici bağlantı hatasında /auth'a atma düzeltildi (ensureUser yeniden dener).
+- [x] Zamanlanmış işler (ai-video, catalog-webhooks) 401 — cron gizli başlığı eklendi, 200 doğrulandı.
+- [ ] Yayınlama — kullanıcı onayı gerekli.
+- [ ] Şifresiz 104 hesaba toplu şifre belirleme maili — kullanıcı onayı gerekli.
+- [ ] Apple girişi — Apple Developer anahtarları gerekli.
+- [ ] Kurumsal mail — PHP köprü dosyasının Hostinger'a yüklenmesi gerekli.
+- [ ] Gerçek ödeme/teslimat/garanti/2FA uçtan uca testi — gerçek ödeme gerekli.
+- [ ] Admin ayarları genişletme ve hız iyileştirmesi — hangi ayarların ekleneceği seçilmeli.
