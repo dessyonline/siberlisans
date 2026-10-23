@@ -46,7 +46,6 @@ const NAV_CMDS: NavCmd[] = [
   { kind: "nav", label: "key havuzu", to: "/admin/keyler", icon: KeyRound },
   { kind: "nav", label: "cüzdan", to: "/admin/cuzdan", icon: Wallet },
   { kind: "nav", label: "kripto", to: "/admin/kripto", icon: Bitcoin },
-  { kind: "nav", label: "shopier", to: "/admin/shopier", icon: Wallet },
   { kind: "nav", label: "abonelikler", to: "/admin/abonelikler", icon: RefreshCw },
   { kind: "nav", label: "paketler", to: "/admin/paketler", icon: Package },
   { kind: "nav", label: "popüler seçimler", to: "/admin/populer", icon: Star },

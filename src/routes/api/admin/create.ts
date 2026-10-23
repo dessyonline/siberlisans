@@ -1,6 +1,6 @@
 // Bearer ADMIN_TOKEN korumalı: yeni lisans anahtarı üretir.
 import { createFileRoute } from "@tanstack/react-router";
-import { CORS, json, clientIp, isAuthorizedAdminRequest } from "@/lib/license-api.server";
+import { PRIVATE_CORS, privateJson, clientIp, isAuthorizedAdminRequest } from "@/lib/license-api.server";
 import { mysqlOne, mysqlQuery } from "@/lib/mysql.server";
 import { logEventMysql } from "@/lib/license-mysql-log.server";
 
@@ -11,10 +11,10 @@ function ts(d: Date = new Date()) {
 export const Route = createFileRoute("/api/admin/create")({
   server: {
     handlers: {
-      OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
+      OPTIONS: async () => new Response(null, { status: 204, headers: PRIVATE_CORS }),
       POST: async ({ request }) => {
         if (!isAuthorizedAdminRequest(request)) {
-          return json({ success: false, error: "Yetkisiz." }, 401);
+          return privateJson({ success: false, error: "Yetkisiz." }, 401);
         }
 
         let payload: {
@@ -26,14 +26,14 @@ export const Route = createFileRoute("/api/admin/create")({
         try {
           payload = await request.json();
         } catch {
-          return json({ success: false, error: "Geçersiz JSON." }, 400);
+          return privateJson({ success: false, error: "Geçersiz JSON." }, 400);
         }
         const product_id = (payload?.product_id ?? "").toString().trim();
         const duration_days = Number.isFinite(Number(payload?.duration_days))
           ? Number(payload?.duration_days)
           : 30;
         if (!product_id) {
-          return json({ success: false, error: "product_id gerekli." }, 400);
+          return privateJson({ success: false, error: "product_id gerekli." }, 400);
         }
 
         let key_value = (payload?.key_value ?? "").toString().trim();
@@ -64,7 +64,7 @@ export const Route = createFileRoute("/api/admin/create")({
             [id, product_id, key_value, duration_days, expires_at, ts()],
           );
         } catch (e) {
-          return json({ success: false, error: (e as Error).message }, 500);
+          return privateJson({ success: false, error: (e as Error).message }, 500);
         }
 
         void payload?.email; // e-posta bilgisi bu adımda saklanmıyor (uyumluluk için kabul ediliyor)
@@ -77,7 +77,7 @@ export const Route = createFileRoute("/api/admin/create")({
           detail: `product=${product_id} days=${duration_days}`,
         });
 
-        return json({
+        return privateJson({
           success: true,
           license_key: key_value,
           expires_at: expires_at ? new Date(expires_at).getTime() : null,

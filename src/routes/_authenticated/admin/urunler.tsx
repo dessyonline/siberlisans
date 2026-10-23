@@ -65,7 +65,6 @@ type Product = {
   sort_order: number;
   tier: "standard" | "epic";
   image_url: string | null;
-  shopier_url: string | null;
   demo_video_url: string | null;
   requires_email: boolean;
   retail_price_try: number | null;
@@ -192,7 +191,6 @@ function ProductsAdmin() {
           sort_order: Number(editing.sort_order ?? 0),
           tier: (editing.tier ?? "standard") as "standard" | "epic",
           image_url: editing.image_url && editing.image_url.trim() !== "" ? editing.image_url : null,
-          shopier_url: editing.shopier_url && editing.shopier_url.trim() !== "" ? editing.shopier_url : null,
           demo_video_url: editing.demo_video_url && editing.demo_video_url.trim() !== "" ? editing.demo_video_url : null,
           requires_email: editing.requires_email ?? false,
           grants_app:
@@ -243,7 +241,6 @@ function ProductsAdmin() {
           sort_order: Number(p.sort_order ?? 0),
           tier: p.tier,
           image_url: p.image_url && p.image_url.trim() !== "" ? p.image_url : null,
-          shopier_url: p.shopier_url && p.shopier_url.trim() !== "" ? p.shopier_url : null,
           demo_video_url: p.demo_video_url && p.demo_video_url.trim() !== "" ? p.demo_video_url : null,
           requires_email: p.requires_email,
           grants_app: p.grants_app ?? null,
@@ -730,18 +727,6 @@ function ProductsAdmin() {
                       ad girildiğinde marka logosu otomatik doldurulur; bozuk eski logo linkleri güvenilir favicon kaynağına düşer.
                     </p>
                   </div>
-                </div>
-                <div className="mt-3">
-                  <Label className="font-mono text-xs">shopier_url (bu ürünün Shopier ödeme sayfası)</Label>
-                  <Input
-                    value={editing.shopier_url ?? ""}
-                    onChange={(e) => setEditing((p) => ({ ...p!, shopier_url: e.target.value }))}
-                    className="font-mono text-xs"
-                    placeholder="https://www.shopier.com/…"
-                  />
-                  <p className="mt-1 font-mono text-[10px] text-muted-foreground">
-                    Doluysa ödeme sayfasında "Shopier ile Öde" butonu görünür. Ödeme tamamlanınca webhook siparişi otomatik onaylar.
-                  </p>
                 </div>
                 <div className="mt-3">
                   <Label className="font-mono text-xs">demo_video_url (ürün tanıtım videosu)</Label>

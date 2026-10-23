@@ -2,7 +2,7 @@
 
 > Dijital lisans ve yazılım anahtarı satışı yapan Türkçe e-ticaret platformu: anında teslimat, cüzdan bakiyesi, paketler ve yapay zekâ araçları.
 
-SiberPHP; orijinal yazılım lisansları, abonelik paketleri ve tarayıcı tabanlı yapay zekâ araçları sunar. Siparişler otomatik teslim edilir, ödemeler cüzdan bakiyesi veya Shopier üzerinden alınır.
+SiberPHP; orijinal yazılım lisansları, abonelik paketleri ve tarayıcı tabanlı yapay zekâ araçları sunar. Siparişler otomatik teslim edilir, ödemeler cüzdan bakiyesi veya havale/EFT ile alınır.
 
 ## Pages
 

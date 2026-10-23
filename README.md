@@ -104,3 +104,10 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+### Telegram webhook güvenliği
+
+Telegram webhook endpoint'i yalnızca `TELEGRAM_WEBHOOK_SECRET` ortam değişkeniyle
+eşleşen `X-Telegram-Bot-Api-Secret-Token` başlığını kabul eder. Canlı ortamda bu
+değişkeni güçlü, rastgele bir değerle ayarlayın ve Telegram webhook'unu aynı
+`secret_token` değeriyle yeniden tanımlayın.

@@ -1,40 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { isAuthorizedAdminRequest } from "@/lib/license-api.server";
+import { isAuthorizedAdminRequest, PRIVATE_CORS, privateJson } from "@/lib/license-api.server";
 import { mysqlOne, mysqlExec } from "@/lib/mysql.server";
-
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
-  "Access-Control-Max-Age": "86400",
-};
-
-function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json", ...CORS },
-  });
-}
 
 export const Route = createFileRoute("/api/revoke")({
   server: {
     handlers: {
-      OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
+      OPTIONS: async () => new Response(null, { status: 204, headers: PRIVATE_CORS }),
       POST: async ({ request }) => {
         if (!isAuthorizedAdminRequest(request)) {
-          return json({ ok: false, error: "Yetkisiz." }, 401);
+          return privateJson({ ok: false, error: "Yetkisiz." }, 401);
         }
 
         let payload: { hwid?: string; reason?: string };
         try {
           payload = await request.json();
         } catch {
-          return json({ ok: false, error: "Geçersiz JSON." }, 400);
+          return privateJson({ ok: false, error: "Geçersiz JSON." }, 400);
         }
         const hwid = (payload?.hwid ?? "").toString().trim();
         const reason = (payload?.reason ?? "").toString().trim().slice(0, 200) || "unspecified";
         if (!hwid || hwid.length < 4) {
-          return json({ ok: false, error: "hwid gerekli." }, 400);
+          return privateJson({ ok: false, error: "hwid gerekli." }, 400);
         }
 
         try {
@@ -45,10 +31,10 @@ export const Route = createFileRoute("/api/revoke")({
           const count = Number(before?.c ?? 0);
           await mysqlExec("UPDATE license_keys SET revoked=1 WHERE hwid=?", [hwid]);
           console.log("[api/revoke] revoked licenses", { hwid, reason, count });
-          return json({ ok: true, revoked_count: count });
+          return privateJson({ ok: true, revoked_count: count });
         } catch (e) {
           console.error("[api/revoke] exception", { reason, error: e instanceof Error ? e.message : "unknown" });
-          return json({ ok: false, error: "İşlem başarısız." }, 500);
+          return privateJson({ ok: false, error: "İşlem başarısız." }, 500);
         }
       },
     },

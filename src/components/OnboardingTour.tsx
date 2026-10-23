@@ -22,7 +22,7 @@ const STEPS = [
   {
     icon: ShoppingCart,
     title: "Sepet & Ödeme.",
-    body: "Sepete ekle → cüzdan bakiyesiyle ya da Shopier ile öde. Onay sonrası anahtar/mail:şifre otomatik teslim edilir teslim edilir.",
+    body: "Sepete ekle → cüzdan bakiyesiyle veya havale/EFT ile öde. Onay sonrası anahtar/mail:şifre otomatik teslim edilir.",
     cta: { to: "/paketler", label: "paketleri gör" },
   },
   {

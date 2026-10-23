@@ -367,7 +367,6 @@ function AdminOrdersPage() {
           >
             <option value="">tüm ödemeler</option>
             <option value="wallet">cüzdan</option>
-            <option value="shopier">shopier</option>
             <option value="crypto">kripto</option>
             <option value="transfer">havale</option>
           </select>

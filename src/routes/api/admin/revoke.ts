@@ -1,27 +1,27 @@
 // Bearer ADMIN_TOKEN korumalı: bir lisansı iptal eder.
 import { createFileRoute } from "@tanstack/react-router";
-import { CORS, json, clientIp, isAuthorizedAdminRequest } from "@/lib/license-api.server";
+import { PRIVATE_CORS, privateJson, clientIp, isAuthorizedAdminRequest } from "@/lib/license-api.server";
 import { mysqlQuery } from "@/lib/mysql.server";
 import { logEventMysql } from "@/lib/license-mysql-log.server";
 
 export const Route = createFileRoute("/api/admin/revoke")({
   server: {
     handlers: {
-      OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
+      OPTIONS: async () => new Response(null, { status: 204, headers: PRIVATE_CORS }),
       POST: async ({ request }) => {
         if (!isAuthorizedAdminRequest(request)) {
-          return json({ ok: false, error: "Yetkisiz." }, 401);
+          return privateJson({ ok: false, error: "Yetkisiz." }, 401);
         }
 
         let payload: { license_key?: string };
         try {
           payload = await request.json();
         } catch {
-          return json({ ok: false, error: "Geçersiz JSON." }, 400);
+          return privateJson({ ok: false, error: "Geçersiz JSON." }, 400);
         }
         const license_key = (payload?.license_key ?? "").toString().trim().toUpperCase();
         if (!license_key) {
-          return json({ ok: false, error: "license_key gerekli." }, 400);
+          return privateJson({ ok: false, error: "license_key gerekli." }, 400);
         }
 
         let revoked_count = 0;
@@ -33,7 +33,7 @@ export const Route = createFileRoute("/api/admin/revoke")({
           await mysqlQuery("UPDATE license_keys SET revoked=1 WHERE UPPER(key_value)=?", [license_key]);
           revoked_count = before.length;
         } catch (e) {
-          return json({ ok: false, error: (e as Error).message }, 500);
+          return privateJson({ ok: false, error: (e as Error).message }, 500);
         }
 
         await logEventMysql({
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/api/admin/revoke")({
           detail: `count=${revoked_count}`,
         });
 
-        return json({ ok: true, revoked_count });
+        return privateJson({ ok: true, revoked_count });
       },
     },
   },

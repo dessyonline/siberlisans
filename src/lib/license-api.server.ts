@@ -11,11 +11,21 @@ export const CORS = {
   "Access-Control-Max-Age": "86400",
 } as const;
 
-export function json(body: unknown, status = 200) {
+/** Browser access for privileged endpoints is limited to the production app. */
+export const PRIVATE_CORS = {
+  ...CORS,
+  "Access-Control-Allow-Origin": "https://siberlisans.com",
+} as const;
+
+export function json(body: unknown, status = 200, cors: HeadersInit = CORS) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "Content-Type": "application/json", ...CORS },
+    headers: { "Content-Type": "application/json", ...cors },
   });
+}
+
+export function privateJson(body: unknown, status = 200, cors: HeadersInit = PRIVATE_CORS) {
+  return json(body, status, cors);
 }
 
 /** Server-side bearer check for administrative license endpoints. */

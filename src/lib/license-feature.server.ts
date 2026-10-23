@@ -1,11 +1,11 @@
 // Shared helpers for feature endpoints (/chat, /session, /source-code, etc.)
 // - License gating (403 if missing/inactive/expired/revoked)
 // - Simple in-memory per-license rate limiter
-import { CORS, clientIp, json } from "@/lib/license-api.server";
+import { CORS, clientIp, json, privateJson, PRIVATE_CORS } from "@/lib/license-api.server";
 import { mysqlOne } from "@/lib/mysql.server";
 import { logEventMysql } from "@/lib/license-mysql.server";
 
-export { CORS, json, clientIp };
+export { CORS, clientIp, json, privateJson, PRIVATE_CORS };
 
 export type FeatureBody = Record<string, unknown> & {
   licenseKey?: string;
@@ -116,7 +116,11 @@ export async function rateLimitShared(key: string, limit: number, windowMs: numb
 
 export async function gate(
   request: Request,
-  opts?: { rateLimit?: { limit: number; windowMs: number }; eventName?: string },
+  opts?: {
+    rateLimit?: { limit: number; windowMs: number };
+    eventName?: string;
+    cors?: HeadersInit;
+  },
 ): Promise<
   | { ok: true; body: FeatureBody; license_key: string; ip: string; ua: string }
   | { response: Response }
@@ -125,7 +129,7 @@ export async function gate(
   try {
     body = await readJsonBody(request);
   } catch {
-    return { response: json({ ok: false, error: "Geçersiz JSON." }, 400) };
+    return { response: json({ ok: false, error: "Geçersiz JSON." }, 400, opts?.cors) };
   }
   const license_key = extractLicenseKey(request, body);
   const ip = clientIp(request);
@@ -142,7 +146,7 @@ export async function gate(
         detail: (opts?.eventName ?? "feature") + ":" + verified.error,
       });
     }
-    return { response: json({ ok: false, error: verified.error }, verified.status) };
+    return { response: json({ ok: false, error: verified.error }, verified.status, opts?.cors) };
   }
   if (opts?.rateLimit) {
     const okRate = await rateLimitShared(
@@ -152,7 +156,7 @@ export async function gate(
     );
     if (!okRate) {
       return {
-        response: json({ ok: false, error: "Çok fazla istek. Lütfen bekleyin." }, 429),
+        response: json({ ok: false, error: "Çok fazla istek. Lütfen bekleyin." }, 429, opts?.cors),
       };
     }
   }
