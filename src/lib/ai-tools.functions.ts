@@ -103,6 +103,46 @@ export const buyAiCredits = createServerFn({ method: "POST" })
     return { credits };
   });
 
+async function refundVideoReservation(
+  userId: string,
+  fromSub: number,
+  subId: string | null | undefined,
+  fromCredits: number,
+  note: string,
+) {
+  const errors: unknown[] = [];
+
+  if (fromCredits > 0) {
+    try {
+      await mysqlQuery(
+        `INSERT INTO ai_credit_wallets (user_id,credits,updated_at) VALUES (?,?,?)
+         ON DUPLICATE KEY UPDATE credits=credits+VALUES(credits), updated_at=VALUES(updated_at)`,
+        [userId, fromCredits, ts()],
+      );
+      const c = await mysqlOne<{ credits: unknown }>("SELECT credits FROM ai_credit_wallets WHERE user_id=?", [userId]);
+      await mysqlQuery(
+        "INSERT INTO ai_credit_transactions (id,user_id,kind,amount,balance_after,job_id,note,created_at) VALUES (?,?,?,?,?,?,?,?)",
+        [uid(), userId, "refund", fromCredits, num(c?.credits) ?? 0, null, note, ts()],
+      );
+    } catch (e) {
+      errors.push(e);
+    }
+  }
+
+  if (fromSub > 0 && subId) {
+    try {
+      await mysqlExec("UPDATE ai_subscriptions SET credits_remaining=credits_remaining+? WHERE id=?", [
+        fromSub,
+        subId,
+      ]);
+    } catch (e) {
+      errors.push(e);
+    }
+  }
+
+  if (errors.length > 0) throw errors[0];
+}
+
 export const createAiVideoJob = createServerFn({ method: "POST" })
   .middleware([requireAuth])
   .inputValidator((d: unknown) =>
@@ -156,48 +196,57 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
 
     const fromCredits = cost - fromSub;
     const jobId = uid();
-    if (fromCredits > 0) {
-      const n = await mysqlExec(
-        "UPDATE ai_credit_wallets SET credits=credits-?, updated_at=? WHERE user_id=? AND credits >= ?",
-        [fromCredits, ts(), context.userId, fromCredits],
-      );
-      if (n !== 1) {
-        if (fromSub > 0) {
-          await mysqlExec("UPDATE ai_subscriptions SET credits_remaining=credits_remaining+? WHERE id=?", [
-            fromSub,
-            sub!.id,
-          ]);
+    try {
+      if (fromCredits > 0) {
+        const n = await mysqlExec(
+          "UPDATE ai_credit_wallets SET credits=credits-?, updated_at=? WHERE user_id=? AND credits >= ?",
+          [fromCredits, ts(), context.userId, fromCredits],
+        );
+        if (n !== 1) {
+          throw new Error("Yetersiz kredi.");
         }
-        throw new Error("Yetersiz kredi.");
+        await mysqlQuery(
+          "INSERT INTO ai_credit_transactions (id,user_id,kind,amount,balance_after,job_id,note,created_at) VALUES (?,?,?,?,?,?,?,?)",
+          [uid(), context.userId, "spend", -fromCredits, await creditBalance(context.userId), jobId, `video:${data.quality}:${data.duration}s`, ts()],
+        );
       }
-      await mysqlQuery(
-        "INSERT INTO ai_credit_transactions (id,user_id,kind,amount,balance_after,job_id,note,created_at) VALUES (?,?,?,?,?,?,?,?)",
-        [uid(), context.userId, "spend", -fromCredits, await creditBalance(context.userId), jobId, `video:${data.quality}:${data.duration}s`, ts()],
-      );
-    }
 
-    await mysqlQuery(
-      `INSERT INTO ai_jobs (id,user_id,kind,prompt,params,cost_try,status,expires_at,provider,created_at,updated_at)
-       VALUES (?,?,?,?,?,?,'queued',DATE_ADD(?, INTERVAL 30 DAY),'fal',?,?)`,
-      [
-        jobId,
-        context.userId,
-        "video",
-        data.prompt,
-        JSON.stringify({
-          duration: data.duration,
-          aspect: data.aspect,
-          quality: data.quality,
-          from_sub: fromSub,
-          from_credits: fromCredits,
-          sub_id: fromSub > 0 ? sub!.id : null,
-        }),
-        cost,
-        ts(),
-        ts(),
-        ts(),
-      ],
-    );
+      await mysqlQuery(
+        `INSERT INTO ai_jobs (id,user_id,kind,prompt,params,cost_try,status,expires_at,provider,created_at,updated_at)
+         VALUES (?,?,?,?,?,?,'queued',DATE_ADD(?, INTERVAL 30 DAY),'fal',?,?)`,
+        [
+          jobId,
+          context.userId,
+          "video",
+          data.prompt,
+          JSON.stringify({
+            duration: data.duration,
+            aspect: data.aspect,
+            quality: data.quality,
+            from_sub: fromSub,
+            from_credits: fromCredits,
+            sub_id: fromSub > 0 ? sub!.id : null,
+          }),
+          cost,
+          ts(),
+          ts(),
+          ts(),
+        ],
+      );
+    } catch (e) {
+      try {
+        await refundVideoReservation(
+          context.userId,
+          fromSub,
+          fromSub > 0 ? sub!.id : null,
+          fromCredits,
+          "video kuyruğa alınamadı — otomatik iade",
+        );
+      } catch (refundError) {
+        console.error("[ai-video] reservation refund failed", refundError);
+      }
+      throw e;
+    }
     return { jobId, cost };
   });
 
