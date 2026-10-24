@@ -14,16 +14,25 @@ import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge"
 import { RetailPriceBadge } from "@/components/RetailPriceBadge";
 import { applyFlash } from "@/lib/flash-sales";
 import {
-  Search, X, Sparkles, TrendingUp, Zap, ShieldCheck, ArrowRight, Package, Star, Crown,
+  Search,
+  X,
+  Sparkles,
+  TrendingUp,
+  Zap,
+  ShieldCheck,
+  ArrowRight,
+  Package,
+  Star,
+  Crown,
 } from "lucide-react";
-
 
 export const Route = createFileRoute("/urunler")({
   component: ProductsPage,
   loader: async () => ({ products: await listProducts() }),
-  validateSearch: (s: Record<string, unknown>): { q?: string; yeni?: boolean } => ({
+  validateSearch: (s: Record<string, unknown>): { q?: string; yeni?: boolean; marka?: string } => ({
     q: typeof s.q === "string" && s.q.trim() ? s.q.trim().slice(0, 60) : undefined,
     yeni: s.yeni === true || s.yeni === "true" || s.yeni === "1" || s.yeni === 1 ? true : undefined,
+    marka: typeof s.marka === "string" && s.marka.trim() ? s.marka.trim().slice(0, 60) : undefined,
   }),
 
   head: () => ({
@@ -37,7 +46,8 @@ export const Route = createFileRoute("/urunler")({
       { property: "og:title", content: "Lisans Kataloğu — SiberPHP" },
       {
         property: "og:description",
-        content: "Anında teslim edilen orijinal yazılım lisansları — Windows, Office, Adobe, AI araçları ve daha fazlası.",
+        content:
+          "Anında teslim edilen orijinal yazılım lisansları — Windows, Office, Adobe, AI araçları ve daha fazlası.",
       },
       { property: "og:url", content: "https://siberlisans.lovable.app/urunler" },
       { property: "og:type", content: "website" },
@@ -51,7 +61,8 @@ export const Route = createFileRoute("/urunler")({
           "@type": "CollectionPage",
           name: "Lisans Kataloğu — SiberPHP",
           url: "https://siberlisans.lovable.app/urunler",
-          description: "Windows, Office, Adobe, ChatGPT, Midjourney ve daha fazlası — anında teslim.",
+          description:
+            "Windows, Office, Adobe, ChatGPT, Midjourney ve daha fazlası — anında teslim.",
           inLanguage: "tr-TR",
         }),
       },
@@ -61,8 +72,18 @@ export const Route = createFileRoute("/urunler")({
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           itemListElement: [
-            { "@type": "ListItem", position: 1, name: "Anasayfa", item: "https://siberlisans.lovable.app/" },
-            { "@type": "ListItem", position: 2, name: "Lisanslar", item: "https://siberlisans.lovable.app/urunler" },
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: "Anasayfa",
+              item: "https://siberlisans.lovable.app/",
+            },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: "Lisanslar",
+              item: "https://siberlisans.lovable.app/urunler",
+            },
           ],
         }),
       },
@@ -72,38 +93,68 @@ export const Route = createFileRoute("/urunler")({
 
 const DUR: Record<string, string> = { monthly: "aylık", yearly: "yıllık", lifetime: "sınırsız" };
 
-
 // Cyber "stock load" progress — segmented cells + shimmer, state-aware
 function CyberStockLoader({
-  stock, manual, unlimited, soldOut, cells = 18,
-}: { stock: number; manual: boolean; unlimited: boolean; soldOut: boolean; cells?: number }) {
+  stock,
+  manual,
+  unlimited,
+  soldOut,
+  cells = 18,
+}: {
+  stock: number;
+  manual: boolean;
+  unlimited: boolean;
+  soldOut: boolean;
+  cells?: number;
+}) {
   const mode = soldOut ? "offline" : unlimited ? "infinite" : manual ? "queue" : "stock";
   const cap = mode === "stock" ? Math.min(20, Math.max(3, stock * 2)) : cells;
   const filled =
-    mode === "infinite" ? cells :
-    mode === "queue"    ? Math.round(cells * 0.35) :
-    mode === "offline"  ? 0 :
-    Math.min(cells, Math.max(1, Math.round((stock / cap) * cells)));
+    mode === "infinite"
+      ? cells
+      : mode === "queue"
+        ? Math.round(cells * 0.35)
+        : mode === "offline"
+          ? 0
+          : Math.min(cells, Math.max(1, Math.round((stock / cap) * cells)));
   const pct =
-    mode === "infinite" ? 100 :
-    mode === "offline"  ? 0 :
-    mode === "queue"    ? null :
-    Math.round((filled / cells) * 100);
+    mode === "infinite"
+      ? 100
+      : mode === "offline"
+        ? 0
+        : mode === "queue"
+          ? null
+          : Math.round((filled / cells) * 100);
   const color =
-    mode === "offline"  ? "text-destructive" :
-    mode === "infinite" ? "text-cyan" :
-    mode === "queue"    ? "text-cyan" :
-    stock <= 3 ? "text-warn" : "text-primary";
+    mode === "offline"
+      ? "text-destructive"
+      : mode === "infinite"
+        ? "text-cyan"
+        : mode === "queue"
+          ? "text-cyan"
+          : stock <= 3
+            ? "text-warn"
+            : "text-primary";
   const bar =
-    mode === "offline"  ? "bg-destructive" :
-    mode === "infinite" ? "bg-cyan" :
-    mode === "queue"    ? "bg-cyan" :
-    stock <= 3 ? "bg-warn" : "bg-primary";
+    mode === "offline"
+      ? "bg-destructive"
+      : mode === "infinite"
+        ? "bg-cyan"
+        : mode === "queue"
+          ? "bg-cyan"
+          : stock <= 3
+            ? "bg-warn"
+            : "bg-primary";
   const label =
-    mode === "offline"  ? "OFFLINE" :
-    mode === "infinite" ? "READY" :
-    mode === "queue"    ? "QUEUE" :
-    stock <= 3 ? "LOW" : "OK";
+    mode === "offline"
+      ? "OFFLINE"
+      : mode === "infinite"
+        ? "READY"
+        : mode === "queue"
+          ? "QUEUE"
+          : stock <= 3
+            ? "LOW"
+            : "OK";
 
   return (
     <div className="mt-3 font-mono select-none">
@@ -112,7 +163,9 @@ function CyberStockLoader({
           <span className="text-primary/60">$</span> stock.load
         </span>
         <span className={`inline-flex items-center gap-1.5 ${color}`}>
-          <span className={`h-1 w-1 rounded-full ${bar} ${mode === "offline" ? "" : "animate-pulse"} shadow-[0_0_6px_currentColor]`} />
+          <span
+            className={`h-1 w-1 rounded-full ${bar} ${mode === "offline" ? "" : "animate-pulse"} shadow-[0_0_6px_currentColor]`}
+          />
           {label}
           {pct !== null && <span className="text-muted-foreground/60">· {pct}%</span>}
         </span>
@@ -125,7 +178,9 @@ function CyberStockLoader({
             <span
               key={i}
               className={`flex-1 rounded-[1px] transition-colors ${
-                isFilled ? `${bar} ${isEdge ? "cell-flicker" : ""} shadow-[0_0_4px_currentColor]` : "bg-muted/25"
+                isFilled
+                  ? `${bar} ${isEdge ? "cell-flicker" : ""} shadow-[0_0_4px_currentColor]`
+                  : "bg-muted/25"
               }`}
             />
           );
@@ -134,14 +189,20 @@ function CyberStockLoader({
           <span
             aria-hidden
             className="pointer-events-none absolute inset-y-0 w-1/3 bar-shimmer opacity-70"
-            style={{ background: "linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 0.35) 50%, transparent 100%)" }}
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 0.35) 50%, transparent 100%)",
+            }}
           />
         )}
         {mode === "queue" && (
           <span
             aria-hidden
             className="pointer-events-none absolute top-0 bottom-0 w-[30%] bar-scan"
-            style={{ background: "linear-gradient(90deg, transparent, oklch(0.78 0.16 220 / 0.55), transparent)" }}
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, oklch(0.78 0.16 220 / 0.55), transparent)",
+            }}
           />
         )}
       </div>
@@ -160,10 +221,6 @@ function CyberStockLoader({
   );
 }
 
-
-
-
-
 // Cyber-styled product title — terminal prompt + hover caret + glitch
 function CyberTitle({
   name,
@@ -174,11 +231,18 @@ function CyberTitle({
   size?: "sm" | "base";
   color?: "primary" | "warn" | "cyan";
 }) {
-  const hoverText = color === "warn" ? "group-hover:text-warn" : color === "cyan" ? "group-hover:text-cyan" : "group-hover:text-primary";
+  const hoverText =
+    color === "warn"
+      ? "group-hover:text-warn"
+      : color === "cyan"
+        ? "group-hover:text-cyan"
+        : "group-hover:text-primary";
   const caretBg = color === "warn" ? "bg-warn" : color === "cyan" ? "bg-cyan" : "bg-primary";
   const sizeCls = size === "sm" ? "text-sm" : "text-base";
   return (
-    <h3 className={`font-mono ${sizeCls} font-semibold tracking-tight flex items-baseline gap-1.5 min-w-0`}>
+    <h3
+      className={`font-mono ${sizeCls} font-semibold tracking-tight flex items-baseline gap-1.5 min-w-0`}
+    >
       <span className="text-muted-foreground/60 shrink-0 select-none">&gt;</span>
       <span className={`truncate transition-colors ${hoverText} group-hover:glitch`}>{name}</span>
       <span
@@ -188,7 +252,6 @@ function CyberTitle({
     </h3>
   );
 }
-
 
 type Row = {
   id: string;
@@ -213,18 +276,40 @@ type Row = {
   avg_rating?: number | null;
   review_count?: number | null;
   license_keys: { status: string }[] | null;
-
-
-
 };
 
 // Kategori grupları — talep sırasına göre: AI en önce, sonra görsel/office...
 const GROUPS: { key: string; label: string; cats: string[] }[] = [
-  { key: "ai", label: "Yapay Zeka", cats: ["ChatGPT", "Google Gemini", "Lovable", "Claude", "Nano Banana", "Midjourney", "Ideogram", "Yapay Zeka"] },
+  {
+    key: "ai",
+    label: "Yapay Zeka",
+    cats: [
+      "ChatGPT",
+      "Google Gemini",
+      "Lovable",
+      "Claude",
+      "Nano Banana",
+      "Midjourney",
+      "Ideogram",
+      "Yapay Zeka",
+    ],
+  },
   {
     key: "gorsel",
     label: "Görsel & Tasarım",
-    cats: ["Adobe", "Envato Elements", "Freepik", "Canva", "Vecteezy", "Flaticon", "Motion Array", "CorelDRAW", "Autodesk", "Görsel Ürünler", "Görsel"],
+    cats: [
+      "Adobe",
+      "Envato Elements",
+      "Freepik",
+      "Canva",
+      "Vecteezy",
+      "Flaticon",
+      "Motion Array",
+      "CorelDRAW",
+      "Autodesk",
+      "Görsel Ürünler",
+      "Görsel",
+    ],
   },
   { key: "office", label: "Microsoft Office", cats: ["Office", "Office (Ömürlük)", "Office 365"] },
   { key: "windows", label: "Windows", cats: ["Windows", "Windows 10/11", "Windows Server"] },
@@ -251,7 +336,13 @@ const SORT_LABELS: Record<SortKey, string> = {
   newest: "en yeni",
 };
 
-
+type BrandOption = {
+  key: string;
+  label: string;
+  count: number;
+  cover: string | null;
+  groupLabel: string;
+};
 
 function ProductsPage() {
   const loaderData = Route.useLoaderData();
@@ -282,12 +373,15 @@ function ProductsPage() {
   }, [byCategory]);
 
   const [group, setGroup] = useState<string>("all");
-  const { q: initialQ, yeni } = Route.useSearch();
+  const { q: initialQ, yeni, marka: initialBrand } = Route.useSearch();
   const [search, setSearch] = useState(initialQ ?? "");
+  const [brand, setBrand] = useState<string>(initialBrand ?? "all");
   const [newOnly, setNewOnly] = useState<boolean>(!!yeni);
   const [sort, setSort] = useState<SortKey>(yeni ? "newest" : "default");
-  const newCount = useMemo(() => (data ?? []).filter((p) => isNewProduct(p.created_at)).length, [data]);
-
+  const newCount = useMemo(
+    () => (data ?? []).filter((p) => isNewProduct(p.created_at)).length,
+    [data],
+  );
 
   // Ortak admin sıralaması: destansı → sıra → tarih
   const adminOrder = (list: Row[]) =>
@@ -302,7 +396,10 @@ function ProductsPage() {
     });
 
   const recent = useMemo(
-    () => [...(data ?? [])].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 8),
+    () =>
+      [...(data ?? [])]
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        .slice(0, 8),
     [data],
   );
 
@@ -332,6 +429,19 @@ function ProductsPage() {
     return baseGroup * 100 + (inCat === -1 ? 50 : inCat);
   };
 
+  const brandOptions = useMemo<BrandOption[]>(() => {
+    return Array.from(byCategory.entries())
+      .filter(([, items]) => items.length > 0)
+      .map(([category, items]) => ({
+        key: category,
+        label: category,
+        count: items.length,
+        cover: items.find((p) => p.image_url)?.image_url ?? null,
+        groupLabel: GROUPS.find((g) => g.key === groupOf(category))?.label ?? "Diğer",
+      }))
+      .sort((a, b) => catPriority(a.key) - catPriority(b.key));
+  }, [byCategory]);
+
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
     const entries = Array.from(byCategory.entries()).map(([cat, items]) => {
@@ -348,7 +458,8 @@ function ProductsPage() {
       list = [...list].sort((a, b) => {
         if (sort === "price_asc") return (a.price_try ?? 0) - (b.price_try ?? 0);
         if (sort === "price_desc") return (b.price_try ?? 0) - (a.price_try ?? 0);
-        if (sort === "newest") return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        if (sort === "newest")
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
         // default: destansı önce, sonra sort_order, sonra fiyat
         const ea = a.tier === "epic" ? 0 : 1;
         const eb = b.tier === "epic" ? 0 : 1;
@@ -360,12 +471,14 @@ function ProductsPage() {
       });
       return [cat, list] as [string, Row[]];
     });
-    const filtered = group === "all" ? entries : entries.filter(([cat]) => groupOf(cat) === group);
+    const filteredByGroup =
+      group === "all" ? entries : entries.filter(([cat]) => groupOf(cat) === group);
+    const filtered =
+      brand === "all" ? filteredByGroup : filteredByGroup.filter(([cat]) => cat === brand);
     const nonEmpty = filtered.filter(([, items]) => items.length > 0);
     // Kategoriler arası: GROUPS sırasına göre
     return nonEmpty.sort(([a], [b]) => catPriority(a) - catPriority(b));
-  }, [byCategory, group, search, sort, newOnly]);
-
+  }, [byCategory, brand, group, search, sort, newOnly]);
 
   return (
     <div className="relative min-h-screen overflow-hidden">
@@ -389,7 +502,8 @@ function ProductsPage() {
                 <span className="neon-text">Tüm</span> Lisanslar
               </h1>
               <p className="mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">
-                Orijinal yazılım, AI araçları ve oyun lisansları. Havale/EFT ile hızlı teslimat, otomatik aktivasyon.
+                Orijinal yazılım, AI araçları ve oyun lisansları. Havale/EFT ile hızlı teslimat,
+                otomatik aktivasyon.
               </p>
             </div>
             <div className="flex items-center gap-3 font-mono text-xs text-muted-foreground">
@@ -424,7 +538,14 @@ function ProductsPage() {
             )}
           </div>
           <div className="flex flex-wrap gap-2 font-mono text-xs">
-            <CatChip label={`hepsi · ${data?.length ?? 0}`} active={group === "all"} onClick={() => setGroup("all")} />
+            <CatChip
+              label={`hepsi · ${data?.length ?? 0}`}
+              active={group === "all" && brand === "all"}
+              onClick={() => {
+                setGroup("all");
+                setBrand("all");
+              }}
+            />
             {GROUPS.map((g) => {
               const c = groupCounts.get(g.key) ?? 0;
               if (c === 0) return null;
@@ -432,13 +553,90 @@ function ProductsPage() {
                 <CatChip
                   key={g.key}
                   label={`${g.label} · ${c}`}
-                  active={group === g.key}
-                  onClick={() => setGroup(g.key)}
+                  active={group === g.key && brand === "all"}
+                  onClick={() => {
+                    setGroup(g.key);
+                    setBrand("all");
+                  }}
                 />
               );
             })}
           </div>
         </div>
+
+        {/* Brand discovery */}
+        {brandOptions.length > 0 && (
+          <section className="mb-8 rounded-2xl border border-primary/15 bg-background/45 p-4 sm:p-5">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary/80">
+                  ./markalar
+                </div>
+                <h2 className="mt-1 font-mono text-lg text-foreground sm:text-xl">
+                  Markaya göre keşfet
+                </h2>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Aradığın ürünü doğrudan markasından seç.
+                </p>
+              </div>
+              {brand !== "all" && (
+                <button
+                  type="button"
+                  onClick={() => setBrand("all")}
+                  className="font-mono text-[11px] text-primary hover:underline"
+                >
+                  tüm markaları göster
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+              {brandOptions.map((option) => {
+                const active = brand === option.key;
+                return (
+                  <button
+                    key={option.key}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => {
+                      setBrand(active ? "all" : option.key);
+                      setGroup("all");
+                    }}
+                    className={`group flex min-w-0 items-center gap-2 rounded-xl border p-2.5 text-left transition-all sm:p-3 ${
+                      active
+                        ? "border-primary/70 bg-primary/15 shadow-[0_0_18px_oklch(0.82_0.20_145/0.16)]"
+                        : "border-border/60 bg-background/35 hover:border-primary/45 hover:bg-primary/5"
+                    }`}
+                  >
+                    <ProductLogo
+                      name={option.label}
+                      src={option.cover}
+                      className="h-9 w-9 rounded-lg border border-primary/20 bg-background/80"
+                      imgClassName="h-full w-full object-contain p-1.5"
+                      fallback={
+                        <span className="font-mono text-[10px] text-primary">
+                          {option.label.slice(0, 2).toUpperCase()}
+                        </span>
+                      }
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span
+                        className={`block truncate font-mono text-xs ${active ? "text-primary" : "text-foreground"}`}
+                      >
+                        {option.label}
+                      </span>
+                      <span className="mt-0.5 block truncate text-[10px] text-muted-foreground">
+                        {option.count} ürün · {option.groupLabel}
+                      </span>
+                    </span>
+                    <ArrowRight
+                      className={`h-3.5 w-3.5 shrink-0 transition-transform ${active ? "text-primary" : "text-muted-foreground/50 group-hover:translate-x-0.5 group-hover:text-primary"}`}
+                    />
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Sort bar */}
         <div className="mb-6 flex flex-wrap items-center gap-2 font-mono text-xs">
@@ -462,7 +660,6 @@ function ProductsPage() {
             />
           ))}
         </div>
-
 
         {/* Hot picks */}
         {!search && hot.length > 0 && (
@@ -497,7 +694,9 @@ function ProductsPage() {
                   className="group flex items-center justify-between gap-2 rounded border border-border/40 bg-background/40 px-3 py-2 hover:border-primary/50 hover:bg-primary/5 transition"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="font-mono text-xs truncate group-hover:text-primary transition-colors">{p.name}</div>
+                    <div className="font-mono text-xs truncate group-hover:text-primary transition-colors">
+                      {p.name}
+                    </div>
                     <div className="text-[10px] text-muted-foreground">
                       {p.category ?? "lisans"} ·{" "}
                       {new Date(p.created_at).toLocaleDateString("tr-TR", {
@@ -537,7 +736,9 @@ function ProductsPage() {
                     />
                   )}
                   <div className="font-mono">
-                    <div className="text-[10px] text-muted-foreground">./{cat.toLowerCase().replace(/\s+/g, "-")}</div>
+                    <div className="text-[10px] text-muted-foreground">
+                      ./{cat.toLowerCase().replace(/\s+/g, "-")}
+                    </div>
                     <h2 className="text-xl neon-text sm:text-2xl">{cat}</h2>
                   </div>
                   <div className="ml-auto font-mono text-xs text-muted-foreground">
@@ -563,7 +764,6 @@ function ProductsPage() {
   );
 }
 
-
 function ProductCard({ product: p }: { product: Row }) {
   const manual = !!p.manual_fulfillment;
   const unlimited = !!p.unlimited_stock;
@@ -572,7 +772,6 @@ function ProductCard({ product: p }: { product: Row }) {
   const stock = liveStock > 0 ? liveStock : (p.stock_hint ?? 0);
   const soldOut = supplierOOS || (!manual && !unlimited && stock === 0);
 
-
   const flashSale = useActiveFlashSale(p.id);
   const { final, saved, percent, hasSale } = applyFlash(Number(p.price_try), flashSale);
 
@@ -580,7 +779,9 @@ function ProductCard({ product: p }: { product: Row }) {
   const epic = p.tier === "epic";
 
   return (
-    <div className={`group relative rounded-xl overflow-hidden flex flex-col glass-card-hover ${epic ? "epic-card border border-transparent" : "glass-card border border-border/60"}`}>
+    <div
+      className={`group relative rounded-xl overflow-hidden flex flex-col glass-card-hover ${epic ? "epic-card border border-transparent" : "glass-card border border-border/60"}`}
+    >
       {epic && <div className="pointer-events-none absolute inset-0 epic-shimmer" aria-hidden />}
       <div className="pointer-events-none absolute inset-0 cyber-grid opacity-20" aria-hidden />
 
@@ -618,7 +819,9 @@ function ProductCard({ product: p }: { product: Row }) {
         </div>
 
         {/* Title */}
-        <h3 className={`font-mono text-base font-semibold tracking-tight truncate ${epic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "text-foreground"}`}>
+        <h3
+          className={`font-mono text-base font-semibold tracking-tight truncate ${epic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "text-foreground"}`}
+        >
           {p.name}
         </h3>
 
@@ -655,15 +858,17 @@ function ProductCard({ product: p }: { product: Row }) {
           <CompareToggle productId={p.id} />
         </div>
 
-
-
         {/* Price + CTA */}
         <div className="mt-auto pt-4 flex items-end justify-between gap-3">
           <div className="rounded-lg border border-primary/40 bg-primary/5 px-3 py-2 shadow-[0_0_20px_oklch(0.82_0.20_145/0.18)]">
-            <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-primary/70 mb-0.5">fiyat</div>
+            <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-primary/70 mb-0.5">
+              fiyat
+            </div>
             {hasSale ? (
               <div className="flex items-baseline gap-2">
-                <div className={`font-mono text-3xl leading-none font-bold tracking-tight neon-text ${epic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "text-primary"}`}>
+                <div
+                  className={`font-mono text-3xl leading-none font-bold tracking-tight neon-text ${epic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "text-primary"}`}
+                >
                   ₺{final.toLocaleString("tr-TR")}
                 </div>
                 <div className="font-mono text-xs text-muted-foreground line-through">
@@ -671,7 +876,9 @@ function ProductCard({ product: p }: { product: Row }) {
                 </div>
               </div>
             ) : (
-              <div className={`font-mono text-3xl leading-none font-bold tracking-tight neon-text ${epic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "text-primary"}`}>
+              <div
+                className={`font-mono text-3xl leading-none font-bold tracking-tight neon-text ${epic ? "text-[oklch(0.90_0.14_85)] epic-text-glow" : "text-primary"}`}
+              >
                 ₺{Number(p.price_try).toLocaleString("tr-TR")}
               </div>
             )}
@@ -689,17 +896,25 @@ function ProductCard({ product: p }: { product: Row }) {
             </div>
           </div>
           {supplierOOS ? (
-            <Button size="sm" disabled className="font-mono opacity-60 cursor-not-allowed" title="Tedarikçide geçici olarak stokta yok">
+            <Button
+              size="sm"
+              disabled
+              className="font-mono opacity-60 cursor-not-allowed"
+              title="Tedarikçide geçici olarak stokta yok"
+            >
               Stok yok
             </Button>
           ) : (
-            <Button asChild size="sm" className="font-mono bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_oklch(0.82_0.20_145/0.35)] transition-all">
+            <Button
+              asChild
+              size="sm"
+              className="font-mono bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_oklch(0.82_0.20_145/0.35)] transition-all"
+            >
               <Link to="/urun/$slug" params={{ slug: p.slug }} className="flex items-center gap-1">
                 Satın al <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </Button>
           )}
-
         </div>
       </div>
     </div>
@@ -724,14 +939,24 @@ function HotCard({ product: p }: { product: Row }) {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <CyberTitle name={p.name} size="sm" color="warn" />
-            {isNew && <span className="rounded border border-cyan/50 bg-cyan/20 px-1.5 py-0 text-[9px] text-cyan">YENİ</span>}
+            {isNew && (
+              <span className="rounded border border-cyan/50 bg-cyan/20 px-1.5 py-0 text-[9px] text-cyan">
+                YENİ
+              </span>
+            )}
           </div>
-          <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{p.description ?? p.category}</p>
+          <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+            {p.description ?? p.category}
+          </p>
           <div className="mt-2 font-mono text-sm text-warn">
             ₺{Number(p.price_try).toLocaleString("tr-TR")}
           </div>
           <div className="mt-1">
-            <RetailPriceBadge currentPrice={Number(p.price_try)} retailPrice={p.retail_price_try} durationLabel={p.duration_label} />
+            <RetailPriceBadge
+              currentPrice={Number(p.price_try)}
+              retailPrice={p.retail_price_try}
+              durationLabel={p.duration_label}
+            />
           </div>
         </div>
         <ArrowRight className="h-4 w-4 shrink-0 text-warn opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5" />
@@ -740,7 +965,15 @@ function HotCard({ product: p }: { product: Row }) {
   );
 }
 
-function CatChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+function CatChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}
