@@ -216,8 +216,7 @@ export const ulImportProduct = createServerFn({ method: "POST" })
 
 
 // Tüm içe aktarılmış Uniquelisans ürünlerinin stok/fiyatını API ile senkronize et.
-// Stok yoksa "tedarikçi stok yok" bayrağını yakar (ürün aktif kalır, satış engellenir).
-// `reactivate` true ise stok dönen ürünlerin bayrağını temizler.
+// Ayrı cron endpoint'i ile aynı güvenli server-only akışı kullanılır.
 const syncInput = z.object({ reactivate: z.boolean().default(false) }).default({ reactivate: false });
 
 export const ulSyncStock = createServerFn({ method: "POST" })
@@ -225,51 +224,8 @@ export const ulSyncStock = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => syncInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.isAdmin);
-
-    const rows = await mysqlQuery<{
-      id: string; external_id: string | null; price_try: string | number | null;
-      external_price: string | number | null; active: number | null; supplier_out_of_stock: number | null;
-    }>(
-      "SELECT id, external_id, price_try, external_price, active, supplier_out_of_stock FROM products WHERE source='uniquelisans'",
-    );
-
-    let checked = 0, hidden = 0, reactivated = 0, updated = 0, failed = 0;
-
-    for (const p of rows) {
-      if (!p.external_id) continue;
-      checked++;
-      try {
-        const b = await ul(`/products/${p.external_id}`);
-        const d = b.product_detail as {
-          amount: number; is_stock: boolean; is_automatic_delivery: boolean; stock_count: number | null;
-        } | undefined;
-        if (!d) { failed++; continue; }
-
-        const outOfStock = !d.is_automatic_delivery
-          && typeof d.stock_count === "number"
-          && d.stock_count <= 0;
-
-        const supplierOos = bool(p.supplier_out_of_stock);
-        let nextFlag = supplierOos;
-        if (outOfStock && !supplierOos) {
-          nextFlag = true;
-          hidden++;
-        } else if (!outOfStock && supplierOos && data.reactivate) {
-          nextFlag = false;
-          reactivated++;
-        }
-
-        await mysqlQuery(
-          "UPDATE products SET external_price=?, stock_hint=?, unlimited_stock=?, supplier_out_of_stock=?, updated_at=? WHERE id=?",
-          [d.amount, d.stock_count ?? null, d.is_automatic_delivery ? 1 : 0, nextFlag ? 1 : 0, ts(), p.id],
-        );
-        updated++;
-      } catch {
-        failed++;
-      }
-    }
-
-    return { checked, updated, hidden, reactivated, failed };
+    const { runUniquelisansStockSync } = await import("./uniquelisans-catalog.server");
+    return runUniquelisansStockSync({ markup_percent: DEFAULT_MARKUP_PERCENT, reactivate: data.reactivate });
   });
 
 
@@ -282,10 +238,11 @@ export const ulImportedProducts = createServerFn({ method: "GET" })
       external_id: string | null; external_price: string | number | null; active: number | null;
       updated_at: string | null; stock_hint: number | null; unlimited_stock: number | null;
       supplier_out_of_stock: number | null; price_locked: number | null;
+      supplier_auto_publish: number | null;
       retail_price_try: string | number | null; retail_price_source_url: string | null;
       duration_label: string | null;
     }>(
-      `SELECT id, name, slug, price_try, external_id, external_price, active, updated_at, stock_hint, unlimited_stock, supplier_out_of_stock, price_locked, retail_price_try, retail_price_source_url, duration_label
+      `SELECT id, name, slug, price_try, external_id, external_price, active, updated_at, stock_hint, unlimited_stock, supplier_out_of_stock, price_locked, supplier_auto_publish, retail_price_try, retail_price_source_url, duration_label
          FROM products WHERE source='uniquelisans' ORDER BY updated_at DESC LIMIT 500`,
     );
     return rows.map((r) => ({
@@ -301,6 +258,7 @@ export const ulImportedProducts = createServerFn({ method: "GET" })
       unlimited_stock: bool(r.unlimited_stock),
       supplier_out_of_stock: bool(r.supplier_out_of_stock),
       price_locked: bool(r.price_locked),
+      supplier_auto_publish: bool(r.supplier_auto_publish),
       retail_price_try: r.retail_price_try == null ? null : num(r.retail_price_try),
       retail_price_source_url: r.retail_price_source_url,
       duration_label: r.duration_label,
@@ -340,7 +298,10 @@ export const ulUpdateImported = createServerFn({ method: "POST" })
     const patchSummary: Record<string, unknown> = {};
 
     if (typeof data.active === "boolean") {
-      sets.push("active=?"); params.push(data.active ? 1 : 0);
+      // Manuel kapatma, otomatik stok dönüşünde ürünün tekrar açılmasını da
+      // durdurur. Manuel olarak tekrar açmak ise otomatik yönetimi yeniden açar.
+      sets.push("active=?", "supplier_auto_publish=?");
+      params.push(data.active ? 1 : 0, data.active ? 1 : 0);
       patchSummary.active = data.active;
     }
 

@@ -1,5 +1,5 @@
-// pg_cron tarafından günde bir kez çağrılır: tam katalog senkronu.
-// Yetki: apikey header (Supabase anon key). /api/public/* bypass'ından yararlanır.
+// pg_cron tarafından 30 dakikada bir çağrılır: tam katalog senkronu.
+// Yetki: cron secret; publishable/anon key kabul edilmez.
 import { createFileRoute } from "@tanstack/react-router";
 import { requireCron } from "@/lib/cron-auth.server";
 

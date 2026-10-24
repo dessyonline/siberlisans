@@ -255,7 +255,7 @@ function UniquelisansPage() {
                 try {
                   const r = await catalogFn({ data: { markup_percent: markup, import_new: true, reactivate: true } });
                   toast.success(
-                    `Katalog: ${r.scanned} tarandı · ${r.inserted} yeni · ${r.updated} güncel · ${r.price_changed} fiyat · ${r.hidden} gizlendi · ${r.reactivated} açıldı${r.failed ? ` · ${r.failed} hata` : ""}`,
+                    `Katalog: ${r.scanned} tarandı · ${r.inserted} yeni (${r.auto_published} yayında) · ${r.updated} güncel · ${r.price_changed} fiyat (${r.price_decreased} düşüş) · ${r.hidden} gizlendi · ${r.reactivated} açıldı${r.failed ? ` · ${r.failed} hata` : ""}`,
                   );
                   qc.invalidateQueries({ queryKey: ["ul-imported"] });
                   qc.invalidateQueries({ queryKey: ["admin-products"] });
@@ -277,7 +277,7 @@ function UniquelisansPage() {
                 setSyncing(true);
                 try {
                   const r = await syncFn({ data: { reactivate: true } });
-                  toast.success(`Kontrol: ${r.checked} · Güncel: ${r.updated} · Gizlenen: ${r.hidden} · Geri açılan: ${r.reactivated}${r.failed ? ` · Hata: ${r.failed}` : ""}`);
+                  toast.success(`Kontrol: ${r.checked} · Güncel: ${r.updated} · Fiyat düşüşü: ${r.price_decreased} · Gizlenen: ${r.hidden} · Geri açılan: ${r.reactivated}${r.failed ? ` · Hata: ${r.failed}` : ""}`);
                   qc.invalidateQueries({ queryKey: ["ul-imported"] });
                   qc.invalidateQueries({ queryKey: ["admin-products"] });
                 } catch (e) {
@@ -322,6 +322,7 @@ type ImportedProduct = {
   stock_hint?: number | null;
   unlimited_stock?: boolean;
   supplier_out_of_stock?: boolean | null;
+  supplier_auto_publish?: boolean | null;
   price_locked?: boolean | null;
   retail_price_try?: number | null;
   retail_price_source_url?: string | null;
@@ -396,6 +397,11 @@ function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => vo
         {outOfStock && (
           <span className="text-[10px] font-mono px-1.5 py-0.5 rounded border text-destructive bg-destructive/10 border-destructive/30">
             tedarikçide yok
+          </span>
+        )}
+        {p.supplier_auto_publish && (
+          <span className="text-[10px] font-mono px-1.5 py-0.5 rounded border text-cyan bg-cyan/10 border-cyan/30">
+            otomatik izleme
           </span>
         )}
         <div className="font-mono text-xs text-muted-foreground">alış: {fmt(cost)} ₺</div>
