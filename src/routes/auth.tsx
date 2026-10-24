@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { useServerFn } from "@tanstack/react-start";
 import { signIn as signInFn, signUp as signUpFn, verifyEmailCode as verifyEmailCodeFn } from "@/lib/auth.functions";
@@ -243,22 +243,7 @@ function AuthPage() {
           <Terminal className="h-4 w-4 text-primary" />
           $ ./auth --secure
         </div>
-        <div
-          className="mx-auto mt-3 mb-1 grid h-[86px] w-[86px] place-items-center rounded-full border border-primary/35 bg-primary/10 text-primary shadow-[0_0_24px_color-mix(in_oklab,var(--primary)_12%,transparent)]"
-          aria-hidden="true"
-        >
-          <svg viewBox="0 0 120 120" fill="none" className="h-[76px] w-[76px]" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="60" cy="60" r="55" fill="currentColor" opacity="0.12" />
-            <path d="M28 94C31 77 41 69 60 69C79 69 89 77 92 94" className="fill-foreground" stroke="currentColor" strokeWidth="3" />
-            <path d="M37 57C35 42 44 25 60 25C76 25 85 42 83 57C81 72 72 81 60 81C48 81 39 72 37 57Z" className="fill-foreground" stroke="currentColor" strokeWidth="3" />
-            <path d="M42 37L48 25L53 34L60 22L66 34L73 25L78 38" className="fill-foreground" stroke="currentColor" strokeWidth="3" strokeLinejoin="round" />
-            <path d="M34 51C28 48 26 54 31 58M86 51C92 48 94 54 89 58" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-            <circle cx="50" cy="53" r="3" fill="currentColor" />
-            <circle cx="70" cy="53" r="3" fill="currentColor" />
-            <path d="M53 64C57 68 63 68 67 64" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-            <path d="M45 87C51 91 69 91 75 87" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.35" />
-          </svg>
-        </div>
+        <YetiAvatar />
         <h1 className="mt-2 font-mono text-2xl neon-text">Hesabına Giriş</h1>
 
         {mfaMode ? (
@@ -515,5 +500,86 @@ function AppleIcon() {
     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden fill="currentColor">
       <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
     </svg>
+  );
+}
+
+function YetiAvatar() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [look, setLook] = useState({ x: 0, y: 0 });
+  const [hide, setHide] = useState(false);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      const el = ref.current;
+      if (!el) return;
+      const p = "touches" in e ? e.touches[0] : e;
+      if (!p) return;
+      const r = el.getBoundingClientRect();
+      const dx = p.clientX - (r.left + r.width / 2);
+      const dy = p.clientY - (r.top + r.height / 2);
+      const d = Math.hypot(dx, dy) || 1;
+      const m = Math.min(1, d / 200) * 4;
+      setLook({ x: (dx / d) * m, y: (dy / d) * m });
+    };
+    const onFocus = () => {
+      const a = document.activeElement as HTMLInputElement | null;
+      const isInput = !!a && a.tagName === "INPUT";
+      setHide(isInput && a!.type === "password");
+      if (isInput && a!.type !== "password") {
+        const len = Math.min(a!.value.length, 30);
+        setLook({ x: -4 + (len / 30) * 8, y: 3 });
+      }
+    };
+    const onBlur = () => setTimeout(onFocus, 0);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("touchmove", onMove, { passive: true });
+    document.addEventListener("focusin", onFocus);
+    document.addEventListener("focusout", onBlur);
+    document.addEventListener("input", onFocus);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onMove);
+      document.removeEventListener("focusin", onFocus);
+      document.removeEventListener("focusout", onBlur);
+      document.removeEventListener("input", onFocus);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className="mx-auto mt-3 mb-1 grid h-[86px] w-[86px] place-items-center rounded-full border border-primary/35 bg-primary/10 text-primary shadow-[0_0_24px_color-mix(in_oklab,var(--primary)_12%,transparent)]"
+      aria-hidden="true"
+    >
+      <svg viewBox="0 0 120 120" fill="none" className="h-[76px] w-[76px] overflow-visible" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="55" fill="currentColor" opacity="0.12" />
+        <path d="M28 94C31 77 41 69 60 69C79 69 89 77 92 94" className="fill-foreground" stroke="currentColor" strokeWidth="3" />
+        <path d="M37 57C35 42 44 25 60 25C76 25 85 42 83 57C81 72 72 81 60 81C48 81 39 72 37 57Z" className="fill-foreground" stroke="currentColor" strokeWidth="3" />
+        <path d="M42 37L48 25L53 34L60 22L66 34L73 25L78 38" className="fill-foreground" stroke="currentColor" strokeWidth="3" strokeLinejoin="round" />
+        <path d="M34 51C28 48 26 54 31 58M86 51C92 48 94 54 89 58" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+        {hide ? (
+          <g stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+            <path d="M45 54C48 57 52 57 55 54" />
+            <path d="M65 54C68 57 72 57 75 54" />
+          </g>
+        ) : (
+          <g style={{ transform: `translate(${look.x}px, ${look.y}px)`, transition: "transform 120ms ease-out" }}>
+            <circle cx="50" cy="53" r="3" fill="currentColor" />
+            <circle cx="70" cy="53" r="3" fill="currentColor" />
+          </g>
+        )}
+        <path d="M53 64C57 68 63 68 67 64" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+        <g
+          style={{ transform: hide ? "translateY(0)" : "translateY(40px)", opacity: hide ? 1 : 0, transition: "transform 250ms ease, opacity 200ms ease" }}
+          className="fill-foreground"
+          stroke="currentColor"
+          strokeWidth="3"
+        >
+          <ellipse cx="47" cy="55" rx="11" ry="9" />
+          <ellipse cx="73" cy="55" rx="11" ry="9" />
+        </g>
+        <path d="M45 87C51 91 69 91 75 87" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.35" />
+      </svg>
+    </div>
   );
 }
