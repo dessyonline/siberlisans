@@ -251,6 +251,7 @@ export type TelegramTestResult =
       memberStatus: string;
       canPostMessages: boolean | null;
       memberError: string | null;
+      channelIdWarning?: string | null;
     };
 
 export const testTelegramChannel = createServerFn({ method: "POST" })
@@ -294,48 +295,37 @@ export const testTelegramChannel = createServerFn({ method: "POST" })
     const chatTitle = chatInfo?.title ?? "?";
     const chatUsername = chatInfo?.username ?? null;
     const chatType = chatInfo?.type ?? "?";
+    const channelIdWarning =
+      channelId.startsWith("@") && chatUsername && channelId.slice(1).toLowerCase() !== chatUsername.toLowerCase()
+        ? `TELEGRAM_CHANNEL_ID ${channelId}, Telegram'ın döndürdüğü kanal username'i @${chatUsername}. Gönderim için @${chatUsername} veya kanalın -100 ile başlayan sayısal ID'sini kullan.`
+        : null;
 
     let memberStatus = "unknown";
     let canPostMessages: boolean | null = null;
     let memberError: string | null = null;
     if (botId) {
-      // Önce yönetici listesini deniyoruz. Telegram bazı kanallarda bu listeyi
-      // "member list is inaccessible" ile kapatabildiği için, bu sonucu botun
-      // yönetici olmadığı şeklinde yorumlamıyoruz.
-      const admins = await call("getChatAdministrators", { chat_id: channelId, return_bots: true });
-      if (admins.ok && Array.isArray(admins.result)) {
-        const botMember = admins.result.find((member) => {
-          const entry = member as { user?: { id?: number } };
-          return entry.user?.id === botId;
-        }) as { status?: string; can_post_messages?: boolean } | undefined;
-
-        if (botMember) {
-          memberStatus = botMember.status ?? "unknown";
-          canPostMessages = botMember.can_post_messages ?? null;
-        } else {
-          // Liste eksiksiz görünse bile bot kaydı dönmeyebilir; doğrudan üyelik
-          // sorgusu ile ikinci bir doğrulama yapalım.
-          const mem = await call("getChatMember", { chat_id: channelId, user_id: botId });
-          if (mem.ok) {
-            const member = mem.result as { status?: string; can_post_messages?: boolean } | undefined;
-            memberStatus = member?.status ?? "unknown";
-            canPostMessages = member?.can_post_messages ?? null;
-            memberError = null;
-          } else {
-            memberStatus = "unknown";
-            memberError = mem.description ?? "Botun kanal yöneticiliği doğrulanamadı";
-          }
-        }
+      // Botun kendi üyelik sorgusu en güvenilir kontroldür. Yönetici listesi
+      // Telegram tarafından gizlenebildiği için yalnızca ikinci fallback'tir.
+      const mem = await call("getChatMember", { chat_id: channelId, user_id: botId });
+      if (mem.ok) {
+        const member = mem.result as { status?: string; can_post_messages?: boolean } | undefined;
+        memberStatus = member?.status ?? "unknown";
+        canPostMessages = member?.can_post_messages ?? null;
       } else {
-        const mem = await call("getChatMember", { chat_id: channelId, user_id: botId });
-        if (mem.ok) {
-          const member = mem.result as { status?: string; can_post_messages?: boolean } | undefined;
-          memberStatus = member?.status ?? "unknown";
-          canPostMessages = member?.can_post_messages ?? null;
-          memberError = null;
+        const admins = await call("getChatAdministrators", { chat_id: channelId, return_bots: true });
+        if (admins.ok && Array.isArray(admins.result)) {
+          const botMember = admins.result.find((entry) => {
+            const member = entry as { user?: { id?: number } };
+            return member.user?.id === botId;
+          }) as { status?: string; can_post_messages?: boolean } | undefined;
+          if (botMember) {
+            memberStatus = botMember.status ?? "unknown";
+            canPostMessages = botMember.can_post_messages ?? null;
+          } else {
+            memberError = `getChatMember: ${mem.description ?? "üyelik sorgusu başarısız"}; bot yönetici listesinde de bulunamadı`;
+          }
         } else {
-          memberStatus = "unknown";
-          memberError = mem.description ?? admins.description ?? "Kanal yöneticiliği doğrulanamadı";
+          memberError = `getChatMember: ${mem.description ?? "üyelik sorgusu başarısız"}; getChatAdministrators: ${admins.description ?? "yönetici listesi alınamadı"}`;
         }
       }
     }
@@ -350,6 +340,7 @@ export const testTelegramChannel = createServerFn({ method: "POST" })
       memberStatus,
       canPostMessages,
       memberError,
+      channelIdWarning,
     };
   });
 

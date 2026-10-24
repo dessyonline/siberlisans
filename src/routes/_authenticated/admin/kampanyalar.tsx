@@ -279,6 +279,7 @@ function CampaignsAdmin() {
                 <div>kanal başlığı: <span className="text-foreground">{testResult.chatTitle}</span></div>
                 <div>kanal username: <span className="text-foreground">{testResult.chatUsername ?? "—"}</span></div>
                 <div>kanal tipi: <span className="text-foreground">{testResult.chatType}</span></div>
+                {testResult.channelIdWarning && <div className="text-yellow-400">⚠ {testResult.channelIdWarning}</div>}
                 <div>
                   bot statüsü:{" "}
                   <span className={testResult.memberStatus === "administrator" || testResult.memberStatus === "creator" ? "text-primary" : "text-red-400"}>
