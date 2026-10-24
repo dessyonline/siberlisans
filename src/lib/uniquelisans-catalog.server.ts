@@ -1,7 +1,7 @@
 // Server-only: Uniquelisans katalog ve stok/fiyat senkronu.
 // Route dosyalarından ve server function handler'larından DİNAMİK import ile çağrılır.
 import { resolveLogoUrl } from "@/lib/logo-resolver";
-import { notifyTelegram } from "@/lib/telegram.server";
+import { notifyTelegram, postToChannel } from "@/lib/telegram.server";
 import { mysqlExec, mysqlQuery, mysqlOne, num, bool } from "@/lib/mysql.server";
 
 const DEFAULT_URL = "https://bayi.uniquelisans.com/api";
@@ -213,8 +213,32 @@ async function notifyPriceDrops(items: Array<{ name: string; oldPrice: number; n
   );
   const suffix = items.length > lines.length ? `\n… ve ${items.length - lines.length} ürün daha` : "";
   try {
-    await notifyTelegram(`📉 <b>Uniquelisans fiyat düşüşü</b>\n${lines.join("\n")}${suffix}`);
+    await notifyTelegramAndChannel(`📉 <b>Uniquelisans fiyat düşüşü</b>\n${lines.join("\n")}${suffix}`);
   } catch { /* Telegram opsiyoneldir; katalog senkronu başarısız sayılmaz. */ }
+}
+
+async function notifyTelegramAndChannel(text: string) {
+  await notifyTelegram(text);
+  const result = await postToChannel({ text });
+  if (!result.ok && result.error !== "TELEGRAM_CHANNEL_ID yok") {
+    console.error("[telegram][channel]", result.error);
+  }
+}
+
+async function notifyStockOut(productName: string, stockCount: number | null) {
+  const count = stockCount === null ? "bilinmiyor" : String(stockCount);
+  await notifyTelegramAndChannel(
+    `⚠️ <b>Uniquelisans stok tükendi</b>\n<b>${escapeTelegramHtml(productName)}</b>\nTedarikçi stoğu: ${count}\nÜrün satışa kapatıldı; stok gelince otomatik açılacak.`,
+  );
+}
+
+async function notifyNewProducts(names: string[]) {
+  if (!names.length) return;
+  const lines = names.slice(0, 12).map((name) => `• ${escapeTelegramHtml(name)}`);
+  const suffix = names.length > lines.length ? `\n… ve ${names.length - lines.length} ürün daha` : "";
+  try {
+    await notifyTelegram(`🆕 <b>Uniquelisans yeni ürünleri yayınlandı</b>\n${lines.join("\n")}${suffix}`);
+  } catch { /* Telegram opsiyoneldir */ }
 }
 
 export async function runUniquelisansCatalogSync(
@@ -275,6 +299,7 @@ export async function runUniquelisansCatalogSync(
 
     const result = { ...baseResult };
     const newAutoPublishIds: string[] = [];
+    const newProductNames: string[] = [];
     const priceDrops: Array<{ name: string; oldPrice: number; newPrice: number }> = [];
 
     for (const cat of categories) {
@@ -348,6 +373,8 @@ export async function runUniquelisansCatalogSync(
               if (shouldLaunch) newAutoPublishIds.push(prev.id);
               if (stockFlagChanged === "reactivated") {
                 await notifyStockBack(prev.id, p.name, p.stock_count ?? null);
+              } else if (stockFlagChanged === "hidden") {
+                await notifyStockOut(p.name, p.stock_count ?? null);
               }
               continue;
             }
@@ -419,6 +446,7 @@ export async function runUniquelisansCatalogSync(
             if (initialActive) {
               result.auto_published++;
               newAutoPublishIds.push(id);
+              newProductNames.push(p.name);
             }
           }
         } catch {
@@ -435,6 +463,7 @@ export async function runUniquelisansCatalogSync(
         console.error("[uniquelisans] new product launch failed", (error as Error).message);
       }
     }
+    await notifyNewProducts(newProductNames);
     await notifyPriceDrops(priceDrops);
     return result;
   });
@@ -497,6 +526,7 @@ export async function runUniquelisansStockSync(
           detail.is_automatic_delivery ? 1 : 0,
         ];
         let reactivatedNow = false;
+        let hiddenNow = false;
         let shouldLaunch = false;
 
         const oldCost = num(p.external_price);
@@ -518,6 +548,7 @@ export async function runUniquelisansStockSync(
           sets.push("supplier_out_of_stock=?");
           vals.push(1);
           result.hidden++;
+          hiddenNow = true;
         } else if (!outOfStock && previousOos && opts.reactivate) {
           sets.push("supplier_out_of_stock=?");
           vals.push(0);
@@ -537,6 +568,8 @@ export async function runUniquelisansStockSync(
         if (shouldLaunch) launchIds.push(p.id);
         if (reactivatedNow) {
           await notifyStockBack(p.id, p.name ?? `Uniquelisans #${p.external_id}`, detail.stock_count);
+        } else if (hiddenNow) {
+          await notifyStockOut(p.name ?? `Uniquelisans #${p.external_id}`, detail.stock_count);
         }
       } catch {
         result.failed++;
@@ -563,7 +596,7 @@ async function notifyStockBack(
 ): Promise<void> {
   try {
     const stockLine = stockCount !== null ? ` (stok: ${stockCount})` : "";
-    await notifyTelegram(
+    await notifyTelegramAndChannel(
       `✅ <b>Stok yenilendi</b>\n<b>${escapeTelegramHtml(productName)}</b>${stockLine}\nSatışlar tekrar açık.`,
     );
   } catch { /* Telegram opsiyonel */ }
