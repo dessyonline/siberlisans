@@ -107,6 +107,15 @@ function AuthPage() {
   const [manualRef, setManualRef] = useState("");
   const urlRef = search.ref?.toUpperCase() ?? "";
   const refCode = (urlRef || manualRef.trim().toUpperCase()).slice(0, 20);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const signupEmailTrim = email.trim().toLowerCase();
+  const signupEmailHint = !signupEmailTrim
+    ? null
+    : !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(signupEmailTrim)
+      ? "geçerli bir e-posta adresi gir"
+      : isDisposableEmail(signupEmailTrim)
+        ? "geçici mailler kabul edilmiyor"
+        : null;
 
   useEffect(() => {
     if (!search.google) return;
@@ -201,7 +210,7 @@ function AuthPage() {
     if (passwordProblem) return toast.error(`[!] ${passwordProblem}`);
     const confirmationProblem = passwordConfirmationError(password, confirmPassword);
     if (confirmationProblem) return toast.error(`[!] ${confirmationProblem}`);
-    if (!telegram.trim()) return toast.error("[!] telegram adresi zorunludur (yoksa 'yok' yazın)");
+    if (!acceptTerms) return toast.error("[!] devam etmek için koşulları kabul etmelisin");
     if (parseInt(captchaInput, 10) !== captcha.answer) {
       setCaptcha(newCaptcha());
       setCaptchaInput("");
@@ -367,46 +376,66 @@ function AuthPage() {
                 ) : null}
                 <Field id="signup-name" label="görünen ad" value={displayName} onChange={setDisplayName} />
                 <Field id="signup-email" label="e-posta" value={email} onChange={setEmail} type="email" autoComplete="email" />
+                {signupEmailHint ? <FieldHint text={signupEmailHint} /> : null}
                 <Field id="signup-password" label={`şifre (min ${MIN_PASSWORD_LENGTH})`} value={password} onChange={setPassword} type="password" autoComplete="new-password" />
+                {password ? <StrengthMeter password={password} /> : null}
                 <Field id="signup-confirm-password" label="şifre (tekrar)" value={confirmPassword} onChange={setConfirmPassword} type="password" autoComplete="new-password" />
-                
-                <div className="space-y-1.5">
-                  <Label className="font-mono text-xs text-muted-foreground flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <Send className="h-3 w-3 text-primary" /> telegram adresi
-                    </span>
-                    <span className="text-[10px] text-primary/70">zorunlu</span>
-                  </Label>
-                  <Input
-                    value={telegram}
-                    onChange={(e) => setTelegram(e.target.value)}
-                    placeholder="@kullaniciadi veya 'yok'"
-                    className="font-mono"
+                {confirmPassword && confirmPassword !== password ? <FieldHint text="şifreler uyuşmuyor" /> : null}
+                {confirmPassword && confirmPassword === password ? <FieldHint ok text="şifreler uyuşuyor" /> : null}
+
+                <details className="group rounded-md border border-border/50 bg-background/30 p-2.5">
+                  <summary className="cursor-pointer list-none font-mono text-[11px] text-muted-foreground hover:text-primary flex items-center justify-between">
+                    <span>+ ek bilgiler (telegram, davet kodu)</span>
+                    <span className="text-[10px] text-primary/70">opsiyonel</span>
+                  </summary>
+                  <div className="mt-3 space-y-3">
+                    <div className="space-y-1.5">
+                      <Label className="font-mono text-xs text-muted-foreground flex items-center gap-1.5">
+                        <Send className="h-3 w-3 text-primary" /> telegram adresi
+                      </Label>
+                      <Input
+                        value={telegram}
+                        onChange={(e) => setTelegram(e.target.value)}
+                        placeholder="@kullaniciadi"
+                        className="font-mono"
+                      />
+                      <div className="flex items-start gap-1.5 rounded bg-primary/5 p-2 border border-primary/20">
+                        <Info className="h-3 w-3 text-primary shrink-0 mt-0.5" />
+                        <p className="font-mono text-[9px] text-muted-foreground leading-tight">
+                          Sipariş teslimatları ve destek mesajları anında Telegram'dan gelir. Sonradan hesabından da ekleyebilirsin.
+                        </p>
+                      </div>
+                    </div>
+                    {!urlRef && (
+                      <div className="space-y-1.5">
+                        <Label className="font-mono text-xs text-muted-foreground flex items-center gap-1.5">
+                          <Gift className="h-3 w-3 text-primary" /> davet kodu
+                        </Label>
+                        <Input
+                          value={manualRef}
+                          onChange={(e) => setManualRef(e.target.value.toUpperCase())}
+                          placeholder="örn: SIBER123"
+                          maxLength={20}
+                          className="font-mono uppercase tracking-wider"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </details>
+
+                <label className="flex items-start gap-2 font-mono text-[11px] text-muted-foreground cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                    className="mt-0.5 h-3.5 w-3.5 accent-primary"
                   />
-                  <div className="flex items-start gap-1.5 rounded bg-primary/5 p-2 border border-primary/20">
-                    <Info className="h-3 w-3 text-primary shrink-0 mt-0.5" />
-                    <p className="font-mono text-[9px] text-muted-foreground leading-tight">
-                      Sipariş teslimatları, şifre sıfırlama, lisans yenileme ve destek mesajları anında Telegram'dan gelir.
-                      Bu yüzden <span className="text-primary font-bold">şiddetle tavsiye ediyoruz!</span> 
-                      Kullanmıyorsanız <span className="text-primary mx-1">'yok'</span> yazabilirsiniz.
-                    </p>
-                  </div>
-                </div>
-                {!urlRef && (
-                  <div className="space-y-1.5">
-                    <Label className="font-mono text-xs text-muted-foreground flex items-center gap-1.5">
-                      <Gift className="h-3 w-3 text-primary" />
-                      davet kodu <span className="text-muted-foreground/60">(opsiyonel)</span>
-                    </Label>
-                    <Input
-                      value={manualRef}
-                      onChange={(e) => setManualRef(e.target.value.toUpperCase())}
-                      placeholder="örn: SIBER123"
-                      maxLength={20}
-                      className="font-mono uppercase tracking-wider"
-                    />
-                  </div>
-                )}
+                  <span>
+                    <a href="/kosullar" target="_blank" rel="noreferrer" className="text-primary hover:underline">kullanım koşulları</a>,{" "}
+                    <a href="/gizlilik" target="_blank" rel="noreferrer" className="text-primary hover:underline">gizlilik</a> ve{" "}
+                    <a href="/kvkk" target="_blank" rel="noreferrer" className="text-primary hover:underline">KVKK</a> metinlerini okudum, kabul ediyorum.
+                  </span>
+                </label>
 
                 {/* CAPTCHA */}
                 <div className="space-y-1.5">
@@ -617,6 +646,43 @@ function YetiAvatar() {
         </g>
         <path d="M45 87C51 91 69 91 75 87" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.35" />
       </svg>
+    </div>
+  );
+}
+
+function FieldHint({ text, ok }: { text: string; ok?: boolean }) {
+  return (
+    <p className={`-mt-2 font-mono text-[10px] ${ok ? "text-primary" : "text-destructive"}`}>
+      {ok ? "✓ " : "! "}
+      {text}
+    </p>
+  );
+}
+
+function passwordScore(pw: string): number {
+  let s = 0;
+  if (pw.length >= 8) s++;
+  if (pw.length >= 12) s++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s++;
+  if (/\d/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  return Math.min(4, Math.max(1, s));
+}
+
+function StrengthMeter({ password }: { password: string }) {
+  const score = passwordScore(password);
+  const labels = ["", "zayıf", "orta", "iyi", "güçlü"];
+  const colors = ["", "bg-destructive", "bg-chart-4", "bg-chart-2", "bg-primary"];
+  return (
+    <div className="-mt-2 space-y-1">
+      <div className="flex gap-1">
+        {[1, 2, 3, 4].map((i) => (
+          <span key={i} className={`h-1 flex-1 rounded-full ${i <= score ? colors[score] : "bg-border/60"}`} />
+        ))}
+      </div>
+      <p className="font-mono text-[10px] text-muted-foreground">
+        şifre gücü: <span className={score >= 3 ? "text-primary" : score === 1 ? "text-destructive" : ""}>{labels[score]}</span>
+      </p>
     </div>
   );
 }
