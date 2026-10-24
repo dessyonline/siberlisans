@@ -21,9 +21,10 @@ import {
 export const Route = createFileRoute("/urunler")({
   component: ProductsPage,
   loader: async () => ({ products: await listProducts() }),
-  validateSearch: (s: Record<string, unknown>): { q?: string; yeni?: boolean } => ({
+  validateSearch: (s: Record<string, unknown>): { q?: string; yeni?: boolean; marka?: string } => ({
     q: typeof s.q === "string" && s.q.trim() ? s.q.trim().slice(0, 60) : undefined,
     yeni: s.yeni === true || s.yeni === "true" || s.yeni === "1" || s.yeni === 1 ? true : undefined,
+    marka: typeof s.marka === "string" && s.marka.trim() ? s.marka.trim().slice(0, 60) : undefined,
   }),
 
   head: () => ({
@@ -251,6 +252,14 @@ const SORT_LABELS: Record<SortKey, string> = {
   newest: "en yeni",
 };
 
+type BrandOption = {
+  key: string;
+  label: string;
+  count: number;
+  cover: string | null;
+  groupLabel: string;
+};
+
 
 
 function ProductsPage() {
@@ -282,8 +291,9 @@ function ProductsPage() {
   }, [byCategory]);
 
   const [group, setGroup] = useState<string>("all");
-  const { q: initialQ, yeni } = Route.useSearch();
+  const { q: initialQ, yeni, marka: initialBrand } = Route.useSearch();
   const [search, setSearch] = useState(initialQ ?? "");
+  const [brand, setBrand] = useState<string>(initialBrand ?? "all");
   const [newOnly, setNewOnly] = useState<boolean>(!!yeni);
   const [sort, setSort] = useState<SortKey>(yeni ? "newest" : "default");
   const newCount = useMemo(() => (data ?? []).filter((p) => isNewProduct(p.created_at)).length, [data]);
@@ -332,6 +342,19 @@ function ProductsPage() {
     return baseGroup * 100 + (inCat === -1 ? 50 : inCat);
   };
 
+  const brandOptions = useMemo<BrandOption[]>(() => {
+    return Array.from(byCategory.entries())
+      .filter(([, items]) => items.length > 0)
+      .map(([category, items]) => ({
+        key: category,
+        label: category,
+        count: items.length,
+        cover: items.find((p) => p.image_url)?.image_url ?? null,
+        groupLabel: GROUPS.find((g) => g.key === groupOf(category))?.label ?? "Diğer",
+      }))
+      .sort((a, b) => catPriority(a.key) - catPriority(b.key));
+  }, [byCategory]);
+
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
     const entries = Array.from(byCategory.entries()).map(([cat, items]) => {
@@ -360,11 +383,12 @@ function ProductsPage() {
       });
       return [cat, list] as [string, Row[]];
     });
-    const filtered = group === "all" ? entries : entries.filter(([cat]) => groupOf(cat) === group);
+    const filteredByGroup = group === "all" ? entries : entries.filter(([cat]) => groupOf(cat) === group);
+    const filtered = brand === "all" ? filteredByGroup : filteredByGroup.filter(([cat]) => cat === brand);
     const nonEmpty = filtered.filter(([, items]) => items.length > 0);
     // Kategoriler arası: GROUPS sırasına göre
     return nonEmpty.sort(([a], [b]) => catPriority(a) - catPriority(b));
-  }, [byCategory, group, search, sort, newOnly]);
+  }, [byCategory, brand, group, search, sort, newOnly]);
 
 
   return (
@@ -424,7 +448,14 @@ function ProductsPage() {
             )}
           </div>
           <div className="flex flex-wrap gap-2 font-mono text-xs">
-            <CatChip label={`hepsi · ${data?.length ?? 0}`} active={group === "all"} onClick={() => setGroup("all")} />
+            <CatChip
+              label={`hepsi · ${data?.length ?? 0}`}
+              active={group === "all" && brand === "all"}
+              onClick={() => {
+                setGroup("all");
+                setBrand("all");
+              }}
+            />
             {GROUPS.map((g) => {
               const c = groupCounts.get(g.key) ?? 0;
               if (c === 0) return null;
@@ -432,13 +463,76 @@ function ProductsPage() {
                 <CatChip
                   key={g.key}
                   label={`${g.label} · ${c}`}
-                  active={group === g.key}
-                  onClick={() => setGroup(g.key)}
+                  active={group === g.key && brand === "all"}
+                  onClick={() => {
+                    setGroup(g.key);
+                    setBrand("all");
+                  }}
                 />
               );
             })}
           </div>
         </div>
+
+        {/* Brand discovery */}
+        {brandOptions.length > 0 && (
+          <section className="mb-8 rounded-2xl border border-primary/15 bg-background/45 p-4 sm:p-5">
+            <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <div className="font-mono text-[10px] uppercase tracking-[0.22em] text-primary/80">./markalar</div>
+                <h2 className="mt-1 font-mono text-lg text-foreground sm:text-xl">Markaya göre keşfet</h2>
+                <p className="mt-1 text-xs text-muted-foreground">Aradığın ürünü doğrudan markasından seç.</p>
+              </div>
+              {brand !== "all" && (
+                <button
+                  type="button"
+                  onClick={() => setBrand("all")}
+                  className="font-mono text-[11px] text-primary hover:underline"
+                >
+                  tüm markaları göster
+                </button>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+              {brandOptions.map((option) => {
+                const active = brand === option.key;
+                return (
+                  <button
+                    key={option.key}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => {
+                      setBrand(active ? "all" : option.key);
+                      setGroup("all");
+                    }}
+                    className={`group flex min-w-0 items-center gap-2 rounded-xl border p-2.5 text-left transition-all sm:p-3 ${
+                      active
+                        ? "border-primary/70 bg-primary/15 shadow-[0_0_18px_oklch(0.82_0.20_145/0.16)]"
+                        : "border-border/60 bg-background/35 hover:border-primary/45 hover:bg-primary/5"
+                    }`}
+                  >
+                    <ProductLogo
+                      name={option.label}
+                      src={option.cover}
+                      className="h-9 w-9 rounded-lg border border-primary/20 bg-background/80"
+                      imgClassName="h-full w-full object-contain p-1.5"
+                      fallback={<span className="font-mono text-[10px] text-primary">{option.label.slice(0, 2).toUpperCase()}</span>}
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className={`block truncate font-mono text-xs ${active ? "text-primary" : "text-foreground"}`}>
+                        {option.label}
+                      </span>
+                      <span className="mt-0.5 block truncate text-[10px] text-muted-foreground">
+                        {option.count} ürün · {option.groupLabel}
+                      </span>
+                    </span>
+                    <ArrowRight className={`h-3.5 w-3.5 shrink-0 transition-transform ${active ? "text-primary" : "text-muted-foreground/50 group-hover:translate-x-0.5 group-hover:text-primary"}`} />
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Sort bar */}
         <div className="mb-6 flex flex-wrap items-center gap-2 font-mono text-xs">
