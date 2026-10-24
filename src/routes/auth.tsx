@@ -649,3 +649,40 @@ function YetiAvatar() {
     </div>
   );
 }
+
+function FieldHint({ text, ok }: { text: string; ok?: boolean }) {
+  return (
+    <p className={`-mt-2 font-mono text-[10px] ${ok ? "text-primary" : "text-destructive"}`}>
+      {ok ? "✓ " : "! "}
+      {text}
+    </p>
+  );
+}
+
+function passwordScore(pw: string): number {
+  let s = 0;
+  if (pw.length >= 8) s++;
+  if (pw.length >= 12) s++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s++;
+  if (/\d/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  return Math.min(4, Math.max(1, s));
+}
+
+function StrengthMeter({ password }: { password: string }) {
+  const score = passwordScore(password);
+  const labels = ["", "zayıf", "orta", "iyi", "güçlü"];
+  const colors = ["", "bg-destructive", "bg-chart-4", "bg-chart-2", "bg-primary"];
+  return (
+    <div className="-mt-2 space-y-1">
+      <div className="flex gap-1">
+        {[1, 2, 3, 4].map((i) => (
+          <span key={i} className={`h-1 flex-1 rounded-full ${i <= score ? colors[score] : "bg-border/60"}`} />
+        ))}
+      </div>
+      <p className="font-mono text-[10px] text-muted-foreground">
+        şifre gücü: <span className={score >= 3 ? "text-primary" : score === 1 ? "text-destructive" : ""}>{labels[score]}</span>
+      </p>
+    </div>
+  );
+}
