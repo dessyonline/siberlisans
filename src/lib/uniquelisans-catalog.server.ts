@@ -3,6 +3,7 @@
 import { resolveLogoUrl } from "@/lib/logo-resolver";
 import { notifyTelegram, postToChannel } from "@/lib/telegram.server";
 import { mysqlExec, mysqlQuery, mysqlOne, num, bool } from "@/lib/mysql.server";
+import { priceApprovalMessage, queueUniquelisansPriceApproval, type PriceApprovalNotice } from "@/lib/uniquelisans-price-approval.server";
 
 const DEFAULT_URL = "https://bayi.uniquelisans.com/api";
 const DEFAULT_MARKUP_PERCENT = 20;
@@ -206,14 +207,14 @@ async function loadRequiredFields(externalId: number): Promise<RequiredField[] |
   }
 }
 
-async function notifyPriceDrops(items: Array<{ name: string; oldPrice: number; newPrice: number }>) {
+async function notifyPriceApprovals(items: PriceApprovalNotice[]) {
   if (!items.length) return;
-  const lines = items.slice(0, 12).map((item) =>
-    `• ${escapeTelegramHtml(item.name)}: ₺${item.oldPrice} → ₺${item.newPrice}`,
-  );
-  const suffix = items.length > lines.length ? `\n… ve ${items.length - lines.length} ürün daha` : "";
+  const messages = items.slice(0, 12).map(priceApprovalMessage);
+  const suffix = items.length > messages.length ? `\n\n… ve ${items.length - messages.length} ürün daha` : "";
   try {
-    await notifyTelegramAndChannel(`📉 <b>Uniquelisans fiyat düşüşü</b>\n${lines.join("\n")}${suffix}`);
+    // Onay gelmeden kanala indirim duyurusu yapılmaz; teklif yalnızca admin
+    // sohbetine gider. Onay sonrası fiyat ürün akışına yansır.
+    await notifyTelegram(`${messages.join("\n\n──────────\n\n")}${suffix}`);
   } catch { /* Telegram opsiyoneldir; katalog senkronu başarısız sayılmaz. */ }
 }
 
@@ -300,7 +301,7 @@ export async function runUniquelisansCatalogSync(
     const result = { ...baseResult };
     const newAutoPublishIds: string[] = [];
     const newProductNames: string[] = [];
-    const priceDrops: Array<{ name: string; oldPrice: number; newPrice: number }> = [];
+    const priceApprovals: PriceApprovalNotice[] = [];
 
     for (const cat of categories) {
       const subs = cat.subcategories?.length
@@ -329,13 +330,31 @@ export async function runUniquelisansCatalogSync(
                 p.is_automatic_delivery ? 1 : 0,
               ];
 
-              if (Number(prev.external_price ?? 0) !== p.amount) {
+              const previousSupplierPrice = prev.external_price;
+              if (previousSupplierPrice === null || previousSupplierPrice !== p.amount) {
                 if (!prev.price_locked && finalPrice !== prev.price_try) {
-                  sets.push("price_try=?");
-                  vals.push(finalPrice);
-                  if (finalPrice < prev.price_try) {
+                  if (finalPrice < prev.price_try && previousSupplierPrice !== null) {
                     result.price_decreased++;
-                    priceDrops.push({ name: p.name, oldPrice: prev.price_try, newPrice: finalPrice });
+                    try {
+                      const approval = await queueUniquelisansPriceApproval({
+                        product_id: prev.id,
+                        external_id: key,
+                        product_name: p.name,
+                        supplier_previous_price: previousSupplierPrice,
+                        supplier_new_price: p.amount,
+                        current_price: prev.price_try,
+                        proposed_price: finalPrice,
+                      });
+                      if (approval) priceApprovals.push(approval);
+                    } catch (error) {
+                      result.failed++;
+                      console.error("[uniquelisans] price approval queue failed", (error as Error).message);
+                    }
+                  } else if (finalPrice > prev.price_try) {
+                    // Maliyet artışları marj tabanını korumak için otomatik
+                    // yükseltilebilir; indirimler admin onayı bekler.
+                    sets.push("price_try=?");
+                    vals.push(finalPrice);
                   }
                 }
                 result.price_changed++;
@@ -464,7 +483,7 @@ export async function runUniquelisansCatalogSync(
       }
     }
     await notifyNewProducts(newProductNames);
-    await notifyPriceDrops(priceDrops);
+    await notifyPriceApprovals(priceApprovals);
     return result;
   });
 }
@@ -500,7 +519,7 @@ export async function runUniquelisansStockSync(
     );
 
     const result = { ...baseResult };
-    const priceDrops: Array<{ name: string; oldPrice: number; newPrice: number }> = [];
+    const priceApprovals: PriceApprovalNotice[] = [];
     const launchIds: string[] = [];
     const markup = opts.markup_percent ?? DEFAULT_MARKUP_PERCENT;
 
@@ -535,11 +554,26 @@ export async function runUniquelisansStockSync(
         if (oldCost === null || oldCost !== detail.amount) {
           result.price_changed++;
           if (!bool(p.price_locked) && nextPrice !== oldPrice) {
-            sets.push("price_try=?");
-            vals.push(nextPrice);
-            if (nextPrice < oldPrice) {
+            if (nextPrice < oldPrice && oldCost !== null) {
               result.price_decreased++;
-              priceDrops.push({ name: p.name ?? `Uniquelisans #${p.external_id}`, oldPrice, newPrice: nextPrice });
+              try {
+                const approval = await queueUniquelisansPriceApproval({
+                  product_id: p.id,
+                  external_id: p.external_id,
+                  product_name: p.name ?? `Uniquelisans #${p.external_id}`,
+                  supplier_previous_price: oldCost,
+                  supplier_new_price: detail.amount,
+                  current_price: oldPrice,
+                  proposed_price: nextPrice,
+                });
+                if (approval) priceApprovals.push(approval);
+              } catch (error) {
+                result.failed++;
+                console.error("[uniquelisans] price approval queue failed", (error as Error).message);
+              }
+            } else if (nextPrice > oldPrice) {
+              sets.push("price_try=?");
+              vals.push(nextPrice);
             }
           }
         }
@@ -584,7 +618,7 @@ export async function runUniquelisansStockSync(
         console.error("[uniquelisans] reactivation launch failed", (error as Error).message);
       }
     }
-    await notifyPriceDrops(priceDrops);
+    await notifyPriceApprovals(priceApprovals);
     return result;
   });
 }
