@@ -11,7 +11,7 @@ export const Route = createFileRoute("/_authenticated/admin/araclar")({
   component: Page,
 });
 
-type StatusFilter = "all" | "queued" | "processing" | "completed" | "failed";
+type StatusFilter = "all" | "queued" | "processing" | "done" | "failed" | "refunded";
 
 function Page() {
   const qc = useQueryClient();
@@ -82,8 +82,9 @@ function Page() {
     { key: "all", label: "hepsi" },
     { key: "queued", label: "kuyruk" },
     { key: "processing", label: "işleniyor" },
-    { key: "completed", label: "tamamlandı" },
+    { key: "done", label: "tamamlandı" },
     { key: "failed", label: "başarısız" },
+    { key: "refunded", label: "iade" },
   ];
 
   return (
@@ -112,7 +113,7 @@ function Page() {
           <StatCard label="aktif abonelik" value={String(stats.activeSubs)} sub={`₺${stats.subRevenue.toFixed(0)} ciro`} />
           <StatCard
             label="durum dağılımı"
-            value={`${stats.byStatus.completed ?? 0} ✓ / ${stats.byStatus.failed ?? 0} ✗`}
+            value={`${(stats.byStatus.done ?? 0) + (stats.byStatus.completed ?? 0)} ✓ / ${stats.byStatus.failed ?? 0} ✗`}
             sub={`${(stats.byStatus.queued ?? 0) + (stats.byStatus.processing ?? 0)} bekleyen`}
           />
         </div>
@@ -219,7 +220,7 @@ function Page() {
         {jobs.length === 0 && (
           <div className="text-xs text-muted-foreground font-mono glass-card rounded-lg p-4">kayıt bulunamadı</div>
         )}
-        {jobs.map((j: any) => {
+        {jobs.map((j) => {
           const isOpen = expanded[j.id];
           return (
             <div key={j.id} className="glass-card rounded-lg p-3 text-xs font-mono">
@@ -228,7 +229,7 @@ function Page() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <span
                       className={`px-1.5 py-0.5 rounded text-[10px] ${
-                        j.status === "completed"
+                        (j.status === "done" || j.status === "completed")
                           ? "bg-primary/20 text-primary"
                           : j.status === "failed"
                             ? "bg-red-500/20 text-red-400"

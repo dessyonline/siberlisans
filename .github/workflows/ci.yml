@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main, lovable-sync]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Lint changed application paths
+        run: >-
+          npx eslint
+          src/lib/admin-ai-jobs.functions.ts
+          src/lib/ai-tools.functions.ts
+          src/lib/campaigns.functions.ts
+          src/lib/wallet.functions.ts
+          src/routes/_authenticated/admin/araclar.tsx
+          src/routes/_authenticated/araclar/video.tsx
+          src/routes/_authenticated/hesabim.tsx
+          --rule 'prettier/prettier: off'
+          --rule 'prefer-const: warn'
+          --max-warnings=999
+
+      - name: Build
+        run: npm run build

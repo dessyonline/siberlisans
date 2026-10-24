@@ -134,11 +134,21 @@ export const markTopupPaid = createServerFn({ method: "POST" })
   .middleware([requireAuth])
   .validator((d: unknown) => markTopupPaidInput.parse(d))
   .handler(async ({ data, context }) => {
-    const { mysqlQuery, mysqlOne } = await import("./mysql.server");
-    await mysqlQuery(
-      "UPDATE wallet_topups SET receipt_path=?, status='reviewing', updated_at=? WHERE id=? AND user_id=?",
+    const { mysqlQuery, mysqlOne, mysqlExec } = await import("./mysql.server");
+    const changed = await mysqlExec(
+      "UPDATE wallet_topups SET receipt_path=?, status='reviewing', updated_at=? WHERE id=? AND user_id=? AND status IN ('pending','reviewing')",
       [data.receiptPath, ts(), data.topupId, context.userId],
     );
+    if (changed !== 1) {
+      const current = await mysqlOne<{ status: string }>(
+        "SELECT status FROM wallet_topups WHERE id=? AND user_id=? LIMIT 1",
+        [data.topupId, context.userId],
+      );
+      if (!current) throw new Error("Bakiye yükleme talebi bulunamadı.");
+      if (current.status === "approved") throw new Error("Bu bakiye talebi zaten onaylandı.");
+      if (current.status === "rejected") throw new Error("Reddedilmiş talebe dekont eklenemez.");
+      throw new Error("Bakiye talebi şu anda güncellenemedi. Lütfen tekrar deneyin.");
+    }
 
     try {
       const { notifyTelegram } = await import("@/lib/telegram.server");

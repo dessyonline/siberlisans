@@ -299,9 +299,9 @@ export const testTelegramChannel = createServerFn({ method: "POST" })
     let canPostMessages: boolean | null = null;
     let memberError: string | null = null;
     if (botId) {
-      // getChatMember is not a reliable admin check here: Telegram only guarantees
-      // it for other users when the bot is already an administrator. Asking for the
-      // administrator list lets us distinguish "not admin" from "could not verify".
+      // Önce yönetici listesini deniyoruz. Telegram bazı kanallarda bu listeyi
+      // "member list is inaccessible" ile kapatabildiği için, bu sonucu botun
+      // yönetici olmadığı şeklinde yorumlamıyoruz.
       const admins = await call("getChatAdministrators", { chat_id: channelId, return_bots: true });
       if (admins.ok && Array.isArray(admins.result)) {
         const botMember = admins.result.find((member) => {
@@ -313,8 +313,18 @@ export const testTelegramChannel = createServerFn({ method: "POST" })
           memberStatus = botMember.status ?? "unknown";
           canPostMessages = botMember.can_post_messages ?? null;
         } else {
-          memberStatus = "not_admin";
-          memberError = "Bot, Telegram'ın kanal yöneticileri listesinde bulunamadı.";
+          // Liste eksiksiz görünse bile bot kaydı dönmeyebilir; doğrudan üyelik
+          // sorgusu ile ikinci bir doğrulama yapalım.
+          const mem = await call("getChatMember", { chat_id: channelId, user_id: botId });
+          if (mem.ok) {
+            const member = mem.result as { status?: string; can_post_messages?: boolean } | undefined;
+            memberStatus = member?.status ?? "unknown";
+            canPostMessages = member?.can_post_messages ?? null;
+            memberError = null;
+          } else {
+            memberStatus = "unknown";
+            memberError = mem.description ?? "Botun kanal yöneticiliği doğrulanamadı";
+          }
         }
       } else {
         const mem = await call("getChatMember", { chat_id: channelId, user_id: botId });
@@ -322,8 +332,11 @@ export const testTelegramChannel = createServerFn({ method: "POST" })
           const member = mem.result as { status?: string; can_post_messages?: boolean } | undefined;
           memberStatus = member?.status ?? "unknown";
           canPostMessages = member?.can_post_messages ?? null;
+          memberError = null;
+        } else {
+          memberStatus = "unknown";
+          memberError = mem.description ?? admins.description ?? "Kanal yöneticiliği doğrulanamadı";
         }
-        memberError = mem.description ?? admins.description ?? "Kanal yöneticiliği doğrulanamadı";
       }
     }
 

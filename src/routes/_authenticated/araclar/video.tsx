@@ -176,7 +176,7 @@ function Page() {
     if (prompt.trim().length < 3) return toast.error("Prompt en az 3 karakter olmalı");
     setBusy(true);
     try {
-      await createJobFn({ data: { prompt: prompt.trim(), duration, aspect, quality } });
+      await createJobFn({ data: { prompt: prompt.trim(), duration, aspect, quality, idempotencyKey: crypto.randomUUID() } });
       toast.success("Video kuyruğa alındı — 1-5 dakika içinde hazır olacak");
       setPrompt("");
       await qc.invalidateQueries({ queryKey: ["ai-video-jobs"] });
@@ -199,7 +199,7 @@ function Page() {
     if (!window.confirm("Video yeniden üretilirken aynı ücret tekrar kullanılacak. Devam edilsin mi?")) return;
     setRetryingId(job.id);
     try {
-      await createJobFn({ data: { prompt: job.prompt, ...params } });
+      await createJobFn({ data: { prompt: job.prompt, ...params, idempotencyKey: crypto.randomUUID() } });
       toast.success("Video yeniden kuyruğa alındı.");
       await qc.invalidateQueries({ queryKey: ["ai-video-jobs"] });
       await qc.invalidateQueries({ queryKey: ["my-balance"] });
