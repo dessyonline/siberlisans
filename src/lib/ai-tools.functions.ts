@@ -152,10 +152,22 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
         duration: z.union([z.literal(5), z.literal(8), z.literal(10)]),
         aspect: z.enum(["16:9", "9:16", "1:1"]),
         quality: z.enum(["fast", "hd", "cinematic", "audio", "audio_premium"]).default("fast"),
+        idempotencyKey: z.string().uuid().optional(),
       })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    // Mobil ağlarda aynı POST tekrarlandığında ikinci kez bakiye düşmesin.
+    // Anahtar kullanıcıya bağlı tutulduğu için başka bir kullanıcı bu işi
+    // yeniden kullanamaz.
+    if (data.idempotencyKey) {
+      const existing = await mysqlOne<{ id: string; cost_try: unknown; status: string }>(
+        "SELECT id,cost_try,status FROM ai_jobs WHERE user_id=? AND idempotency_key=? LIMIT 1",
+        [context.userId, data.idempotencyKey],
+      );
+      if (existing) return { jobId: existing.id, cost: num(existing.cost_try) ?? 0, reused: true };
+    }
+
     // Fiyat her zaman sunucuda hesaplanır (istemciye güvenilmez).
     const cost = await priceFor(context.userId, data.quality, data.duration);
     if (!cost) throw new Error("Bu kalite için bu süre seçilemez.");
@@ -214,8 +226,8 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
       }
 
       await mysqlQuery(
-        `INSERT INTO ai_jobs (id,user_id,kind,prompt,params,cost_try,status,expires_at,provider,created_at,updated_at)
-         VALUES (?,?,?,?,?,?,'queued',DATE_ADD(?, INTERVAL 30 DAY),'fal',?,?)`,
+        `INSERT INTO ai_jobs (id,user_id,kind,prompt,params,cost_try,status,expires_at,provider,idempotency_key,created_at,updated_at)
+         VALUES (?,?,?,?,?,?,'queued',DATE_ADD(?, INTERVAL 30 DAY),'fal',?,?,?)`,
         [
           jobId,
           context.userId,
@@ -231,6 +243,7 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
           }),
           cost,
           ts(),
+          data.idempotencyKey ?? null,
           ts(),
           ts(),
         ],
@@ -249,7 +262,7 @@ export const createAiVideoJob = createServerFn({ method: "POST" })
       }
       throw e;
     }
-    return { jobId, cost };
+    return { jobId, cost, reused: false };
   });
 
 const MAX_ACTIVE_JOBS = 2;

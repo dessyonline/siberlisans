@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireAuth } from "./auth-middleware.server";
-import { mysqlQuery, mysqlOne, num } from "./mysql.server";
+import { mysqlQuery, mysqlOne, mysqlExec, num } from "./mysql.server";
 
 function ts() {
   return new Date().toISOString().slice(0, 19).replace("T", " ");
@@ -40,7 +40,7 @@ export const listAdminAiJobs = createServerFn({ method: "GET" })
   .inputValidator((d: unknown) =>
     z
       .object({
-        status: z.enum(["all", "queued", "processing", "completed", "failed"]).default("all"),
+        status: z.enum(["all", "queued", "processing", "done", "failed", "refunded"]).default("all"),
         search: z.string().max(200).optional(),
         limit: z.number().int().min(1).max(200).default(100),
       })
@@ -51,8 +51,13 @@ export const listAdminAiJobs = createServerFn({ method: "GET" })
     const conditions: string[] = [];
     const params: Array<string | number> = [];
     if (data.status !== "all") {
-      conditions.push("status=?");
-      params.push(data.status);
+      if (data.status === "done") {
+        // Eski admin işlemlerindeki 'completed' kayıtlarını da görünür tut.
+        conditions.push("status IN ('done','completed')");
+      } else {
+        conditions.push("status=?");
+        params.push(data.status);
+      }
     }
     if (data.search && data.search.trim()) {
       conditions.push("prompt LIKE ?");
@@ -81,7 +86,7 @@ export const listAdminAiJobs = createServerFn({ method: "GET" })
     );
 
     const userIds = Array.from(new Set(jobs.map((j) => j.user_id).filter(Boolean)));
-    let userMap: Record<string, { email: string | null; display_name: string | null; tier: string | null }> = {};
+    const userMap: Record<string, { email: string | null; display_name: string | null; tier: string | null }> = {};
     if (userIds.length) {
       const placeholders = userIds.map(() => "?").join(",");
       const profs = await mysqlQuery<{ id: string; email: string | null; display_name: string | null; tier: string | null }>(
@@ -232,13 +237,16 @@ export const adminCompleteAiJob = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ jobId: z.string().min(1), url: z.string().min(1) }).parse(d))
   .handler(async ({ data, context }) => {
     if (!context.isAdmin) throw new Error("Yetkisiz");
-    const job = await mysqlOne<{ user_id: string }>("SELECT user_id FROM ai_jobs WHERE id=?", [data.jobId]);
+    const job = await mysqlOne<{ user_id: string; status: string }>("SELECT user_id,status FROM ai_jobs WHERE id=?", [data.jobId]);
     if (!job) throw new Error("İş bulunamadı");
-    await mysqlQuery("UPDATE ai_jobs SET status='completed', result_url=?, error=NULL, updated_at=? WHERE id=?", [
+    if (job.status === "done" || job.status === "completed") return { ok: true };
+    if (job.status !== "queued" && job.status !== "processing") throw new Error("Bu iş artık tamamlanamaz.");
+    const changed = await mysqlExec("UPDATE ai_jobs SET status='done', result_url=?, error=NULL, updated_at=? WHERE id=? AND status IN ('queued','processing')", [
       data.url,
       ts(),
       data.jobId,
     ]);
+    if (changed !== 1) throw new Error("İş başka bir işlem tarafından güncellendi.");
     await mysqlQuery(
       "INSERT INTO notifications (id,user_id,type,title,body,link,created_at) VALUES (?,?,?,?,?,?,?)",
       [crypto.randomUUID(), job.user_id, "ai_job", "AI videon hazır", "Video üretimi tamamlandı, teslim alabilirsin.", "/araclar/video", ts()],
@@ -258,7 +266,7 @@ export const adminFailAiJob = createServerFn({ method: "POST" })
       [data.jobId],
     );
     if (!job) throw new Error("İş bulunamadı");
-    if (job.status === "completed" || job.status === "refunded") return { ok: true };
+    if (job.status === "done" || job.status === "completed" || job.status === "failed" || job.status === "refunded") return { ok: true };
 
     const cost = num(job.cost_try) ?? 0;
     if (data.refund && cost > 0) {

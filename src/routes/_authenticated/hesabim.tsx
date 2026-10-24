@@ -247,7 +247,7 @@ function MyAccount() {
           <ProfileTab 
             userId={user?.id ?? ""} 
             email={user?.email ?? ""} 
-            telegramHandle={(user as any)?.telegram_handle ?? ""}
+            telegramHandle={user?.telegram_handle ?? ""}
             onSignOut={signOut} 
           />
         </TabsContent>
@@ -1224,7 +1224,7 @@ function MyVideosTab({ fetchJobs }: { fetchJobs: () => Promise<AiJob[]> }) {
     if (!window.confirm("Bu işlem aynı video ücretini tekrar kullanır. Devam edilsin mi?")) return;
     setRetryingId(job.id);
     try {
-      await createVideoFn({ data: { prompt: job.prompt, ...params } });
+      await createVideoFn({ data: { prompt: job.prompt, ...params, idempotencyKey: crypto.randomUUID() } });
       toast.success("Video yeniden kuyruğa alındı.");
       await refetch();
     } catch (e) {
