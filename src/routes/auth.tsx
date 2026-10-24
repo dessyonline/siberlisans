@@ -299,30 +299,6 @@ function AuthPage() {
           </div>
         ) : (
           <>
-            <Button
-              asChild
-              variant="outline"
-              className="mt-6 w-full font-mono border-primary/30 hover:bg-primary/10"
-            >
-              <a href="https://siberlisans.com/api/public/auth/google/start">
-                <GoogleIcon /> <span className="ml-2">google ile devam et</span>
-              </a>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="mt-2 w-full font-mono border-primary/30 hover:bg-primary/10"
-            >
-              <a href="https://siberlisans.com/api/public/auth/apple/start">
-                <AppleIcon /> <span className="ml-2">apple ile devam et</span>
-              </a>
-            </Button>
-            <div className="my-4 flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
-              <span className="h-px flex-1 bg-border/60" />
-              <span>veya e-posta ile</span>
-              <span className="h-px flex-1 bg-border/60" />
-            </div>
-
             <Tabs defaultValue="signin">
               <TabsList className="w-full font-mono">
                 <TabsTrigger value="signin" className="flex-1">giriş</TabsTrigger>
@@ -350,6 +326,29 @@ function AuthPage() {
                 >
                   şifremi unuttum / ilk şifremi belirle
                 </button>
+                <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
+                  <span className="h-px flex-1 bg-border/60" />
+                  <span>veya şunlarla giriş yap</span>
+                  <span className="h-px flex-1 bg-border/60" />
+                </div>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full font-mono border-primary/30 hover:bg-primary/10"
+                >
+                  <a href="https://siberlisans.com/api/public/auth/google/start">
+                    <GoogleIcon /> <span className="ml-2">google ile devam et</span>
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full font-mono border-primary/30 hover:bg-primary/10"
+                >
+                  <a href="https://siberlisans.com/api/public/auth/apple/start">
+                    <AppleIcon /> <span className="ml-2">apple ile devam et</span>
+                  </a>
+                </Button>
                 {resetInfo ? (
                   <div className="rounded-md border border-primary/40 bg-primary/5 p-3 font-mono text-[11px] leading-relaxed">
                     <div className="text-muted-foreground">{resetInfo.message}</div>
