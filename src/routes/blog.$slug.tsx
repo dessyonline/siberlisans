@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { getBlogPost } from "@/lib/blog-public.functions";
 import { ArrowLeft, Calendar } from "lucide-react";
+import { SITE } from "@/lib/site-config";
 
 export const Route = createFileRoute("/blog/$slug")({
   component: BlogPost,
@@ -12,7 +13,7 @@ export const Route = createFileRoute("/blog/$slug")({
     const p = loaderData as
       | { title?: string; excerpt?: string | null; cover_url?: string | null; published_at?: string | null }
       | undefined;
-    const url = `https://siberlisans.lovable.app/blog/${params.slug}`;
+    const url = `${SITE.url}/blog/${params.slug}`;
     const title = p?.title ? `${p.title} — SiberPHP Blog` : "Blog — SiberPHP";
     const desc = p?.excerpt ?? "SiberPHP blog yazısı.";
     const meta = [
@@ -45,7 +46,7 @@ export const Route = createFileRoute("/blog/$slug")({
               publisher: {
                 "@type": "Organization",
                 name: "SiberPHP",
-                logo: { "@type": "ImageObject", url: "https://siberlisans.lovable.app/favicon.ico" },
+                logo: { "@type": "ImageObject", url: `${SITE.url}/favicon.ico` },
               },
               mainEntityOfPage: { "@type": "WebPage", "@id": url },
             }),

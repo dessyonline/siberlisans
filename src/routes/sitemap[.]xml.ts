@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
+import { SITE } from "@/lib/site-config";
 
-const BASE_URL = "https://siberlisans.lovable.app";
+const BASE_URL = SITE.url;
 
 interface SitemapEntry {
   path: string;

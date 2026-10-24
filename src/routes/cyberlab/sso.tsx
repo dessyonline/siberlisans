@@ -11,10 +11,7 @@ function CyberlabSsoHandler() {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
 
-    console.log("[SSO] Current URL:", window.location.href);
-
     if (token) {
-      console.log("[SSO] Token detected in URL, writing to localStorage...");
       localStorage.setItem("cyberlab_sso_token", token);
 
       // Navigate to index.html directly

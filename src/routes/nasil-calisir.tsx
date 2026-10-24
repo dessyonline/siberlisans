@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SITE } from "@/lib/site-config";
 
 export const Route = createFileRoute("/nasil-calisir")({
   component: () => (
@@ -33,8 +34,8 @@ export const Route = createFileRoute("/nasil-calisir")({
       },
       { property: "og:title", content: "Nasıl Çalışır? — SiberPHP" },
       { property: "og:description", content: "5 adımda güvenli lisans teslimi — referans, havale, dekont, onay, anahtar." },
-      { property: "og:url", content: "https://siberlisans.lovable.app/nasil-calisir" },
+      { property: "og:url", content: `${SITE.url}/nasil-calisir` },
     ],
-    links: [{ rel: "canonical", href: "https://siberlisans.lovable.app/nasil-calisir" }],
+    links: [{ rel: "canonical", href: `${SITE.url}/nasil-calisir` }],
   }),
 });

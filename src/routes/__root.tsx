@@ -67,6 +67,7 @@ import { THEME_BOOT_SCRIPT } from "../lib/theme";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getAccountHero } from "../lib/account.functions";
+import { SITE } from "../lib/site-config";
 
 
 function NotFoundComponent() {
@@ -164,8 +165,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@context": "https://schema.org",
           "@type": "Organization",
           name: "SiberLisans",
-          url: "https://siberlisans.lovable.app",
-          logo: "https://siberlisans.lovable.app/favicon.png",
+          url: SITE.url,
+          logo: `${SITE.url}/favicon.png`,
           sameAs: [],
         }),
       },
@@ -175,11 +176,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "@context": "https://schema.org",
           "@type": "WebSite",
           name: "SiberLisans",
-          url: "https://siberlisans.lovable.app",
+          url: SITE.url,
           inLanguage: "tr-TR",
           potentialAction: {
             "@type": "SearchAction",
-            target: "https://siberlisans.lovable.app/urunler?search={search_term_string}",
+            target: `${SITE.url}/urunler?search={search_term_string}`,
             "query-input": "required name=search_term_string",
           },
         }),

@@ -284,7 +284,7 @@ export const listMyAiJobs = createServerFn({ method: "GET" })
   .middleware([requireAuth])
   .handler(async ({ context }) => {
     const rows = await mysqlQuery<Record<string, unknown>>(
-      `SELECT id, kind, prompt, params, cost_try, status, result_url, error, created_at
+      `SELECT id, kind, prompt, params, cost_try, status, result_url, error, created_at, updated_at, expires_at
          FROM ai_jobs WHERE user_id=? ORDER BY created_at DESC LIMIT 50`,
       [context.userId],
     );
