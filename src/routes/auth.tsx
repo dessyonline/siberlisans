@@ -443,6 +443,21 @@ function AuthPage() {
                 <Button disabled={loading} onClick={signUp} className="w-full font-mono neon-glow">
                   {"> "}hesap oluştur
                 </Button>
+                <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
+                  <span className="h-px flex-1 bg-border/60" />
+                  <span>veya şunlarla kayıt ol</span>
+                  <span className="h-px flex-1 bg-border/60" />
+                </div>
+                <Button asChild variant="outline" className="w-full font-mono border-primary/30 hover:bg-primary/10">
+                  <a href="https://siberlisans.com/api/public/auth/google/start">
+                    <GoogleIcon /> <span className="ml-2">google ile devam et</span>
+                  </a>
+                </Button>
+                <Button asChild variant="outline" className="w-full font-mono border-primary/30 hover:bg-primary/10">
+                  <a href="https://siberlisans.com/api/public/auth/apple/start">
+                    <AppleIcon /> <span className="ml-2">apple ile devam et</span>
+                  </a>
+                </Button>
               </TabsContent>
             </Tabs>
           </>
@@ -468,17 +483,40 @@ function Field({
   autoComplete?: string;
 }) {
   const inputId = id ?? `auth-${label.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}`;
+  const [reveal, setReveal] = useState(false);
+  const isPassword = type === "password";
+  const masked = isPassword && !reveal;
   return (
     <div className="space-y-1.5">
       <Label htmlFor={inputId} className="font-mono text-xs text-muted-foreground">{label}</Label>
-      <Input
-        id={inputId}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="font-mono"
-        autoComplete={autoComplete}
-      />
+      <div className="relative">
+        <Input
+          id={inputId}
+          type={isPassword ? (reveal ? "text" : "password") : type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={`font-mono ${isPassword ? "pr-10" : ""} ${masked ? "text-transparent caret-primary" : ""}`}
+          autoComplete={autoComplete}
+        />
+        {masked && value ? (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 left-3 right-10 flex items-center overflow-hidden whitespace-nowrap font-mono text-sm text-primary neon-text-glow tracking-[0.15em]"
+          >
+            {Array.from(value).map((_, i) => (i % 2 === 0 ? "✦" : "✧")).join("")}
+          </span>
+        ) : null}
+        {isPassword ? (
+          <button
+            type="button"
+            onClick={() => setReveal((r) => !r)}
+            aria-label={reveal ? "şifreyi gizle" : "şifreyi göster"}
+            className="absolute inset-y-0 right-2 flex items-center px-1 font-mono text-[10px] text-muted-foreground hover:text-primary"
+          >
+            {reveal ? "gizle" : "göster"}
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }
