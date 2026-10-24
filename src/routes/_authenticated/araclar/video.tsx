@@ -7,6 +7,7 @@ import {
   createAiVideoJob,
   listMyAiJobs,
   getAiVideoPrices,
+  type VideoQuality,
 } from "@/lib/ai-tools.functions";
 import { getMyAiSubscription } from "@/lib/ai-subscriptions.functions";
 import { getMyBalance } from "@/lib/order-detail.functions";
@@ -45,6 +46,18 @@ type Job = {
 
 type Dur = 5 | 10;
 type Quality = "fast" | "hd" | "cinematic";
+
+const RETRY_QUALITIES: VideoQuality[] = ["fast", "hd", "cinematic", "audio", "audio_premium"];
+
+function retryParams(job: Job) {
+  const duration = job.params?.duration === 8 ? 8 : job.params?.duration === 10 ? 10 : 5;
+  const quality = RETRY_QUALITIES.includes(job.params?.quality as VideoQuality)
+    ? (job.params?.quality as VideoQuality)
+    : "fast";
+  const aspect = job.params?.aspect === "9:16" || job.params?.aspect === "1:1" ? job.params.aspect : "16:9";
+  if (quality.startsWith("audio") && duration !== 8) return null;
+  return { duration, quality, aspect } as const;
+}
 
 const DEFAULT_PRICES: Record<Quality, Record<number, number>> = {
   fast: { 5: 79, 10: 149 },
@@ -111,6 +124,7 @@ function Page() {
   const [aspect, setAspect] = useState<"16:9" | "9:16" | "1:1">("16:9");
   const [quality, setQuality] = useState<Quality>("fast");
   const [busy, setBusy] = useState(false);
+  const [retryingId, setRetryingId] = useState<string | null>(null);
   const autoDownloaded = useRef<Set<string>>(new Set());
 
   const { data: pricesData } = useQuery({
@@ -173,6 +187,27 @@ function Page() {
       else toast.error(msg);
     } finally {
       setBusy(false);
+    }
+  };
+
+  const retry = async (job: Job) => {
+    const params = retryParams(job);
+    if (!params) {
+      toast.error("Bu eski sesli video kaydı panelden yeniden başlatılamıyor.");
+      return;
+    }
+    if (!window.confirm("Video yeniden üretilirken aynı ücret tekrar kullanılacak. Devam edilsin mi?")) return;
+    setRetryingId(job.id);
+    try {
+      await createJobFn({ data: { prompt: job.prompt, ...params } });
+      toast.success("Video yeniden kuyruğa alındı.");
+      await qc.invalidateQueries({ queryKey: ["ai-video-jobs"] });
+      await qc.invalidateQueries({ queryKey: ["my-balance"] });
+      await qc.invalidateQueries({ queryKey: ["ai-subscription"] });
+    } catch (e) {
+      toast.error((e as Error).message || "Video yeniden başlatılamadı.");
+    } finally {
+      setRetryingId(null);
     }
   };
 
@@ -351,9 +386,19 @@ function Page() {
                       </button>
                     )}
                     {(j.status === "failed" || j.status === "refunded") && j.error && (
-                      <span className="text-red-400 max-w-full truncate" title={j.error}>
-                        {j.error}
-                      </span>
+                      <div className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2">
+                        <span className="max-w-full truncate text-red-400" title={j.error}>
+                          {j.error}
+                        </span>
+                        <button
+                          onClick={() => void retry(j)}
+                          disabled={retryingId === j.id}
+                          className="inline-flex items-center gap-1 rounded border border-primary/40 bg-primary/5 px-2 py-1 text-primary hover:bg-primary/10 disabled:opacity-50"
+                        >
+                          {retryingId === j.id ? <Loader2 className="h-3 w-3 animate-spin" /> : null}
+                          yeniden üret
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>

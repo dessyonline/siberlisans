@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { SITE } from "@/lib/site-config";
 import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/araclar/qr")({
 });
 
 function Page() {
-  const [text, setText] = useState("https://siberlisans.lovable.app");
+  const [text, setText] = useState<string>(SITE.url);
   const [size, setSize] = useState(512);
   const [dark, setDark] = useState("#000000");
   const [light, setLight] = useState("#ffffff");

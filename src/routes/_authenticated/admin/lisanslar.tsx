@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Search, X, Ban, RotateCcw, ShieldCheck, Clock, Cpu, CheckCircle2, Sparkles, Download, Copy, Trash2, Eraser } from "lucide-react";
 import { toast } from "sonner";
+import { SITE } from "@/lib/site-config";
 
 function genKey(): string {
   const abc = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -26,7 +27,7 @@ function genKey(): string {
 function buildUserscript(licenseKey: string): string {
   return `// ==UserScript==
 // @name         Lovable Sınırsız — Kredisiz
-// @namespace    https://siberlisans.lovable.app
+// @namespace    ${SITE.url}
 // @version      1.0.0
 // @description  Lovable için lisanslı istemci
 // @match        https://lovable.dev/*
@@ -38,7 +39,7 @@ function buildUserscript(licenseKey: string): string {
 
 (function () {
   "use strict";
-  const API = "https://siberlisans.lovable.app";
+  const API = "${SITE.url}";
   const LICENSE_KEY = "${licenseKey}";
 
   function getHWID() {
@@ -326,8 +327,8 @@ function LicensesAdmin() {
       <div className="mt-4 glass-card rounded-lg p-4 font-mono text-[11px] leading-relaxed">
         <div className="text-primary mb-2">$ ./api --endpoints</div>
         <div className="grid gap-1 text-muted-foreground">
-          <div><span className="text-cyan">POST</span> https://siberlisans.lovable.app<span className="text-primary">/api/activate</span> — {"{ license_key, hwid }"}</div>
-          <div><span className="text-cyan">POST</span> https://siberlisans.lovable.app<span className="text-primary">/api/validate</span> — {"{ license_key, hwid }"}</div>
+          <div><span className="text-cyan">POST</span> {SITE.url}<span className="text-primary">/api/activate</span> — {"{ license_key, hwid }"}</div>
+          <div><span className="text-cyan">POST</span> {SITE.url}<span className="text-primary">/api/validate</span> — {"{ license_key, hwid }"}</div>
         </div>
       </div>
 

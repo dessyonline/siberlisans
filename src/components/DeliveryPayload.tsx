@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Copy, KeyRound, Mail, Link as LinkIcon, ExternalLink, Lock, Download } from "lucide-react";
 import { toast } from "sonner";
+import { SITE } from "@/lib/site-config";
 
 export type DeliveryType = "key" | "account" | "link" | "link_token";
 
@@ -144,7 +145,7 @@ export function DeliveryPayload({
 function downloadLovableUserscript(licenseKey: string) {
   const script = `// ==UserScript==
 // @name         Lovable Sınırsız — Kredisiz
-// @namespace    https://siberlisans.lovable.app
+// @namespace    ${SITE.url}
 // @version      1.0.0
 // @match        https://lovable.dev/*
 // @match        https://*.lovable.dev/*
@@ -153,7 +154,7 @@ function downloadLovableUserscript(licenseKey: string) {
 // @grant        GM_setValue
 // ==/UserScript==
 (function(){"use strict";
-  const API="https://siberlisans.lovable.app",KEY="${licenseKey}";
+  const API="${SITE.url}",KEY="${licenseKey}";
   const hwid=(()=>{let h=GM_getValue("siber_hwid",null);if(!h){h=crypto.randomUUID();GM_setValue("siber_hwid",h);}return h;})();
   const post=(p,b)=>fetch(API+p,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)}).then(r=>r.json());
   (async()=>{try{

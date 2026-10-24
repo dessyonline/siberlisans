@@ -22,7 +22,8 @@ import { AffiliateBlock } from "@/components/AffiliateBlock";
 import { TransferButton } from "@/components/TransferButton";
 import { getMyAiSubscription } from "@/lib/ai-subscriptions.functions";
 import { getMyEmailVerificationStatus, resendMyEmailVerificationCode, verifyEmailCode } from "@/lib/auth.functions";
-import { listMyAiJobs } from "@/lib/ai-tools.functions";
+import { createAiVideoJob, listMyAiJobs, type VideoQuality } from "@/lib/ai-tools.functions";
+import { SITE } from "@/lib/site-config";
 import { ReviewPromptCard } from "@/components/ReviewPromptCard";
 import {
   listMyOrders,
@@ -707,7 +708,7 @@ function KeysTab({ keys }: { keys: KeyRow[] }) {
       (k) =>
         `# ${k.product} · ${new Date(k.date).toLocaleDateString("tr-TR")}\n${
           k.deliveryType === "link_token" && k.activationToken
-            ? `https://siberlisans.lovable.app/aktivasyon/${k.activationToken}`
+            ? `${SITE.url}/aktivasyon/${k.activationToken}`
             : k.keyValue
         }`,
     );
@@ -765,7 +766,7 @@ function KeysTab({ keys }: { keys: KeyRow[] }) {
 function KeyRowItem({ row }: { row: KeyRow }) {
   const isToken = row.deliveryType === "link_token" && !!row.activationToken;
   const display = isToken
-    ? `https://siberlisans.lovable.app/aktivasyon/${row.activationToken}`
+    ? `${SITE.url}/aktivasyon/${row.activationToken}`
     : row.keyValue;
   const copy = async () => {
     try {
@@ -1185,8 +1186,22 @@ type AiJob = {
   created_at: string;
 };
 
+const RETRY_QUALITIES: VideoQuality[] = ["fast", "hd", "cinematic", "audio", "audio_premium"];
+
+function getRetryParams(job: AiJob) {
+  const duration = job.params?.duration === 8 ? 8 : job.params?.duration === 10 ? 10 : 5;
+  const quality = RETRY_QUALITIES.includes(job.params?.quality as VideoQuality)
+    ? (job.params?.quality as VideoQuality)
+    : "fast";
+  const aspect = job.params?.aspect === "9:16" || job.params?.aspect === "1:1" ? job.params.aspect : "16:9";
+  if (quality.startsWith("audio") && duration !== 8) return null;
+  return { duration, quality, aspect } as const;
+}
+
 function MyVideosTab({ fetchJobs }: { fetchJobs: () => Promise<AiJob[]> }) {
   const { user } = useAuth();
+  const createVideoFn = useServerFn(createAiVideoJob);
+  const [retryingId, setRetryingId] = useState<string | null>(null);
   const { data: jobs = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["my-ai-jobs", user?.id],
     enabled: !!user,
@@ -1199,6 +1214,25 @@ function MyVideosTab({ fetchJobs }: { fetchJobs: () => Promise<AiJob[]> }) {
     () => jobs.filter((j) => (j.kind ?? "").toLowerCase().startsWith("video")),
     [jobs],
   );
+
+  const retry = async (job: AiJob) => {
+    const params = getRetryParams(job);
+    if (!params) {
+      toast.error("Bu eski sesli video kaydı yeniden başlatılamıyor.");
+      return;
+    }
+    if (!window.confirm("Bu işlem aynı video ücretini tekrar kullanır. Devam edilsin mi?")) return;
+    setRetryingId(job.id);
+    try {
+      await createVideoFn({ data: { prompt: job.prompt, ...params } });
+      toast.success("Video yeniden kuyruğa alındı.");
+      await refetch();
+    } catch (e) {
+      toast.error((e as Error).message || "Video yeniden başlatılamadı.");
+    } finally {
+      setRetryingId(null);
+    }
+  };
 
   return (
     <div>
@@ -1281,7 +1315,21 @@ function MyVideosTab({ fetchJobs }: { fetchJobs: () => Promise<AiJob[]> }) {
               )}
 
               {j.error && (
-                <div className="text-destructive text-[11px]">hata: {j.error}</div>
+                <div className="flex items-center justify-between gap-2 text-[11px]">
+                  <div className="min-w-0 text-destructive">hata: {j.error}</div>
+                  {(j.status === "failed" || j.status === "refunded") && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 shrink-0 font-mono text-[10px]"
+                      disabled={retryingId === j.id}
+                      onClick={() => void retry(j)}
+                    >
+                      {retryingId === j.id ? <Loader2 className="mr-1 h-3 w-3 animate-spin" /> : null}
+                      yeniden üret
+                    </Button>
+                  )}
+                </div>
               )}
 
               {meta.icon === "refund" && (

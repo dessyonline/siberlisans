@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { mysqlQuery } from "@/lib/mysql.server";
+import { SITE } from "@/lib/site-config";
 
 export const Route = createFileRoute("/api/public/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
-        const base = "https://siberlisans.lovable.app";
+        const base = SITE.url;
         const [prods, posts, bundles] = await Promise.all([
           mysqlQuery<{ slug: string; updated_at: string | null }>(
             "SELECT slug, updated_at FROM products WHERE active=1",

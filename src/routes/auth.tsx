@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, useSearch } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { z } from "zod";
 import { useServerFn } from "@tanstack/react-start";
 import { signIn as signInFn, signUp as signUpFn, verifyEmailCode as verifyEmailCodeFn } from "@/lib/auth.functions";
@@ -107,6 +107,15 @@ function AuthPage() {
   const [manualRef, setManualRef] = useState("");
   const urlRef = search.ref?.toUpperCase() ?? "";
   const refCode = (urlRef || manualRef.trim().toUpperCase()).slice(0, 20);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const signupEmailTrim = email.trim().toLowerCase();
+  const signupEmailHint = !signupEmailTrim
+    ? null
+    : !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(signupEmailTrim)
+      ? "geçerli bir e-posta adresi gir"
+      : isDisposableEmail(signupEmailTrim)
+        ? "geçici mailler kabul edilmiyor"
+        : null;
 
   useEffect(() => {
     if (!search.google) return;
@@ -201,7 +210,7 @@ function AuthPage() {
     if (passwordProblem) return toast.error(`[!] ${passwordProblem}`);
     const confirmationProblem = passwordConfirmationError(password, confirmPassword);
     if (confirmationProblem) return toast.error(`[!] ${confirmationProblem}`);
-    if (!telegram.trim()) return toast.error("[!] telegram adresi zorunludur (yoksa 'yok' yazın)");
+    if (!acceptTerms) return toast.error("[!] devam etmek için koşulları kabul etmelisin");
     if (parseInt(captchaInput, 10) !== captcha.answer) {
       setCaptcha(newCaptcha());
       setCaptchaInput("");
@@ -243,19 +252,7 @@ function AuthPage() {
           <Terminal className="h-4 w-4 text-primary" />
           $ ./auth --secure
         </div>
-        <div className="auth-yeti" aria-hidden="true">
-          <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="60" cy="60" r="55" fill="currentColor" opacity="0.12" />
-            <path d="M28 94C31 77 41 69 60 69C79 69 89 77 92 94" fill="white" stroke="currentColor" strokeWidth="3" />
-            <path d="M37 57C35 42 44 25 60 25C76 25 85 42 83 57C81 72 72 81 60 81C48 81 39 72 37 57Z" fill="white" stroke="currentColor" strokeWidth="3" />
-            <path d="M42 37L48 25L53 34L60 22L66 34L73 25L78 38" fill="white" stroke="currentColor" strokeWidth="3" strokeLinejoin="round" />
-            <path d="M34 51C28 48 26 54 31 58M86 51C92 48 94 54 89 58" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-            <circle cx="50" cy="53" r="3" fill="currentColor" />
-            <circle cx="70" cy="53" r="3" fill="currentColor" />
-            <path d="M53 64C57 68 63 68 67 64" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-            <path d="M45 87C51 91 69 91 75 87" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.35" />
-          </svg>
-        </div>
+        <YetiAvatar />
         <h1 className="mt-2 font-mono text-2xl neon-text">Hesabına Giriş</h1>
 
         {mfaMode ? (
@@ -311,30 +308,6 @@ function AuthPage() {
           </div>
         ) : (
           <>
-            <Button
-              asChild
-              variant="outline"
-              className="mt-6 w-full font-mono border-primary/30 hover:bg-primary/10"
-            >
-              <a href="https://siberlisans.com/api/public/auth/google/start">
-                <GoogleIcon /> <span className="ml-2">google ile devam et</span>
-              </a>
-            </Button>
-            <Button
-              asChild
-              variant="outline"
-              className="mt-2 w-full font-mono border-primary/30 hover:bg-primary/10"
-            >
-              <a href="https://siberlisans.com/api/public/auth/apple/start">
-                <AppleIcon /> <span className="ml-2">apple ile devam et</span>
-              </a>
-            </Button>
-            <div className="my-4 flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
-              <span className="h-px flex-1 bg-border/60" />
-              <span>veya e-posta ile</span>
-              <span className="h-px flex-1 bg-border/60" />
-            </div>
-
             <Tabs defaultValue="signin">
               <TabsList className="w-full font-mono">
                 <TabsTrigger value="signin" className="flex-1">giriş</TabsTrigger>
@@ -362,6 +335,29 @@ function AuthPage() {
                 >
                   şifremi unuttum / ilk şifremi belirle
                 </button>
+                <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
+                  <span className="h-px flex-1 bg-border/60" />
+                  <span>veya şunlarla giriş yap</span>
+                  <span className="h-px flex-1 bg-border/60" />
+                </div>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full font-mono border-primary/30 hover:bg-primary/10"
+                >
+                  <a href="https://siberlisans.com/api/public/auth/google/start">
+                    <GoogleIcon /> <span className="ml-2">google ile devam et</span>
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  className="w-full font-mono border-primary/30 hover:bg-primary/10"
+                >
+                  <a href="https://siberlisans.com/api/public/auth/apple/start">
+                    <AppleIcon /> <span className="ml-2">apple ile devam et</span>
+                  </a>
+                </Button>
                 {resetInfo ? (
                   <div className="rounded-md border border-primary/40 bg-primary/5 p-3 font-mono text-[11px] leading-relaxed">
                     <div className="text-muted-foreground">{resetInfo.message}</div>
@@ -380,46 +376,66 @@ function AuthPage() {
                 ) : null}
                 <Field id="signup-name" label="görünen ad" value={displayName} onChange={setDisplayName} />
                 <Field id="signup-email" label="e-posta" value={email} onChange={setEmail} type="email" autoComplete="email" />
+                {signupEmailHint ? <FieldHint text={signupEmailHint} /> : null}
                 <Field id="signup-password" label={`şifre (min ${MIN_PASSWORD_LENGTH})`} value={password} onChange={setPassword} type="password" autoComplete="new-password" />
+                {password ? <StrengthMeter password={password} /> : null}
                 <Field id="signup-confirm-password" label="şifre (tekrar)" value={confirmPassword} onChange={setConfirmPassword} type="password" autoComplete="new-password" />
-                
-                <div className="space-y-1.5">
-                  <Label className="font-mono text-xs text-muted-foreground flex items-center justify-between">
-                    <span className="flex items-center gap-1.5">
-                      <Send className="h-3 w-3 text-primary" /> telegram adresi
-                    </span>
-                    <span className="text-[10px] text-primary/70">zorunlu</span>
-                  </Label>
-                  <Input
-                    value={telegram}
-                    onChange={(e) => setTelegram(e.target.value)}
-                    placeholder="@kullaniciadi veya 'yok'"
-                    className="font-mono"
+                {confirmPassword && confirmPassword !== password ? <FieldHint text="şifreler uyuşmuyor" /> : null}
+                {confirmPassword && confirmPassword === password ? <FieldHint ok text="şifreler uyuşuyor" /> : null}
+
+                <details className="group rounded-md border border-border/50 bg-background/30 p-2.5">
+                  <summary className="cursor-pointer list-none font-mono text-[11px] text-muted-foreground hover:text-primary flex items-center justify-between">
+                    <span>+ ek bilgiler (telegram, davet kodu)</span>
+                    <span className="text-[10px] text-primary/70">opsiyonel</span>
+                  </summary>
+                  <div className="mt-3 space-y-3">
+                    <div className="space-y-1.5">
+                      <Label className="font-mono text-xs text-muted-foreground flex items-center gap-1.5">
+                        <Send className="h-3 w-3 text-primary" /> telegram adresi
+                      </Label>
+                      <Input
+                        value={telegram}
+                        onChange={(e) => setTelegram(e.target.value)}
+                        placeholder="@kullaniciadi"
+                        className="font-mono"
+                      />
+                      <div className="flex items-start gap-1.5 rounded bg-primary/5 p-2 border border-primary/20">
+                        <Info className="h-3 w-3 text-primary shrink-0 mt-0.5" />
+                        <p className="font-mono text-[9px] text-muted-foreground leading-tight">
+                          Sipariş teslimatları ve destek mesajları anında Telegram'dan gelir. Sonradan hesabından da ekleyebilirsin.
+                        </p>
+                      </div>
+                    </div>
+                    {!urlRef && (
+                      <div className="space-y-1.5">
+                        <Label className="font-mono text-xs text-muted-foreground flex items-center gap-1.5">
+                          <Gift className="h-3 w-3 text-primary" /> davet kodu
+                        </Label>
+                        <Input
+                          value={manualRef}
+                          onChange={(e) => setManualRef(e.target.value.toUpperCase())}
+                          placeholder="örn: SIBER123"
+                          maxLength={20}
+                          className="font-mono uppercase tracking-wider"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </details>
+
+                <label className="flex items-start gap-2 font-mono text-[11px] text-muted-foreground cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={acceptTerms}
+                    onChange={(e) => setAcceptTerms(e.target.checked)}
+                    className="mt-0.5 h-3.5 w-3.5 accent-primary"
                   />
-                  <div className="flex items-start gap-1.5 rounded bg-primary/5 p-2 border border-primary/20">
-                    <Info className="h-3 w-3 text-primary shrink-0 mt-0.5" />
-                    <p className="font-mono text-[9px] text-muted-foreground leading-tight">
-                      Sipariş teslimatları, şifre sıfırlama, lisans yenileme ve destek mesajları anında Telegram'dan gelir.
-                      Bu yüzden <span className="text-primary font-bold">şiddetle tavsiye ediyoruz!</span> 
-                      Kullanmıyorsanız <span className="text-primary mx-1">'yok'</span> yazabilirsiniz.
-                    </p>
-                  </div>
-                </div>
-                {!urlRef && (
-                  <div className="space-y-1.5">
-                    <Label className="font-mono text-xs text-muted-foreground flex items-center gap-1.5">
-                      <Gift className="h-3 w-3 text-primary" />
-                      davet kodu <span className="text-muted-foreground/60">(opsiyonel)</span>
-                    </Label>
-                    <Input
-                      value={manualRef}
-                      onChange={(e) => setManualRef(e.target.value.toUpperCase())}
-                      placeholder="örn: SIBER123"
-                      maxLength={20}
-                      className="font-mono uppercase tracking-wider"
-                    />
-                  </div>
-                )}
+                  <span>
+                    <a href="/kosullar" target="_blank" rel="noreferrer" className="text-primary hover:underline">kullanım koşulları</a>,{" "}
+                    <a href="/gizlilik" target="_blank" rel="noreferrer" className="text-primary hover:underline">gizlilik</a> ve{" "}
+                    <a href="/kvkk" target="_blank" rel="noreferrer" className="text-primary hover:underline">KVKK</a> metinlerini okudum, kabul ediyorum.
+                  </span>
+                </label>
 
                 {/* CAPTCHA */}
                 <div className="space-y-1.5">
@@ -456,6 +472,21 @@ function AuthPage() {
                 <Button disabled={loading} onClick={signUp} className="w-full font-mono neon-glow">
                   {"> "}hesap oluştur
                 </Button>
+                <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
+                  <span className="h-px flex-1 bg-border/60" />
+                  <span>veya şunlarla kayıt ol</span>
+                  <span className="h-px flex-1 bg-border/60" />
+                </div>
+                <Button asChild variant="outline" className="w-full font-mono border-primary/30 hover:bg-primary/10">
+                  <a href="https://siberlisans.com/api/public/auth/google/start">
+                    <GoogleIcon /> <span className="ml-2">google ile devam et</span>
+                  </a>
+                </Button>
+                <Button asChild variant="outline" className="w-full font-mono border-primary/30 hover:bg-primary/10">
+                  <a href="https://siberlisans.com/api/public/auth/apple/start">
+                    <AppleIcon /> <span className="ml-2">apple ile devam et</span>
+                  </a>
+                </Button>
               </TabsContent>
             </Tabs>
           </>
@@ -481,17 +512,40 @@ function Field({
   autoComplete?: string;
 }) {
   const inputId = id ?? `auth-${label.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}`;
+  const [reveal, setReveal] = useState(false);
+  const isPassword = type === "password";
+  const masked = isPassword && !reveal;
   return (
     <div className="space-y-1.5">
       <Label htmlFor={inputId} className="font-mono text-xs text-muted-foreground">{label}</Label>
-      <Input
-        id={inputId}
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="font-mono"
-        autoComplete={autoComplete}
-      />
+      <div className="relative">
+        <Input
+          id={inputId}
+          type={isPassword ? (reveal ? "text" : "password") : type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={`font-mono ${isPassword ? "pr-10" : ""} ${masked ? "text-transparent caret-primary" : ""}`}
+          autoComplete={autoComplete}
+        />
+        {masked && value ? (
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 left-3 right-10 flex items-center overflow-hidden whitespace-nowrap font-mono text-sm text-primary neon-text-glow tracking-[0.15em]"
+          >
+            {Array.from(value).map((_, i) => (i % 2 === 0 ? "✦" : "✧")).join("")}
+          </span>
+        ) : null}
+        {isPassword ? (
+          <button
+            type="button"
+            onClick={() => setReveal((r) => !r)}
+            aria-label={reveal ? "şifreyi gizle" : "şifreyi göster"}
+            className="absolute inset-y-0 right-2 flex items-center px-1 font-mono text-[10px] text-muted-foreground hover:text-primary"
+          >
+            {reveal ? "gizle" : "göster"}
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -512,5 +566,123 @@ function AppleIcon() {
     <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden fill="currentColor">
       <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
     </svg>
+  );
+}
+
+function YetiAvatar() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [look, setLook] = useState({ x: 0, y: 0 });
+  const [hide, setHide] = useState(false);
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      const el = ref.current;
+      if (!el) return;
+      const p = "touches" in e ? e.touches[0] : e;
+      if (!p) return;
+      const r = el.getBoundingClientRect();
+      const dx = p.clientX - (r.left + r.width / 2);
+      const dy = p.clientY - (r.top + r.height / 2);
+      const d = Math.hypot(dx, dy) || 1;
+      const m = Math.min(1, d / 200) * 4;
+      setLook({ x: (dx / d) * m, y: (dy / d) * m });
+    };
+    const onFocus = () => {
+      const a = document.activeElement as HTMLInputElement | null;
+      const isInput = !!a && a.tagName === "INPUT";
+      setHide(isInput && a!.type === "password");
+      if (isInput && a!.type !== "password") {
+        const len = Math.min(a!.value.length, 30);
+        setLook({ x: -4 + (len / 30) * 8, y: 3 });
+      }
+    };
+    const onBlur = () => setTimeout(onFocus, 0);
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("touchmove", onMove, { passive: true });
+    document.addEventListener("focusin", onFocus);
+    document.addEventListener("focusout", onBlur);
+    document.addEventListener("input", onFocus);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("touchmove", onMove);
+      document.removeEventListener("focusin", onFocus);
+      document.removeEventListener("focusout", onBlur);
+      document.removeEventListener("input", onFocus);
+    };
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className="mx-auto mt-3 mb-1 grid h-[86px] w-[86px] place-items-center rounded-full border border-primary/35 bg-primary/10 text-primary shadow-[0_0_24px_color-mix(in_oklab,var(--primary)_12%,transparent)]"
+      aria-hidden="true"
+    >
+      <svg viewBox="0 0 120 120" fill="none" className="h-[76px] w-[76px] overflow-visible" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="60" cy="60" r="55" fill="currentColor" opacity="0.12" />
+        <path d="M28 94C31 77 41 69 60 69C79 69 89 77 92 94" className="fill-foreground" stroke="currentColor" strokeWidth="3" />
+        <path d="M37 57C35 42 44 25 60 25C76 25 85 42 83 57C81 72 72 81 60 81C48 81 39 72 37 57Z" className="fill-foreground" stroke="currentColor" strokeWidth="3" />
+        <path d="M42 37L48 25L53 34L60 22L66 34L73 25L78 38" className="fill-foreground" stroke="currentColor" strokeWidth="3" strokeLinejoin="round" />
+        <path d="M34 51C28 48 26 54 31 58M86 51C92 48 94 54 89 58" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+        {hide ? (
+          <g stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+            <path d="M45 54C48 57 52 57 55 54" />
+            <path d="M65 54C68 57 72 57 75 54" />
+          </g>
+        ) : (
+          <g style={{ transform: `translate(${look.x}px, ${look.y}px)`, transition: "transform 120ms ease-out" }}>
+            <circle cx="50" cy="53" r="3" fill="currentColor" />
+            <circle cx="70" cy="53" r="3" fill="currentColor" />
+          </g>
+        )}
+        <path d="M53 64C57 68 63 68 67 64" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+        <g
+          style={{ transform: hide ? "translateY(0)" : "translateY(40px)", opacity: hide ? 1 : 0, transition: "transform 250ms ease, opacity 200ms ease" }}
+          className="fill-foreground"
+          stroke="currentColor"
+          strokeWidth="3"
+        >
+          <ellipse cx="47" cy="55" rx="11" ry="9" />
+          <ellipse cx="73" cy="55" rx="11" ry="9" />
+        </g>
+        <path d="M45 87C51 91 69 91 75 87" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.35" />
+      </svg>
+    </div>
+  );
+}
+
+function FieldHint({ text, ok }: { text: string; ok?: boolean }) {
+  return (
+    <p className={`-mt-2 font-mono text-[10px] ${ok ? "text-primary" : "text-destructive"}`}>
+      {ok ? "✓ " : "! "}
+      {text}
+    </p>
+  );
+}
+
+function passwordScore(pw: string): number {
+  let s = 0;
+  if (pw.length >= 8) s++;
+  if (pw.length >= 12) s++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s++;
+  if (/\d/.test(pw)) s++;
+  if (/[^A-Za-z0-9]/.test(pw)) s++;
+  return Math.min(4, Math.max(1, s));
+}
+
+function StrengthMeter({ password }: { password: string }) {
+  const score = passwordScore(password);
+  const labels = ["", "zayıf", "orta", "iyi", "güçlü"];
+  const colors = ["", "bg-destructive", "bg-chart-4", "bg-chart-2", "bg-primary"];
+  return (
+    <div className="-mt-2 space-y-1">
+      <div className="flex gap-1">
+        {[1, 2, 3, 4].map((i) => (
+          <span key={i} className={`h-1 flex-1 rounded-full ${i <= score ? colors[score] : "bg-border/60"}`} />
+        ))}
+      </div>
+      <p className="font-mono text-[10px] text-muted-foreground">
+        şifre gücü: <span className={score >= 3 ? "text-primary" : score === 1 ? "text-destructive" : ""}>{labels[score]}</span>
+      </p>
+    </div>
   );
 }

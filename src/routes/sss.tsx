@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { SITE } from "@/lib/site-config";
 
 const FAQS = [
   { q: "Kredi kartı ile ödeme yapabilir miyim?", a: "Hayır. SiberPHP güvenlik politikası gereği yalnızca banka havalesi / EFT kabul eder." },
@@ -33,9 +34,9 @@ export const Route = createFileRoute("/sss")({
       },
       { property: "og:title", content: "SSS — SiberPHP" },
       { property: "og:description", content: "SiberPHP hakkında en çok sorulan sorular ve yanıtları." },
-      { property: "og:url", content: "https://siberlisans.lovable.app/sss" },
+      { property: "og:url", content: `${SITE.url}/sss` },
     ],
-    links: [{ rel: "canonical", href: "https://siberlisans.lovable.app/sss" }],
+    links: [{ rel: "canonical", href: `${SITE.url}/sss` }],
     scripts: [
       {
         type: "application/ld+json",

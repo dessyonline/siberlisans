@@ -13,6 +13,7 @@ import { AdminEditBadge } from "@/components/AdminEditBadge";
 import { FlashSaleBadge, useActiveFlashSale } from "@/components/FlashSaleBadge";
 import { RetailPriceBadge } from "@/components/RetailPriceBadge";
 import { applyFlash } from "@/lib/flash-sales";
+import { SITE } from "@/lib/site-config";
 import {
   Search, X, Sparkles, TrendingUp, Zap, ShieldCheck, ArrowRight, Package, Star, Crown,
 } from "lucide-react";
@@ -40,10 +41,10 @@ export const Route = createFileRoute("/urunler")({
         property: "og:description",
         content: "Anında teslim edilen orijinal yazılım lisansları — Windows, Office, Adobe, AI araçları ve daha fazlası.",
       },
-      { property: "og:url", content: "https://siberlisans.lovable.app/urunler" },
+      { property: "og:url", content: `${SITE.url}/urunler` },
       { property: "og:type", content: "website" },
     ],
-    links: [{ rel: "canonical", href: "https://siberlisans.lovable.app/urunler" }],
+    links: [{ rel: "canonical", href: `${SITE.url}/urunler` }],
     scripts: [
       {
         type: "application/ld+json",
@@ -51,7 +52,7 @@ export const Route = createFileRoute("/urunler")({
           "@context": "https://schema.org",
           "@type": "CollectionPage",
           name: "Lisans Kataloğu — SiberPHP",
-          url: "https://siberlisans.lovable.app/urunler",
+          url: `${SITE.url}/urunler`,
           description: "Windows, Office, Adobe, ChatGPT, Midjourney ve daha fazlası — anında teslim.",
           inLanguage: "tr-TR",
         }),
@@ -62,8 +63,8 @@ export const Route = createFileRoute("/urunler")({
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
           itemListElement: [
-            { "@type": "ListItem", position: 1, name: "Anasayfa", item: "https://siberlisans.lovable.app/" },
-            { "@type": "ListItem", position: 2, name: "Lisanslar", item: "https://siberlisans.lovable.app/urunler" },
+            { "@type": "ListItem", position: 1, name: "Anasayfa", item: `${SITE.url}/` },
+            { "@type": "ListItem", position: 2, name: "Lisanslar", item: `${SITE.url}/urunler` },
           ],
         }),
       },
