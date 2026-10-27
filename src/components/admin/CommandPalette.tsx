@@ -29,6 +29,7 @@ import {
   Sparkles,
   Users,
   ShieldCheck,
+  Activity,
 } from "lucide-react";
 
 type NavCmd = { kind: "nav"; label: string; to: string; icon: typeof Zap; hint?: string };
@@ -40,6 +41,7 @@ type ResultRow =
 
 const NAV_CMDS: NavCmd[] = [
   { kind: "nav", label: "dashboard", to: "/admin", icon: Terminal, hint: "kontrol merkezi" },
+  { kind: "nav", label: "araç kullanımı", to: "/admin/kullanim", icon: Activity, hint: "kullanım ve kalite" },
   { kind: "nav", label: "siparişler", to: "/admin/siparisler", icon: ShoppingCart },
   { kind: "nav", label: "kullanıcılar", to: "/admin/kullanicilar", icon: Users },
   { kind: "nav", label: "ürünler", to: "/admin/urunler", icon: Package },

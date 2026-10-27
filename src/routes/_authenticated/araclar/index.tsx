@@ -1,11 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { getMyToolUsage, getToolQualitySummary } from "@/lib/tool-usage.functions";
 import {
   Video, Eraser, Minimize2, QrCode, Palette, Braces, Binary, Type,
   Crop, Stamp, ShieldCheck, FileText, Scissors, Film, Music, Layers, Gauge,
   RotateCw, VolumeX, Image as ImageIcon, Search, LayoutGrid, ImageIcon as PicIcon,
   Video as VidIcon, Code2, Sparkles, Zap, Infinity as InfIcon, Cpu, ArrowRight,
-  KeyRound, Fingerprint, ShieldAlert, Link2, Hash, Lock, Star, History, X,
+  KeyRound, Fingerprint, ShieldAlert, Link2, Hash, Lock, Star, History, X, Activity,
+  CheckCircle2, Clock3,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/araclar/")({
@@ -66,6 +70,8 @@ const TOOLS: Tool[] = [
   { to: "/araclar/uuid", label: "UUID / ID Üretici", desc: "UUID v4, NanoID, kısa kod ve hex token.", icon: Hash, badge: "FREE", category: "gelistirici", isNew: true, keywords: "id token random rastgele" },
   { to: "/araclar/url", label: "URL Kodla / Çöz", desc: "Encode/decode + query parametre analizi.", icon: Link2, badge: "FREE", category: "gelistirici", isNew: true, keywords: "urlencode query param" },
   { to: "/araclar/slug", label: "Slug Üretici", desc: "Türkçe karakterli başlıktan SEO URL üret.", icon: Type, badge: "FREE", category: "gelistirici", isNew: true, keywords: "seo url permalink türkçe" },
+  { to: "/araclar/regex", label: "Regex Test", desc: "Düzenli ifadeyi metin üzerinde anında dene.", icon: Code2, badge: "FREE", category: "gelistirici", isNew: true, keywords: "regexp regular expression pattern" },
+  { to: "/araclar/metin-karsilastir", label: "Metin Karşılaştır", desc: "İki metin arasındaki satır farklarını bul.", icon: FileText, badge: "FREE", category: "gelistirici", isNew: true, keywords: "diff compare fark" },
   // Güvenlik
   { to: "/araclar/sifre", label: "Şifre Üreteci", desc: "Kriptografik güçlü şifre + entropi analizi.", icon: KeyRound, badge: "FREE", category: "guvenlik", isNew: true, featured: true, keywords: "password parola güvenli" },
   { to: "/araclar/hash", label: "Hash Üretici", desc: "Metin/dosya → SHA-1/256/384/512 özeti.", icon: Fingerprint, badge: "FREE", category: "guvenlik", isNew: true, keywords: "sha md5 checksum bütünlük" },
@@ -94,12 +100,24 @@ function readStore(key: string): string[] {
 }
 
 function Hub() {
+  const usageFn = useServerFn(getMyToolUsage);
+  const qualityFn = useServerFn(getToolQualitySummary);
   const [cat, setCat] = useState<"hepsi" | Category>("hepsi");
   const [q, setQ] = useState("");
   const [favs, setFavs] = useState<string[]>([]);
   const [recents, setRecents] = useState<string[]>([]);
   const searchRef = useRef<HTMLInputElement | null>(null);
   const [now, setNow] = useState<string>("--:--:--");
+  const { data: usage } = useQuery({
+    queryKey: ["my-tool-usage", "hub"],
+    queryFn: () => usageFn(),
+    staleTime: 30_000,
+  });
+  const { data: quality = [] } = useQuery({
+    queryKey: ["tool-quality-summary", "hub"],
+    queryFn: () => qualityFn(),
+    staleTime: 60_000,
+  });
 
   useEffect(() => {
     setFavs(readStore(FAV_KEY));
@@ -225,6 +243,44 @@ function Hub() {
               </div>
             </div>
             <div className="scan-line pointer-events-none absolute inset-0" aria-hidden />
+          </div>
+        </div>
+      </section>
+
+      <section className="grid gap-3 md:grid-cols-[1.1fr_.9fr]">
+        <div className="glass-card rounded-lg border border-primary/15 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-primary">$ personal-usage</div>
+              <h2 className="mt-1 font-mono text-base font-semibold">Kullanımın</h2>
+            </div>
+            <Activity className="h-5 w-5 text-primary" />
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            <HubMetric label="kullanım" value={usage?.totals.uses ?? 0} />
+            <HubMetric label="aktif araç" value={usage?.totals.active_tools ?? 0} />
+            <HubMetric label="başarılı" value={usage?.totals.successful ?? 0} />
+          </div>
+          <Link to="/hesabim" className="mt-4 inline-flex items-center gap-1 font-mono text-xs text-primary hover:underline">
+            geçmişi aç <ArrowRight className="h-3 w-3" />
+          </Link>
+        </div>
+        <div className="glass-card rounded-lg border border-yellow-400/15 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <div className="font-mono text-[10px] uppercase tracking-wider text-yellow-400">$ ai-quality · son 30 gün</div>
+              <h2 className="mt-1 font-mono text-base font-semibold">AI araçlarının kalitesi</h2>
+            </div>
+            <Sparkles className="h-5 w-5 text-yellow-400" />
+          </div>
+          <div className="mt-4 space-y-2">
+            {quality.filter((item) => item.tool_kind === "ai").slice(0, 2).map((item) => (
+              <div key={item.tool_key} className="flex items-center justify-between gap-3 font-mono text-xs">
+                <span className="truncate">{item.tool_key}</span>
+                <span className="shrink-0 text-primary">{item.success_rate == null ? "—" : `%${item.success_rate}`} · {item.rating_count ? `${item.rating}/5` : "puan yok"}</span>
+              </div>
+            ))}
+            {!quality.some((item) => item.tool_kind === "ai") ? <div className="font-mono text-xs text-muted-foreground">İlk AI üretiminden sonra kalite özeti burada görünür.</div> : null}
           </div>
         </div>
       </section>
@@ -364,6 +420,15 @@ function Hub() {
         <ToolGrid tools={filtered} favs={favs} onFav={toggleFav} onOpen={pushRecent} />
       )}
 
+    </div>
+  );
+}
+
+function HubMetric({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="rounded border border-border/60 bg-background/30 p-2">
+      <div className="font-mono text-lg text-primary">{value.toLocaleString("tr-TR")}</div>
+      <div className="font-mono text-[10px] text-muted-foreground">{label}</div>
     </div>
   );
 }

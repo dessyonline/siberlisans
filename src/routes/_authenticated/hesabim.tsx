@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { DeliveryPayload, type DeliveryType } from "@/components/DeliveryPayload";
 import { toast } from "sonner";
-import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck, RefreshCw, Users, Trophy, Palette, Sparkles, Film, LayoutDashboard, ArrowUpRight, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { Copy, Download, KeyRound, Search, ShoppingCart, User as UserIcon, LogOut, Filter, Wallet, Heart, Gift, Bell, ShieldCheck, RefreshCw, Users, Trophy, Palette, Sparkles, Film, LayoutDashboard, ArrowUpRight, CheckCircle2, AlertCircle, Loader2, History } from "lucide-react";
 import { AccountHero } from "@/components/account/AccountHero";
 import { ActivityFeed } from "@/components/account/ActivityFeed";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -25,6 +25,7 @@ import { getMyEmailVerificationStatus, resendMyEmailVerificationCode, verifyEmai
 import { createAiVideoJob, listMyAiJobs, type VideoQuality } from "@/lib/ai-tools.functions";
 import { SITE } from "@/lib/site-config";
 import { ReviewPromptCard } from "@/components/ReviewPromptCard";
+import { ToolUsageHistoryPanel } from "@/components/account/ToolUsageHistoryPanel";
 import {
   listMyOrders,
   getMyAvatar,
@@ -147,7 +148,7 @@ function MyAccount() {
       </div>
 
       <Tabs defaultValue="overview" className="mt-6 md:mt-8">
-        <TabsList className="grid w-full grid-cols-4 sm:grid-cols-8 font-mono h-auto">
+        <TabsList className="grid w-full grid-cols-4 sm:grid-cols-9 font-mono h-auto">
           <TabsTrigger value="overview" className="text-[11px] sm:text-sm py-2">
             <LayoutDashboard className="mr-1 h-3.5 w-3.5 shrink-0" />
             <span className="truncate">genel</span>
@@ -163,6 +164,10 @@ function MyAccount() {
           <TabsTrigger value="videos" className="text-[11px] sm:text-sm py-2">
             <Film className="mr-1 h-3.5 w-3.5 shrink-0" />
             <span className="truncate">videolar</span>
+          </TabsTrigger>
+          <TabsTrigger value="usage" className="text-[11px] sm:text-sm py-2">
+            <History className="mr-1 h-3.5 w-3.5 shrink-0" />
+            <span className="truncate">kullanım</span>
           </TabsTrigger>
           <TabsTrigger value="subs" className="text-[11px] sm:text-sm py-2">
             <RefreshCw className="mr-1 h-3.5 w-3.5 shrink-0" />
@@ -236,6 +241,9 @@ function MyAccount() {
         </TabsContent>
         <TabsContent value="videos" className="mt-6">
           <MyVideosTab fetchJobs={() => jobsFn() as Promise<AiJob[]>} />
+        </TabsContent>
+        <TabsContent value="usage" className="mt-6">
+          <ToolUsageHistoryPanel />
         </TabsContent>
         <TabsContent value="subs" className="mt-6">
           <SubscriptionsBlock />

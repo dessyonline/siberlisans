@@ -1,5 +1,9 @@
 import { createFileRoute, Outlet, Link, useLocation } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Video, Film, Terminal, ArrowLeft } from "lucide-react";
+import { recordToolUsage } from "@/lib/tool-usage.functions";
+import { ToolFeedback } from "@/components/ToolFeedback";
 
 export const Route = createFileRoute("/_authenticated/araclar")({
   ssr: false,
@@ -14,6 +18,26 @@ const NAV = [
 
 function AraclarLayout() {
   const loc = useLocation();
+  const record = useServerFn(recordToolUsage);
+  const toolKey = loc.pathname.startsWith("/araclar/") ? loc.pathname.split("/").filter(Boolean).at(-1) ?? null : null;
+  const isAi = toolKey === "video" || toolKey === "video-uzun";
+
+  useEffect(() => {
+    if (!toolKey) return;
+    const startedAt = Date.now();
+    void record({ data: { toolKey, toolKind: isAi ? "ai" : "free", action: "viewed" } }).catch(() => {});
+    return () => {
+      void record({
+        data: {
+          toolKey,
+          toolKind: isAi ? "ai" : "free",
+          action: "completed",
+          durationMs: Date.now() - startedAt,
+        },
+      }).catch(() => {});
+    };
+  }, [isAi, record, toolKey]);
+
   return (
     <div className="mx-auto max-w-7xl px-3 py-4 md:px-4 md:py-6 grid gap-4 md:grid-cols-[220px,1fr]">
       <aside className="glass-card rounded-lg h-fit md:sticky md:top-20 p-3">
@@ -42,8 +66,9 @@ function AraclarLayout() {
           <ArrowLeft className="h-3 w-3" /> siteye dön
         </Link>
       </aside>
-      <div className="min-w-0">
+      <div className="min-w-0 space-y-4">
         <Outlet />
+        {isAi ? <ToolFeedback toolKey={toolKey} /> : null}
       </div>
     </div>
   );

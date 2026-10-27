@@ -32,6 +32,7 @@ import {
   MessageCircleQuestion,
   Handshake,
   Terminal,
+  Activity,
 } from "lucide-react";
 
 
@@ -56,6 +57,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "genel",
     items: [
       { to: "/admin", label: "dashboard", icon: LayoutDashboard, exact: true },
+      { to: "/admin/kullanim", label: "araç kullanımı", icon: Activity },
       { to: "/admin/rapor", label: "kar/zarar raporu", icon: TrendingUp },
       { to: "/admin/denetim", label: "denetim kaydı", icon: History },
       { to: "/admin/destek", label: "destek", icon: LifeBuoy },

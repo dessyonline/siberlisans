@@ -87,6 +87,7 @@ import { Route as AuthenticatedAdminKampanyalarRouteImport } from './routes/_aut
 import { Route as AuthenticatedAdminKeylerRouteImport } from './routes/_authenticated/admin/keyler'
 import { Route as AuthenticatedAdminKriptoRouteImport } from './routes/_authenticated/admin/kripto'
 import { Route as AuthenticatedAdminKullanicilarRouteImport } from './routes/_authenticated/admin/kullanicilar'
+import { Route as AuthenticatedAdminKullanimRouteImport } from './routes/_authenticated/admin/kullanim'
 import { Route as AuthenticatedAdminKuponlarRouteImport } from './routes/_authenticated/admin/kuponlar'
 import { Route as AuthenticatedAdminLisanslarRouteImport } from './routes/_authenticated/admin/lisanslar'
 import { Route as AuthenticatedAdminPaketlerRouteImport } from './routes/_authenticated/admin/paketler'
@@ -107,9 +108,11 @@ import { Route as AuthenticatedAraclarHashRouteImport } from './routes/_authenti
 import { Route as AuthenticatedAraclarJsonRouteImport } from './routes/_authenticated/araclar/json'
 import { Route as AuthenticatedAraclarJwtRouteImport } from './routes/_authenticated/araclar/jwt'
 import { Route as AuthenticatedAraclarKirpRouteImport } from './routes/_authenticated/araclar/kirp'
+import { Route as AuthenticatedAraclarMetinKarsilastirRouteImport } from './routes/_authenticated/araclar/metin-karsilastir'
 import { Route as AuthenticatedAraclarPaletRouteImport } from './routes/_authenticated/araclar/palet'
 import { Route as AuthenticatedAraclarPdfRouteImport } from './routes/_authenticated/araclar/pdf'
 import { Route as AuthenticatedAraclarQrRouteImport } from './routes/_authenticated/araclar/qr'
+import { Route as AuthenticatedAraclarRegexRouteImport } from './routes/_authenticated/araclar/regex'
 import { Route as AuthenticatedAraclarRenkRouteImport } from './routes/_authenticated/araclar/renk'
 import { Route as AuthenticatedAraclarSayacRouteImport } from './routes/_authenticated/araclar/sayac'
 import { Route as AuthenticatedAraclarSifreRouteImport } from './routes/_authenticated/araclar/sifre'
@@ -574,6 +577,12 @@ const AuthenticatedAdminKullanicilarRoute =
     path: '/kullanicilar',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
+const AuthenticatedAdminKullanimRoute =
+  AuthenticatedAdminKullanimRouteImport.update({
+    id: '/kullanim',
+    path: '/kullanim',
+    getParentRoute: () => AuthenticatedAdminRouteRoute,
+  } as any)
 const AuthenticatedAdminKuponlarRoute =
   AuthenticatedAdminKuponlarRouteImport.update({
     id: '/kuponlar',
@@ -692,6 +701,12 @@ const AuthenticatedAraclarKirpRoute =
     path: '/kirp',
     getParentRoute: () => AuthenticatedAraclarRouteRoute,
   } as any)
+const AuthenticatedAraclarMetinKarsilastirRoute =
+  AuthenticatedAraclarMetinKarsilastirRouteImport.update({
+    id: '/metin-karsilastir',
+    path: '/metin-karsilastir',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
 const AuthenticatedAraclarPaletRoute =
   AuthenticatedAraclarPaletRouteImport.update({
     id: '/palet',
@@ -708,6 +723,12 @@ const AuthenticatedAraclarQrRoute = AuthenticatedAraclarQrRouteImport.update({
   path: '/qr',
   getParentRoute: () => AuthenticatedAraclarRouteRoute,
 } as any)
+const AuthenticatedAraclarRegexRoute =
+  AuthenticatedAraclarRegexRouteImport.update({
+    id: '/regex',
+    path: '/regex',
+    getParentRoute: () => AuthenticatedAraclarRouteRoute,
+  } as any)
 const AuthenticatedAraclarRenkRoute =
   AuthenticatedAraclarRenkRouteImport.update({
     id: '/renk',
@@ -1091,6 +1112,7 @@ export interface FileRoutesByFullPath {
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/admin/kripto': typeof AuthenticatedAdminKriptoRoute
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
+  '/admin/kullanim': typeof AuthenticatedAdminKullanimRoute
   '/admin/kuponlar': typeof AuthenticatedAdminKuponlarRoute
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
   '/admin/paketler': typeof AuthenticatedAdminPaketlerRoute
@@ -1110,9 +1132,11 @@ export interface FileRoutesByFullPath {
   '/araclar/json': typeof AuthenticatedAraclarJsonRoute
   '/araclar/jwt': typeof AuthenticatedAraclarJwtRoute
   '/araclar/kirp': typeof AuthenticatedAraclarKirpRoute
+  '/araclar/metin-karsilastir': typeof AuthenticatedAraclarMetinKarsilastirRoute
   '/araclar/palet': typeof AuthenticatedAraclarPaletRoute
   '/araclar/pdf': typeof AuthenticatedAraclarPdfRoute
   '/araclar/qr': typeof AuthenticatedAraclarQrRoute
+  '/araclar/regex': typeof AuthenticatedAraclarRegexRoute
   '/araclar/renk': typeof AuthenticatedAraclarRenkRoute
   '/araclar/sayac': typeof AuthenticatedAraclarSayacRoute
   '/araclar/sifre': typeof AuthenticatedAraclarSifreRoute
@@ -1245,6 +1269,7 @@ export interface FileRoutesByTo {
   '/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/admin/kripto': typeof AuthenticatedAdminKriptoRoute
   '/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
+  '/admin/kullanim': typeof AuthenticatedAdminKullanimRoute
   '/admin/kuponlar': typeof AuthenticatedAdminKuponlarRoute
   '/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
   '/admin/paketler': typeof AuthenticatedAdminPaketlerRoute
@@ -1264,9 +1289,11 @@ export interface FileRoutesByTo {
   '/araclar/json': typeof AuthenticatedAraclarJsonRoute
   '/araclar/jwt': typeof AuthenticatedAraclarJwtRoute
   '/araclar/kirp': typeof AuthenticatedAraclarKirpRoute
+  '/araclar/metin-karsilastir': typeof AuthenticatedAraclarMetinKarsilastirRoute
   '/araclar/palet': typeof AuthenticatedAraclarPaletRoute
   '/araclar/pdf': typeof AuthenticatedAraclarPdfRoute
   '/araclar/qr': typeof AuthenticatedAraclarQrRoute
+  '/araclar/regex': typeof AuthenticatedAraclarRegexRoute
   '/araclar/renk': typeof AuthenticatedAraclarRenkRoute
   '/araclar/sayac': typeof AuthenticatedAraclarSayacRoute
   '/araclar/sifre': typeof AuthenticatedAraclarSifreRoute
@@ -1403,6 +1430,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/keyler': typeof AuthenticatedAdminKeylerRoute
   '/_authenticated/admin/kripto': typeof AuthenticatedAdminKriptoRoute
   '/_authenticated/admin/kullanicilar': typeof AuthenticatedAdminKullanicilarRoute
+  '/_authenticated/admin/kullanim': typeof AuthenticatedAdminKullanimRoute
   '/_authenticated/admin/kuponlar': typeof AuthenticatedAdminKuponlarRoute
   '/_authenticated/admin/lisanslar': typeof AuthenticatedAdminLisanslarRoute
   '/_authenticated/admin/paketler': typeof AuthenticatedAdminPaketlerRoute
@@ -1422,9 +1450,11 @@ export interface FileRoutesById {
   '/_authenticated/araclar/json': typeof AuthenticatedAraclarJsonRoute
   '/_authenticated/araclar/jwt': typeof AuthenticatedAraclarJwtRoute
   '/_authenticated/araclar/kirp': typeof AuthenticatedAraclarKirpRoute
+  '/_authenticated/araclar/metin-karsilastir': typeof AuthenticatedAraclarMetinKarsilastirRoute
   '/_authenticated/araclar/palet': typeof AuthenticatedAraclarPaletRoute
   '/_authenticated/araclar/pdf': typeof AuthenticatedAraclarPdfRoute
   '/_authenticated/araclar/qr': typeof AuthenticatedAraclarQrRoute
+  '/_authenticated/araclar/regex': typeof AuthenticatedAraclarRegexRoute
   '/_authenticated/araclar/renk': typeof AuthenticatedAraclarRenkRoute
   '/_authenticated/araclar/sayac': typeof AuthenticatedAraclarSayacRoute
   '/_authenticated/araclar/sifre': typeof AuthenticatedAraclarSifreRoute
@@ -1561,6 +1591,7 @@ export interface FileRouteTypes {
     | '/admin/keyler'
     | '/admin/kripto'
     | '/admin/kullanicilar'
+    | '/admin/kullanim'
     | '/admin/kuponlar'
     | '/admin/lisanslar'
     | '/admin/paketler'
@@ -1580,9 +1611,11 @@ export interface FileRouteTypes {
     | '/araclar/json'
     | '/araclar/jwt'
     | '/araclar/kirp'
+    | '/araclar/metin-karsilastir'
     | '/araclar/palet'
     | '/araclar/pdf'
     | '/araclar/qr'
+    | '/araclar/regex'
     | '/araclar/renk'
     | '/araclar/sayac'
     | '/araclar/sifre'
@@ -1715,6 +1748,7 @@ export interface FileRouteTypes {
     | '/admin/keyler'
     | '/admin/kripto'
     | '/admin/kullanicilar'
+    | '/admin/kullanim'
     | '/admin/kuponlar'
     | '/admin/lisanslar'
     | '/admin/paketler'
@@ -1734,9 +1768,11 @@ export interface FileRouteTypes {
     | '/araclar/json'
     | '/araclar/jwt'
     | '/araclar/kirp'
+    | '/araclar/metin-karsilastir'
     | '/araclar/palet'
     | '/araclar/pdf'
     | '/araclar/qr'
+    | '/araclar/regex'
     | '/araclar/renk'
     | '/araclar/sayac'
     | '/araclar/sifre'
@@ -1872,6 +1908,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/keyler'
     | '/_authenticated/admin/kripto'
     | '/_authenticated/admin/kullanicilar'
+    | '/_authenticated/admin/kullanim'
     | '/_authenticated/admin/kuponlar'
     | '/_authenticated/admin/lisanslar'
     | '/_authenticated/admin/paketler'
@@ -1891,9 +1928,11 @@ export interface FileRouteTypes {
     | '/_authenticated/araclar/json'
     | '/_authenticated/araclar/jwt'
     | '/_authenticated/araclar/kirp'
+    | '/_authenticated/araclar/metin-karsilastir'
     | '/_authenticated/araclar/palet'
     | '/_authenticated/araclar/pdf'
     | '/_authenticated/araclar/qr'
+    | '/_authenticated/araclar/regex'
     | '/_authenticated/araclar/renk'
     | '/_authenticated/araclar/sayac'
     | '/_authenticated/araclar/sifre'
@@ -2582,6 +2621,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminKullanicilarRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
+    '/_authenticated/admin/kullanim': {
+      id: '/_authenticated/admin/kullanim'
+      path: '/kullanim'
+      fullPath: '/admin/kullanim'
+      preLoaderRoute: typeof AuthenticatedAdminKullanimRouteImport
+      parentRoute: typeof AuthenticatedAdminRouteRoute
+    }
     '/_authenticated/admin/kuponlar': {
       id: '/_authenticated/admin/kuponlar'
       path: '/kuponlar'
@@ -2722,6 +2768,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAraclarKirpRouteImport
       parentRoute: typeof AuthenticatedAraclarRouteRoute
     }
+    '/_authenticated/araclar/metin-karsilastir': {
+      id: '/_authenticated/araclar/metin-karsilastir'
+      path: '/metin-karsilastir'
+      fullPath: '/araclar/metin-karsilastir'
+      preLoaderRoute: typeof AuthenticatedAraclarMetinKarsilastirRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
     '/_authenticated/araclar/palet': {
       id: '/_authenticated/araclar/palet'
       path: '/palet'
@@ -2741,6 +2794,13 @@ declare module '@tanstack/react-router' {
       path: '/qr'
       fullPath: '/araclar/qr'
       preLoaderRoute: typeof AuthenticatedAraclarQrRouteImport
+      parentRoute: typeof AuthenticatedAraclarRouteRoute
+    }
+    '/_authenticated/araclar/regex': {
+      id: '/_authenticated/araclar/regex'
+      path: '/regex'
+      fullPath: '/araclar/regex'
+      preLoaderRoute: typeof AuthenticatedAraclarRegexRouteImport
       parentRoute: typeof AuthenticatedAraclarRouteRoute
     }
     '/_authenticated/araclar/renk': {
@@ -3143,6 +3203,7 @@ interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminKeylerRoute: typeof AuthenticatedAdminKeylerRoute
   AuthenticatedAdminKriptoRoute: typeof AuthenticatedAdminKriptoRoute
   AuthenticatedAdminKullanicilarRoute: typeof AuthenticatedAdminKullanicilarRoute
+  AuthenticatedAdminKullanimRoute: typeof AuthenticatedAdminKullanimRoute
   AuthenticatedAdminKuponlarRoute: typeof AuthenticatedAdminKuponlarRoute
   AuthenticatedAdminLisanslarRoute: typeof AuthenticatedAdminLisanslarRoute
   AuthenticatedAdminPaketlerRoute: typeof AuthenticatedAdminPaketlerRoute
@@ -3178,6 +3239,7 @@ const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren
     AuthenticatedAdminKeylerRoute: AuthenticatedAdminKeylerRoute,
     AuthenticatedAdminKriptoRoute: AuthenticatedAdminKriptoRoute,
     AuthenticatedAdminKullanicilarRoute: AuthenticatedAdminKullanicilarRoute,
+    AuthenticatedAdminKullanimRoute: AuthenticatedAdminKullanimRoute,
     AuthenticatedAdminKuponlarRoute: AuthenticatedAdminKuponlarRoute,
     AuthenticatedAdminLisanslarRoute: AuthenticatedAdminLisanslarRoute,
     AuthenticatedAdminPaketlerRoute: AuthenticatedAdminPaketlerRoute,
@@ -3206,9 +3268,11 @@ interface AuthenticatedAraclarRouteRouteChildren {
   AuthenticatedAraclarJsonRoute: typeof AuthenticatedAraclarJsonRoute
   AuthenticatedAraclarJwtRoute: typeof AuthenticatedAraclarJwtRoute
   AuthenticatedAraclarKirpRoute: typeof AuthenticatedAraclarKirpRoute
+  AuthenticatedAraclarMetinKarsilastirRoute: typeof AuthenticatedAraclarMetinKarsilastirRoute
   AuthenticatedAraclarPaletRoute: typeof AuthenticatedAraclarPaletRoute
   AuthenticatedAraclarPdfRoute: typeof AuthenticatedAraclarPdfRoute
   AuthenticatedAraclarQrRoute: typeof AuthenticatedAraclarQrRoute
+  AuthenticatedAraclarRegexRoute: typeof AuthenticatedAraclarRegexRoute
   AuthenticatedAraclarRenkRoute: typeof AuthenticatedAraclarRenkRoute
   AuthenticatedAraclarSayacRoute: typeof AuthenticatedAraclarSayacRoute
   AuthenticatedAraclarSifreRoute: typeof AuthenticatedAraclarSifreRoute
@@ -3241,9 +3305,12 @@ const AuthenticatedAraclarRouteRouteChildren: AuthenticatedAraclarRouteRouteChil
     AuthenticatedAraclarJsonRoute: AuthenticatedAraclarJsonRoute,
     AuthenticatedAraclarJwtRoute: AuthenticatedAraclarJwtRoute,
     AuthenticatedAraclarKirpRoute: AuthenticatedAraclarKirpRoute,
+    AuthenticatedAraclarMetinKarsilastirRoute:
+      AuthenticatedAraclarMetinKarsilastirRoute,
     AuthenticatedAraclarPaletRoute: AuthenticatedAraclarPaletRoute,
     AuthenticatedAraclarPdfRoute: AuthenticatedAraclarPdfRoute,
     AuthenticatedAraclarQrRoute: AuthenticatedAraclarQrRoute,
+    AuthenticatedAraclarRegexRoute: AuthenticatedAraclarRegexRoute,
     AuthenticatedAraclarRenkRoute: AuthenticatedAraclarRenkRoute,
     AuthenticatedAraclarSayacRoute: AuthenticatedAraclarSayacRoute,
     AuthenticatedAraclarSifreRoute: AuthenticatedAraclarSifreRoute,
