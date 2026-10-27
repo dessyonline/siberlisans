@@ -26,8 +26,15 @@ export async function reconcileUniquelisansOrder(orderId: string): Promise<SyncO
   const ord = await mysqlOne<{
     id: string; user_id: string | null; reference_code: string; status: string;
     product_id: string | null; external_order_id: string | null; external_status: string | null;
+    product_name: string | null; user_email: string | null;
   }>(
-    "SELECT id, user_id, reference_code, status, product_id, external_order_id, external_status FROM orders WHERE id=?",
+    `SELECT o.id, o.user_id, o.reference_code, o.status, o.product_id,
+            o.external_order_id, o.external_status,
+            p.name AS product_name, pr.email AS user_email
+       FROM orders o
+       LEFT JOIN products p ON p.id=o.product_id
+       LEFT JOIN profiles pr ON pr.id=o.user_id
+      WHERE o.id=?`,
     [orderId],
   );
   if (!ord) return { orderId, ref: "-", result: "skipped", reason: "sipariş bulunamadı" };
@@ -92,6 +99,25 @@ export async function reconcileUniquelisansOrder(orderId: string): Promise<SyncO
         const { notifyTelegram } = await import("@/lib/telegram.server");
         await notifyTelegram(`✅ Uniquelisans otomatik teslim tamamlandı — Ref: ${ord.reference_code}`);
       } catch { /* ignore */ }
+      try {
+        if (ord.user_email) {
+          const { sendAppEmail } = await import('@/lib/app-mail.server');
+          await sendAppEmail(
+            'order-delivered',
+            ord.user_email,
+            {
+              productName: ord.product_name ?? 'Dijital ürün',
+              referenceCode: ord.reference_code,
+              deliveryData,
+            },
+            `order-delivered:${orderId}`,
+          );
+        }
+      } catch (error) {
+        // E-posta kuyruğu geçici olarak kapalı olsa bile panel/Telegram bildirimi
+        // çalışmaya devam eder; sipariş teslimatı başarısız sayılmaz.
+        console.error('[uniquelisans] delivery email failed', (error as Error).message);
+      }
     }
 
     return { orderId, ref: ord.reference_code, result: "delivered", deliveryData };

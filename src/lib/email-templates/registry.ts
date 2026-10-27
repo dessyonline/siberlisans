@@ -1,14 +1,15 @@
-import { template as passwordResetLink } from './password-reset-link'
-import { template as verificationCode } from './verification-code'
-import type { ComponentType } from 'react'
+import { template as passwordResetLink } from "./password-reset-link";
+import { template as orderDelivered } from "./order-delivered";
+import { template as verificationCode } from "./verification-code";
+import type { ComponentType } from "react";
 
 export interface TemplateEntry {
-  component: ComponentType<any>
-  subject: string | ((data: Record<string, any>) => string)
-  displayName?: string
-  previewData?: Record<string, any>
+  component: ComponentType<any>;
+  subject: string | ((data: Record<string, any>) => string);
+  displayName?: string;
+  previewData?: Record<string, any>;
   /** Fixed recipient — overrides caller-provided recipientEmail when set. */
-  to?: string
+  to?: string;
 }
 
 /**
@@ -20,8 +21,9 @@ export interface TemplateEntry {
  *   // then add to TEMPLATES: 'welcome': welcomeTemplate
  */
 export const TEMPLATES: Record<string, TemplateEntry> = {
-  'password-reset-link': passwordResetLink,
-  'verification-code': verificationCode,
+  "password-reset-link": passwordResetLink,
+  "order-delivered": orderDelivered,
+  "verification-code": verificationCode,
   // Add templates here as they are created, e.g.:
   // 'welcome': welcomeTemplate,
-}
+};

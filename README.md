@@ -138,7 +138,9 @@ geçilir ve başarılı yanıt geldiğinde lisans müşteriye otomatik teslim ed
 Tedarikçi siparişi beklemede kalırsa `uniquelisans-order-sync` görevi 2 dakikada
 bir durumu kontrol eder. Tedarikçi açıkça reddederse cüzdan tutarı otomatik
 iade edilir; ağın belirsiz olduğu durumlarda çift siparişi önlemek için sipariş
-incelemeye alınır.
+incelemeye alınır. Manuel teslim birkaç dakika sonra tamamlanırsa lisans
+otomatik olarak müşterinin hesabına eklenir; panel/Telegram bildirimi ve
+ayarlanmışsa teslim e-postası gönderilir.
 
 Banka havalesi siparişlerinde otomatik tedarikçi siparişi dekont/admin onayından
 sonra açılır. Böylece ödeme doğrulanmadan tedarikçiye ücretli sipariş gönderilmez.
