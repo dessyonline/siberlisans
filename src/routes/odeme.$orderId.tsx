@@ -123,6 +123,8 @@ function Payment() {
       const res = await payWithWalletFn({ data: { orderId } });
       if (!res.ok) {
         toast.error(res.error ?? "Ödeme başarısız");
+      } else if (res.pending) {
+        toast.success("Ödeme alındı · tedarikçi teslimatı hazırlanıyor");
       } else {
         toast.success("Ödeme başarılı · ürün teslim edildi");
         qc.invalidateQueries({ queryKey: ["order", orderId] });

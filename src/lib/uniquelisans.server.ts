@@ -57,6 +57,11 @@ export type UlStatusResponse = {
   message?: string;
 };
 
+export type UlAvailabilityReason =
+  | "out_of_stock"
+  | "insufficient_stock"
+  | "supplier_unavailable";
+
 /**
  * Sipariş durumunu Uniquelisans'tan sorgular.
  * Varsayılan endpoint: GET /orders/{id}?key=...
@@ -93,31 +98,55 @@ export async function ulOrderStatus(orderId: number | string): Promise<UlStatusR
  * Sipariş oluşturmadan hemen önce Uniquelisans tarafında ürünün stok/fiyat durumunu doğrular.
  * Fail-open: API'ye ulaşılamıyorsa engellemez (yerel stok kontrolü devrede kalır).
  */
-export async function ulCheckAvailability(externalId: number): Promise<{
+export async function ulCheckAvailability(
+  externalId: number,
+  quantity = 1,
+  options: { strict?: boolean } = {},
+): Promise<{
   ok: boolean;
-  reason?: "out_of_stock" | "inactive";
+  reason?: UlAvailabilityReason;
   amount?: number;
   stock_count?: number | null;
   is_stock?: boolean;
 }> {
   const key = process.env.UNIQUELISANS_API_KEY;
   const base = process.env.UNIQUELISANS_API_URL || DEFAULT_URL;
-  if (!key) return { ok: true };
+  if (!key) return options.strict ? { ok: false, reason: "supplier_unavailable" } : { ok: true };
   try {
     const url = new URL(`${base}/products/${externalId}`);
     url.searchParams.set("key", key);
     const res = await fetch(url.toString(), { headers: { accept: "application/json" } });
-    if (!res.ok) return { ok: true };
+    if (!res.ok) {
+      return options.strict ? { ok: false, reason: "supplier_unavailable" } : { ok: true };
+    }
     const body = (await res.json()) as {
-      product_detail?: { amount: number; is_stock: boolean; stock_count: number | null };
+      product_detail?: {
+        amount: number;
+        is_stock: boolean;
+        stock_count: number | null;
+        is_automatic_delivery?: boolean;
+      };
     };
     const d = body.product_detail;
-    if (!d) return { ok: true };
-    const out = d.is_stock && typeof d.stock_count === "number" && d.stock_count <= 0;
+    if (!d) {
+      return options.strict ? { ok: false, reason: "supplier_unavailable" } : { ok: true };
+    }
+    const countable = !Boolean(d.is_automatic_delivery);
+    const out = countable && (d.is_stock === false || (typeof d.stock_count === "number" && d.stock_count <= 0));
+    const insufficient = countable && typeof d.stock_count === "number" && d.stock_count < quantity;
+    if (insufficient) {
+      return {
+        ok: false,
+        reason: "insufficient_stock",
+        amount: d.amount,
+        stock_count: d.stock_count,
+        is_stock: d.is_stock,
+      };
+    }
     if (out) return { ok: false, reason: "out_of_stock", amount: d.amount, stock_count: d.stock_count, is_stock: d.is_stock };
     return { ok: true, amount: d.amount, stock_count: d.stock_count, is_stock: d.is_stock };
   } catch {
-    return { ok: true };
+    return options.strict ? { ok: false, reason: "supplier_unavailable" } : { ok: true };
   }
 }
 

@@ -84,10 +84,9 @@ type SupplierDetail = {
   required_fields?: RequiredField[];
 };
 
-function isOutOfStock(product: Pick<SupplierProduct, "is_automatic_delivery" | "stock_count">) {
+function isOutOfStock(product: Pick<SupplierProduct, "is_automatic_delivery" | "is_stock" | "stock_count">) {
   return !product.is_automatic_delivery
-    && typeof product.stock_count === "number"
-    && product.stock_count <= 0;
+    && (product.is_stock === false || (typeof product.stock_count === "number" && product.stock_count <= 0));
 }
 
 function emptyResult<T extends object>(result: T) {

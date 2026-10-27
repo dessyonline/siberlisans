@@ -3,6 +3,7 @@
 
 import { ulOrderStatus } from "@/lib/uniquelisans.server";
 import { mysqlQuery, mysqlOne } from "@/lib/mysql.server";
+import { recordUniquelisansDelivery } from "@/lib/uniquelisans-fulfillment.server";
 
 function ts(d: Date = new Date()) {
   return d.toISOString().slice(0, 19).replace("T", " ");
@@ -66,38 +67,32 @@ export async function reconcileUniquelisansOrder(orderId: string): Promise<SyncO
       return { orderId, ref: ord.reference_code, result: "error", message: "delivery_data boş" };
     }
 
-    // License key + order_keys kaydı
-    const keyId = uid();
-    await mysqlQuery(
-      `INSERT INTO license_keys (id,product_id,key_value,status,assigned_order_id,assigned_at)
-       VALUES (?,?,?,'assigned',?,?)`,
-      [keyId, ord.product_id, deliveryData, orderId, ts()],
-    );
-    await mysqlQuery("INSERT INTO order_keys (id,order_id,license_key_id,delivered_at) VALUES (?,?,?,?)", [
-      uid(),
+    if (!ord.product_id) {
+      return { orderId, ref: ord.reference_code, result: "error", message: "ürün eşleşmesi bulunamadı" };
+    }
+
+    const delivered = await recordUniquelisansDelivery({
       orderId,
-      keyId,
-      ts(),
-    ]);
+      productId: ord.product_id,
+      deliveryData,
+      externalOrderId: ord.external_order_id,
+      externalStatus: "success",
+    });
 
-    await mysqlQuery(
-      `UPDATE orders SET status='approved', approved_at=?, external_delivery_data=?, external_status='success', admin_note=NULL WHERE id=?`,
-      [ts(), deliveryData, orderId],
-    );
-
-    // Bildirimler
-    try {
-      if (ord.user_id) {
-        await mysqlQuery(
-          "INSERT INTO notifications (id,user_id,type,title,body,link,created_at) VALUES (?,?,?,?,?,?,?)",
-          [uid(), ord.user_id, "order_approved", "Siparişin onaylandı 🎉", `Ref: ${ord.reference_code} · Bilgilerin hesabında hazır.`, "/hesabim", ts()],
-        );
-      }
-    } catch { /* ignore */ }
-    try {
-      const { notifyTelegram } = await import("@/lib/telegram.server");
-      await notifyTelegram(`✅ Uniquelisans otomatik teslim tamamlandı — Ref: ${ord.reference_code}`);
-    } catch { /* ignore */ }
+    if (delivered.created) {
+      try {
+        if (ord.user_id) {
+          await mysqlQuery(
+            "INSERT INTO notifications (id,user_id,type,title,body,link,created_at) VALUES (?,?,?,?,?,?,?)",
+            [uid(), ord.user_id, "order_approved", "Siparişin onaylandı 🎉", `Ref: ${ord.reference_code} · Bilgilerin hesabında hazır.`, "/hesabim", ts()],
+          );
+        }
+      } catch { /* ignore */ }
+      try {
+        const { notifyTelegram } = await import("@/lib/telegram.server");
+        await notifyTelegram(`✅ Uniquelisans otomatik teslim tamamlandı — Ref: ${ord.reference_code}`);
+      } catch { /* ignore */ }
+    }
 
     return { orderId, ref: ord.reference_code, result: "delivered", deliveryData };
   }

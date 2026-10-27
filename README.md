@@ -125,3 +125,20 @@ Zamanlanmış gönderiler için Supabase Vault'a `campaign_cron_secret` adıyla
 `CRON_SECRET` ile aynı değeri ekleyin. `20261023090000_telegram_campaign_cron.sql`
 migration'ı pg_cron job'unu dakikada bir çalıştırır. Botun kanalda yönetici ve
 `Post Messages` yetkisine sahip olması gerekir.
+
+### UniQLisans otomatik stok ve teslimat
+
+UniQLisans ürünlerinin `stock_hint` alanı tedarikçinin gerçek stok sayısıyla
+otomatik güncellenir. Stok senkronu 5 dakikada bir çalışır; stok bitince ürün
+satıştan gizlenir, tedarikçide yeniden stok oluşunca tekrar açılır. Yeni ürün ve
+fiyat değişiklikleri 30 dakikada bir kontrol edilir.
+
+Cüzdan ödemesinde tek adet UniQLisans ürünü için tedarikçiye otomatik sipariş
+geçilir ve başarılı yanıt geldiğinde lisans müşteriye otomatik teslim edilir.
+Tedarikçi siparişi beklemede kalırsa `uniquelisans-order-sync` görevi 2 dakikada
+bir durumu kontrol eder. Tedarikçi açıkça reddederse cüzdan tutarı otomatik
+iade edilir; ağın belirsiz olduğu durumlarda çift siparişi önlemek için sipariş
+incelemeye alınır.
+
+Banka havalesi siparişlerinde otomatik tedarikçi siparişi dekont/admin onayından
+sonra açılır. Böylece ödeme doğrulanmadan tedarikçiye ücretli sipariş gönderilmez.

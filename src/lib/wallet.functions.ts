@@ -178,6 +178,215 @@ export const markTopupPaid = createServerFn({ method: "POST" })
 
 const orderIdInput = z.object({ orderId: z.string() });
 
+type WalletPaymentResult = {
+  ok: boolean;
+  error: string | null;
+  licenseKey: string | null;
+  activationToken: string | null;
+  balanceAfter: number;
+  pending?: boolean;
+};
+
+async function payUniquelisansOrderWithWallet(input: {
+  orderId: string;
+  userId: string;
+  price: number;
+  balanceAfter: number;
+  referenceCode: string | null;
+  product: {
+    id: string;
+    name: string | null;
+    external_id: string;
+    required_fields: unknown;
+  };
+  checkoutFields: unknown;
+}): Promise<WalletPaymentResult> {
+  const { mysqlExec, mysqlOne, mysqlQuery } = await import("./mysql.server");
+  const { ulBuy, ulCheckAvailability } = await import("@/lib/uniquelisans.server");
+  const {
+    parseUniquelisansFields,
+    missingUniquelisansFields,
+    recordUniquelisansDelivery,
+  } = await import("@/lib/uniquelisans-fulfillment.server");
+
+  const fail = (error: string): WalletPaymentResult => ({
+    ok: false,
+    error,
+    licenseKey: null,
+    activationToken: null,
+    balanceAfter: input.balanceAfter,
+    pending: false,
+  });
+
+  const items = await mysqlQuery<{ product_id: string; quantity: number }>(
+    "SELECT product_id,quantity FROM order_items WHERE order_id=?",
+    [input.orderId],
+  );
+  if (items.length > 0 && (items.length !== 1 || items[0].product_id !== input.product.id || Number(items[0].quantity) !== 1)) {
+    return fail("UniQLisans otomatik teslim şu an tek ürün/adet için kullanılabiliyor. Bu sepeti admin onayından geçirelim.");
+  }
+
+  const supplied = parseUniquelisansFields(input.checkoutFields);
+  const missing = missingUniquelisansFields(input.product.required_fields, supplied);
+  if (missing.length > 0) {
+    return fail(`Otomatik teslim için eksik bilgiler var: ${missing.join(", ")}.`);
+  }
+
+  const availability = await ulCheckAvailability(Number(input.product.external_id), 1, { strict: true });
+  if (!availability.ok) {
+    if (availability.reason === "insufficient_stock") {
+      return fail(`"${input.product.name ?? "Ürün"}" için tedarikçide yeterli stok yok (${availability.stock_count ?? 0} adet mevcut).`);
+    }
+    if (availability.reason === "out_of_stock") {
+      return fail(`"${input.product.name ?? "Ürün"}" şu an tedarikçide stokta yok.`);
+    }
+    return fail("Tedarikçi şu an yanıt vermiyor; bakiyenizden ücret alınmadı.");
+  }
+
+  // Aynı siparişin çift tıklama/yenileme ile iki kez tedarikçiye gitmesini engelle.
+  const claimed = await mysqlExec(
+    `UPDATE orders
+        SET status='reviewing', paid_with='wallet', external_status='payment_processing',
+            admin_note='UniQLisans otomatik siparişi hazırlanıyor.', updated_at=?
+      WHERE id=? AND user_id=? AND status='pending'`,
+    [new Date().toISOString().slice(0, 19).replace("T", " "), input.orderId, input.userId],
+  );
+  if (claimed !== 1) return fail("Sipariş zaten işleniyor veya tamamlandı.");
+
+  const debit = await mysqlExec(
+    "UPDATE wallets SET balance_try=balance_try-?, updated_at=? WHERE user_id=? AND balance_try>=?",
+    [input.price, new Date().toISOString().slice(0, 19).replace("T", " "), input.userId, input.price],
+  );
+  if (debit !== 1) {
+    await mysqlExec(
+      "UPDATE orders SET status='pending', paid_with=NULL, external_status=NULL, admin_note=NULL, updated_at=? WHERE id=? AND status='reviewing'",
+      [new Date().toISOString().slice(0, 19).replace("T", " "), input.orderId],
+    );
+    return fail("Bakiyeniz yetersiz. Lütfen önce bakiye yükleyin.");
+  }
+
+  const now = () => new Date().toISOString().slice(0, 19).replace("T", " ");
+  const afterDebit = await mysqlOne<{ balance_try: unknown }>(
+    "SELECT balance_try FROM wallets WHERE user_id=? LIMIT 1",
+    [input.userId],
+  );
+  const actualBalanceAfter = Number(afterDebit?.balance_try ?? input.balanceAfter);
+  await mysqlQuery(
+    `INSERT INTO wallet_transactions (id,user_id,kind,amount_try,balance_after,order_id,note,created_at)
+     VALUES (?,?,?,?,?,?,?,?)`,
+    [crypto.randomUUID(), input.userId, "purchase", -input.price, actualBalanceAfter, input.orderId, input.product.name ?? "UniQLisans ürünü", now()],
+  );
+
+  let response;
+  try {
+    response = await ulBuy(Number(input.product.external_id), supplied);
+  } catch (error) {
+    // Ağ hatasında istek tedarikçiye ulaşmış olabilir; otomatik iade yapmak
+    // yerine siparişi incelemeye bırakıyoruz, böylece çift teslim/zarar oluşmaz.
+    const message = `UniQLisans API ağ hatası: ${(error as Error).message}`;
+    await mysqlExec(
+      "UPDATE orders SET external_status='unknown', admin_note=?, updated_at=? WHERE id=?",
+      [message, now(), input.orderId],
+    );
+    try {
+      const { notifyTelegram } = await import("@/lib/telegram.server");
+      await notifyTelegram(`⚠️ UniQLisans ödeme sonrası belirsiz durum — Ref: ${input.referenceCode ?? "-"} · Admin kontrolü gerekli.`);
+    } catch { /* bildirim opsiyonel */ }
+    return fail("Tedarikçi yanıtı alınamadı. Siparişiniz incelemeye alındı; aynı siparişi tekrar ödemeyin.");
+  }
+
+  const explicitFailure =
+    response.status === "error" ||
+    response.code === 402 ||
+    response.code === 422 ||
+    Boolean(response.status && response.status !== "success" && response.status !== "pending");
+  if (explicitFailure) {
+    const message = response.message || "Tedarikçi siparişi kabul etmedi.";
+    const refundedAt = now();
+    await mysqlExec(
+      "UPDATE wallets SET balance_try=balance_try+?, updated_at=? WHERE user_id=?",
+      [input.price, refundedAt, input.userId],
+    );
+    const walletAfterRefund = await mysqlOne<{ balance_try: unknown }>(
+      "SELECT balance_try FROM wallets WHERE user_id=? LIMIT 1",
+      [input.userId],
+    );
+    await mysqlQuery(
+      `INSERT INTO wallet_transactions (id,user_id,kind,amount_try,balance_after,order_id,note,created_at)
+       VALUES (?,?,?,?,?,?,?,?)`,
+      [crypto.randomUUID(), input.userId, "refund", input.price, Number(walletAfterRefund?.balance_try ?? 0), input.orderId, `UniQLisans sipariş hatası: ${message}`, refundedAt],
+    );
+    await mysqlExec(
+      "UPDATE orders SET status='reviewing', external_status='error', admin_note=?, updated_at=? WHERE id=?",
+      [`UniQLisans: ${message} · Tutar otomatik iade edildi.`, refundedAt, input.orderId],
+    );
+    return fail(`Tedarikçi siparişi kabul etmedi; ücretiniz iade edildi. (${message})`);
+  }
+
+  if (response.status === "pending") {
+    await mysqlExec(
+      `UPDATE orders SET external_order_id=?, external_status='pending',
+              admin_note='UniQLisans siparişi tedarikçide hazırlanıyor.', updated_at=? WHERE id=?`,
+      [response.order_id == null ? null : String(response.order_id), now(), input.orderId],
+    );
+    try {
+      const { pushNotification } = await import("./orders.functions");
+      await pushNotification(
+        input.userId,
+        "order_pending",
+        "Siparişin hazırlanıyor 📦",
+        `Ref: ${input.referenceCode ?? ""} · Tedarikçi teslimatı tamamlayınca hesabına otomatik eklenecek.`,
+        "/hesabim",
+      );
+    } catch { /* bildirim opsiyonel */ }
+    return { ok: true, error: null, licenseKey: null, activationToken: null, balanceAfter: actualBalanceAfter, pending: true };
+  }
+
+  const deliveryData = String(response.delivery_data ?? "").trim();
+  if (!deliveryData) {
+    await mysqlExec(
+      "UPDATE orders SET external_order_id=?, external_status='success', admin_note='Tedarikçi success döndü ancak teslim verisi boş; admin kontrolü gerekli.', updated_at=? WHERE id=?",
+      [response.order_id == null ? null : String(response.order_id), now(), input.orderId],
+    );
+    return fail("Tedarikçi siparişi aldı ancak teslim bilgisi boş döndü; sipariş incelemeye alındı.");
+  }
+
+  await mysqlExec(
+    "UPDATE orders SET external_order_id=?, external_status='success', external_delivery_data=?, admin_note=NULL, updated_at=? WHERE id=?",
+    [response.order_id == null ? null : String(response.order_id), deliveryData, now(), input.orderId],
+  );
+  try {
+    const delivered = await recordUniquelisansDelivery({
+      orderId: input.orderId,
+      productId: input.product.id,
+      deliveryData,
+      externalOrderId: response.order_id,
+      externalStatus: "success",
+    });
+    try {
+      const { pushNotification } = await import("./orders.functions");
+      await pushNotification(
+        input.userId,
+        "order_paid",
+        "Ödeme başarılı ✓",
+        `Ref: ${input.referenceCode ?? ""} · Ürünün hesabında hazır.`,
+        "/hesabim",
+      );
+    } catch { /* bildirim opsiyonel */ }
+    try {
+      const { notifyTelegram } = await import("@/lib/telegram.server");
+      await notifyTelegram(`✅ <b>UniQLisans otomatik teslim</b>\n📦 ${input.product.name ?? "-"}\n🔖 <code>${input.referenceCode ?? ""}</code>`);
+    } catch { /* bildirim opsiyonel */ }
+    return { ok: true, error: null, licenseKey: delivered.licenseKey, activationToken: delivered.activationToken, balanceAfter: actualBalanceAfter, pending: false };
+  } catch (error) {
+    await mysqlExec(
+      "UPDATE orders SET status='reviewing', admin_note=?, updated_at=? WHERE id=?",
+      [`Tedarikçi teslim etti fakat yerel teslim kaydı tamamlanamadı: ${(error as Error).message}`, now(), input.orderId],
+    );
+    return fail("Tedarikçi teslim etti; lisans hesabınıza ekleniyor. Aynı siparişi tekrar ödemeyin.");
+  }
+}
+
 export const payOrderWithWallet = createServerFn({ method: "POST" })
   .middleware([requireAuth])
   .validator((d: unknown) => orderIdInput.parse(d))
@@ -190,6 +399,7 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
       licenseKey: null,
       activationToken: null,
       balanceAfter: 0,
+      pending: false,
     });
 
     const order = await mysqlOne<{
@@ -199,8 +409,9 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
       price_try: unknown;
       status: string;
       reference_code: string | null;
+      checkout_fields: unknown;
     }>(
-      "SELECT id, user_id, product_id, price_try, status, reference_code FROM orders WHERE id=? LIMIT 1",
+      "SELECT id, user_id, product_id, price_try, status, reference_code, checkout_fields FROM orders WHERE id=? LIMIT 1",
       [data.orderId],
     );
     if (!order || order.user_id !== userId) return fail("Sipariş bulunamadı.");
@@ -211,15 +422,47 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
 
     const product = order.product_id
       ? await mysqlOne<{
+          id: string;
           name: string | null;
           manual_fulfillment: unknown;
           unlimited_stock: unknown;
           default_license_days: number | null;
+          source: string | null;
+          external_id: string | null;
+          required_fields: unknown;
         }>(
-          "SELECT name, manual_fulfillment, unlimited_stock, default_license_days FROM products WHERE id=? LIMIT 1",
+          "SELECT id,name,manual_fulfillment,unlimited_stock,default_license_days,source,external_id,required_fields FROM products WHERE id=? LIMIT 1",
           [order.product_id],
         )
       : null;
+
+    const isUlProduct = product?.source === "uniquelisans" && !!product.external_id;
+    if (isUlProduct && product) {
+      const externalId = product.external_id;
+      if (!externalId) return fail("Ürün tedarikçi eşleşmesi bulunamadı.");
+      const wallet = await mysqlOne<{ balance_try: unknown }>(
+        "SELECT balance_try FROM wallets WHERE user_id=? LIMIT 1",
+        [userId],
+      );
+      const balance = num(wallet?.balance_try) ?? 0;
+      if (balance < price) return fail("Bakiyeniz yetersiz. Lütfen önce bakiye yükleyin.");
+
+      const debitPreview = Math.max(0, balance - price);
+      return payUniquelisansOrderWithWallet({
+        orderId: data.orderId,
+        userId,
+        price,
+        balanceAfter: debitPreview,
+        referenceCode: order.reference_code,
+        product: {
+          id: product.id,
+          name: product.name,
+          external_id: externalId,
+          required_fields: product.required_fields,
+        },
+        checkoutFields: order.checkout_fields,
+      });
+    }
 
     const needsStock = !!product && !bool(product.manual_fulfillment) && !bool(product.unlimited_stock);
     let key: { id: string; key_value: string; activation_token: string | null } | null = null;
@@ -341,6 +584,7 @@ export const payOrderWithWallet = createServerFn({ method: "POST" })
       licenseKey: assignedKey,
       activationToken,
       balanceAfter,
+      pending: false,
     };
   });
 

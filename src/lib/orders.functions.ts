@@ -278,7 +278,7 @@ export const createOrder = createServerFn({ method: "POST" })
             is_stock: avail.is_stock ?? null,
             supplier_amount: avail.amount ?? null,
             blocked: true,
-            block_reason: "out_of_stock",
+            block_reason: avail.reason ?? "out_of_stock",
             context: "single_order",
           });
           try {
@@ -293,7 +293,9 @@ export const createOrder = createServerFn({ method: "POST" })
             /* ignore */
           }
           throw new Error(
-            `"${product.name}" tedarikçide (Uniquelisans) şu an stokta yok. Kısa süre içinde tekrar dener misin?`,
+            avail.reason === "insufficient_stock"
+              ? `"${product.name}" için tedarikçide yeterli stok yok (${avail.stock_count ?? 0} adet mevcut).`
+              : `"${product.name}" tedarikçide (Uniquelisans) şu an stokta yok. Kısa süre içinde tekrar dener misin?`,
           );
         }
         const cost = Number(avail.amount ?? product.external_price ?? 0);
@@ -444,7 +446,7 @@ export const createCartOrder = createServerFn({ method: "POST" })
         }> = [];
         for (const p of ulProds) {
           const qty = data.items.find((i) => i.productId === p.id)?.quantity ?? 1;
-          const avail = await ulCheckAvailability(Number(p.external_id));
+          const avail = await ulCheckAvailability(Number(p.external_id), qty);
           if (!avail.ok) {
             await logSupplierCheck({
               user_id: userId,
@@ -456,11 +458,13 @@ export const createCartOrder = createServerFn({ method: "POST" })
               is_stock: avail.is_stock ?? null,
               supplier_amount: avail.amount ?? null,
               blocked: true,
-              block_reason: "out_of_stock",
+              block_reason: avail.reason ?? "out_of_stock",
               context: "cart_order",
             });
             throw new Error(
-              `"${p.name}" tedarikçide (Uniquelisans) şu an stokta yok. Sepetten çıkarıp tekrar dener misin?`,
+              avail.reason === "insufficient_stock"
+                ? `"${p.name}" için tedarikçide yeterli stok yok (${avail.stock_count ?? 0} adet mevcut).`
+                : `"${p.name}" tedarikçide (Uniquelisans) şu an stokta yok. Sepetten çıkarıp tekrar dener misin?`,
             );
           }
           const amt = Number(avail.amount ?? p.external_price ?? 0);
@@ -828,21 +832,14 @@ export const approveOrder = createServerFn({ method: "POST" })
       const deliveryData = (resp.delivery_data ?? "").toString().trim();
       if (!deliveryData) throw new Error("Uniquelisans teslim verisi boş döndü.");
 
-      const keyId = uid();
-      await mysqlQuery(
-        `INSERT INTO license_keys (id,product_id,key_value,status,assigned_order_id,assigned_at,created_at)
-         VALUES (?,?,?,'assigned',?,?,?)`,
-        [keyId, ord.p_id, deliveryData, data.orderId, ts(), ts()],
-      );
-      await mysqlQuery(
-        "INSERT INTO order_keys (id,order_id,license_key_id,delivered_at) VALUES (?,?,?,?)",
-        [uid(), data.orderId, keyId, ts()],
-      );
-      await mysqlQuery(
-        `UPDATE orders SET status='approved', approved_at=?, external_order_id=?, external_delivery_data=?,
-                external_status='success', updated_at=? WHERE id=?`,
-        [ts(), resp.order_id ? String(resp.order_id) : null, deliveryData, ts(), data.orderId],
-      );
+      const { recordUniquelisansDelivery } = await import("@/lib/uniquelisans-fulfillment.server");
+      await recordUniquelisansDelivery({
+        orderId: data.orderId,
+        productId: ord.p_id,
+        deliveryData,
+        externalOrderId: resp.order_id,
+        externalStatus: "success",
+      });
       if (ord.user_id) {
         await pushNotification(
           ord.user_id,

@@ -150,8 +150,7 @@ export const ulImportProduct = createServerFn({ method: "POST" })
     // Stok kontrolü: SADECE sayısal stok takibi yapılan ürünlerde stock_count <= 0 ise
     // geçici olarak "tedarikçi stok yok" bayrağı yak. Ürün aktif kalır, sadece satış engellenir.
     const outOfStock = !detail.is_automatic_delivery
-      && typeof detail.stock_count === "number"
-      && detail.stock_count <= 0;
+      && (detail.is_stock === false || (typeof detail.stock_count === "number" && detail.stock_count <= 0));
 
     if (existing) {
       const cur = await mysqlOne<{ image_url: string | null; active: number | null }>(

@@ -1,5 +1,5 @@
-// pg_cron tarafından her 5 dakikada bir çağrılır.
-// Yetki: apikey header (Supabase anon key). /api/public/* bypass'ından yararlanır.
+// pg_cron tarafından her 2 dakikada bir çağrılır.
+// Yetki: Vault'tan gelen CRON_SECRET veya service-role secret.
 import { createFileRoute } from "@tanstack/react-router";
 import { requireCron } from "@/lib/cron-auth.server";
 
