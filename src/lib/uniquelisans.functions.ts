@@ -376,3 +376,25 @@ export const ulSyncCatalog = createServerFn({ method: "POST" })
     const { runUniquelisansCatalogSync } = await import("@/lib/uniquelisans-catalog.server");
     return await runUniquelisansCatalogSync(data);
   });
+
+// Telegram'a bağlı olmadan admin panelinden fiyat indirimi onayı.
+export const ulPendingPriceApprovals = createServerFn({ method: "GET" })
+  .middleware([requireAuth])
+  .handler(async ({ context }) => {
+    await assertAdmin(context.isAdmin);
+    const { listPendingUniquelisansPriceApprovals } = await import("@/lib/uniquelisans-price-approval.server");
+    return listPendingUniquelisansPriceApprovals();
+  });
+
+export const ulApprovePrice = createServerFn({ method: "POST" })
+  .middleware([requireAuth])
+  .inputValidator((d: unknown) => z.object({ code: z.string().min(3).max(40) }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.isAdmin);
+    const { approveUniquelisansPrice } = await import("@/lib/uniquelisans-price-approval.server");
+    const r = await approveUniquelisansPrice(data.code);
+    if (r.kind === "approved") {
+      await writeAuditLog(context, { action: "uniquelisans.price_approve", entity_type: "product", entity_id: r.approval.product_id, metadata: { code: data.code, new_price: r.new_price } });
+    }
+    return { kind: r.kind, new_price: "new_price" in r ? r.new_price : null };
+  });

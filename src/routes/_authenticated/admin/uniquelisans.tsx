@@ -11,6 +11,8 @@ import {
   ulSyncStock,
   ulSyncCatalog,
   ulUpdateImported,
+  ulPendingPriceApprovals,
+  ulApprovePrice,
   DEFAULT_MARKUP_PERCENT,
 } from "@/lib/uniquelisans.functions";
 
@@ -93,6 +95,8 @@ function UniquelisansPage() {
         <div className="font-mono text-xs text-muted-foreground">$ /admin/uniquelisans<span className="terminal-caret" /></div>
         <h1 className="mt-1 text-xl font-bold neon-text md:text-2xl">Uniquelisans Bayi</h1>
       </div>
+
+      <PriceApprovals />
 
       {/* Balance card */}
       <div className="glass-card corner-cut rounded-lg p-5 neon-glow flex items-center justify-between gap-3">
@@ -518,6 +522,54 @@ function ImportedRow({ p, onChanged }: { p: ImportedProduct; onChanged: () => vo
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function PriceApprovals() {
+  const listFn = useServerFn(ulPendingPriceApprovals);
+  const approveFn = useServerFn(ulApprovePrice);
+  const qc = useQueryClient();
+  const [busy, setBusy] = useState<string | null>(null);
+  const q = useQuery({ queryKey: ["ul-price-approvals"], queryFn: () => listFn() });
+  const items = q.data ?? [];
+  if (!items.length) return null;
+  const approve = async (code: string) => {
+    setBusy(code);
+    try {
+      const r = await approveFn({ data: { code } });
+      const msg: Record<string, string> = {
+        approved: `İndirim uygulandı: ₺${r.new_price}`,
+        already: "Fiyat zaten bu seviyede",
+        locked: "Fiyat kilitli, değiştirilmedi",
+        stale: "Ürün fiyatı değişmiş, onay geçersiz",
+        not_found: "Onay bulunamadı",
+      };
+      (r.kind === "approved" ? toast.success : toast.error)(msg[r.kind] ?? r.kind);
+      qc.invalidateQueries({ queryKey: ["ul-price-approvals"] });
+      qc.invalidateQueries({ queryKey: ["ul-imported"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+  return (
+    <div className="glass-card corner-cut rounded-lg p-5 space-y-3">
+      <div className="font-mono text-xs text-primary">// bekleyen fiyat indirimi onayları ({items.length})</div>
+      {items.map((a) => (
+        <div key={a.id} className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+          <div className="text-sm">
+            <div className="font-semibold">{a.product_name}</div>
+            <div className="font-mono text-xs text-muted-foreground">
+              alış ₺{a.supplier_new_price} · ₺{a.current_price} → <span className="text-primary">₺{a.proposed_price}</span> · kâr ₺{a.profit_try}
+            </div>
+          </div>
+          <Button size="sm" disabled={busy === a.approval_code} onClick={() => approve(a.approval_code)}>
+            {busy === a.approval_code ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />} Onayla
+          </Button>
+        </div>
+      ))}
     </div>
   );
 }

@@ -72,3 +72,7 @@
 - [ ] Kurumsal mail — PHP köprü dosyasının Hostinger'a yüklenmesi gerekli.
 - [ ] Gerçek ödeme/teslimat/garanti/2FA uçtan uca testi — gerçek ödeme gerekli.
 - [ ] Admin ayarları genişletme ve hız iyileştirmesi — hangi ayarların ekleneceği seçilmeli.
+
+- [x] Admin araç istatistiği (kim ne kullandı/kullanmadı)
+- [ ] Araçlar: görünüm, kullanım geçmişi, AI kalite, yeni ücretsiz araçlar
+- [x] Tedarikçi indirim onayı: admin panelden onay eklendi (Telegram webhook kurulu değil)

@@ -188,6 +188,30 @@ function Page() {
                   <span className="text-primary">{u.jobs} video</span>
                   <span className="text-primary/70">{u.tool_calls} araç</span>
                 </div>
+                {Object.keys(u.tools).length > 0 && (
+                  <div className="w-full text-[10px] text-muted-foreground">
+                    {Object.entries(u.tools).map(([k, v]) => `${k}: ${v}`).join(" · ")}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {stats && (
+        <div className="glass-card rounded-lg p-4 space-y-2">
+          <div className="text-[10px] font-mono uppercase text-muted-foreground">
+            hiç kullanmayanlar (30g) · {stats.activeUsers}/{stats.totalUsers} kullanıcı aktif
+          </div>
+          {stats.unusedTools.length > 0 && (
+            <div className="text-xs font-mono text-destructive">kullanılmayan araçlar: {stats.unusedTools.join(", ")}</div>
+          )}
+          <div className="max-h-60 space-y-1 overflow-y-auto">
+            {stats.idleUsers.map((u) => (
+              <div key={u.id} className="text-xs font-mono border-b border-border/20 pb-1">
+                <span className="text-foreground">{u.display_name ?? "—"}</span>
+                <span className="text-muted-foreground ml-2">{u.email ?? u.id.slice(0, 8)}</span>
               </div>
             ))}
           </div>
