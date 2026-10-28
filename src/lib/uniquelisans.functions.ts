@@ -394,7 +394,7 @@ export const ulApprovePrice = createServerFn({ method: "POST" })
     const { approveUniquelisansPrice } = await import("@/lib/uniquelisans-price-approval.server");
     const r = await approveUniquelisansPrice(data.code);
     if (r.kind === "approved") {
-      await writeAuditLog({ action: "uniquelisans.price_approve", entity: "product", entity_id: r.approval.product_id, meta: { code: data.code, new_price: r.new_price } } as never).catch(() => {});
+      await writeAuditLog(context, { action: "uniquelisans.price_approve", entity_type: "product", entity_id: r.approval.product_id, metadata: { code: data.code, new_price: r.new_price } });
     }
     return { kind: r.kind, new_price: "new_price" in r ? r.new_price : null };
   });
