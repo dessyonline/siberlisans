@@ -119,7 +119,11 @@ export type AdminAiStats = {
   byStatus: Record<string, number>;
   byKind: Record<string, number>;
   byTool: Record<string, number>;
-  topUsers: Array<{ id: string; email: string | null; display_name: string | null; jobs: number; tool_calls: number }>;
+  topUsers: Array<{ id: string; email: string | null; display_name: string | null; jobs: number; tool_calls: number; tools: Record<string, number> }>;
+  activeUsers: number;
+  totalUsers: number;
+  unusedTools: string[];
+  idleUsers: Array<{ id: string; email: string | null; display_name: string | null }>;
   activeSubs: number;
   subsByPlan: Record<string, number>;
   subRevenue: number;
@@ -161,7 +165,10 @@ export const getAdminAiStats = createServerFn({ method: "GET" })
 
     const byTool: Record<string, number> = {};
     const userTool: Record<string, number> = {};
+    const userToolBreak: Record<string, Record<string, number>> = {};
     for (const r of usage) {
+      const ub = (userToolBreak[r.user_id] ??= {});
+      ub[r.tool_key] = (ub[r.tool_key] ?? 0) + (num(r.count) ?? 0);
       byTool[r.tool_key] = (byTool[r.tool_key] ?? 0) + (num(r.count) ?? 0);
       userTool[r.user_id] = (userTool[r.user_id] ?? 0) + (num(r.count) ?? 0);
     }
@@ -187,6 +194,7 @@ export const getAdminAiStats = createServerFn({ method: "GET" })
         display_name: pm[id]?.display_name ?? null,
         jobs: userJobs[id] ?? 0,
         tool_calls: userTool[id] ?? 0,
+        tools: userToolBreak[id] ?? {},
       }));
     }
 
@@ -198,7 +206,18 @@ export const getAdminAiStats = createServerFn({ method: "GET" })
       subRevenue += num(s.price_paid) ?? 0;
     }
 
-    return { totalJobs, totalCost, byStatus, byKind, byTool, topUsers, activeSubs, subsByPlan, subRevenue };
+    const activeIds = Object.keys(combined);
+    const totalRow = await mysqlOne<{ c: unknown }>("SELECT COUNT(*) AS c FROM profiles");
+    const totalUsers = num(totalRow?.c) ?? 0;
+    const unusedTools = ["chat", "translate", "code", "summary", "slogan", "video"].filter(
+      (k) => !(byTool[k] ?? 0) && !(k === "video" && (byKind.video ?? 0)),
+    );
+    const idleSql = activeIds.length
+      ? `SELECT id, email, display_name FROM profiles WHERE id NOT IN (${activeIds.map(() => "?").join(",")}) ORDER BY created_at DESC LIMIT 50`
+      : "SELECT id, email, display_name FROM profiles ORDER BY created_at DESC LIMIT 50";
+    const idleUsers = await mysqlQuery<{ id: string; email: string | null; display_name: string | null }>(idleSql, activeIds);
+
+    return { totalJobs, totalCost, byStatus, byKind, byTool, topUsers, activeSubs, subsByPlan, subRevenue, activeUsers: activeIds.length, totalUsers, unusedTools, idleUsers };
   });
 
 export type FalBalance = { ok: boolean; error: string | null; balance: number | null; currency: string | null };
