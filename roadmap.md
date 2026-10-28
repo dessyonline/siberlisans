@@ -73,5 +73,6 @@
 - [ ] Gerçek ödeme/teslimat/garanti/2FA uçtan uca testi — gerçek ödeme gerekli.
 - [ ] Admin ayarları genişletme ve hız iyileştirmesi — hangi ayarların ekleneceği seçilmeli.
 
-- [ ] Araçlar: görünüm, kullanım geçmişi, AI kalite, yeni ücretsiz araçlar, admin kullanım istatistiği (kim ne kullandı/kullanmadı)
-- [ ] Tedarikçi stok/indirim: indirim onayı fiyata yansımıyor
+- [x] Admin araç istatistiği (kim ne kullandı/kullanmadı)
+- [ ] Araçlar: görünüm, kullanım geçmişi, AI kalite, yeni ücretsiz araçlar
+- [x] Tedarikçi indirim onayı: admin panelden onay eklendi (Telegram webhook kurulu değil)
