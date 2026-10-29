@@ -288,7 +288,7 @@ function CampaignsAdmin() {
                 </div>
                 <div>
                   Post Messages: <span className={testResult.canPostMessages === true ? "text-primary" : testResult.canPostMessages === false ? "text-red-400" : "text-yellow-400"}>
-                    {testResult.canPostMessages === true ? "açık" : testResult.canPostMessages === false ? "kapalı" : "doğrulanamadı"}
+                    {testResult.canPostMessages === true ? "doğrulandı" : testResult.canPostMessages === false ? "başarısız" : "doğrulanamadı"}
                   </span>
                 </div>
                 {testResult.memberError && <div className="text-red-400">member hata: {testResult.memberError}</div>}
@@ -304,7 +304,7 @@ function CampaignsAdmin() {
                   </div>
                 ) : testResult.memberStatus === "unknown" ? (
                   <div className="text-yellow-400">
-                    ⚠ Botun adminliği doğrulanamadı. <b>{testResult.botUsername}</b> token’ının ait olduğu botun, <b>{testResult.chatUsername ?? testResult.chatTitle}</b> kanalına admin olarak eklendiğini ve Post Messages yetkisinin açık olduğunu kontrol et. Bu hata bot yalnızca üye olduğunda veya Telegram yönetici listesini gizlediğinde görülebilir.
+                    ⚠ Test mesajı gönderilemedi. Yukarıdaki hata açıklamasını kontrol et.
                   </div>
                 ) : (
                   <div className="text-red-400">

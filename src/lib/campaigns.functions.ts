@@ -300,35 +300,31 @@ export const testTelegramChannel = createServerFn({ method: "POST" })
         ? `TELEGRAM_CHANNEL_ID ${channelId}, Telegram'ın döndürdüğü kanal username'i @${chatUsername}. Gönderim için @${chatUsername} veya kanalın -100 ile başlayan sayısal ID'sini kullan.`
         : null;
 
+    // Kanallarda getChatMember/getChatAdministrators "member list is inaccessible"
+    // dönebildiği için gerçek kanıt: sessiz test mesajı gönder + hemen sil.
     let memberStatus = "unknown";
     let canPostMessages: boolean | null = null;
     let memberError: string | null = null;
-    if (botId) {
-      // Botun kendi üyelik sorgusu en güvenilir kontroldür. Yönetici listesi
-      // Telegram tarafından gizlenebildiği için yalnızca ikinci fallback'tir.
-      const mem = await call("getChatMember", { chat_id: channelId, user_id: botId });
-      if (mem.ok) {
-        const member = mem.result as { status?: string; can_post_messages?: boolean } | undefined;
-        memberStatus = member?.status ?? "unknown";
-        canPostMessages = member?.can_post_messages ?? null;
-      } else {
-        const admins = await call("getChatAdministrators", { chat_id: channelId, return_bots: true });
-        if (admins.ok && Array.isArray(admins.result)) {
-          const botMember = admins.result.find((entry) => {
-            const member = entry as { user?: { id?: number } };
-            return member.user?.id === botId;
-          }) as { status?: string; can_post_messages?: boolean } | undefined;
-          if (botMember) {
-            memberStatus = botMember.status ?? "unknown";
-            canPostMessages = botMember.can_post_messages ?? null;
-          } else {
-            memberError = `getChatMember: ${mem.description ?? "üyelik sorgusu başarısız"}; bot yönetici listesinde de bulunamadı`;
-          }
-        } else {
-          memberError = `getChatMember: ${mem.description ?? "üyelik sorgusu başarısız"}; getChatAdministrators: ${admins.description ?? "yönetici listesi alınamadı"}`;
-        }
+    const sent = await call("sendMessage", {
+      chat_id: channelId,
+      text: "✓ test",
+      disable_notification: true,
+    });
+    const messageId = (sent.result as { message_id?: number } | undefined)?.message_id;
+    if (sent.ok && messageId) {
+      memberStatus = "administrator";
+      canPostMessages = true;
+      const del = await call("deleteMessage", { chat_id: channelId, message_id: messageId });
+      if (!del.ok) {
+        memberError = `Test mesajı gönderildi ama silinemedi (deleteMessage: ${del.description ?? "hata"}). Kanaldan elle silebilirsin; botun "Delete Messages" yetkisi kapalı olabilir.`;
       }
+    } else {
+      const desc = sent.description ?? "sendMessage başarısız";
+      memberStatus = /not a member|not enough rights|chat not found|forbidden/i.test(desc) ? "not_admin" : "unknown";
+      canPostMessages = false;
+      memberError = `sendMessage: ${desc}`;
     }
+    void botId;
 
     return {
       ok: true,
