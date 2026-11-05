@@ -84,9 +84,10 @@ type SupplierDetail = {
   required_fields?: RequiredField[];
 };
 
+// is_stock=false: tedarikçi stok takibi yapmıyor (manuel teslim, siparişe göre); stok yok DEĞİL.
 function isOutOfStock(product: Pick<SupplierProduct, "is_automatic_delivery" | "is_stock" | "stock_count">) {
   return !product.is_automatic_delivery
-    && (product.is_stock === false || (typeof product.stock_count === "number" && product.stock_count <= 0));
+    && product.is_stock === true && typeof product.stock_count === "number" && product.stock_count <= 0;
 }
 
 function emptyResult<T extends object>(result: T) {
