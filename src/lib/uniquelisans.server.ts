@@ -132,8 +132,8 @@ export async function ulCheckAvailability(
       return options.strict ? { ok: false, reason: "supplier_unavailable" } : { ok: true };
     }
     const countable = !Boolean(d.is_automatic_delivery);
-    const out = countable && (d.is_stock === false || (typeof d.stock_count === "number" && d.stock_count <= 0));
-    const insufficient = countable && typeof d.stock_count === "number" && d.stock_count < quantity;
+    const out = countable && d.is_stock === true && typeof d.stock_count === "number" && d.stock_count <= 0;
+    const insufficient = countable && d.is_stock === true && typeof d.stock_count === "number" && d.stock_count < quantity;
     if (insufficient) {
       return {
         ok: false,
