@@ -25,11 +25,21 @@ function matchesSecret(provided: string, expected: string): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
+// Ayrı secret yoksa bot anahtarından türetilir (setWebhook'ta aynı değer kullanılır).
+async function telegramWebhookSecret(): Promise<string> {
+  const explicit = (process.env.TELEGRAM_WEBHOOK_SECRET ?? "").trim();
+  if (explicit) return explicit;
+  const token = process.env.TELEGRAM_BOT_TOKEN ?? "";
+  if (!token) return "";
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`siber-webhook:${token}`));
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 export const Route = createFileRoute("/api/public/hooks/telegram")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET ?? "";
+        const expectedSecret = await telegramWebhookSecret();
         const providedSecret = request.headers.get("x-telegram-bot-api-secret-token") ?? "";
         if (!expectedSecret) {
           console.error("[telegram-webhook] TELEGRAM_WEBHOOK_SECRET missing — request rejected");

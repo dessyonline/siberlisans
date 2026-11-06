@@ -512,9 +512,10 @@ export async function runUniquelisansStockSync(
       supplier_out_of_stock: number | null;
       price_locked: number | null;
       supplier_auto_publish: number | null;
+      stock_hint: string | number | null;
     }>(
       `SELECT id, name, external_id, price_try, external_price, active, supplier_out_of_stock,
-              price_locked, supplier_auto_publish
+              price_locked, supplier_auto_publish, stock_hint
          FROM products WHERE source='uniquelisans'`,
     );
 
@@ -578,7 +579,11 @@ export async function runUniquelisansStockSync(
           }
         }
 
-        if (outOfStock && !previousOos) {
+        // Titreşim koruması: tek bir 0 okuması ürünü gizlemez; art arda iki
+        // kontrolde de stok 0 görünürse gizlenir.
+        const prevHint = num(p.stock_hint);
+        const confirmedOos = outOfStock && prevHint !== null && prevHint <= 0;
+        if (confirmedOos && !previousOos) {
           sets.push("supplier_out_of_stock=?");
           vals.push(1);
           result.hidden++;
