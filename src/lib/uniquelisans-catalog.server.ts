@@ -37,7 +37,15 @@ function escapeTelegramHtml(value: string) {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-async function ul(path: string, params: Record<string, string | number> = {}) {
+export class UlHttpError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+  }
+}
+
+const UL_TIMEOUT_MS = 12_000;
+
+async function ulOnce(path: string, params: Record<string, string | number>) {
   const key = process.env.UNIQUELISANS_API_KEY;
   const base = process.env.UNIQUELISANS_API_URL || DEFAULT_URL;
   if (!key) throw new Error("UNIQUELISANS_API_KEY tanımlı değil.");
@@ -46,16 +54,57 @@ async function ul(path: string, params: Record<string, string | number> = {}) {
   url.searchParams.set("key", key);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, String(v));
 
-  const res = await fetch(url.toString(), { headers: { accept: "application/json" } });
+  let res: Response;
+  try {
+    res = await fetch(url.toString(), {
+      headers: { accept: "application/json" },
+      signal: AbortSignal.timeout(UL_TIMEOUT_MS),
+    });
+  } catch (error) {
+    const name = (error as Error).name;
+    throw new UlHttpError(0, name === "TimeoutError" || name === "AbortError"
+      ? "Tedarikçi yanıt vermedi (zaman aşımı)"
+      : `Tedarikçiye bağlanılamadı: ${(error as Error).message}`);
+  }
   const text = await res.text();
   let body: unknown;
   try {
     body = JSON.parse(text);
   } catch {
-    throw new Error(`Uniquelisans yanıtı JSON değil: ${text.slice(0, 200)}`);
+    throw new UlHttpError(res.status, `Tedarikçi yanıtı okunamadı (HTTP ${res.status})`);
   }
-  if (!res.ok) throw new Error(`Uniquelisans hatası [${res.status}]: ${text.slice(0, 200)}`);
+  if (!res.ok) {
+    const msg = (body as { message?: string })?.message;
+    throw new UlHttpError(res.status, res.status === 404
+      ? "Tedarikçide bulunamadı (ürün kaldırılmış)"
+      : `Tedarikçi hatası [${res.status}]${msg ? `: ${msg}` : ""}`);
+  }
   return body as Record<string, unknown>;
+}
+
+/** Zaman aşımı / 5xx / 429 durumunda bir kez daha dener; 404 gibi kesin hatalarda denemez. */
+async function ul(path: string, params: Record<string, string | number> = {}) {
+  try {
+    return await ulOnce(path, params);
+  } catch (error) {
+    const status = error instanceof UlHttpError ? error.status : 0;
+    if (status === 0 || status === 429 || status >= 500) {
+      await new Promise((r) => setTimeout(r, 800));
+      return await ulOnce(path, params);
+    }
+    throw error;
+  }
+}
+
+async function runPool<T>(items: T[], size: number, worker: (item: T) => Promise<void>) {
+  let index = 0;
+  const runners = Array.from({ length: Math.min(size, items.length) }, async () => {
+    while (index < items.length) {
+      const item = items[index++];
+      await worker(item);
+    }
+  });
+  await Promise.all(runners);
 }
 
 type RequiredField = {
@@ -173,6 +222,15 @@ export type StockSyncOpts = {
   reactivate: boolean;
 };
 
+export type StockSyncError = {
+  id: string;
+  name: string;
+  external_id: string | null;
+  kind: "not_found" | "timeout" | "error";
+  message: string;
+  hidden: boolean;
+};
+
 export type StockSyncResult = {
   checked: number;
   updated: number;
@@ -181,6 +239,9 @@ export type StockSyncResult = {
   hidden: number;
   reactivated: number;
   failed: number;
+  errors: StockSyncError[];
+  /** Kendi ürün ↔ tedarikçi eşleşmelerinde görünür tarafı değiştirilen sayısı */
+  switched: number;
 };
 
 type ExistingRow = {
@@ -323,10 +384,13 @@ export async function runUniquelisansCatalogSync(
             const prev = existing.get(key);
 
             if (prev) {
-              const sets: string[] = ["external_price=?", "stock_hint=?", "unlimited_stock=?"];
+              // Stok bilgisi (stock_hint / gizle-aç) yalnızca ürün detayından okunan
+              // stok senkronunda değişir. Liste uç noktası farklı/eksik stok
+              // döndürebildiği için burada stok alanlarına dokunmuyoruz; aksi halde
+              // iki senkron birbirini bozup ürünü sürekli açıp kapatıyordu.
+              const sets: string[] = ["external_price=?", "unlimited_stock=?", "supplier_sync_error=NULL", "supplier_missing_count=0"];
               const vals: Array<string | number | null> = [
                 p.amount,
-                p.stock_count ?? null,
                 p.is_automatic_delivery ? 1 : 0,
               ];
 
@@ -360,24 +424,8 @@ export async function runUniquelisansCatalogSync(
                 result.price_changed++;
               }
 
-              let stockFlagChanged: "hidden" | "reactivated" | null = null;
-              let shouldLaunch = false;
-              if (outOfStock && !prev.supplier_out_of_stock) {
-                sets.push("supplier_out_of_stock=?");
-                vals.push(1);
-                stockFlagChanged = "hidden";
-                result.hidden++;
-              } else if (!outOfStock && prev.supplier_out_of_stock && opts.reactivate) {
-                sets.push("supplier_out_of_stock=?");
-                vals.push(0);
-                if (prev.supplier_auto_publish && !prev.active) {
-                  sets.push("active=?");
-                  vals.push(1);
-                  shouldLaunch = true;
-                }
-                stockFlagChanged = "reactivated";
-                result.reactivated++;
-              }
+              const stockFlagChanged = null as "hidden" | "reactivated" | null;
+              const shouldLaunch = false;
 
               sets.push("updated_at=?");
               vals.push(ts(), prev.id);
@@ -499,6 +547,8 @@ export async function runUniquelisansStockSync(
     hidden: 0,
     reactivated: 0,
     failed: 0,
+    errors: [],
+    switched: 0,
   };
 
   return withSyncLock("stock", baseResult, async () => {
@@ -513,33 +563,64 @@ export async function runUniquelisansStockSync(
       price_locked: number | null;
       supplier_auto_publish: number | null;
       stock_hint: string | number | null;
+      supplier_missing_count: string | number | null;
     }>(
       `SELECT id, name, external_id, price_try, external_price, active, supplier_out_of_stock,
-              price_locked, supplier_auto_publish, stock_hint
+              price_locked, supplier_auto_publish, stock_hint, supplier_missing_count
          FROM products WHERE source='uniquelisans'`,
     );
 
-    const result = { ...baseResult };
+    const result: StockSyncResult = { ...baseResult, errors: [] };
     const priceApprovals: PriceApprovalNotice[] = [];
     const launchIds: string[] = [];
     const markup = opts.markup_percent ?? DEFAULT_MARKUP_PERCENT;
 
-    for (const p of rows) {
-      if (!p.external_id) continue;
+    const checkOne = async (p: (typeof rows)[number]) => {
+      if (!p.external_id) return;
       result.checked++;
+      const displayName = p.name ?? `Uniquelisans #${p.external_id}`;
 
+      let detail: SupplierDetail | undefined;
       try {
         const body = await ul(`/products/${p.external_id}`);
-        const detail = body.product_detail as SupplierDetail | undefined;
-        if (!detail) {
-          result.failed++;
-          continue;
-        }
+        detail = body.product_detail as SupplierDetail | undefined;
+        if (!detail) throw new UlHttpError(200, "Tedarikçi ürün detayı boş döndü");
+      } catch (error) {
+        result.failed++;
+        const status = error instanceof UlHttpError ? error.status : 0;
+        const notFound = status === 404;
+        const kind: StockSyncError["kind"] = notFound ? "not_found" : status === 0 ? "timeout" : "error";
+        const message = (error as Error).message;
+        const missing = notFound ? (num(p.supplier_missing_count) ?? 0) + 1 : 0;
+        // Tedarikçi ürünü kaldırdıysa (iki kontrol üst üste 404) müşteri
+        // ulaşılamayacak ürünü satın alamasın diye satıştan çekilir.
+        const hideNow = notFound && missing >= 2 && !bool(p.supplier_out_of_stock);
+        try {
+          await mysqlQuery(
+            `UPDATE products SET supplier_sync_error=?, supplier_sync_error_at=?, supplier_missing_count=?${hideNow ? ", supplier_out_of_stock=1" : ""} WHERE id=?`,
+            [message, ts(), missing, p.id],
+          );
+        } catch { /* hata kaydı opsiyonel */ }
+        if (hideNow) result.hidden++;
+        result.errors.push({
+          id: p.id,
+          name: displayName,
+          external_id: p.external_id,
+          kind,
+          message,
+          hidden: hideNow || (notFound && bool(p.supplier_out_of_stock)),
+        });
+        return;
+      }
 
+      try {
         const outOfStock = isOutOfStock(detail);
         const previousOos = bool(p.supplier_out_of_stock);
         const autoPublish = bool(p.supplier_auto_publish);
-        const sets: string[] = ["external_price=?", "stock_hint=?", "unlimited_stock=?"];
+        const sets: string[] = [
+          "external_price=?", "stock_hint=?", "unlimited_stock=?",
+          "supplier_sync_error=NULL", "supplier_sync_error_at=NULL", "supplier_missing_count=0",
+        ];
         const vals: Array<string | number | null> = [
           detail.amount,
           detail.stock_count ?? null,
@@ -560,8 +641,8 @@ export async function runUniquelisansStockSync(
               try {
                 const approval = await queueUniquelisansPriceApproval({
                   product_id: p.id,
-                  external_id: p.external_id,
-                  product_name: p.name ?? `Uniquelisans #${p.external_id}`,
+                  external_id: p.external_id!,
+                  product_name: displayName,
                   supplier_previous_price: oldCost,
                   supplier_new_price: detail.amount,
                   current_price: oldPrice,
@@ -569,7 +650,6 @@ export async function runUniquelisansStockSync(
                 });
                 if (approval) priceApprovals.push(approval);
               } catch (error) {
-                result.failed++;
                 console.error("[uniquelisans] price approval queue failed", (error as Error).message);
               }
             } else if (nextPrice > oldPrice) {
@@ -580,15 +660,20 @@ export async function runUniquelisansStockSync(
         }
 
         // Titreşim koruması: tek bir 0 okuması ürünü gizlemez; art arda iki
-        // kontrolde de stok 0 görünürse gizlenir.
+        // kontrolde de stok 0 görünürse gizlenir. Gizli ürün de ancak stok
+        // gerçekten pozitifse (veya tedarikçi stok takibi yapmıyorsa) açılır.
         const prevHint = num(p.stock_hint);
         const confirmedOos = outOfStock && prevHint !== null && prevHint <= 0;
+        const clearlyInStock = !outOfStock && (
+          detail.is_automatic_delivery || detail.is_stock !== true ||
+          (typeof detail.stock_count === "number" && detail.stock_count > 0)
+        );
         if (confirmedOos && !previousOos) {
           sets.push("supplier_out_of_stock=?");
           vals.push(1);
           result.hidden++;
           hiddenNow = true;
-        } else if (!outOfStock && previousOos && opts.reactivate) {
+        } else if (clearlyInStock && previousOos && opts.reactivate) {
           sets.push("supplier_out_of_stock=?");
           vals.push(0);
           if (autoPublish && !bool(p.active)) {
@@ -606,14 +691,25 @@ export async function runUniquelisansStockSync(
         result.updated++;
         if (shouldLaunch) launchIds.push(p.id);
         if (reactivatedNow) {
-          await notifyStockBack(p.id, p.name ?? `Uniquelisans #${p.external_id}`, detail.stock_count);
+          await notifyStockBack(p.id, displayName, detail.stock_count);
         } else if (hiddenNow) {
-          await notifyStockOut(p.name ?? `Uniquelisans #${p.external_id}`, detail.stock_count);
+          await notifyStockOut(displayName, detail.stock_count);
         }
-      } catch {
+      } catch (error) {
         result.failed++;
+        result.errors.push({
+          id: p.id,
+          name: displayName,
+          external_id: p.external_id,
+          kind: "error",
+          message: `Kayıt güncellenemedi: ${(error as Error).message}`,
+          hidden: false,
+        });
       }
-    }
+    };
+
+    // Tedarikçiyi boğmadan aynı anda 4 ürün kontrol edilir.
+    await runPool(rows, 4, checkOne);
 
     if (launchIds.length) {
       try {
@@ -623,7 +719,14 @@ export async function runUniquelisansStockSync(
         console.error("[uniquelisans] reactivation launch failed", (error as Error).message);
       }
     }
+    try {
+      const { applySupplierLinks } = await import("./uniquelisans-dedupe.server");
+      result.switched = (await applySupplierLinks()).switched;
+    } catch (error) {
+      console.error("[uniquelisans] supplier link apply failed", (error as Error).message);
+    }
     await notifyPriceApprovals(priceApprovals);
+    result.errors.sort((a, b) => a.kind.localeCompare(b.kind));
     return result;
   });
 }
